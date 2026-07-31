@@ -97,6 +97,8 @@ Important defaults in `application.properties`:
 | `loadbalancerpro.proxy.request-timeout` | `2s` | Bounded upstream request |
 | `loadbalancerpro.proxy.routes.<name>.request-timeout` | inherits global | Per-route upstream request bound |
 | `loadbalancerpro.proxy.health-check.enabled` | `false` | Opt-in active checks |
+| `loadbalancerpro.proxy.health-check.healthy-threshold` | `2` | Successful background probes required to recover |
+| `loadbalancerpro.proxy.health-check.unhealthy-threshold` | `3` | Failed background probes required to mark unhealthy |
 | `loadbalancerpro.proxy.retry.enabled` | `false` | Opt-in retries |
 | `loadbalancerpro.proxy.retry.retry-non-idempotent` | `false` | No default non-idempotent retry |
 | `loadbalancerpro.proxy.cooldown.enabled` | `false` | Opt-in backend cooldown |

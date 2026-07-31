@@ -13,6 +13,8 @@ loadbalancerpro.proxy.health-check.enabled=true
 loadbalancerpro.proxy.health-check.path=/health
 loadbalancerpro.proxy.health-check.timeout=1s
 loadbalancerpro.proxy.health-check.interval=30s
+loadbalancerpro.proxy.health-check.healthy-threshold=2
+loadbalancerpro.proxy.health-check.unhealthy-threshold=3
 loadbalancerpro.proxy.upstreams[0].id=backend-a
 loadbalancerpro.proxy.upstreams[0].url=http://127.0.0.1:18081
 loadbalancerpro.proxy.upstreams[0].healthy=true
@@ -21,7 +23,7 @@ loadbalancerpro.proxy.upstreams[1].url=http://127.0.0.1:18082
 loadbalancerpro.proxy.upstreams[1].healthy=true
 ```
 
-Health checks are lazy and on-demand. Forwarding and status inspection refresh a probe only when the configured interval has elapsed. A 2xx or 3xx probe response is healthy; other statuses and probe failures are unhealthy. A configured `healthy=false` upstream remains manually disabled and is not made healthy by active probes.
+Health checks run on dedicated daemon workers with a jittered initial delay and one scheduled task per configured upstream. Forwarding and status inspection read the latest process-local snapshot and do not perform probe I/O. A 2xx or 3xx probe response counts as a success; other statuses and probe failures count as failures. The configured consecutive rise/fall thresholds prevent a single result from changing effective health. A configured `healthy=false` upstream remains manually disabled and is not made healthy by active probes.
 
 ## Status Endpoint
 
@@ -44,7 +46,7 @@ The endpoint is read-only and reports:
 - `observability` summary with route count, backend target count, effective healthy/unhealthy backend counts, cooldown-active backend count, request totals, retry/cooldown totals, last selected upstream, and a compact readiness signal
 - `securityBoundary` summary with auth mode, active profiles, whether an API-key value is configured, and whether `/proxy/**` plus `GET /api/proxy/status` are protected in the active mode
 - `reload` summary with config reload support, active config generation, last reload attempt/success/failure timestamps, last reload status, validation errors, active route count, and active backend target count
-- health-check path, timeout, and interval
+- health-check path, timeout, interval, healthy threshold, and unhealthy threshold
 - retry enabled flag, maximum attempts, retry methods, and retry statuses
 - cooldown enabled flag, consecutive failure threshold, duration, and health-check recovery setting
 - upstream id, sanitized URL, configured health, effective health, and last probe outcome
@@ -146,6 +148,6 @@ For local/private real-backend examples, see [`REAL_BACKEND_PROXY_EXAMPLES.md`](
 
 ## Test Evidence
 
-The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, active health probes, dynamic unhealthy skipping, read-only status output, forwarding counters, failure counters, retry counters, cooldown counters, status-class counters, unreachable upstream behavior, bounded retry behavior, non-idempotent no-retry defaults, cooldown recovery, strategy-specific selected-upstream evidence, and no `CloudManager` construction.
+The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, dedicated daemon probe workers, rise/fall thresholds, stale-generation rejection during reconfiguration, dynamic unhealthy skipping, side-effect-free request/status snapshot reads, forwarding counters, failure counters, retry counters, cooldown counters, status-class counters, unreachable upstream behavior, bounded retry behavior, non-idempotent no-retry defaults, cooldown recovery, strategy-specific selected-upstream evidence, and no `CloudManager` construction.
 
 JaCoCo coverage and skipped-test counts remain surfaced by the `Build, Test, Package, Smoke` workflow artifacts and logs.

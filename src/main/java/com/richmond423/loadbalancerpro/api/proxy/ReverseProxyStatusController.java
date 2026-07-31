@@ -156,7 +156,9 @@ public class ReverseProxyStatusController {
                 healthCheck.isEnabled(),
                 normalizedPath(healthCheck.getPath()),
                 healthCheck.getTimeout().toMillis(),
-                healthCheck.getInterval().toMillis());
+                healthCheck.getInterval().toMillis(),
+                healthCheck.getHealthyThreshold(),
+                healthCheck.getUnhealthyThreshold());
     }
 
     private ReverseProxyStatusResponse.RetryStatus retryStatus() {

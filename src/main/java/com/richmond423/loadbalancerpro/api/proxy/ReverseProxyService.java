@@ -41,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -70,9 +71,9 @@ public class ReverseProxyService {
     private final AtomicReference<ActiveProxyConfig> activeConfig;
     private final AtomicReference<ReloadState> reloadState;
     private final AtomicLong nextGeneration = new AtomicLong(1);
-    private final ConcurrentMap<String, ProbeState> probeStates = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ResilienceState> resilienceStates = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, UpstreamRuntimeStats> upstreamRuntimeStats = new ConcurrentHashMap<>();
+    private final UpstreamHealthProber healthProber;
 
     @Autowired
     public ReverseProxyService(ReverseProxyProperties properties,
@@ -94,6 +95,8 @@ public class ReverseProxyService {
                 properties, nextGeneration.getAndIncrement(), List.of());
         this.activeConfig = new AtomicReference<>(startupConfig);
         this.reloadState = new AtomicReference<>(ReloadState.notAttempted(startupConfig));
+        this.healthProber = new UpstreamHealthProber(httpClient, clock, this::recordProbeOutcome);
+        configureHealthProber(startupConfig);
         logStartupSummary();
     }
 
@@ -136,7 +139,7 @@ public class ReverseProxyService {
         Set<String> attemptedUpstreamIds = new LinkedHashSet<>();
         ReverseProxyResponse lastResponse = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            List<UpstreamCandidate> upstreams = configuredUpstreams(properties, route, attemptedUpstreamIds);
+            List<UpstreamCandidate> upstreams = configuredUpstreams(config, route, attemptedUpstreamIds);
             if (upstreams.isEmpty()) {
                 if (lastResponse != null) {
                     return lastResponse;
@@ -203,7 +206,7 @@ public class ReverseProxyService {
         ReverseProxyProperties properties = config.properties();
         List<ReverseProxyRoutePlanner.ConfiguredRoute> routes = config.routes();
         List<ReverseProxyStatusResponse.UpstreamStatus> upstreamStatuses =
-                configuredUpstreamStatuses(properties, routes, Instant.now(clock));
+                configuredUpstreamStatuses(config, Instant.now(clock));
         List<String> upstreamIds = upstreamStatuses.stream()
                 .map(ReverseProxyStatusResponse.UpstreamStatus::id)
                 .toList();
@@ -227,7 +230,9 @@ public class ReverseProxyService {
                         healthCheck.isEnabled(),
                         normalizedHealthCheckPath(healthCheck.getPath()),
                         healthCheck.getTimeout().toMillis(),
-                        healthCheck.getInterval().toMillis()),
+                        healthCheck.getInterval().toMillis(),
+                        healthCheck.getHealthyThreshold(),
+                        healthCheck.getUnhealthyThreshold()),
                 new ReverseProxyStatusResponse.RetryStatus(
                         retry.isEnabled(),
                         Math.max(1, retry.getMaxAttempts()),
@@ -262,9 +267,9 @@ public class ReverseProxyService {
                     candidateProperties, previousConfig);
             activeConfig.set(candidateConfig);
             nextGeneration.updateAndGet(current -> Math.max(current, candidateConfig.generation() + 1));
-            probeStates.clear();
             resilienceStates.clear();
             retainConfiguredRuntimeStats(candidateConfig);
+            configureHealthProber(candidateConfig);
             ReloadState successState = ReloadState.success(attemptedAt, candidateConfig);
             reloadState.set(successState);
             logger.info("proxy.config.reload status=success generation={} routeCount={} backendTargetCount={}",
@@ -319,6 +324,14 @@ public class ReverseProxyService {
             throw new IllegalStateException("loadbalancerpro.proxy.max-request-bytes must be greater than 0");
         }
         normalizedHealthCheckPath(properties.getHealthCheck().getPath());
+        positiveDuration(properties.getHealthCheck().getTimeout(),
+                "loadbalancerpro.proxy.health-check.timeout");
+        positiveDuration(properties.getHealthCheck().getInterval(),
+                "loadbalancerpro.proxy.health-check.interval");
+        positiveInt(properties.getHealthCheck().getHealthyThreshold(),
+                "loadbalancerpro.proxy.health-check.healthy-threshold");
+        positiveInt(properties.getHealthCheck().getUnhealthyThreshold(),
+                "loadbalancerpro.proxy.health-check.unhealthy-threshold");
         normalizedRetryMethods(properties);
         normalizedRetryStatuses(properties);
         for (ReverseProxyRoutePlanner.ConfiguredRoute route : configuredRoutes) {
@@ -526,24 +539,26 @@ public class ReverseProxyService {
                 .max(Comparator.comparingInt(route -> route.pathPrefix().length()));
     }
 
-    private List<UpstreamCandidate> configuredUpstreams(ReverseProxyProperties properties,
-                                                        ReverseProxyRoutePlanner.ConfiguredRoute route,
-                                                        Set<String> excludedUpstreamIds) {
+    private List<UpstreamCandidate> configuredUpstreams(ActiveProxyConfig config,
+                                                         ReverseProxyRoutePlanner.ConfiguredRoute route,
+                                                         Set<String> excludedUpstreamIds) {
         Instant now = Instant.now(clock);
         return route.targets().stream()
                 .filter(upstream -> excludedUpstreamIds == null
                         || !excludedUpstreamIds.contains(requireNonBlank(
                                 upstream.getId(), "loadbalancerpro.proxy.upstreams[].id")))
-                .map(upstream -> toCandidate(properties, upstream, now))
+                .map(upstream -> toCandidate(config, upstream, now))
                 .toList();
     }
 
-    private UpstreamCandidate toCandidate(ReverseProxyProperties properties,
+    private UpstreamCandidate toCandidate(ActiveProxyConfig config,
                                           ReverseProxyProperties.Upstream upstream,
                                           Instant timestamp) {
+        ReverseProxyProperties properties = config.properties();
         String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
         URI baseUri = configuredBaseUri(upstream, id);
-        EffectiveHealth effectiveHealth = effectiveHealth(properties, upstream, id, baseUri, timestamp);
+        EffectiveHealth effectiveHealth =
+                effectiveHealth(properties, upstream, id, config.generation(), timestamp);
         int configuredInFlight = nonNegative(upstream.getInFlightRequestCount(), "inFlightRequestCount");
         double configuredAverageLatency =
                 nonNegative(upstream.getAverageLatencyMillis(), "averageLatencyMillis");
@@ -575,17 +590,21 @@ public class ReverseProxyService {
     }
 
     private List<ReverseProxyStatusResponse.UpstreamStatus> configuredUpstreamStatuses(
-            ReverseProxyProperties properties,
-            List<ReverseProxyRoutePlanner.ConfiguredRoute> routes,
+            ActiveProxyConfig config,
             Instant now) {
-        return routes.stream()
+        ReverseProxyProperties properties = config.properties();
+        return config.routes().stream()
                 .flatMap(route -> route.targets().stream()
                         .map(upstream -> {
                             String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
                             URI baseUri = configuredBaseUri(upstream, id);
-                            EffectiveHealth health = effectiveHealth(properties, upstream, id, baseUri, now);
-                            ResilienceState resilienceState = resilienceState(id);
-                            UpstreamRuntimeStats.Snapshot runtime = runtimeStatsFor(id).snapshot();
+                            EffectiveHealth health =
+                                    effectiveHealth(properties, upstream, id, config.generation(), now);
+                            ResilienceState resilienceState = resilienceStates.get(id);
+                            UpstreamRuntimeStats runtimeStats = upstreamRuntimeStats.get(id);
+                            UpstreamRuntimeStats.Snapshot runtime = runtimeStats == null
+                                    ? UpstreamRuntimeStats.emptySnapshot()
+                                    : runtimeStats.snapshot();
                             return new ReverseProxyStatusResponse.UpstreamStatus(
                                     id,
                                     safeConfiguredUrl(baseUri),
@@ -594,9 +613,9 @@ public class ReverseProxyService {
                                     health.source(),
                                     health.lastProbeStatusCode(),
                                     health.lastProbeOutcome(),
-                                    resilienceState.consecutiveFailures(),
-                                    resilienceState.cooldownActive(now),
-                                    resilienceState.cooldownRemainingMillis(now),
+                                    resilienceState == null ? 0 : resilienceState.consecutiveFailures(now),
+                                    resilienceState != null && resilienceState.cooldownActive(now),
+                                    resilienceState == null ? 0 : resilienceState.cooldownRemainingMillis(now),
                                     new ReverseProxyStatusResponse.UpstreamRuntimeStatus(
                                             runtime.inFlightRequestCount(),
                                             runtime.completedRequestCount(),
@@ -643,80 +662,38 @@ public class ReverseProxyService {
     private EffectiveHealth effectiveHealth(ReverseProxyProperties properties,
                                             ReverseProxyProperties.Upstream upstream,
                                             String id,
-                                            URI baseUri,
+                                            long configurationGeneration,
                                             Instant now) {
         if (!upstream.isHealthy()) {
             return new EffectiveHealth(false, "CONFIGURED_DISABLED", null, "configured healthy=false");
         }
         ReverseProxyProperties.HealthCheck healthCheck = properties.getHealthCheck();
-        ResilienceState resilienceState = resilienceState(id);
-        if (properties.getCooldown().isEnabled() && resilienceState.cooldownActive(now)) {
-            if (!healthCheck.isEnabled() || !properties.getCooldown().isRecoverOnSuccessfulHealthCheck()
-                    || !probeDue(properties, probeStates.get(id), now)) {
-                return new EffectiveHealth(false, "COOLDOWN", null, "temporary cooldown active");
-            }
+        ResilienceState resilienceState = resilienceStates.get(id);
+        Optional<UpstreamHealthProber.HealthSnapshot> probeSnapshot =
+                healthProber.snapshot(id, configurationGeneration);
+        if (properties.getCooldown().isEnabled()
+                && resilienceState != null
+                && resilienceState.cooldownActive(now)) {
+            return new EffectiveHealth(
+                    false,
+                    "COOLDOWN",
+                    probeSnapshot.map(UpstreamHealthProber.HealthSnapshot::statusCode).orElse(null),
+                    "temporary cooldown active");
         }
         if (!healthCheck.isEnabled()) {
-            if (properties.getCooldown().isEnabled()) {
-                resilienceState.clearExpiredCooldown(now);
-                if (resilienceState.cooldownActive(now)) {
-                    return new EffectiveHealth(false, "COOLDOWN", null, "temporary cooldown active");
-                }
-            }
             return new EffectiveHealth(true, "CONFIGURED", null, "active health checks disabled");
         }
-        ProbeState existing = probeStates.get(id);
-        ProbeState current = probeDue(properties, existing, now) ? probeUpstream(properties, id, baseUri, now) : existing;
-        if (current != existing) {
-            probeStates.put(id, current);
-        }
-        if (current.healthy()) {
-            recordResilienceSuccess(id);
-        } else {
-            recordResilienceFailure(properties, id);
-        }
-        if (properties.getCooldown().isEnabled() && resilienceState.cooldownActive(now)) {
-            return new EffectiveHealth(false, "COOLDOWN", current.statusCode(), "temporary cooldown active");
-        }
-        return new EffectiveHealth(
-                current.healthy(),
-                "ACTIVE_PROBE",
-                current.statusCode(),
-                current.outcome());
-    }
-
-    private boolean probeDue(ReverseProxyProperties properties, ProbeState existing, Instant now) {
-        if (existing == null) {
-            return true;
-        }
-        Duration interval = properties.getHealthCheck().getInterval();
-        if (interval.isZero() || interval.isNegative()) {
-            return true;
-        }
-        return !existing.checkedAt().plus(interval).isAfter(now);
-    }
-
-    @SuppressWarnings("java/ssrf")
-    private ProbeState probeUpstream(ReverseProxyProperties properties, String id, URI baseUri, Instant now) {
-        try {
-            HttpRequest request = HttpRequest.newBuilder(healthCheckUri(properties, baseUri))
-                    .timeout(properties.getHealthCheck().getTimeout())
-                    .GET()
-                    .build();
-            HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
-            int statusCode = response.statusCode();
-            boolean healthy = statusCode >= 200 && statusCode <= 399;
-            return new ProbeState(
-                    healthy,
-                    statusCode,
-                    healthy ? "2xx/3xx probe response" : "non-2xx/3xx probe response",
-                    now);
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            return new ProbeState(false, null, "probe interrupted", now);
-        } catch (IOException | IllegalArgumentException exception) {
-            return new ProbeState(false, null, "probe failed", now);
-        }
+        return probeSnapshot
+                .map(snapshot -> new EffectiveHealth(
+                        snapshot.healthy(),
+                        snapshot.checkedAt().equals(Instant.EPOCH) ? "ACTIVE_PROBE_PENDING" : "ACTIVE_PROBE",
+                        snapshot.statusCode(),
+                        snapshot.outcome()))
+                .orElseGet(() -> new EffectiveHealth(
+                        true,
+                        "ACTIVE_PROBE_PENDING",
+                        null,
+                        "awaiting first background probe"));
     }
 
     private URI healthCheckUri(ReverseProxyProperties properties, URI baseUri) {
@@ -908,8 +885,79 @@ public class ReverseProxyService {
         return value;
     }
 
+    private void configureHealthProber(ActiveProxyConfig config) {
+        ReverseProxyProperties properties = config.properties();
+        ReverseProxyProperties.HealthCheck healthCheck = properties.getHealthCheck();
+        if (!healthCheck.isEnabled()) {
+            healthProber.stop();
+            return;
+        }
+        List<UpstreamHealthProber.Target> targets = config.routes().stream()
+                .flatMap(route -> route.targets().stream())
+                .map(upstream -> {
+                    String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
+                    URI baseUri = configuredBaseUri(upstream, id);
+                    return new UpstreamHealthProber.Target(
+                            id,
+                            healthCheckUri(properties, baseUri),
+                            healthCheck.getTimeout(),
+                            config.generation());
+                })
+                .toList();
+        healthProber.configure(
+                targets,
+                healthCheck.getInterval(),
+                healthCheck.getHealthyThreshold(),
+                healthCheck.getUnhealthyThreshold());
+    }
+
+    private synchronized void recordProbeOutcome(
+            UpstreamHealthProber.Target target,
+            boolean successful,
+            UpstreamHealthProber.HealthSnapshot snapshot) {
+        ActiveProxyConfig config = activeConfig.get();
+        if (target.configurationGeneration() != config.generation()) {
+            return;
+        }
+        String upstreamId = target.id();
+        ReverseProxyProperties properties = config.properties();
+        if (!properties.getHealthCheck().isEnabled()
+                || config.routes().stream()
+                        .flatMap(route -> route.targets().stream())
+                        .map(ReverseProxyProperties.Upstream::getId)
+                        .noneMatch(upstreamId::equals)) {
+            return;
+        }
+        if (!successful) {
+            recordResilienceFailure(properties, upstreamId);
+            return;
+        }
+        ResilienceState resilienceState = resilienceStates.get(upstreamId);
+        if (resilienceState == null) {
+            return;
+        }
+        boolean mayRecover = !properties.getCooldown().isEnabled()
+                || properties.getCooldown().isRecoverOnSuccessfulHealthCheck()
+                || !resilienceState.cooldownActive(snapshot.checkedAt());
+        if (mayRecover) {
+            resilienceState.recordSuccess();
+        }
+    }
+
+    @PreDestroy
+    void closeHealthProber() {
+        healthProber.close();
+    }
+
     private static Duration positiveDuration(Duration value, String fieldName) {
         if (value == null || value.isZero() || value.isNegative()) {
+            throw new IllegalStateException(fieldName + " must be greater than zero");
+        }
+        return value;
+    }
+
+    private static int positiveInt(int value, String fieldName) {
+        if (value <= 0) {
             throw new IllegalStateException(fieldName + " must be greater than zero");
         }
         return value;
@@ -1015,6 +1063,8 @@ public class ReverseProxyService {
         copy.setPath(source.getPath());
         copy.setTimeout(source.getTimeout());
         copy.setInterval(source.getInterval());
+        copy.setHealthyThreshold(source.getHealthyThreshold());
+        copy.setUnhealthyThreshold(source.getUnhealthyThreshold());
         return copy;
     }
 
@@ -1088,13 +1138,6 @@ public class ReverseProxyService {
             String lastProbeOutcome) {
     }
 
-    private record ProbeState(
-            boolean healthy,
-            Integer statusCode,
-            String outcome,
-            Instant checkedAt) {
-    }
-
     private record ForwardAttemptResult(ReverseProxyResponse response, boolean retriable) {
     }
 
@@ -1128,7 +1171,7 @@ public class ReverseProxyService {
             cooldownUntil = null;
         }
 
-        synchronized void clearExpiredCooldown(Instant now) {
+        private synchronized void clearExpiredCooldown(Instant now) {
             if (cooldownUntil != null && !cooldownUntil.isAfter(now)) {
                 cooldownUntil = null;
                 consecutiveFailures = 0;
@@ -1136,7 +1179,6 @@ public class ReverseProxyService {
         }
 
         synchronized boolean cooldownActive(Instant now) {
-            clearExpiredCooldown(now);
             return cooldownUntil != null && cooldownUntil.isAfter(now);
         }
 
@@ -1147,8 +1189,8 @@ public class ReverseProxyService {
             return Math.max(0, Duration.between(now, cooldownUntil).toMillis());
         }
 
-        synchronized int consecutiveFailures() {
-            return consecutiveFailures;
+        synchronized int consecutiveFailures(Instant now) {
+            return cooldownUntil != null && !cooldownUntil.isAfter(now) ? 0 : consecutiveFailures;
         }
     }
 }

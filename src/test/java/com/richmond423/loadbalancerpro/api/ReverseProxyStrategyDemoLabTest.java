@@ -13,6 +13,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,6 +30,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -162,8 +165,10 @@ class ReverseProxyHealthAwareFailoverStrategyDemoLabTest {
         ProxyStrategyDemoSupport.registerCommonProxyProperties(registry, "ROUND_ROBIN", BACKEND_A, BACKEND_B);
         registry.add("loadbalancerpro.proxy.health-check.enabled", () -> "true");
         registry.add("loadbalancerpro.proxy.health-check.path", () -> "/health");
-        registry.add("loadbalancerpro.proxy.health-check.interval", () -> "0s");
+        registry.add("loadbalancerpro.proxy.health-check.interval", () -> "50ms");
         registry.add("loadbalancerpro.proxy.health-check.timeout", () -> "1s");
+        registry.add("loadbalancerpro.proxy.health-check.healthy-threshold", () -> "1");
+        registry.add("loadbalancerpro.proxy.health-check.unhealthy-threshold", () -> "1");
     }
 
     @AfterAll
@@ -176,6 +181,10 @@ class ReverseProxyHealthAwareFailoverStrategyDemoLabTest {
     void healthAwareFailoverSkipsFailingBackendForRealHttpTraffic() throws Exception {
         try (MockedConstruction<CloudManager> mockedCloudManager =
                      Mockito.mockConstruction(CloudManager.class)) {
+            awaitStatus(
+                    jsonPath("$.upstreams[1].effectiveHealthy").value(false),
+                    jsonPath("$.upstreams[1].lastProbeStatusCode").value(503));
+
             mockMvc.perform(get("/proxy/failover?step=1"))
                     .andExpect(status().isOk())
                     .andExpect(header().string("X-LoadBalancerPro-Upstream", "backend-a"))
@@ -199,6 +208,25 @@ class ReverseProxyHealthAwareFailoverStrategyDemoLabTest {
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Health-aware proxy failover demo traffic must not construct CloudManager.");
         }
+    }
+
+    private void awaitStatus(ResultMatcher... matchers) throws Exception {
+        long deadline = System.nanoTime() + Duration.ofSeconds(3).toNanos();
+        AssertionError lastFailure = null;
+        do {
+            try {
+                ResultActions result = mockMvc.perform(get("/api/proxy/status"))
+                        .andExpect(status().isOk());
+                for (ResultMatcher matcher : matchers) {
+                    result.andExpect(matcher);
+                }
+                return;
+            } catch (AssertionError failure) {
+                lastFailure = failure;
+                Thread.sleep(20);
+            }
+        } while (System.nanoTime() < deadline);
+        throw lastFailure;
     }
 }
 

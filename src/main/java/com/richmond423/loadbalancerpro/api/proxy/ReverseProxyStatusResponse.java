@@ -55,7 +55,22 @@ public record ReverseProxyStatusResponse(
             String lastProbeOutcome,
             int consecutiveFailures,
             boolean cooldownActive,
-            long cooldownRemainingMillis) {
+            long cooldownRemainingMillis,
+            UpstreamRuntimeStatus runtimeStats) {
+    }
+
+    public record UpstreamRuntimeStatus(
+            int inFlightRequestCount,
+            long completedRequestCount,
+            int latencySampleCount,
+            double ewmaLatencyMillis,
+            double p50LatencyMillis,
+            double p95LatencyMillis,
+            double p99LatencyMillis,
+            long recentSuccessCount,
+            long recentFailureCount,
+            double recentErrorRate,
+            String lastUpdatedAt) {
     }
 
     public record ObservabilitySummary(

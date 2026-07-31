@@ -168,7 +168,9 @@ Inspect the read-only proxy status endpoint:
 curl -s http://127.0.0.1:8080/api/proxy/status
 ```
 
-The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
+The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
+
+Each upstream also reports process-local runtime statistics: current in-flight attempts; completed-attempt count; latency EWMA and p50/p95/p99 from the newest 256 completions; successes, failures, and error rate from the trailing 30 seconds; and the last completion timestamp. Statistics remain attached when a successful reload keeps the same upstream id. These measurements are read-only status evidence in this slot; routing still uses the configured telemetry values described above.
 
 For a browser view of the same read-only status data, open:
 
@@ -178,7 +180,7 @@ http://localhost:8080/proxy-status.html
 
 The page uses same-origin `GET /api/proxy/status` only. It shows the upstream table, counters, retry/cooldown state, raw JSON, copyable status summary, and local demo curl commands without browser storage or backend mutation controls.
 
-Counters and active health state are local memory only. They are reset when the app process restarts. There is no persistence, reset/admin mutation endpoint, Prometheus compatibility claim, external metrics store, generated runtime report, or cloud mutation.
+Counters, runtime statistics, and active health state are local memory only. They are reset when the app process restarts. There is no persistence, reset/admin mutation endpoint, Prometheus compatibility claim, external metrics store, generated runtime report, or cloud mutation.
 
 ## Local Two-Backend Demo Fixture
 

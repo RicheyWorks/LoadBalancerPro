@@ -1,10 +1,10 @@
 # Session Manager
 
-- Active work: `P-1.1` proxy timeout correctness
-- Branch: `codex/p-1-1-timeout-correctness`
-- PR: not opened
-- Exact base main: `a75f67dfb9f9852276c3872c96c6eee0f6b1dbe2`
-- Previous slot: `L-4.4` is `MAIN_GREEN` through PR `#523`
-- Current verification: 2,462-test full suite; package; verify; CycloneDX SBOM; artifact proof; packaged-JAR smoke; and operator proxy/profile smoke are green
+- Active work: `P-1.2` upstream runtime statistics
+- Branch: `codex/p-1-2-upstream-runtime-stats`
+- PR: `#525`
+- Exact base main: `549e82aa13a55b1b3fa6115f436232047fa8025a`
+- Previous slot: `P-1.1` is `MAIN_GREEN` through PR `#524`
+- Current verification: focused proxy gates; clean package and complete 2,467-test suite; verify; CycloneDX SBOM inspection; artifact proof; packaged-JAR HTTP smoke; and operator profile/proxy smoke are green. Local Docker is unavailable and remains a required remote gate.
 - Genuine blocker: none
-- Next action: complete the exact-diff review, then open the current-head PR and require all remote gates
+- Next action: push the PR checkpoint and require all remote gates on the resulting exact head

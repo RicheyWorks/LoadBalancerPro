@@ -151,7 +151,7 @@ Before enabling private-network validation, review:
 | `/api/lab/**` | Controlled lab scenarios, decisions, runs, policy, metrics, and experiments |
 | `/api/enterprise-lab/**` | Reviewer summaries and evidence views |
 | `/proxy/**` | Optional HTTP forwarding |
-| `GET /api/proxy/status` | Proxy configuration and runtime status |
+| `GET /api/proxy/status` | Proxy configuration, health, and live per-upstream runtime statistics |
 | `POST /api/proxy/reload` | Guarded proxy configuration reload |
 | `/actuator/health` | Spring Boot health and readiness |
 

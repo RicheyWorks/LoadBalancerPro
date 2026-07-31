@@ -93,7 +93,9 @@ Important defaults in `application.properties`:
 | `loadbalancerpro.lase.shadow.enabled` | `false` | No shadow evaluation by default |
 | `loadbalancerpro.api.max-request-bytes` | `16384` | Bounded API request bodies |
 | `loadbalancerpro.proxy.max-request-bytes` | `65536` | Bounded proxied request bodies |
+| `loadbalancerpro.proxy.connect-timeout` | `1s` | Bounded upstream connection establishment |
 | `loadbalancerpro.proxy.request-timeout` | `2s` | Bounded upstream request |
+| `loadbalancerpro.proxy.routes.<name>.request-timeout` | inherits global | Per-route upstream request bound |
 | `loadbalancerpro.proxy.health-check.enabled` | `false` | Opt-in active checks |
 | `loadbalancerpro.proxy.retry.enabled` | `false` | Opt-in retries |
 | `loadbalancerpro.proxy.retry.retry-non-idempotent` | `false` | No default non-idempotent retry |

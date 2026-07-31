@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Starts two loopback-only HTTP fixture backends for local reverse proxy demos.
@@ -25,6 +26,8 @@ public final class ProxyDemoFixtureLauncher {
     private static final String DEFAULT_HOST = "127.0.0.1";
     private static final int DEFAULT_BACKEND_A_PORT = 18081;
     private static final int DEFAULT_BACKEND_B_PORT = 18082;
+    private static final long DEFAULT_DELAY_MILLIS = 250;
+    private static final long MAX_DELAY_MILLIS = 10_000;
 
     private ProxyDemoFixtureLauncher() {
     }
@@ -186,6 +189,11 @@ public final class ProxyDemoFixtureLauncher {
         lines.add("Fixture controls:");
         lines.add("  curl " + servers.backendBUrl() + "/fixture/health/fail");
         lines.add("  curl " + servers.backendBUrl() + "/fixture/health/ok");
+        lines.add("Adverse upstream fixtures:");
+        lines.add("  curl '" + servers.backendAUrl() + "/fixture/slow?millis=250'");
+        lines.add("  curl '" + servers.backendAUrl() + "/fixture/blackhole?millis=5000'");
+        lines.add("  curl " + servers.backendAUrl() + "/fixture/flaky  # alternates 503 then 200");
+        lines.add("  curl -N " + servers.backendAUrl() + "/fixture/sse");
         lines.add("");
         lines.add("Cleanup:");
         lines.add("  Press Ctrl+C to stop fixture backends.");
@@ -341,6 +349,7 @@ public final class ProxyDemoFixtureLauncher {
         private final HttpServer server;
         private final ExecutorService executor;
         private final AtomicBoolean healthy;
+        private final AtomicLong flakyRequests = new AtomicLong();
 
         private FixtureBackend(String id, String host, HttpServer server,
                                ExecutorService executor, boolean initiallyHealthy) {
@@ -386,6 +395,19 @@ public final class ProxyDemoFixtureLauncher {
                 } else if ("/health".equals(path)) {
                     boolean currentHealth = healthy.get();
                     respond(exchange, currentHealth ? 200 : 503, id + " health=" + currentHealth);
+                } else if ("/fixture/slow".equals(path)) {
+                    long delayMillis = delayMillis(uri);
+                    pause(delayMillis);
+                    respond(exchange, 200, id + " slow delayMillis=" + delayMillis);
+                } else if ("/fixture/blackhole".equals(path)) {
+                    pause(delayMillis(uri));
+                } else if ("/fixture/flaky".equals(path)) {
+                    long attempt = flakyRequests.incrementAndGet();
+                    boolean succeeds = attempt % 2 == 0;
+                    respond(exchange, succeeds ? 200 : 503,
+                            id + " flaky attempt=" + attempt + " success=" + succeeds);
+                } else if ("/fixture/sse".equals(path)) {
+                    respondSse(exchange);
                 } else {
                     byte[] requestBody = exchange.getRequestBody().readAllBytes();
                     String body = id
@@ -394,8 +416,56 @@ public final class ProxyDemoFixtureLauncher {
                             + " bodyLength=" + requestBody.length;
                     respond(exchange, 200, body);
                 }
+            } catch (IllegalArgumentException exception) {
+                respond(exchange, 400, id + " invalid fixture delay: " + exception.getMessage());
             } finally {
                 exchange.close();
+            }
+        }
+
+        private long delayMillis(URI uri) {
+            String query = uri.getRawQuery();
+            if (query == null || query.isBlank()) {
+                return DEFAULT_DELAY_MILLIS;
+            }
+            for (String component : query.split("&")) {
+                if (component.startsWith("millis=")) {
+                    String value = component.substring("millis=".length());
+                    try {
+                        long millis = Long.parseLong(value);
+                        if (millis < 0 || millis > MAX_DELAY_MILLIS) {
+                            throw new IllegalArgumentException(
+                                    "millis must be between 0 and " + MAX_DELAY_MILLIS);
+                        }
+                        return millis;
+                    } catch (NumberFormatException exception) {
+                        throw new IllegalArgumentException("millis must be numeric", exception);
+                    }
+                }
+            }
+            return DEFAULT_DELAY_MILLIS;
+        }
+
+        private void pause(long delayMillis) throws IOException {
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                throw new IOException("fixture delay interrupted", exception);
+            }
+        }
+
+        private void respondSse(HttpExchange exchange) throws IOException {
+            exchange.getResponseHeaders().set("Content-Type", "text/event-stream; charset=utf-8");
+            exchange.getResponseHeaders().set("Cache-Control", "no-store");
+            exchange.getResponseHeaders().set("X-Fixture-Upstream", id);
+            exchange.sendResponseHeaders(200, 0);
+            for (int event = 1; event <= 3; event++) {
+                byte[] bytes = ("event: fixture\ndata: " + id + "-" + event + "\n\n")
+                        .getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseBody().write(bytes);
+                exchange.getResponseBody().flush();
+                pause(25);
             }
         }
 

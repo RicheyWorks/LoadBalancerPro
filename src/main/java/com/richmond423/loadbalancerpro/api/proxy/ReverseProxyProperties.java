@@ -14,6 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ReverseProxyProperties {
     private boolean enabled = false;
     private String strategy = "ROUND_ROBIN";
+    private Duration connectTimeout = Duration.ofSeconds(1);
     private Duration requestTimeout = Duration.ofSeconds(2);
     private long maxRequestBytes = 65_536;
     private PrivateNetworkValidation privateNetworkValidation = new PrivateNetworkValidation();
@@ -38,6 +39,14 @@ public class ReverseProxyProperties {
 
     public void setStrategy(String strategy) {
         this.strategy = strategy;
+    }
+
+    public Duration getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(Duration connectTimeout) {
+        this.connectTimeout = connectTimeout == null ? Duration.ofSeconds(1) : connectTimeout;
     }
 
     public Duration getRequestTimeout() {
@@ -119,6 +128,7 @@ public class ReverseProxyProperties {
     public static final class Route {
         private String pathPrefix = "/";
         private String strategy;
+        private Duration requestTimeout;
         private List<Upstream> targets = new ArrayList<>();
 
         public String getPathPrefix() {
@@ -135,6 +145,14 @@ public class ReverseProxyProperties {
 
         public void setStrategy(String strategy) {
             this.strategy = strategy;
+        }
+
+        public Duration getRequestTimeout() {
+            return requestTimeout;
+        }
+
+        public void setRequestTimeout(Duration requestTimeout) {
+            this.requestTimeout = requestTimeout;
         }
 
         public List<Upstream> getTargets() {

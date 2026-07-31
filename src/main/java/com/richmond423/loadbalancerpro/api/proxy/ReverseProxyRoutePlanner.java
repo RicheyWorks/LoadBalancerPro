@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -54,6 +55,9 @@ final class ReverseProxyRoutePlanner {
                 String strategyName = route.getStrategy() == null || route.getStrategy().isBlank()
                         ? properties.getStrategy()
                         : route.getStrategy();
+                Duration requestTimeout = route.getRequestTimeout() == null
+                        ? properties.getRequestTimeout()
+                        : route.getRequestTimeout();
                 RoutingStrategyId strategyId = strategyId(strategyName,
                         "loadbalancerpro.proxy.routes." + routeName + ".strategy");
                 List<ReverseProxyProperties.Upstream> targets = route.getTargets();
@@ -66,7 +70,8 @@ final class ReverseProxyRoutePlanner {
                 RoutingStrategy strategy = routeStrategy(
                         registry, strategyId, routeName, targets, previousRoutesByName);
                 requireRouteOwnedStrategy(routeName, strategy, routes);
-                routes.add(new ConfiguredRoute(routeName, pathPrefix, strategyId, strategy, List.copyOf(targets)));
+                routes.add(new ConfiguredRoute(
+                        routeName, pathPrefix, strategyId, strategy, requestTimeout, List.copyOf(targets)));
             }
             return List.copyOf(routes);
         }
@@ -81,7 +86,8 @@ final class ReverseProxyRoutePlanner {
         RoutingStrategy strategy = routeStrategy(
                 registry, strategyId, LEGACY_ROUTE_NAME, upstreams, previousRoutesByName);
         return List.of(new ConfiguredRoute(
-                LEGACY_ROUTE_NAME, "/", strategyId, strategy, List.copyOf(upstreams)));
+                LEGACY_ROUTE_NAME, "/", strategyId, strategy, properties.getRequestTimeout(),
+                List.copyOf(upstreams)));
     }
 
     static boolean pathMatches(String pathPrefix, String proxyPathSuffix) {
@@ -232,6 +238,7 @@ final class ReverseProxyRoutePlanner {
             String pathPrefix,
             RoutingStrategyId strategyId,
             RoutingStrategy strategy,
+            Duration requestTimeout,
             List<ReverseProxyProperties.Upstream> targets) {
     }
 }

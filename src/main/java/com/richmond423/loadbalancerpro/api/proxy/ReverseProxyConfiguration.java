@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.net.http.HttpClient;
+import java.time.Duration;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,8 +15,14 @@ public class ReverseProxyConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "loadbalancerpro.proxy", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
-    HttpClient reverseProxyHttpClient() {
+    HttpClient reverseProxyHttpClient(ReverseProxyProperties properties) {
+        Duration connectTimeout = properties.getConnectTimeout();
+        if (connectTimeout == null || connectTimeout.isZero() || connectTimeout.isNegative()) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.connect-timeout must be greater than zero");
+        }
         return HttpClient.newBuilder()
+                .connectTimeout(connectTimeout)
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build();
     }

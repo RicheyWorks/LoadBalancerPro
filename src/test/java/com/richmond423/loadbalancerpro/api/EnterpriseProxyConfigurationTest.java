@@ -2,6 +2,9 @@ package com.richmond423.loadbalancerpro.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
+
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyConfiguration;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyMetrics;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyProperties;
@@ -26,6 +29,8 @@ class EnterpriseProxyConfigurationTest {
             assertThat(properties.getPrivateNetworkValidation().isEnabled()).isFalse();
             assertThat(properties.getPrivateNetworkLiveValidation().isEnabled()).isFalse();
             assertThat(properties.getPrivateNetworkLiveValidation().isOperatorApproved()).isFalse();
+            assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(1));
+            assertThat(properties.getRequestTimeout()).isEqualTo(Duration.ofSeconds(2));
         });
     }
 
@@ -57,8 +62,32 @@ class EnterpriseProxyConfigurationTest {
                     assertThat(properties.getPrivateNetworkLiveValidation().isOperatorApproved()).isFalse();
                     assertThat(properties.getRoutes()).containsKey("api");
                     assertThat(properties.getRoutes().get("api").getPathPrefix()).isEqualTo("/api");
+                    assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofMillis(275));
+                    assertThat(properties.getRequestTimeout()).isEqualTo(Duration.ofSeconds(3));
+                    assertThat(properties.getRoutes().get("api").getRequestTimeout())
+                            .isEqualTo(Duration.ofMillis(125));
                     assertThat(properties.getRoutes().get("api").getTargets()).hasSize(2);
+                    assertThat(context.getBean(HttpClient.class).connectTimeout())
+                            .contains(Duration.ofMillis(275));
                 });
+    }
+
+    @Test
+    void nonPositiveConnectionAndRequestTimeoutsFailAtStartup() {
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.connect-timeout=0ms")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "connect-timeout must be greater than zero"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.request-timeout=0ms")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "proxy.request-timeout must be greater than zero"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.routes.api.request-timeout=0ms")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "routes.api.request-timeout must be greater than zero"));
     }
 
     @Test
@@ -208,8 +237,11 @@ class EnterpriseProxyConfigurationTest {
     private static String[] validOperatorRouteProperties() {
         return new String[] {
                 "loadbalancerpro.proxy.enabled=true",
+                "loadbalancerpro.proxy.connect-timeout=275ms",
+                "loadbalancerpro.proxy.request-timeout=3s",
                 "loadbalancerpro.proxy.routes.api.path-prefix=/api",
                 "loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN",
+                "loadbalancerpro.proxy.routes.api.request-timeout=125ms",
                 "loadbalancerpro.proxy.routes.api.targets[0].id=local-a",
                 "loadbalancerpro.proxy.routes.api.targets[0].url=http://127.0.0.1:18081",
                 "loadbalancerpro.proxy.routes.api.targets[0].weight=1",

@@ -1,10 +1,10 @@
 # Session Manager
 
-- Active work: one-time production-enablement documentation-state cleanup between `L-4.3` and `L-4.4`
-- Branch: `codex/production-enablement-doc-cleanup`
-- PR: resolve from GitHub for this branch; do not add a follow-up narration commit
-- Exact head: resolve with `git rev-parse HEAD`; Git is authoritative and the value is not duplicated into its own commit
-- Base main: `a505032df0f238d40122022bccbbb83ef3fe9687`
-- Completed gates: isolated scope audit; focused guards; clean full suite; package, verify, SBOM, artifact, executable-JAR, and loopback-profile smokes
+- Active work: `P-1.1` proxy timeout correctness
+- Branch: `codex/p-1-1-timeout-correctness`
+- PR: not opened
+- Exact base main: `a75f67dfb9f9852276c3872c96c6eee0f6b1dbe2`
+- Previous slot: `L-4.4` is `MAIN_GREEN` through PR `#523`
+- Current verification: 2,462-test full suite; package; verify; CycloneDX SBOM; artifact proof; packaged-JAR smoke; and operator proxy/profile smoke are green
 - Genuine blocker: none
-- Next action: push the bounded cleanup, require exact-head remote gates, merge green, verify main, then begin `L-4.4`
+- Next action: complete the exact-diff review, then open the current-head PR and require all remote gates

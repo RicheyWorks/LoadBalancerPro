@@ -29,6 +29,7 @@ Equivalent properties:
 ```properties
 loadbalancerpro.proxy.enabled=true
 loadbalancerpro.proxy.strategy=ROUND_ROBIN
+loadbalancerpro.proxy.connect-timeout=1s
 loadbalancerpro.proxy.request-timeout=2s
 loadbalancerpro.proxy.max-request-bytes=65536
 loadbalancerpro.proxy.health-check.enabled=false
@@ -58,6 +59,7 @@ The global `upstreams` list remains supported for the packaged demo profiles and
 loadbalancerpro.proxy.enabled=true
 loadbalancerpro.proxy.routes.api.path-prefix=/api
 loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN
+loadbalancerpro.proxy.routes.api.request-timeout=750ms
 loadbalancerpro.proxy.routes.api.targets[0].id=local-a
 loadbalancerpro.proxy.routes.api.targets[0].url=http://127.0.0.1:18081
 loadbalancerpro.proxy.routes.api.targets[0].weight=1
@@ -66,9 +68,9 @@ loadbalancerpro.proxy.routes.api.targets[1].url=http://127.0.0.1:18082
 loadbalancerpro.proxy.routes.api.targets[1].weight=1
 ```
 
-When `routes` are configured, the proxy selects the longest matching `path-prefix` after removing `/proxy`. A request to `/proxy/api/widgets` matches the `api` route above and forwards `/api/widgets` to one configured target. If `routes` are absent, the legacy global upstream list acts as a single `/` route so existing demos keep working.
+When `routes` are configured, the proxy selects the longest matching `path-prefix` after removing `/proxy`. A request to `/proxy/api/widgets` matches the `api` route above and forwards `/api/widgets` to one configured target. A route-level `request-timeout` overrides the global request timeout for that route; routes without it inherit the global value. The separate connection timeout applies when the shared HTTP client establishes an upstream connection and requires an application restart to change. If `routes` are absent, the legacy global upstream list acts as a single `/` route so existing demos keep working.
 
-When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN` and `WEIGHTED_LEAST_CONNECTIONS`, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
+When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN` and `WEIGHTED_LEAST_CONNECTIONS`, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
 
 ## Operator Config Reload
 

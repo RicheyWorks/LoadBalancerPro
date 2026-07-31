@@ -185,7 +185,7 @@ public class ReverseProxyService {
             }
             ForwardAttemptResult attemptResult =
                     forwardOnce(properties, request, body, upstream, route.strategyId().externalName(),
-                            proxyPathSuffix);
+                            route.requestTimeout(), proxyPathSuffix);
             lastResponse = attemptResult.response();
             if (!attemptResult.retriable() || attempt == maxAttempts) {
                 return attemptResult.response();
@@ -287,6 +287,12 @@ public class ReverseProxyService {
         if (!candidateProperties.isEnabled()) {
             throw new IllegalStateException("loadbalancerpro.proxy.enabled must be true for runtime reload");
         }
+        if (!Objects.equals(
+                candidateProperties.getConnectTimeout(),
+                previousConfig.properties().getConnectTimeout())) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.connect-timeout requires application restart and cannot change by reload");
+        }
         return buildActiveConfig(
                 candidateProperties, nextGeneration.get(), previousConfig.routes());
     }
@@ -305,6 +311,8 @@ public class ReverseProxyService {
 
     private void validateRuntimeFields(ReverseProxyProperties properties,
                                        List<ReverseProxyRoutePlanner.ConfiguredRoute> configuredRoutes) {
+        positiveDuration(properties.getConnectTimeout(), "loadbalancerpro.proxy.connect-timeout");
+        positiveDuration(properties.getRequestTimeout(), "loadbalancerpro.proxy.request-timeout");
         if (properties.getMaxRequestBytes() <= 0) {
             throw new IllegalStateException("loadbalancerpro.proxy.max-request-bytes must be greater than 0");
         }
@@ -312,6 +320,9 @@ public class ReverseProxyService {
         normalizedRetryMethods(properties);
         normalizedRetryStatuses(properties);
         for (ReverseProxyRoutePlanner.ConfiguredRoute route : configuredRoutes) {
+            positiveDuration(
+                    route.requestTimeout(),
+                    "loadbalancerpro.proxy.routes." + route.name() + ".request-timeout");
             for (ReverseProxyProperties.Upstream upstream : route.targets()) {
                 validateUpstreamRuntimeFields(upstream);
             }
@@ -367,13 +378,13 @@ public class ReverseProxyService {
     }
 
     @SuppressWarnings("java/ssrf")
-    private HttpRequest buildOutboundRequest(ReverseProxyProperties properties,
-                                             HttpServletRequest request,
+    private HttpRequest buildOutboundRequest(HttpServletRequest request,
                                              byte[] body,
                                              UpstreamCandidate upstream,
+                                             Duration requestTimeout,
                                              String proxyPathSuffix) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(targetUri(request, upstream, proxyPathSuffix))
-                .timeout(properties.getRequestTimeout());
+                .timeout(requestTimeout);
         Collections.list(request.getHeaderNames()).forEach(headerName -> {
             if (isForwardableHeader(headerName)) {
                 Collections.list(request.getHeaders(headerName))
@@ -391,10 +402,12 @@ public class ReverseProxyService {
                                              byte[] body,
                                              UpstreamCandidate upstream,
                                              String strategyName,
+                                             Duration requestTimeout,
                                              String proxyPathSuffix) {
         String upstreamId = upstream.state().serverId();
         try {
-            HttpRequest outbound = buildOutboundRequest(properties, request, body, upstream, proxyPathSuffix);
+            HttpRequest outbound = buildOutboundRequest(
+                    request, body, upstream, requestTimeout, proxyPathSuffix);
             HttpResponse<byte[]> response = httpClient.send(outbound, HttpResponse.BodyHandlers.ofByteArray());
             metrics.recordForwarded(upstreamId, response.statusCode());
             HttpHeaders responseHeaders = forwardedResponseHeaders(response.headers().map());
@@ -838,6 +851,13 @@ public class ReverseProxyService {
         return value;
     }
 
+    private static Duration positiveDuration(Duration value, String fieldName) {
+        if (value == null || value.isZero() || value.isNegative()) {
+            throw new IllegalStateException(fieldName + " must be greater than zero");
+        }
+        return value;
+    }
+
     private static String safeValidationError(RuntimeException exception) {
         String message = exception.getMessage();
         if (message == null || message.isBlank()) {
@@ -854,6 +874,7 @@ public class ReverseProxyService {
         ReverseProxyProperties copy = new ReverseProxyProperties();
         copy.setEnabled(source.isEnabled());
         copy.setStrategy(source.getStrategy());
+        copy.setConnectTimeout(source.getConnectTimeout());
         copy.setRequestTimeout(source.getRequestTimeout());
         copy.setMaxRequestBytes(source.getMaxRequestBytes());
         copy.setPrivateNetworkValidation(copyPrivateNetworkValidation(source.getPrivateNetworkValidation()));
@@ -878,6 +899,7 @@ public class ReverseProxyService {
         }
         copy.setPathPrefix(source.getPathPrefix());
         copy.setStrategy(source.getStrategy());
+        copy.setRequestTimeout(source.getRequestTimeout());
         copy.setTargets(source.getTargets().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());

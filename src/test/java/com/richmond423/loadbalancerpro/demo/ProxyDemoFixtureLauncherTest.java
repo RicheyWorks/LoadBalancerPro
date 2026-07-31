@@ -13,9 +13,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -149,6 +151,53 @@ class ProxyDemoFixtureLauncherTest {
     }
 
     @Test
+    void adverseFixtureEndpointsProvideSlowBlackholeFlakyAndSseProofs() throws Exception {
+        int backendAPort = freePort();
+        int backendBPort = freePort();
+        ProxyDemoFixtureLauncher.Options options = new ProxyDemoFixtureLauncher.Options(
+                ProxyDemoFixtureLauncher.DemoMode.ROUND_ROBIN,
+                "127.0.0.1",
+                backendAPort,
+                backendBPort,
+                false);
+
+        try (ProxyDemoFixtureLauncher.DemoFixtureServers servers =
+                     ProxyDemoFixtureLauncher.startServers(options)) {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(1))
+                    .build();
+
+            long slowStarted = System.nanoTime();
+            HttpResponse<String> slow = get(client, servers.backendAUrl() + "/fixture/slow?millis=80");
+            long slowElapsedMillis = Duration.ofNanos(System.nanoTime() - slowStarted).toMillis();
+            assertEquals(200, slow.statusCode());
+            assertTrue(slow.body().contains("slow delayMillis=80"));
+            assertTrue(slowElapsedMillis >= 50, "slow fixture must delay its response");
+
+            HttpResponse<String> firstFlaky = get(client, servers.backendAUrl() + "/fixture/flaky");
+            HttpResponse<String> secondFlaky = get(client, servers.backendAUrl() + "/fixture/flaky");
+            assertEquals(503, firstFlaky.statusCode());
+            assertEquals(200, secondFlaky.statusCode());
+            assertTrue(secondFlaky.body().contains("attempt=2 success=true"));
+
+            HttpResponse<String> sse = get(client, servers.backendAUrl() + "/fixture/sse");
+            assertEquals(200, sse.statusCode());
+            assertEquals("text/event-stream; charset=utf-8",
+                    sse.headers().firstValue("Content-Type").orElseThrow());
+            assertTrue(sse.body().contains("event: fixture"));
+            assertTrue(sse.body().contains("data: backend-a-3"));
+
+            HttpRequest blackhole = HttpRequest.newBuilder(
+                            URI.create(servers.backendAUrl() + "/fixture/blackhole?millis=1000"))
+                    .timeout(Duration.ofMillis(100))
+                    .GET()
+                    .build();
+            assertThrows(HttpTimeoutException.class, () -> client.send(
+                    blackhole, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)));
+        }
+    }
+
+    @Test
     void printedInstructionsIncludeProfilesCurlStatusHeadersAndCleanup() throws Exception {
         int backendAPort = freePort();
         int backendBPort = freePort();
@@ -172,6 +221,10 @@ class ProxyDemoFixtureLauncherTest {
             assertTrue(instructions.contains("/api/proxy/status"));
             assertTrue(instructions.contains("X-LoadBalancerPro-Upstream"));
             assertTrue(instructions.contains("X-LoadBalancerPro-Strategy"));
+            assertTrue(instructions.contains("/fixture/slow?millis=250"));
+            assertTrue(instructions.contains("/fixture/blackhole?millis=5000"));
+            assertTrue(instructions.contains("/fixture/flaky"));
+            assertTrue(instructions.contains("/fixture/sse"));
             assertTrue(instructions.contains("Press Ctrl+C"));
             assertTrue(instructions.toLowerCase(Locale.ROOT).contains("no cloud"));
             assertTrue(instructions.toLowerCase(Locale.ROOT).contains("no production gateway"));

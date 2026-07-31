@@ -9575,3 +9575,8 @@ additions while retaining the explicit no-weakening prose.
 The first read-only new-file line-count command piped directly after a PowerShell `foreach` block, which Windows
 PowerShell rejected before reading either file. No inventory result is accepted. Correction: collect the loop output
 into an array before formatting it, as already established elsewhere in this slot.
+
+The L-2.5 product commit itself succeeded, but the trailing read-only display left `HEAD^{tree}` unquoted. Windows
+PowerShell transformed the brace expression and `git rev-parse` received an invalid extra token, so no tree value is
+accepted from that display. Correction: quote revision expressions containing braces, then independently verify the
+commit, parent, tree, and clean worktree before push.

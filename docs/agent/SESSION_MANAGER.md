@@ -11,8 +11,8 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 Timestamp: 2026-07-30T21:24:37-07:00
 
 Current slot/branch/PR: `L-2.5`; `codex/l-2-5-durability-honesty`; no PR yet; exact green-main base
-`11b23f530156cc01e4f4016a48f4051f70593697`; pre-product checkpoint
-`e1bfaca96749a21bb6266ba360f7a092462ab806`; status `LOCAL_GREEN`.
+`11b23f530156cc01e4f4016a48f4051f70593697`; product commit
+`e5244e83ee38061e6b4ce74d78439723e6a3ada8`; status `LOCAL_GREEN`.
 
 Candidate: controlled local create, rename, and delete boundaries synchronize affected parent directories when the
 provider exposes POSIX directory channels. Receipts distinguish synchronized, unsupported-local-filesystem, and
@@ -49,8 +49,8 @@ and blocking HIGH/CRITICAL Trivy remain mandatory. Unsupported providers, drive 
 survival, remote-filesystem semantics, multi-host/distributed durability, production readiness, throughput, and
 latency remain not proven.
 
-Blocker: none. Next: rerun the campaign documentation guard on this checkpoint, stage only the 30 intentional paths,
-commit and push, create the PR checkpoint, and require every exact-head remote gate before automatic merge.
+Blocker: none. Next: commit this concise post-product checkpoint, push the branch, create the PR checkpoint, and require
+every exact-head remote gate before automatic merge.
 
 ## Combined Build Plan Slot 20 Full-Local-Green Checkpoint
 

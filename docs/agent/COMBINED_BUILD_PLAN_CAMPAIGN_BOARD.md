@@ -17,7 +17,8 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `L-4.1` in merged [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519);
   final head `da0779b7feb48bfdcebb4a588e3da84a128a97a9`, merge
   `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`, exact-main CI `30625619790` and CodeQL `30625619540` green.
-- Active implementation slot: `L-4.2`; delete or repair the JavaFX GUI on
+- Active implementation slot: `L-4.2`; delete or repair the JavaFX GUI in
+  [PR #520](https://github.com/RicheyWorks/LoadBalancerPro/pull/520) on
   `codex/l-4-2-retire-javafx`, from exact green main
   `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`. The deletion path removes eight desktop-only Java files, both
   checked-in copies of the desktop message bundle, OpenJFX dependency/property, and stale packaging exclusions while
@@ -26,7 +27,8 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   effective dependency-tree audit are green. A packaged-content check caught and removed the duplicate resource copy;
   corrected product head `91fed46584156952520fc7dfab7347c5e65b64fc` then passed 3,076 clean full-suite tests,
   package/verify, dependency-tree, 138-component SBOM, 1,258-entry JAR audit, packaged proof, and loopback runtime
-  smoke. Local Docker is unavailable, so Docker runtime and blocking Trivy remain required remote gates.
+  smoke. Local Docker is unavailable, so exact-head CI, dependency review, CodeQL, Docker runtime, and blocking Trivy
+  remain required remote gates.
 - Next implementation slot after the active gate: `L-4.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

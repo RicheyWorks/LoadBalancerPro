@@ -6,6 +6,74 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T22:11:50-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first focused-count checkpoint patch matched the campaign board and JSON but used an
+inexact continuation line in `SESSION_MANAGER.md`; `apply_patch` rejected the whole patch without changing any file.
+The exact current checkpoint paragraph was inspected and the count/alias evidence is being patched with exact
+context.
+
+## Entry
+
+Date/time: 2026-07-30T22:09:34-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first output/source-alias hardening patch used stale prose context in
+`docs/REMEDIATION_REPORT_CLI.md`, so `apply_patch` rejected the entire multi-file patch without changing any file.
+The follow-up combined read used `rg` as the final PowerShell statement and returned exit 1 when one narrow prose
+pattern was absent, even though the requested source excerpts were printed; it was read-only. The current exact
+source and documentation lines are being used for smaller bounded patches.
+
+## Entry
+
+Date/time: 2026-07-30T21:57:11-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first 12-class L-4.1 expanded selector ran 142 tests and failed three assertions, with no
+errors or skips. Two JavaFX documentation guards still expected the removed interactive-launch prerequisite phrase
+and a matrix link that had lived only in the deleted run row. The bounded docs now retain the platform prerequisite
+as a caveat and link the no-supported-launch boundary explicitly. The inventory determinism test wrote its catalogs
+to fixed names in the shared parent of `@TempDir`; fail-closed overwrite semantics correctly refused a stale prior-run
+file. The test now derives fresh sibling names from the unique temp-directory name, preserving its intent without
+using `--force`. No product output was overwritten by the failed run.
+
+## Entry
+
+Date/time: 2026-07-30T21:56:08-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first JavaFX documentation patch used an inexact two-line launch-guidance context and
+`apply_patch` rejected the entire patch before changing any file. The exact current lines were inspected, and the same
+bounded documentation/test update is being applied with matching context. No partial edit occurred.
+
+## Entry
+
+Date/time: 2026-07-30T21:54:08-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: another read-only `Select-String` lookup treated the literal `put(` token as a regular expression
+and rejected the unmatched parenthesis. It did not alter files or process state. Literal source searches for this slot
+now use `-SimpleMatch`; the intended template assertion is also being made against the service's exact deterministic
+output rather than an assumed JSON field.
+
+## Entry
+
+Date/time: 2026-07-30T21:51:12-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: a read-only `Select-String` search passed `CliOptions(` as a regular expression without escaping
+the opening parenthesis, so PowerShell rejected the pattern before searching. It changed no state. The constructor
+inventory is being rerun with `-SimpleMatch`.
+
+## Entry
+
 Date/time: 2026-07-30T21:44:40-07:00
 
 Branch/PR: `main` after L-2.5 merge / #518

@@ -17,10 +17,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -141,6 +144,7 @@ public final class RemediationReportCli {
                 return result;
             }
             validateOptions(options);
+            requireReportOutputsAvailable(options);
             RemediationReportResponse response = responseFromInput(options);
             String rendered = render(response);
             EvidenceRedactionService.RedactionPlan redactionPlan = redactionPlan(options);
@@ -148,7 +152,7 @@ public final class RemediationReportCli {
             if (options.bundlePath().isPresent()) {
                 return writeBundle(options, response, redaction, out);
             }
-            writeOutput(redaction.renderedReport(), options.outputPath(), out);
+            writeOutput(redaction.renderedReport(), options.outputPath(), out, options.force(), "--output");
             writeRedactionSummaryIfRequested(options, redaction);
             Optional<ManifestWriteResult> manifestWrite = writeManifestIfRequested(options, response, redaction);
             appendReportAudit(options, response, redaction);
@@ -228,6 +232,12 @@ public final class RemediationReportCli {
     }
 
     private static Result writeInventory(CliOptions options, PrintStream out) throws IOException {
+        requireOutputsAvailable(
+                options.force(),
+                options.inventoryOutputPath()
+                        .map(path -> List.of(new OutputTarget(path, "--inventory-output")))
+                        .orElseGet(List::of),
+                List.of(new ProtectedPath(options.inventoryPath().get(), "--inventory")));
         EvidenceInventoryService service = new EvidenceInventoryService();
         EvidenceInventoryService.EvidenceCatalog catalog = service.inventory(
                 new EvidenceInventoryService.InventoryRequest(
@@ -237,12 +247,30 @@ public final class RemediationReportCli {
         String rendered = options.inventoryFormat() == EvidenceInventoryService.InventoryFormat.JSON
                 ? service.renderJson(catalog)
                 : service.renderMarkdown(catalog);
-        writeOutput(rendered, options.inventoryOutputPath(), out);
+        writeOutput(
+                rendered,
+                options.inventoryOutputPath(),
+                out,
+                options.force(),
+                "--inventory-output");
         int exitCode = options.failOnInvalid() && catalog.summary().failureCount() > 0 ? 2 : 0;
         return new Result(true, exitCode);
     }
 
     private static Result writeCatalogDiff(CatalogDiffOptions options, PrintStream out) throws IOException {
+        List<OutputTarget> outputTargets = options.policyPath().isPresent()
+                || options.policyTemplateName().isPresent()
+                ? options.policyOutputPath()
+                        .map(path -> List.of(new OutputTarget(path, "--policy-output")))
+                        .orElseGet(List::of)
+                : options.outputPath()
+                        .map(path -> List.of(new OutputTarget(path, "--diff-output")))
+                        .orElseGet(List::of);
+        List<ProtectedPath> protectedPaths = new ArrayList<>();
+        protectedPaths.add(new ProtectedPath(options.beforeCatalogPath(), "before catalog"));
+        protectedPaths.add(new ProtectedPath(options.afterCatalogPath(), "after catalog"));
+        options.policyPath().ifPresent(path -> protectedPaths.add(new ProtectedPath(path, "--policy")));
+        requireOutputsAvailable(options.force(), outputTargets, protectedPaths);
         EvidenceCatalogDiffService service = new EvidenceCatalogDiffService();
         EvidenceCatalogDiffService.EvidenceCatalogDiff diff = service.diff(
                 new EvidenceCatalogDiffService.DiffRequest(
@@ -266,7 +294,7 @@ public final class RemediationReportCli {
         String rendered = options.diffFormat() == EvidenceCatalogDiffService.DiffFormat.JSON
                 ? service.renderJson(diff)
                 : service.renderMarkdown(diff);
-        writeOutput(rendered, options.outputPath(), out);
+        writeOutput(rendered, options.outputPath(), out, options.force(), "--diff-output");
         int exitCode = options.failOnDrift() && diff.hasDrift() ? 2 : 0;
         return new Result(true, exitCode);
     }
@@ -281,7 +309,7 @@ public final class RemediationReportCli {
             String rendered = options.policyReportFormat() == EvidenceHandoffPolicyService.PolicyReportFormat.JSON
                     ? policyService.renderJson(evaluation)
                     : policyService.renderMarkdown(evaluation);
-            writeOutput(rendered, options.policyOutputPath(), out);
+            writeOutput(rendered, options.policyOutputPath(), out, options.force(), "--policy-output");
             int exitCode = options.failOnPolicyFail()
                     && evaluation.decision() == EvidenceHandoffPolicyService.PolicyDecision.FAIL ? 2 : 0;
             return new Result(true, exitCode);
@@ -298,7 +326,12 @@ public final class RemediationReportCli {
         if (exportTemplate.isPresent()) {
             String templateJson = service.templateJson(exportTemplate.get());
             Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--policy-output").map(Path::of);
-            writeOutput(templateJson, outputPath, out);
+            writeOutput(
+                    templateJson,
+                    outputPath,
+                    out,
+                    CatalogDiffOptions.hasFlag(args, "--force"),
+                    "--policy-output");
             return new Result(true, 0);
         }
         Optional<Path> validatePolicy = CatalogDiffOptions.optionValue(args, VALIDATE_POLICY_FLAG).map(Path::of);
@@ -350,6 +383,13 @@ public final class RemediationReportCli {
 
     private static Result runPolicyTrainingLabCommand(String[] args, PrintStream out) throws IOException {
         EvidencePolicyTrainingLabService service = new EvidencePolicyTrainingLabService();
+        boolean force = CatalogDiffOptions.hasFlag(args, "--force");
+        Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--training-lab-output").map(Path::of);
+        requireOutputsAvailable(
+                force,
+                outputPath
+                        .map(path -> List.of(new OutputTarget(path, "--training-lab-output")))
+                        .orElseGet(List::of));
         EvidencePolicyTrainingLabService.TrainingLabFormat format =
                 CatalogDiffOptions.optionValue(args, "--training-lab-format")
                         .map(EvidencePolicyTrainingLabService.TrainingLabFormat::parse)
@@ -357,14 +397,18 @@ public final class RemediationReportCli {
         EvidencePolicyTrainingLabService.TrainingLabRequest request =
                 new EvidencePolicyTrainingLabService.TrainingLabRequest(
                         CatalogDiffOptions.optionValue(args, "--training-lab-export-dir").map(Path::of),
-                        CatalogDiffOptions.hasFlag(args, "--force"),
+                        force,
                         CatalogDiffOptions.hasFlag(args, "--include-training-details"));
         EvidencePolicyTrainingLabService.TrainingLabResult result = service.run(request);
         String rendered = format == EvidencePolicyTrainingLabService.TrainingLabFormat.JSON
                 ? service.renderJson(result)
                 : service.renderMarkdown(result);
-        Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--training-lab-output").map(Path::of);
-        writeOutput(rendered, outputPath, out);
+        writeOutput(
+                rendered,
+                outputPath,
+                out,
+                force,
+                "--training-lab-output");
         boolean failOnMismatch = CatalogDiffOptions.hasFlag(args, "--fail-on-training-mismatch")
                 || !CatalogDiffOptions.hasFlag(args, "--no-fail-on-training-mismatch");
         return new Result(true, service.exitCode(result, failOnMismatch));
@@ -385,6 +429,14 @@ public final class RemediationReportCli {
         Optional<Path> answersPath = CatalogDiffOptions.optionValue(args, GRADE_TRAINING_SCORECARD_FLAG)
                 .map(Path::of);
         if (answersPath.isPresent()) {
+            boolean force = CatalogDiffOptions.hasFlag(args, "--force");
+            Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--scorecard-output").map(Path::of);
+            requireOutputsAvailable(
+                    force,
+                    outputPath
+                            .map(path -> List.of(new OutputTarget(path, "--scorecard-output")))
+                            .orElseGet(List::of),
+                    List.of(new ProtectedPath(answersPath.get(), GRADE_TRAINING_SCORECARD_FLAG)));
             Optional<Double> failOnScoreBelow = CatalogDiffOptions.optionValue(args, "--fail-on-score-below")
                     .map(RemediationReportCli::scoreThreshold);
             EvidenceTrainingScorecardService.ScorecardFormat format =
@@ -396,8 +448,12 @@ public final class RemediationReportCli {
             String rendered = format == EvidenceTrainingScorecardService.ScorecardFormat.JSON
                     ? service.renderJson(result)
                     : service.renderMarkdown(result);
-            Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--scorecard-output").map(Path::of);
-            writeOutput(rendered, outputPath, out);
+            writeOutput(
+                    rendered,
+                    outputPath,
+                    out,
+                    force,
+                    "--scorecard-output");
             return new Result(true, service.exitCode(result, failOnScoreBelow));
         }
         throw new IllegalArgumentException("training scorecard command is incomplete");
@@ -420,10 +476,25 @@ public final class RemediationReportCli {
             PrintStream out,
             EvidencePolicyExampleService service,
             String exampleName) throws IOException {
+        boolean force = CatalogDiffOptions.hasFlag(args, "--force");
+        Path outputDirectory = exampleOutputDirectory(args).toAbsolutePath().normalize();
+        Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--policy-output").map(Path::of);
+        List<OutputTarget> outputTargets = new ArrayList<>();
+        outputPath.ifPresent(path -> outputTargets.add(new OutputTarget(path, "--policy-output")));
+        outputTargets.add(new OutputTarget(
+                outputDirectory.resolve(EvidencePolicyExampleService.BEFORE_FILE),
+                "example before catalog"));
+        outputTargets.add(new OutputTarget(
+                outputDirectory.resolve(EvidencePolicyExampleService.AFTER_FILE),
+                "example after catalog"));
+        outputTargets.add(new OutputTarget(
+                outputDirectory.resolve(EvidencePolicyExampleService.EXPECTED_DECISION_FILE),
+                "example expected-decision metadata"));
+        requireOutputsAvailable(force, outputTargets);
         EvidencePolicyExampleService.ExportedPolicyExample exported = service.exportExample(
                 exampleName,
-                exampleOutputDirectory(args),
-                CatalogDiffOptions.hasFlag(args, "--force"));
+                outputDirectory,
+                force);
         EvidenceCatalogDiffService diffService = new EvidenceCatalogDiffService();
         EvidenceCatalogDiffService.EvidenceCatalogDiff diff = diffService.diff(
                 new EvidenceCatalogDiffService.DiffRequest(
@@ -445,8 +516,12 @@ public final class RemediationReportCli {
         String rendered = format == EvidenceHandoffPolicyService.PolicyReportFormat.JSON
                 ? renderWalkthroughJson(exported.example(), expected, evaluation, decisionMatches)
                 : renderWalkthroughMarkdown(exported.example(), expected, evaluation, decisionMatches);
-        Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--policy-output").map(Path::of);
-        writeOutput(rendered, outputPath, out);
+        writeOutput(
+                rendered,
+                outputPath,
+                out,
+                force,
+                "--policy-output");
         if (!decisionMatches) {
             return new Result(true, 2);
         }
@@ -545,6 +620,9 @@ public final class RemediationReportCli {
             RemediationReportResponse response,
             RedactionContext redaction,
             PrintStream out) throws IOException {
+        requireOutputsAvailable(
+                options.force(),
+                List.of(new OutputTarget(options.bundlePath().get(), "--bundle")));
         Path inputPath = options.inputPath()
                 .orElseThrow(() -> new IllegalArgumentException("--bundle requires --input <path>"));
         IncidentBundleService.BundleExportResult result = new IncidentBundleService().export(
@@ -558,7 +636,8 @@ public final class RemediationReportCli {
                         redaction.payload(),
                         options.generatedBy().orElse(null),
                         options.createdAt().orElse(null),
-                        appVersion()));
+                        appVersion(),
+                        options.force()));
         writeRedactionSummaryIfRequested(options, redaction);
         out.println("Incident bundle written: " + result.bundlePath());
         out.println("Incident bundle verification passed: " + result.bundlePath());
@@ -581,8 +660,10 @@ public final class RemediationReportCli {
         List<Path> manifestExtras = new ArrayList<>(options.manifestExtraPaths());
         if (redaction.enabled()) {
             manifestInputPath = redactedInputPath(outputPath);
-            Files.writeString(manifestInputPath, redaction.redactedInputJson().orElseThrow(),
-                    StandardCharsets.UTF_8);
+            writeStringOutput(
+                    manifestInputPath,
+                    redaction.redactedInputJson().orElseThrow(),
+                    options.force());
             options.redactionSummaryPath().ifPresent(manifestExtras::add);
         }
         ReportChecksumManifestService manifestService = new ReportChecksumManifestService();
@@ -600,7 +681,7 @@ public final class RemediationReportCli {
         if (redaction.enabled()) {
             manifestJson = redaction.plan().redactWithoutCounting(manifestJson);
         }
-        Files.writeString(options.manifestPath().get(), manifestJson, StandardCharsets.UTF_8);
+        writeStringOutput(options.manifestPath().get(), manifestJson, options.force());
         return Optional.of(new ManifestWriteResult(
                 options.manifestPath().get(),
                 manifestInputPath,
@@ -613,8 +694,10 @@ public final class RemediationReportCli {
         if (options.redactionSummaryPath().isEmpty()) {
             return;
         }
-        Files.writeString(options.redactionSummaryPath().get(), redaction.redactionSummaryJson().orElseThrow(),
-                StandardCharsets.UTF_8);
+        writeStringOutput(
+                options.redactionSummaryPath().get(),
+                redaction.redactionSummaryJson().orElseThrow(),
+                options.force());
     }
 
     private static void appendReportAudit(
@@ -772,12 +855,102 @@ public final class RemediationReportCli {
                 + System.lineSeparator();
     }
 
-    private static void writeOutput(String rendered, Optional<Path> outputPath, PrintStream out) throws IOException {
+    private static void writeOutput(
+            String rendered,
+            Optional<Path> outputPath,
+            PrintStream out,
+            boolean force,
+            String option) throws IOException {
         if (outputPath.isPresent()) {
-            Files.writeString(outputPath.get(), rendered, StandardCharsets.UTF_8);
+            requireOutputsAvailable(force, List.of(new OutputTarget(outputPath.get(), option)));
+            writeStringOutput(outputPath.get(), rendered, force);
             return;
         }
         out.print(rendered);
+    }
+
+    private static void writeStringOutput(Path outputPath, String content, boolean force) throws IOException {
+        if (force) {
+            Files.writeString(outputPath, content, StandardCharsets.UTF_8);
+            return;
+        }
+        Files.writeString(
+                outputPath,
+                content,
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE_NEW,
+                StandardOpenOption.WRITE);
+    }
+
+    private static void requireReportOutputsAvailable(CliOptions options) throws IOException {
+        List<OutputTarget> targets = new ArrayList<>();
+        options.bundlePath().ifPresent(path -> targets.add(new OutputTarget(path, "--bundle")));
+        options.outputPath().ifPresent(path -> targets.add(new OutputTarget(path, "--output")));
+        options.manifestPath().ifPresent(path -> targets.add(new OutputTarget(path, "--manifest")));
+        options.redactionSummaryPath()
+                .ifPresent(path -> targets.add(new OutputTarget(path, "--redact-output-summary")));
+        if (options.redactionRequested()
+                && options.manifestPath().isPresent()
+                && options.outputPath().isPresent()) {
+            targets.add(new OutputTarget(redactedInputPath(options.outputPath().get()), "redacted manifest input"));
+        }
+        List<ProtectedPath> protectedPaths = new ArrayList<>();
+        options.inputPath().ifPresent(path -> protectedPaths.add(new ProtectedPath(path, "--input")));
+        options.manifestExtraPaths()
+                .forEach(path -> protectedPaths.add(new ProtectedPath(path, "--manifest-extra")));
+        options.redactionFilePaths()
+                .forEach(path -> protectedPaths.add(new ProtectedPath(path, "--redact-file")));
+        requireOutputsAvailable(options.force(), targets, protectedPaths);
+    }
+
+    private static void requireOutputsAvailable(boolean force, List<OutputTarget> outputTargets)
+            throws IOException {
+        requireOutputsAvailable(force, outputTargets, List.of());
+    }
+
+    private static void requireOutputsAvailable(
+            boolean force,
+            List<OutputTarget> outputTargets,
+            List<ProtectedPath> protectedPaths) throws IOException {
+        Map<Path, String> normalizedTargets = new LinkedHashMap<>();
+        for (OutputTarget target : outputTargets) {
+            Path normalized = target.path().toAbsolutePath().normalize();
+            String priorOption = normalizedTargets.putIfAbsent(normalized, target.option());
+            if (priorOption != null) {
+                throw new IllegalArgumentException(
+                        priorOption + " and " + target.option() + " resolve to the same output path: " + target.path());
+            }
+
+            for (ProtectedPath protectedPath : protectedPaths) {
+                Path normalizedProtected = protectedPath.path().toAbsolutePath().normalize();
+                boolean samePath = normalized.equals(normalizedProtected);
+                boolean sameExistingFile = !samePath
+                        && Files.exists(normalized, LinkOption.NOFOLLOW_LINKS)
+                        && Files.exists(normalizedProtected, LinkOption.NOFOLLOW_LINKS)
+                        && Files.isSameFile(normalized, normalizedProtected);
+                if (samePath || sameExistingFile) {
+                    throw new IllegalArgumentException(
+                            target.option() + " refuses to replace " + protectedPath.role()
+                                    + ": " + target.path());
+                }
+            }
+
+            if (!Files.exists(normalized, LinkOption.NOFOLLOW_LINKS)) {
+                continue;
+            }
+            if (Files.isSymbolicLink(normalized)) {
+                throw new IllegalArgumentException(
+                        target.option() + " refuses to replace a symbolic-link output: " + target.path());
+            }
+            if (!Files.isRegularFile(normalized, LinkOption.NOFOLLOW_LINKS)) {
+                throw new IllegalArgumentException(
+                        target.option() + " output must be a regular file: " + target.path());
+            }
+            if (!force) {
+                throw new IllegalArgumentException(
+                        target.option() + " output already exists; use --force to replace it: " + target.path());
+            }
+        }
     }
 
     private static EvidenceRedactionService.RedactionPlan redactionPlan(CliOptions options) throws IOException {
@@ -909,6 +1082,8 @@ public final class RemediationReportCli {
         err.println("Training scorecards: --list-training-scorecards | --print-training-scorecard <name> | "
                 + "--grade-training-scorecard <answers.json> [--scorecard-format markdown|json] "
                 + "[--scorecard-output <path>] [--fail-on-score-below <percent>]");
+        err.println("Output replacement: existing regular output files are preserved unless --force is supplied; "
+                + "symbolic-link and non-file outputs are always rejected.");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -979,7 +1154,8 @@ public final class RemediationReportCli {
             Optional<String> policyTemplateName,
             EvidenceHandoffPolicyService.PolicyReportFormat policyReportFormat,
             Optional<Path> policyOutputPath,
-            boolean failOnPolicyFail) {
+            boolean failOnPolicyFail,
+            boolean force) {
 
         private CatalogDiffOptions {
             Objects.requireNonNull(beforeCatalogPath, "before catalog path cannot be null");
@@ -1022,7 +1198,8 @@ public final class RemediationReportCli {
                     policyTemplate,
                     policyFormat,
                     policyOutput,
-                    hasFlag(args, "--fail-on-policy-fail"));
+                    hasFlag(args, "--fail-on-policy-fail"),
+                    hasFlag(args, "--force"));
         }
 
         private static List<Path> diffInventoryPaths(String[] args) {
@@ -1133,7 +1310,8 @@ public final class RemediationReportCli {
             Optional<Path> inventoryOutputPath,
             boolean verifyInventory,
             boolean includeInventoryHashes,
-            boolean failOnInvalid) {
+            boolean failOnInvalid,
+            boolean force) {
 
         CliOptions {
             inputPath = inputPath == null ? Optional.empty() : inputPath;
@@ -1183,7 +1361,8 @@ public final class RemediationReportCli {
                         inventory, inventoryFormat, inventoryOutput,
                         hasFlag(args, "--verify-inventory"),
                         hasFlag(args, "--include-hashes"),
-                        hasFlag(args, "--fail-on-invalid"));
+                        hasFlag(args, "--fail-on-invalid"),
+                        hasFlag(args, "--force"));
             }
             if (verifyAuditLog.isPresent()) {
                 return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
@@ -1191,7 +1370,8 @@ public final class RemediationReportCli {
                         Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                         List.of(), List.of(), Optional.empty(), Optional.empty(), Optional.empty(),
                         verifyAuditLog, Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.empty(), null, Optional.empty(), false, false, false);
+                        Optional.empty(), null, Optional.empty(), false, false, false,
+                        hasFlag(args, "--force"));
             }
             Optional<Path> verifyManifest = optionValue(args, VERIFY_MANIFEST_FLAG).map(Path::of);
             if (verifyManifest.isPresent()) {
@@ -1200,7 +1380,8 @@ public final class RemediationReportCli {
                         Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty(),
                         auditLog, Optional.empty(), auditActor, auditActionId, auditNote,
-                        Optional.empty(), null, Optional.empty(), false, false, false);
+                        Optional.empty(), null, Optional.empty(), false, false, false,
+                        hasFlag(args, "--force"));
             }
             Optional<Path> verifyBundle = optionValue(args, VERIFY_BUNDLE_FLAG).map(Path::of);
             if (verifyBundle.isPresent()) {
@@ -1209,7 +1390,8 @@ public final class RemediationReportCli {
                         Optional.empty(), verifyBundle,
                         Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty(),
                         auditLog, Optional.empty(), auditActor, auditActionId, auditNote,
-                        Optional.empty(), null, Optional.empty(), false, false, false);
+                        Optional.empty(), null, Optional.empty(), false, false, false,
+                        hasFlag(args, "--force"));
             }
             Path input = remediationReportPath(args)
                     .map(Path::of)
@@ -1243,7 +1425,8 @@ public final class RemediationReportCli {
                     Optional.empty(), bundle, Optional.empty(), generatedBy, createdAt, redactions, redactionFiles,
                     redactionLabel, redactionSummary, auditLog, Optional.empty(),
                     auditActor, auditActionId, auditNote,
-                    Optional.empty(), null, Optional.empty(), false, false, false);
+                    Optional.empty(), null, Optional.empty(), false, false, false,
+                    hasFlag(args, "--force"));
         }
 
         private boolean redactionRequested() {
@@ -1313,6 +1496,20 @@ public final class RemediationReportCli {
                 case "json" -> RemediationReportFormat.JSON;
                 default -> throw new IllegalArgumentException("format must be markdown or json");
             };
+        }
+    }
+
+    private record OutputTarget(Path path, String option) {
+        private OutputTarget {
+            Objects.requireNonNull(path, "output path cannot be null");
+            Objects.requireNonNull(option, "output option cannot be null");
+        }
+    }
+
+    private record ProtectedPath(Path path, String role) {
+        private ProtectedPath {
+            Objects.requireNonNull(path, "protected path cannot be null");
+            Objects.requireNonNull(role, "protected path role cannot be null");
         }
     }
 }

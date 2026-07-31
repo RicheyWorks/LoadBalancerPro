@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -124,16 +125,28 @@ final class EvidencePolicyExampleService {
         Objects.requireNonNull(outputDirectory, "example output directory cannot be null");
         PolicyExample example = requireExample(name);
         Path normalizedDirectory = outputDirectory.toAbsolutePath().normalize();
+        if (Files.exists(normalizedDirectory, LinkOption.NOFOLLOW_LINKS)
+                && (Files.isSymbolicLink(normalizedDirectory)
+                || !Files.isDirectory(normalizedDirectory, LinkOption.NOFOLLOW_LINKS))) {
+            throw new IllegalArgumentException(
+                    "example output directory must be a non-symbolic-link directory: " + outputDirectory);
+        }
         Files.createDirectories(normalizedDirectory);
-        if (!force) {
-            for (String fileName : List.of(BEFORE_FILE, AFTER_FILE, EXPECTED_DECISION_FILE)) {
-                Path target = normalizedDirectory.resolve(fileName).normalize();
-                if (!target.getParent().equals(normalizedDirectory)) {
-                    throw new IllegalArgumentException("example file cannot escape output directory: " + fileName);
-                }
-                if (Files.exists(target)) {
-                    throw new IllegalArgumentException("target file already exists: " + target);
-                }
+        for (String fileName : List.of(BEFORE_FILE, AFTER_FILE, EXPECTED_DECISION_FILE)) {
+            Path target = normalizedDirectory.resolve(fileName).normalize();
+            if (!target.getParent().equals(normalizedDirectory)) {
+                throw new IllegalArgumentException("example file cannot escape output directory: " + fileName);
+            }
+            if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
+                continue;
+            }
+            if (Files.isSymbolicLink(target)
+                    || !Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS)) {
+                throw new IllegalArgumentException(
+                        "target must be a non-symbolic-link regular file: " + target);
+            }
+            if (!force) {
+                throw new IllegalArgumentException("target file already exists; use --force to replace it: " + target);
             }
         }
 
@@ -159,11 +172,17 @@ final class EvidencePolicyExampleService {
         if (!target.getParent().equals(outputDirectory)) {
             throw new IllegalArgumentException("example file cannot escape output directory: " + fileName);
         }
-        if (Files.exists(target) && !force) {
-            throw new IllegalArgumentException("target file already exists: " + target);
-        }
         try (InputStream input = resourceStream(example.resourceDirectory() + fileName)) {
-            Files.write(target, input.readAllBytes());
+            byte[] content = input.readAllBytes();
+            if (force) {
+                Files.write(target, content);
+            } else {
+                Files.write(
+                        target,
+                        content,
+                        java.nio.file.StandardOpenOption.CREATE_NEW,
+                        java.nio.file.StandardOpenOption.WRITE);
+            }
         }
         return target;
     }

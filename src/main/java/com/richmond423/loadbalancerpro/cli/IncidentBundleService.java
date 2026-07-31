@@ -111,7 +111,7 @@ final class IncidentBundleService {
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            writeZip(bundlePath, entries);
+            writeZip(bundlePath, entries, request.force());
 
             BundleVerificationResult bundleVerification = verify(bundlePath);
             if (!bundleVerification.verified()) {
@@ -155,12 +155,21 @@ final class IncidentBundleService {
         return new BundleVerificationResult(verified, verification.entries(), List.copyOf(errors));
     }
 
-    private static void writeZip(Path bundlePath, LinkedHashMap<String, byte[]> entries) throws IOException {
+    private static void writeZip(
+            Path bundlePath,
+            LinkedHashMap<String, byte[]> entries,
+            boolean force) throws IOException {
+        StandardOpenOption[] options = force
+                ? new StandardOpenOption[]{
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING,
+                        StandardOpenOption.WRITE}
+                : new StandardOpenOption[]{
+                        StandardOpenOption.CREATE_NEW,
+                        StandardOpenOption.WRITE};
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(
                 bundlePath,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE))) {
+                options))) {
             for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
                 ZipEntry zipEntry = new ZipEntry(entry.getKey());
                 zipEntry.setLastModifiedTime(FIXED_ZIP_TIME);
@@ -300,7 +309,8 @@ final class IncidentBundleService {
             RemediationReportPayload payload,
             String generatedBy,
             String createdAt,
-            String appVersion) {
+            String appVersion,
+            boolean force) {
     }
 
     record BundleExportResult(

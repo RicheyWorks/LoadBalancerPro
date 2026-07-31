@@ -6,6 +6,7 @@ import com.richmond423.loadbalancerpro.cli.EnterpriseLabSupervisorCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabWorkflowCommand;
 import com.richmond423.loadbalancerpro.cli.LaseDemoCommand;
 import com.richmond423.loadbalancerpro.cli.LaseReplayCommand;
+import com.richmond423.loadbalancerpro.cli.RemediationReportCli;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -19,6 +20,14 @@ public class LoadBalancerApiApplication {
             return;
         }
         if (!shouldStartApi(args)) {
+            RemediationReportCli.Result reportResult =
+                    RemediationReportCli.runIfRequested(args, System.out, System.err);
+            if (reportResult.requested()) {
+                if (reportResult.exitCode() != 0) {
+                    System.exit(reportResult.exitCode());
+                }
+                return;
+            }
             EnterpriseLabStorageRepairCommand.Result repairResult =
                     EnterpriseLabStorageRepairCommand.runIfRequested(
                             args, System.out, System.err);
@@ -71,6 +80,7 @@ public class LoadBalancerApiApplication {
 
     static boolean shouldStartApi(String[] args) {
         return !isVersionRequested(args)
+                && !RemediationReportCli.isRequested(args)
                 && !EnterpriseLabStorageRepairCommand.isRequested(args)
                 && !EnterpriseLabSupervisorCommand.isRequested(args)
                 && !AdaptiveRoutingExperimentCommand.isRequested(args)

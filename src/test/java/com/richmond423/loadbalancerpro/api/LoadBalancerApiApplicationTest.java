@@ -22,6 +22,14 @@ class LoadBalancerApiApplicationTest {
                         "--enterprise-lab-storage-repair-data-root=C:\\bounded-root",
                         "--enterprise-lab-storage-repair-store=application-ledger"
                 }));
+        assertFalse(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--remediation-report", "--input", "saved-evaluation.json"}));
+        assertFalse(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--bundle", "incident-bundle.zip", "--input", "saved-evaluation.json"}));
+        assertFalse(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--inventory", "incident-evidence"}));
+        assertFalse(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--list-policy-templates"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--version"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{"--server.port=18080"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{}));

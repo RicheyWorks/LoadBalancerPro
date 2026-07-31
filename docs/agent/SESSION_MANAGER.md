@@ -6,6 +6,46 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 21 Focused-Green Checkpoint
+
+Timestamp: 2026-07-30T22:06:01-07:00
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; exact green-main base
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; pre-product checkpoint
+`200a73b00ecdd0f74e5985f88c483fbe0b897068`; status `IN_PROGRESS`.
+
+Decision/implementation: retire the synthetic interactive menu instead of preserving a second local simulator/control
+surface. `LoadBalancerCLI` is now a small fail-closed compatibility launcher for the retained offline
+`RemediationReportCli` commands and version output. The prompt/config/animation/action and Java-serialization undo
+helpers are deleted, so the compatibility path has no `System.in`, monitor, `CloudManager`, JavaFX, deserialization, or
+undo-file behavior. The Spring Boot entry point now recognizes the retained evidence/report commands and skips API
+startup for them.
+
+File-producing report, manifest, redacted-input, redaction-summary, bundle, inventory, diff, policy, walkthrough,
+training-lab, scorecard, and packaged-example paths preflight every planned target. Existing regular files require
+explicit `--force`; symbolic links and non-file targets remain rejected. Non-force writes use `CREATE_NEW` at the
+actual output boundary so a preflight race cannot silently truncate an operator file. Multi-output report,
+walkthrough, and training operations preflight before their first write. Checksum-chained `--audit-log` remains an
+intentional append-only path and is never truncated by this policy. `--force` cannot make a file-producing command
+replace one of its own source inputs.
+
+Focused verification: the final 14-report selector passed 164 tests with zero failures, errors, or skips. It covers the
+primary/compatibility entry points, all retained evidence CLI families, report/bundle/manifest overwrite refusal and
+explicit replacement, no-partial-output preflight, the retired-source guard, JavaFX/operator docs, release-version
+alignment, and the two current LASE inventory documents. Production and test compilation pass; `git diff --check` and
+the current source/reference/security scan are clean.
+
+Scope/boundaries: current changes are limited to the two CLI entry points, retained local evidence-output mechanics,
+retirement of five interactive-only helpers and their obsolete prompt test, focused tests, six operator/current-state
+documents, and campaign records. No dependency, Maven, workflow, Docker/Compose, endpoint contract, configuration
+default, credential, external/cloud/tenant target, security suppression/allowlist, or live mutation change is present.
+The separate JavaFX implementation/dependency decision remains L-4.2. Offline checksums are not signatures or identity
+proof; no production readiness, live-cloud validation, performance, or broader automation is claimed.
+
+Blocker: none. Next: freeze the intentional product diff, run the campaign guard and full clean suite, package/verify,
+inspect the SBOM/JAR, execute packaged-JAR report and overwrite smokes plus applicable runtime proofs, then complete the
+final diff review before PR creation.
+
 ## Combined Build Plan Slot 20 Main-Green / Slot 21 Start
 
 Timestamp: 2026-07-30T21:47:38-07:00

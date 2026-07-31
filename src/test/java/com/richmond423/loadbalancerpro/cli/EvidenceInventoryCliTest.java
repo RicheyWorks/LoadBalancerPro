@@ -123,8 +123,8 @@ class EvidenceInventoryCliTest {
         Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
         Path report = tempDir.resolve("incident-report.md");
         assertEquals(0, runCli("--input", input.toString(), "--output", report.toString()).result().exitCode());
-        Path firstCatalog = tempDir.getParent().resolve("first-inventory.md");
-        Path secondCatalog = tempDir.getParent().resolve("second-inventory.md");
+        Path firstCatalog = tempDir.getParent().resolve(tempDir.getFileName() + "-first-inventory.md");
+        Path secondCatalog = tempDir.getParent().resolve(tempDir.getFileName() + "-second-inventory.md");
 
         CapturedRun first = runCli("--inventory", tempDir.toString(), "--inventory-output", firstCatalog.toString());
         CapturedRun second = runCli("--inventory", tempDir.toString(), "--inventory-output", secondCatalog.toString());

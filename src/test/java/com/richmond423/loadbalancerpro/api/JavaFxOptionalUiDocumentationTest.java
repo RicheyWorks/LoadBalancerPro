@@ -53,9 +53,11 @@ class JavaFxOptionalUiDocumentationTest {
         assertTrue(doc.contains("com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication"));
         assertTrue(doc.contains("com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher"));
         assertTrue(doc.contains("LoadBalancerGUI"));
-        assertTrue(doc.contains("mvn -q exec:java"));
-        assertTrue(doc.contains("com.richmond423.loadbalancerpro.cli.LoadBalancerCLI"));
-        assertTrue(doc.contains("interactive `Launch GUI` option"));
+        assertTrue(doc.contains("former synthetic interactive CLI"));
+        assertTrue(doc.contains("no supported operator CLI path launches JavaFX"));
+        assertTrue(doc.contains("pending the separate delete-or-repair decision"));
+        assertFalse(doc.contains("com.richmond423.loadbalancerpro.cli.LoadBalancerCLI"));
+        assertFalse(doc.contains("then choose `15. Launch GUI`"));
     }
 
     @Test

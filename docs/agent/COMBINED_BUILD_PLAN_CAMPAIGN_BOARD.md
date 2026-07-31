@@ -18,11 +18,13 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   final head `c83cd12a76cf3ef67ae24c620a8fbfb1000cb5a0`, merge
   `1c1d6107e65b99075f39472b08f4c274b3272d68`, exact-main CI `30591199330` and CodeQL `30591199322` green.
 - Active implementation slot: `L-2.3`; make single-host takeover honor the held OS lock on
-  `codex/l-2-3-os-lock-aware-takeover` from exact green main
+  `codex/l-2-3-os-lock-aware-takeover` in [PR #516](https://github.com/RicheyWorks/LoadBalancerPro/pull/516) from exact
+  green main
   `1c1d6107e65b99075f39472b08f4c274b3272d68`. The default OS-lock-authoritative path, explicit lease-guarded mode,
   immediate separate-process restart proof, 3,070-test full suite, package/verify/SBOM, ownership and independent-
-  supervisor packaged proofs, and workflow smoke are locally green. PR publication and exact-head remote gates are
-  pending.
+  supervisor packaged proofs, and workflow smoke are locally green. Product head
+  `218be6ab4e5891e1bf28c0b6eee1192f15afd2a6` is published; the final campaign-checkpoint head and its exact-head remote
+  gates are pending.
 - Next implementation slot after the active gate: `L-2.4`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

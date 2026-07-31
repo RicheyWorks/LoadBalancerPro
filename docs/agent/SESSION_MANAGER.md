@@ -6,6 +6,27 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 18 PR-Creation Checkpoint
+
+Timestamp: 2026-07-30T17:23:17-07:00
+
+Current slot/branch/PR: `L-2.3`; `codex/l-2-3-os-lock-aware-takeover`;
+[#516](https://github.com/RicheyWorks/LoadBalancerPro/pull/516); product head
+`218be6ab4e5891e1bf28c0b6eee1192f15afd2a6`; base
+`1c1d6107e65b99075f39472b08f4c274b3272d68`; status `PR_OPEN`.
+
+The exact 17-file locally green candidate was committed and pushed. At PR creation, GitHub reported the PR mergeable
+but blocked pending checks; push/PR CI and dependency review were in progress and CodeQL was queued. No remote result is
+accepted until this checkpoint is committed and pushed as the new final head.
+
+Scope and verification remain exactly as recorded in the local-green checkpoint: default single-host pre-expiry
+takeover under the validated exclusive OS lock, explicit lease-guarded opt-in, live-holder exclusion, immediate packaged
+restart proofs, 3,070-test full suite, package/verify/SBOM/artifact/workflow evidence, and no unrelated behavior or
+security-gate change.
+
+Blocker: none. Next: validate this campaign-only checkpoint, commit and push it, then require all remote checks against
+the resulting exact head before complete-diff self-review and automatic merge.
+
 ## Combined Build Plan Slot 18 Local-Green Candidate
 
 Timestamp: 2026-07-30T17:21:11-07:00

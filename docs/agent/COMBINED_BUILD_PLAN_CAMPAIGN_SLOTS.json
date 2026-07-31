@@ -253,7 +253,7 @@
       "dependencies": ["L-2.2"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "On codex/l-2-3-os-lock-aware-takeover from exact green main 1c1d6107e65b99075f39472b08f4c274b3272d68, the default validated exclusive-OS-lock path now takes over an unexpired prior owner through the existing fenced reconciliation flow, while live lock holders remain excluded. The exact multi-host-lease-guarded opt-in preserves unexpired-lease refusal without claiming distributed or network-filesystem safety. Immediate separate-process restart, focused and 3,070-test full suites, package/verify/SBOM, ownership and independent-supervisor packaged proofs, and workflow smoke are locally green; PR publication and exact-head remote gates are pending."
+      "currentState": "PR #516 product head 218be6ab4e5891e1bf28c0b6eee1192f15afd2a6 is published from exact green main 1c1d6107e65b99075f39472b08f4c274b3272d68. The default validated exclusive-OS-lock path now takes over an unexpired prior owner through the existing fenced reconciliation flow, while live lock holders remain excluded. The exact multi-host-lease-guarded opt-in preserves unexpired-lease refusal without claiming distributed or network-filesystem safety. Immediate separate-process restart, focused and 3,070-test full suites, package/verify/SBOM, ownership and independent-supervisor packaged proofs, and workflow smoke are locally green; the final campaign-checkpoint head and its exact-head remote gates are pending."
     },
     {
       "ordinal": 19,

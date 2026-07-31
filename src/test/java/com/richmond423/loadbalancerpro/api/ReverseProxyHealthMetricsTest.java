@@ -13,6 +13,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,6 +30,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,8 +48,10 @@ class ReverseProxyHealthMetricsTest {
         registry.add("loadbalancerpro.proxy.strategy", () -> "ROUND_ROBIN");
         registry.add("loadbalancerpro.proxy.health-check.enabled", () -> "true");
         registry.add("loadbalancerpro.proxy.health-check.path", () -> "/health");
-        registry.add("loadbalancerpro.proxy.health-check.interval", () -> "0s");
+        registry.add("loadbalancerpro.proxy.health-check.interval", () -> "50ms");
         registry.add("loadbalancerpro.proxy.health-check.timeout", () -> "1s");
+        registry.add("loadbalancerpro.proxy.health-check.healthy-threshold", () -> "1");
+        registry.add("loadbalancerpro.proxy.health-check.unhealthy-threshold", () -> "1");
         registry.add("loadbalancerpro.proxy.upstreams[0].id", () -> "backend-a");
         registry.add("loadbalancerpro.proxy.upstreams[0].url", HEALTHY_BACKEND::baseUrl);
         registry.add("loadbalancerpro.proxy.upstreams[0].healthy", () -> "true");
@@ -65,26 +70,27 @@ class ReverseProxyHealthMetricsTest {
     void activeHealthChecksSkipFailingBackendAndStatusReportsCounters() throws Exception {
         try (MockedConstruction<CloudManager> mockedCloudManager =
                      Mockito.mockConstruction(CloudManager.class)) {
-            mockMvc.perform(get("/api/proxy/status"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.proxyEnabled").value(true))
-                    .andExpect(jsonPath("$.healthCheck.enabled").value(true))
-                    .andExpect(jsonPath("$.healthCheck.path").value("/health"))
-                    .andExpect(jsonPath("$.upstreams[0].id").value("backend-a"))
-                    .andExpect(jsonPath("$.upstreams[0].effectiveHealthy").value(true))
-                    .andExpect(jsonPath("$.upstreams[0].lastProbeStatusCode").value(200))
-                    .andExpect(jsonPath("$.upstreams[1].id").value("backend-b"))
-                    .andExpect(jsonPath("$.upstreams[1].configuredHealthy").value(true))
-                    .andExpect(jsonPath("$.upstreams[1].effectiveHealthy").value(false))
-                    .andExpect(jsonPath("$.upstreams[1].lastProbeStatusCode").value(500))
-                    .andExpect(jsonPath("$.upstreams[1].healthSource").value("ACTIVE_PROBE"))
-                    .andExpect(jsonPath("$.observability.routeCount").value(1))
-                    .andExpect(jsonPath("$.observability.backendTargetCount").value(2))
-                    .andExpect(jsonPath("$.observability.effectiveHealthyBackendCount").value(1))
-                    .andExpect(jsonPath("$.observability.effectiveUnhealthyBackendCount").value(1))
-                    .andExpect(jsonPath("$.observability.cooldownActiveBackendCount").value(0))
-                    .andExpect(jsonPath("$.metrics.totalForwarded").value(0))
-                    .andExpect(jsonPath("$.metrics.totalFailures").value(0));
+            awaitStatus(
+                    jsonPath("$.proxyEnabled").value(true),
+                    jsonPath("$.healthCheck.enabled").value(true),
+                    jsonPath("$.healthCheck.path").value("/health"),
+                    jsonPath("$.healthCheck.healthyThreshold").value(1),
+                    jsonPath("$.healthCheck.unhealthyThreshold").value(1),
+                    jsonPath("$.upstreams[0].id").value("backend-a"),
+                    jsonPath("$.upstreams[0].effectiveHealthy").value(true),
+                    jsonPath("$.upstreams[0].lastProbeStatusCode").value(200),
+                    jsonPath("$.upstreams[1].id").value("backend-b"),
+                    jsonPath("$.upstreams[1].configuredHealthy").value(true),
+                    jsonPath("$.upstreams[1].effectiveHealthy").value(false),
+                    jsonPath("$.upstreams[1].lastProbeStatusCode").value(500),
+                    jsonPath("$.upstreams[1].healthSource").value("ACTIVE_PROBE"),
+                    jsonPath("$.observability.routeCount").value(1),
+                    jsonPath("$.observability.backendTargetCount").value(2),
+                    jsonPath("$.observability.effectiveHealthyBackendCount").value(1),
+                    jsonPath("$.observability.effectiveUnhealthyBackendCount").value(1),
+                    jsonPath("$.observability.cooldownActiveBackendCount").value(0),
+                    jsonPath("$.metrics.totalForwarded").value(0),
+                    jsonPath("$.metrics.totalFailures").value(0));
 
             mockMvc.perform(get("/proxy/live?step=one"))
                     .andExpect(status().isOk())
@@ -111,6 +117,25 @@ class ReverseProxyHealthMetricsTest {
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Proxy health checks and metrics must not construct CloudManager or enter cloud paths.");
         }
+    }
+
+    private void awaitStatus(ResultMatcher... matchers) throws Exception {
+        long deadline = System.nanoTime() + Duration.ofSeconds(3).toNanos();
+        AssertionError lastFailure = null;
+        do {
+            try {
+                ResultActions result = mockMvc.perform(get("/api/proxy/status"))
+                        .andExpect(status().isOk());
+                for (ResultMatcher matcher : matchers) {
+                    result.andExpect(matcher);
+                }
+                return;
+            } catch (AssertionError failure) {
+                lastFailure = failure;
+                Thread.sleep(20);
+            }
+        } while (System.nanoTime() < deadline);
+        throw lastFailure;
     }
 
     private static final class TestUpstream {

@@ -318,6 +318,8 @@ public class ReverseProxyProperties {
         private String path = "/health";
         private Duration timeout = Duration.ofSeconds(1);
         private Duration interval = Duration.ofSeconds(30);
+        private int healthyThreshold = 2;
+        private int unhealthyThreshold = 3;
 
         public boolean isEnabled() {
             return enabled;
@@ -349,6 +351,22 @@ public class ReverseProxyProperties {
 
         public void setInterval(Duration interval) {
             this.interval = interval == null ? Duration.ofSeconds(30) : interval;
+        }
+
+        public int getHealthyThreshold() {
+            return healthyThreshold;
+        }
+
+        public void setHealthyThreshold(int healthyThreshold) {
+            this.healthyThreshold = healthyThreshold;
+        }
+
+        public int getUnhealthyThreshold() {
+            return unhealthyThreshold;
+        }
+
+        public void setUnhealthyThreshold(int unhealthyThreshold) {
+            this.unhealthyThreshold = unhealthyThreshold;
         }
     }
 

@@ -36,6 +36,8 @@ loadbalancerpro.proxy.health-check.enabled=false
 loadbalancerpro.proxy.health-check.path=/health
 loadbalancerpro.proxy.health-check.timeout=1s
 loadbalancerpro.proxy.health-check.interval=30s
+loadbalancerpro.proxy.health-check.healthy-threshold=2
+loadbalancerpro.proxy.health-check.unhealthy-threshold=3
 loadbalancerpro.proxy.retry.enabled=false
 loadbalancerpro.proxy.retry.max-attempts=2
 loadbalancerpro.proxy.retry.retry-non-idempotent=false
@@ -142,9 +144,11 @@ loadbalancerpro.proxy.health-check.enabled=true
 loadbalancerpro.proxy.health-check.path=/health
 loadbalancerpro.proxy.health-check.timeout=1s
 loadbalancerpro.proxy.health-check.interval=30s
+loadbalancerpro.proxy.health-check.healthy-threshold=2
+loadbalancerpro.proxy.health-check.unhealthy-threshold=3
 ```
 
-Health checks are on-demand and in-memory: the proxy probes an upstream when forwarding or status inspection needs health data and the configured interval has elapsed. Probe responses with 2xx or 3xx status are treated as healthy; other responses or probe failures are treated as unhealthy. The proxy does not start service discovery, persist health state, or contact any cloud service.
+Health checks run on dedicated daemon workers with a jittered initial delay, one scheduled task per configured upstream, and process-local in-memory snapshots. Request forwarding and status inspection read the latest snapshot without performing probe I/O. Probe responses with 2xx or 3xx status count as successes; other responses or probe failures count as failures. A healthy upstream becomes unhealthy after the configured consecutive failure threshold, and an unhealthy upstream recovers after the configured consecutive success threshold. The proxy does not start service discovery, persist health state, or contact any cloud service.
 
 Optional bounded retries can be enabled with `loadbalancerpro.proxy.retry.enabled=true`. Retries are disabled by default, capped by `loadbalancerpro.proxy.retry.max-attempts`, and limited to `GET` and `HEAD` unless `loadbalancerpro.proxy.retry.retry-non-idempotent=true` is set. Be careful with non-idempotent methods: retrying `POST`, `PUT`, `PATCH`, or `DELETE` can duplicate upstream side effects.
 

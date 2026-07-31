@@ -20,7 +20,9 @@ public record ReverseProxyStatusResponse(
             boolean enabled,
             String path,
             long timeoutMillis,
-            long intervalMillis) {
+            long intervalMillis,
+            int healthyThreshold,
+            int unhealthyThreshold) {
     }
 
     public record RetryStatus(

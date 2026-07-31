@@ -14,6 +14,8 @@ final class UpstreamRuntimeStats {
     static final int LATENCY_WINDOW_SIZE = 256;
     static final int ERROR_WINDOW_SECONDS = 30;
     private static final double EWMA_ALPHA = 0.2;
+    private static final Snapshot EMPTY_SNAPSHOT =
+            new Snapshot(0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0, null);
 
     private final Clock clock;
     private final LongAdder inFlight = new LongAdder();
@@ -105,6 +107,10 @@ final class UpstreamRuntimeStats {
                     recentErrorRate,
                     lastUpdatedAt);
         }
+    }
+
+    static Snapshot emptySnapshot() {
+        return EMPTY_SNAPSHOT;
     }
 
     private static long safeNanos(Duration latency) {

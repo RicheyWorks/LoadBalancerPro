@@ -91,6 +91,29 @@ class EnterpriseProxyConfigurationTest {
     }
 
     @Test
+    void nonPositiveHealthCheckDurationsAndThresholdsFailAtStartup() {
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.health-check.timeout=0ms")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "health-check.timeout must be greater than zero"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.health-check.interval=0ms")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "health-check.interval must be greater than zero"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.health-check.healthy-threshold=0")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "health-check.healthy-threshold must be greater than zero"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.health-check.unhealthy-threshold=0")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "health-check.unhealthy-threshold must be greater than zero"));
+    }
+
+    @Test
     void privateNetworkValidationIsOptInSoExistingProxyUrlValidationRemainsUnchanged() {
         contextRunner.withPropertyValues(
                         validSingleTargetRouteProperties("http://example.com:18081"))

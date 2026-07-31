@@ -14,6 +14,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +32,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,8 +57,10 @@ class ReverseProxyRetryCooldownTest {
         registry.add("loadbalancerpro.proxy.cooldown.recover-on-successful-health-check", () -> "true");
         registry.add("loadbalancerpro.proxy.health-check.enabled", () -> "true");
         registry.add("loadbalancerpro.proxy.health-check.path", () -> "/health");
-        registry.add("loadbalancerpro.proxy.health-check.interval", () -> "0s");
+        registry.add("loadbalancerpro.proxy.health-check.interval", () -> "2s");
         registry.add("loadbalancerpro.proxy.health-check.timeout", () -> "1s");
+        registry.add("loadbalancerpro.proxy.health-check.healthy-threshold", () -> "1");
+        registry.add("loadbalancerpro.proxy.health-check.unhealthy-threshold", () -> "1");
         registry.add("loadbalancerpro.proxy.upstreams[0].id", () -> "flaky-backend");
         registry.add("loadbalancerpro.proxy.upstreams[0].url", FLAKY_BACKEND::baseUrl);
         registry.add("loadbalancerpro.proxy.upstreams[0].healthy", () -> "true");
@@ -74,12 +79,15 @@ class ReverseProxyRetryCooldownTest {
     void getRetryUsesAlternateUpstreamAndCooldownRecoversAfterHealthyProbe() throws Exception {
         try (MockedConstruction<CloudManager> mockedCloudManager =
                      Mockito.mockConstruction(CloudManager.class)) {
+            awaitStatus(
+                    jsonPath("$.upstreams[0].effectiveHealthy").value(true),
+                    jsonPath("$.upstreams[0].lastProbeStatusCode").value(200));
+            FLAKY_BACKEND.setHealthStatus(500);
+
             mockMvc.perform(get("/proxy/resilience"))
                     .andExpect(status().isOk())
                     .andExpect(header().string("X-LoadBalancerPro-Upstream", "healthy-backend"))
                     .andExpect(content().string("healthy-backend GET /resilience"));
-
-            FLAKY_BACKEND.setHealthStatus(500);
 
             mockMvc.perform(get("/api/proxy/status"))
                     .andExpect(status().isOk())
@@ -116,17 +124,35 @@ class ReverseProxyRetryCooldownTest {
             FLAKY_BACKEND.setProxyStatus(200);
             FLAKY_BACKEND.setHealthStatus(200);
 
-            mockMvc.perform(get("/api/proxy/status"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.upstreams[0].effectiveHealthy").value(true))
-                    .andExpect(jsonPath("$.upstreams[0].healthSource").value("ACTIVE_PROBE"))
-                    .andExpect(jsonPath("$.upstreams[0].consecutiveFailures").value(0))
-                    .andExpect(jsonPath("$.upstreams[0].cooldownActive").value(false))
-                    .andExpect(jsonPath("$.upstreams[0].cooldownRemainingMillis").value(0));
+            awaitStatus(
+                    jsonPath("$.upstreams[0].effectiveHealthy").value(true),
+                    jsonPath("$.upstreams[0].healthSource").value("ACTIVE_PROBE"),
+                    jsonPath("$.upstreams[0].consecutiveFailures").value(0),
+                    jsonPath("$.upstreams[0].cooldownActive").value(false),
+                    jsonPath("$.upstreams[0].cooldownRemainingMillis").value(0));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Proxy retry and cooldown paths must not construct CloudManager or enter cloud paths.");
         }
+    }
+
+    private void awaitStatus(ResultMatcher... matchers) throws Exception {
+        long deadline = System.nanoTime() + Duration.ofSeconds(6).toNanos();
+        AssertionError lastFailure = null;
+        do {
+            try {
+                ResultActions result = mockMvc.perform(get("/api/proxy/status"))
+                        .andExpect(status().isOk());
+                for (ResultMatcher matcher : matchers) {
+                    result.andExpect(matcher);
+                }
+                return;
+            } catch (AssertionError failure) {
+                lastFailure = failure;
+                Thread.sleep(20);
+            }
+        } while (System.nanoTime() < deadline);
+        throw lastFailure;
     }
 
     private static final class MutableUpstream {

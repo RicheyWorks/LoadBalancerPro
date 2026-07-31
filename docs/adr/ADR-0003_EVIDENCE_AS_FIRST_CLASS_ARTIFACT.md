@@ -265,7 +265,7 @@ Related docs:
 - [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md) provides reviewer navigation and evidence boundaries.
 - [`../ENTERPRISE_READINESS_AUDIT.md`](../ENTERPRISE_READINESS_AUDIT.md) records readiness posture and not-proven boundaries.
 - [`../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md`](../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md) documents the retained read-only source relationship map.
-- [`../SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](../SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md) documents future report schema vocabulary for source-name guard planning.
+- [`../SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](../archive/project-history/SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md) documents future report schema vocabulary for source-name guard planning.
 
 This ADR does not supersede those docs. It provides a proposed decision frame for future evidence-as-architecture work.
 

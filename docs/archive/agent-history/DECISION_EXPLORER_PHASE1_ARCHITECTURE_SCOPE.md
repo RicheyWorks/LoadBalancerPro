@@ -10,7 +10,7 @@ Related Phase 1 campaign board: [`DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md`](D
 
 Related bootstrap closeout: [`DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md`](DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md).
 
-Related architecture record: [`../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md`](../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md).
+Related architecture record: [`../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md`](../../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md).
 
 Related data contract: [`DECISION_EXPLORER_DATA_CONTRACT.md`](DECISION_EXPLORER_DATA_CONTRACT.md).
 

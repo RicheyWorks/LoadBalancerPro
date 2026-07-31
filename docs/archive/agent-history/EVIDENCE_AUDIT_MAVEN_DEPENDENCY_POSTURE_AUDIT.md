@@ -125,9 +125,9 @@ This plugin posture supports tests, coverage, executable JAR packaging, and buil
 
 This audit complements:
 
-- the slot 4 [CI workflow audit](EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md);
-- the slot 5 [CodeQL and Dependency Review audit](EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md);
-- the slot 3 [repository evidence map](EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md).
+- the slot 4 [CI workflow audit](../../agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md);
+- the slot 5 [CodeQL and Dependency Review audit](../../agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md);
+- the slot 3 [repository evidence map](../../agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md).
 
 CI runs Maven dependency tree, tests, packaging, artifact smoke checks, SBOM generation, Docker build/runtime smoke, Trivy scanning, and dependency review where applicable. CodeQL performs source/static-analysis scanning. This Maven audit describes the source Maven declaration only and does not replace those checks.
 

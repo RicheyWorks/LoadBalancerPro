@@ -10,9 +10,9 @@ Related Phase 1 board: [`DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md`](DECISION_E
 
 Related Phase 1 scope: [`DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md).
 
-Related API contracts: [`../API_CONTRACTS.md`](../API_CONTRACTS.md).
+Related API contracts: [`../API_CONTRACTS.md`](../../API_CONTRACTS.md).
 
-Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md).
+Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../../REVIEWER_TRUST_MAP.md).
 
 Related local page: `/decision-explorer.html`.
 
@@ -53,7 +53,7 @@ The surface remains additive, read-only, and simulation-only. It does not shift 
 4. Use `Run Decision Explorer` to send the deterministic synthetic `green` and `blue` candidate request.
 5. Inspect the selected candidate, candidate ordering, factor contribution rows, policy gate rows, warnings, unknowns,
    not-proven boundaries, and raw JSON payload.
-6. Cross-check the bounded route description in [`../API_CONTRACTS.md`](../API_CONTRACTS.md) before treating the output
+6. Cross-check the bounded route description in [`../API_CONTRACTS.md`](../../API_CONTRACTS.md) before treating the output
    as reviewer evidence.
 
 This path is local reviewer inspection only. It is not a production workflow, deployment approval, traffic-control

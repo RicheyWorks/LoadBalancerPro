@@ -19,20 +19,44 @@ import org.springframework.core.io.ClassPathResource;
 
 class ReviewerEvidenceNavigationSmokeTest {
     private static final Path STATIC_ROOT = Path.of("src/main/resources/static");
+    private static final Path VIEWER = STATIC_ROOT.resolve("evidence-viewer.html");
+    private static final Path VIEWER_LIBRARY =
+            STATIC_ROOT.resolve("evidence-viewer-lib.js");
     private static final Pattern HREF = Pattern.compile("href=[\"']([^\"'#?]+)");
 
     private static final List<String> REVIEWER_EVIDENCE_PATHS = List.of(
             "/enterprise-lab-reviewer.html",
             "/operator-evidence-dashboard.html",
+            "/ci-evidence-gate.html",
             "/evidence-timeline.html",
             "/evidence-export-packet.html");
+
+    private static final List<String> VIEW_KEYS = List.of(
+            "reviewer",
+            "operator",
+            "gate",
+            "timeline",
+            "packet");
 
     private static final List<String> REVIEWER_ENTRY_PATHS = List.of(
             "/index.html",
             "/routing-demo.html");
 
+    private static final List<String> REQUIRED_ENTRY_LINKS = List.of(
+            "/enterprise-lab-reviewer.html",
+            "/operator-evidence-dashboard.html",
+            "/evidence-timeline.html",
+            "/evidence-export-packet.html");
+
     @Test
     void reviewerEvidencePagesArePackagedStaticResources() {
+        assertTrue(Files.exists(VIEWER), "shared evidence viewer should remain source-controlled");
+        assertTrue(Files.exists(VIEWER_LIBRARY),
+                "shared evidence viewer library should remain source-controlled");
+        assertTrue(new ClassPathResource("static/evidence-viewer.html").exists(),
+                "shared evidence viewer should be packaged as a static resource");
+        assertTrue(new ClassPathResource("static/evidence-viewer-lib.js").exists(),
+                "shared evidence viewer library should be packaged as a static resource");
         for (String page : REVIEWER_EVIDENCE_PATHS) {
             Path sourcePath = sourcePath(page);
             assertTrue(Files.exists(sourcePath), page + " should remain source-controlled");
@@ -42,13 +66,15 @@ class ReviewerEvidenceNavigationSmokeTest {
     }
 
     @Test
-    void reviewerEvidencePagesKeepSameOriginNavigationMesh() throws Exception {
-        for (String page : REVIEWER_EVIDENCE_PATHS) {
-            Set<String> links = localHtmlLinks(read(sourcePath(page)));
+    void sharedViewerBuildsTheSameOriginNavigationMesh() throws Exception {
+        String library = read(VIEWER_LIBRARY);
+        assertTrue(library.contains("Object.entries(VIEW_DEFINITIONS)"));
+        assertTrue(library.contains(
+                "link.href = `/evidence-viewer.html?view=${encodeURIComponent(key)}`"));
 
-            for (String expected : REVIEWER_EVIDENCE_PATHS) {
-                assertTrue(links.contains(expected), page + " should link to " + expected);
-            }
+        for (String viewKey : VIEW_KEYS) {
+            assertTrue(library.contains(viewKey + ": Object.freeze({"),
+                    "shared viewer should define " + viewKey);
         }
     }
 
@@ -57,7 +83,7 @@ class ReviewerEvidenceNavigationSmokeTest {
         for (String page : REVIEWER_ENTRY_PATHS) {
             Set<String> links = localHtmlLinks(read(sourcePath(page)));
 
-            for (String expected : REVIEWER_EVIDENCE_PATHS) {
+            for (String expected : REQUIRED_ENTRY_LINKS) {
                 assertTrue(links.contains(expected), page + " should link to " + expected);
             }
         }
@@ -65,13 +91,18 @@ class ReviewerEvidenceNavigationSmokeTest {
 
     @Test
     void reviewerEvidenceNavigationStaysLocalAndReadOnly() throws Exception {
-        for (String page : REVIEWER_EVIDENCE_PATHS) {
-            String content = read(sourcePath(page));
+        List<Path> viewerAssets = new java.util.ArrayList<>();
+        viewerAssets.add(VIEWER);
+        viewerAssets.add(VIEWER_LIBRARY);
+        REVIEWER_EVIDENCE_PATHS.forEach(page -> viewerAssets.add(sourcePath(page)));
+
+        for (Path asset : viewerAssets) {
+            String content = read(asset);
             String normalized = content.toLowerCase(Locale.ROOT);
             Set<String> links = localHtmlLinks(content);
 
             assertFalse(links.stream().anyMatch(link -> link.startsWith("http://") || link.startsWith("https://")
-                    || link.startsWith("//")), page + " should not add external navigation");
+                    || link.startsWith("//")), asset + " should not add external navigation");
 
             for (String unsafe : List.of(
                     "docker push",
@@ -90,7 +121,7 @@ class ReviewerEvidenceNavigationSmokeTest {
                     "governance settings applied: true",
                     "governance settings applied: yes",
                     "governance-applied proof complete")) {
-                assertFalse(normalized.contains(unsafe), page + " must not include " + unsafe);
+                assertFalse(normalized.contains(unsafe), asset + " must not include " + unsafe);
             }
         }
     }

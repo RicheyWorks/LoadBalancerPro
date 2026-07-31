@@ -276,62 +276,6 @@ class EnterpriseReadinessAuditDocumentationTest {
     }
 
     @Test
-    void evidenceTimelineDocumentsHistoryViewWithoutProductionClaims() throws Exception {
-        String timeline = read(EVIDENCE_TIMELINE);
-
-        for (String expected : List.of(
-                "Evidence Timeline / History View",
-                "Local/CI evidence timeline",
-                "not production certified",
-                "not enterprise-production ready",
-                "target/enterprise-lab-runs/",
-                "target/container-dry-run-evidence/",
-                "container-dry-run-evidence-no-publish-no-sign",
-                "/operator-evidence-dashboard.html",
-                "/enterprise-lab-reviewer.html",
-                "/api/enterprise-lab/operator-evidence-summary",
-                "/api/enterprise-lab/reviewer-summary",
-                "generated evidence should not be committed",
-                "no registry publish",
-                "no container signing")) {
-            assertTrue(timeline.contains(expected), "evidence timeline should mention " + expected);
-        }
-
-        assertNoUnsafeAffirmativeClaims(EVIDENCE_TIMELINE, timeline);
-    }
-
-    @Test
-    void evidenceExportPacketDocumentsReviewerHandoffWithoutProductionClaims() throws Exception {
-        String packet = read(EVIDENCE_EXPORT_PACKET);
-
-        for (String expected : List.of(
-                "Evidence Export Packet",
-                "Reviewer handoff packet",
-                "not production certified",
-                "not enterprise-production ready",
-                "target/enterprise-lab-runs/",
-                "target/container-dry-run-evidence/",
-                "container-dry-run-evidence-no-publish-no-sign",
-                "/evidence-timeline.html",
-                "/operator-evidence-dashboard.html",
-                "/enterprise-lab-reviewer.html",
-                "/api/enterprise-lab/evidence-timeline",
-                "/api/enterprise-lab/operator-evidence-summary",
-                "/api/enterprise-lab/reviewer-summary",
-                "generated evidence should not be committed",
-                "do not include secrets/tokens/private keys",
-                "Reviewer Packet Share Checklist",
-                "server does not send, upload, or create share artifacts",
-                "no registry publish",
-                "no container signing",
-                "no actual export file generation")) {
-            assertTrue(packet.contains(expected), "evidence export packet should mention " + expected);
-        }
-
-        assertNoUnsafeAffirmativeClaims(EVIDENCE_EXPORT_PACKET, packet);
-    }
-
-    @Test
     void reviewerTrustMapDocumentsEvidencePageNavigationPath() throws Exception {
         String trustMap = read(TRUST_MAP);
 

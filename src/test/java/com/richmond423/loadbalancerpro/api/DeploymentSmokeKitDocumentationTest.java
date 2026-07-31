@@ -98,6 +98,14 @@ class DeploymentSmokeKitDocumentationTest {
                 "script should expose process exit codes when available");
         assertTrue(script.contains("Timed out after $Attempts attempt(s)"),
                 "script should fail clearly after readiness timeout");
+        assertTrue(script.contains("Remove-Job -Job $job -Force"),
+                "loopback backend cleanup should terminate blocked listener jobs");
+        assertTrue(script.contains("/__shutdown"),
+                "loopback backend cleanup should unblock each listener explicitly");
+        assertTrue(script.contains("Wait-Job -Job $job -Timeout 5"),
+                "loopback backend cleanup should use a bounded completion wait");
+        assertFalse(script.contains("Stop-Job -Job $job"),
+                "blocking listener jobs must not make cleanup wait indefinitely");
     }
 
     @Test

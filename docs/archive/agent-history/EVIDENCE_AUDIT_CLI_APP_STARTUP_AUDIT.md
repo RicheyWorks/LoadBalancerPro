@@ -83,8 +83,8 @@ This audit does not prove production readiness, production certification, live-c
 
 ## Navigation
 
-- Repository evidence map: [`EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md`](EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md).
-- Campaign board: [`EVIDENCE_AUDIT_CAMPAIGN_BOARD.md`](EVIDENCE_AUDIT_CAMPAIGN_BOARD.md).
-- Runtime configuration audit: [`EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md`](EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md).
-- Proxy demo fixture audit: [`EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md`](EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md).
-- Enterprise lab workflow docs: [`../ENTERPRISE_LAB_WORKFLOW.md`](../ENTERPRISE_LAB_WORKFLOW.md).
+- Repository evidence map: [`EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md`](../../agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md).
+- Campaign board: [`EVIDENCE_AUDIT_CAMPAIGN_BOARD.md`](../../agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md).
+- Runtime configuration audit: [`EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md`](../../agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md).
+- Proxy demo fixture audit: [`EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md`](../../agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md).
+- Enterprise lab workflow implementation: `scripts/smoke/enterprise-lab-workflow.ps1`.

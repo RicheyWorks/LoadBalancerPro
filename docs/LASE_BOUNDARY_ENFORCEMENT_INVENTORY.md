@@ -54,7 +54,7 @@ The LASE boundary contract defines the desired future architecture: live allocat
 
 This inventory gives future maintainers a low-risk map before any package move, runtime interface, ArchUnit rule, or enforcement sprint is proposed.
 
-The staged path from this inventory to future package-boundary enforcement is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is planning only, not enforcement. It adds no ArchUnit or package-boundary tool, moves no classes, and changes no runtime behavior.
+The staged path from this inventory to future package-boundary enforcement is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](archive/project-history/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is planning only, not enforcement. It adds no ArchUnit or package-boundary tool, moves no classes, and changes no runtime behavior.
 
 ADR-0001 is drafted in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md). That ADR is proposed/planning-only and maps this current-tree inventory to future layer vocabulary without moving packages, adding runtime interfaces, adding ArchUnit, enforcing packages, changing routing/scoring/strategy/proxy behavior, or claiming production readiness.
 
@@ -62,9 +62,9 @@ ADR-0002 is drafted in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_L
 
 ADR-0008 is drafted in [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md). That ADR is proposed/planning-only and maps future runtime enforcement and package-boundary planning onto this inventory without adding runtime enforcement, package-boundary enforcement, ArchUnit dependency/enforcement, source-name guard implementation, package moves, routing/scoring/strategy/proxy/API behavior changes, or production-readiness claims.
 
-The future naming preparation layer is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming guard preparation, not runtime naming enforcement, package-boundary enforcement, ArchUnit tooling, package moves, or behavior change.
+The future naming preparation layer is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](archive/project-history/LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming guard preparation, not runtime naming enforcement, package-boundary enforcement, ArchUnit tooling, package moves, or behavior change.
 
-The current naming surface is inventoried in [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md). That inventory maps current class/file naming against the naming plan without renaming classes, moving packages, adding source-name guard tests, or claiming naming guard enforcement.
+The current naming surface is inventoried in [`LASE_NAMING_GUARD_INVENTORY.md`](archive/project-history/LASE_NAMING_GUARD_INVENTORY.md). That inventory maps current class/file naming against the naming plan without renaming classes, moving packages, adding source-name guard tests, or claiming naming guard enforcement.
 
 Reviewer questions this document helps answer:
 
@@ -240,7 +240,7 @@ Future enforcement options, each requiring separate approval:
 
 - documentation-only package boundary contract updates;
 - naming guard tests that confirm intended packages and links;
-- the staged package-boundary enforcement plan in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md);
+- the staged package-boundary enforcement plan in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](archive/project-history/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md);
 - a future `domain` package for pure models;
 - a future read-only `LaseObservationPort`;
 - a future `lase` package for shadow evaluation and replay/evidence;

@@ -51,9 +51,9 @@ This document does not claim the LASE boundary is already enforced by package re
 
 The current-tree inventory for this future boundary is documented in [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md). That inventory is docs/test-only preparation. It maps current classes into future boundary buckets without moving classes, adding runtime interfaces, adding ArchUnit rules, enforcing packages, or changing behavior.
 
-The staged package-boundary enforcement plan is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is docs/test-only preparation for future enforcement. It does not add ArchUnit, package-boundary tooling, package moves, runtime interfaces, or behavior changes.
+The staged package-boundary enforcement plan is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](archive/project-history/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is docs/test-only preparation for future enforcement. It does not add ArchUnit, package-boundary tooling, package moves, runtime interfaces, or behavior changes.
 
-The LASE boundary naming guard plan is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming preparation for future boundary vocabulary. It does not add runtime naming enforcement, ArchUnit, package-boundary tooling, package moves, runtime interfaces, or behavior changes.
+The LASE boundary naming guard plan is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](archive/project-history/LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming preparation for future boundary vocabulary. It does not add runtime naming enforcement, ArchUnit, package-boundary tooling, package moves, runtime interfaces, or behavior changes.
 
 The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names the future LASE integration ADR and layered architecture ADR as planning-only decision topics. It does not implement runtime LASE enforcement, package moves, package-boundary enforcement, ArchUnit tooling, or behavior changes.
 
@@ -326,7 +326,7 @@ This sprint does not implement WorkloadProfile records/classes, ScenarioGenerato
 Before any runtime boundary enforcement, a future sprint must define and pass gates for:
 
 - review of the current-tree inventory in [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md);
-- review of the staged enforcement plan in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md);
+- review of the staged enforcement plan in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](archive/project-history/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md);
 - approved scope and owner intent;
 - explicit package boundary design;
 - dependency direction review;

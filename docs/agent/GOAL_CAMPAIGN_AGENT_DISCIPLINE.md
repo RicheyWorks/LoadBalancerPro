@@ -2,7 +2,7 @@
 
 This page is documentation only. It adds operating discipline for Codex agents running the LoadBalancerPro Goal Mode 10-PR Trial; it does not add automation, CI/Maven wiring, Dockerfile changes, Compose behavior, runtime behavior, endpoints, runner services, secrets, external targets, or production claims.
 
-Use this page with [`AGENTS.md`](../../AGENTS.md), [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`SESSION_MANAGER.md`](SESSION_MANAGER.md), [`FAILURE_LOG.md`](FAILURE_LOG.md), [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), and [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md).
+Use this page with [`AGENTS.md`](../../AGENTS.md), [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`SESSION_MANAGER.md`](SESSION_MANAGER.md), [`FAILURE_LOG.md`](FAILURE_LOG.md), [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), and [`CAMPAIGN_MERGE_GATE.md`](../archive/agent-history/CAMPAIGN_MERGE_GATE.md).
 
 ## Purpose
 

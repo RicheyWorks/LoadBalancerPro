@@ -31,7 +31,7 @@ Use this template for every checkpoint in the **LoadBalancerPro 20-PR Evidence A
 
 ## Failure Link
 
-Every local, remote, scope, or tooling failure must be logged in [`FAILURE_LOG.md`](FAILURE_LOG.md) before continuing. Failed, cancelled, stale, pending, missing, or duplicate-only required checks are not acceptable.
+Every local, remote, scope, or tooling failure must be logged in [`FAILURE_LOG.md`](../../agent/FAILURE_LOG.md) before continuing. Failed, cancelled, stale, pending, missing, or duplicate-only required checks are not acceptable.
 
 ## Boundaries
 

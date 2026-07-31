@@ -1,129 +1,61 @@
 # LoadBalancerPro Release Artifact Evidence
 
-Date: 2026-05-04
-Release documented: `v1.9.0`
+- Verified: 2026-07-30
+- Release: [`v2.5.0`](https://github.com/RicheyWorks/LoadBalancerPro/releases/tag/v2.5.0)
+- Release workflow: [run 25838247936](https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/25838247936)
+- Release commit: `4cc03750be5479d9f8f88f8ef8014e05a8dc587a`
 
-## Purpose And Scope
+## Verified Public Artifacts
 
-This document records release artifact evidence for LoadBalancerPro.
+The `Release Artifacts` workflow completed successfully on 2026-05-14. Its package,
+executable-JAR smoke, CycloneDX generation, checksum verification, provenance
+attestation, JAR/SBOM attestation, publication, and release-asset verification steps
+all passed.
 
-It is enterprise-demo release evidence, not production certification. It documents `v1.9.0` because that release completed the JAR/SBOM/checksum/attestation chain without changing the project's safety boundaries.
+The public release currently exposes:
 
-This document does not create new release artifacts, alter workflows, add signing, publish Docker images, publish to Maven Central, or create GitHub Release assets.
+| Asset | Bytes | GitHub-recorded SHA-256 |
+| --- | ---: | --- |
+| `LoadBalancerPro-2.5.0.jar` | 92,109,974 | `04457ad3404835301a4b0763a77877967750ec03753af23dea0ff2db18372859` |
+| `LoadBalancerPro-2.5.0-bom.json` | 380,320 | `ca5fc9498589a1833dbe478fe139ce87b6130791b4feb37b38ca80fbf6e1a75b` |
+| `LoadBalancerPro-2.5.0-bom.xml` | 345,206 | `2d30c91e413e614305efe8b6316d93438219a12b5a7008b8545d5be1ac640090` |
+| `LoadBalancerPro-2.5.0-SHA256SUMS.txt` | 285 | `82f3feec70fe7d4c66d63f4d3670b32c5d234a2671d8b00a56183c9c02cf908d` |
 
-## v1.9.0 Release Evidence Summary
+These are historical `v2.5.0` release artifacts. They are not artifacts for the
+current `main` head, and they predate later dependency maintenance. Current-head
+claims require current-head CI artifacts and checks.
 
-The public Release Artifacts workflow passed for `v1.9.0`.
+## Operator Verification
 
-Artifact bundle:
-
-```text
-loadbalancerpro-release-1.9.0
-```
-
-Manual bundle verification confirmed these files:
-
-- `LoadBalancerPro-1.9.0.jar`
-- `LoadBalancerPro-1.9.0-bom.json`
-- `LoadBalancerPro-1.9.0-bom.xml`
-- `LoadBalancerPro-1.9.0-SHA256SUMS.txt`
-
-The release workflow chain for `v1.9.0` included:
-
-- executable JAR build,
-- CycloneDX SBOM JSON/XML generation,
-- SHA-256 checksum generation,
-- checksum verification,
-- deterministic artifact bundle upload,
-- release JAR provenance attestation,
-- JAR/SBOM JSON relationship attestation.
-
-## Known Historical Workflow Failure: v1.9.1
-
-`v1.9.1` was a docs/evidence-only patch release.
-
-The `Release Artifacts` workflow failed before artifact upload at the `Verify Maven version matches tag` step:
-
-```text
-Tag version: 1.9.1
-Maven version: 1.9.0
-```
-
-This failure was expected for the repository history because Maven/app metadata was not aligned to `1.9.1` before the docs-only tag was created. The version-alignment guard worked as intended and prevented misleading release artifacts from being published for a tag whose version did not match the Maven project version.
-
-`v2.0.0` passed the `Release Artifacts` workflow and is the current release artifact baseline. Do not move, rewrite, or rerun the `v1.9.1` tag to change historical behavior.
-
-## Checksum Role
-
-`LoadBalancerPro-1.9.0-SHA256SUMS.txt` records SHA-256 hashes for the release JAR and SBOM files.
-
-The checksum file supports downloaded artifact integrity verification against the files in the bundle. It helps detect accidental corruption or mismatch after download.
-
-The checksum file does not prove builder identity, does not prove dependencies are vulnerability-free, and does not replace artifact attestations or signing.
-
-## Attestation Evidence
-
-GitHub artifact attestations were created for the `v1.9.0` release artifacts:
-
-- `https://github.com/richmond423/LoadBalancerPro/attestations/26304650`
-- `https://github.com/richmond423/LoadBalancerPro/attestations/26304653`
-
-GitHub artifact attestations provide build provenance evidence. One attestation covers release JAR provenance. One attestation covers the JAR/SBOM JSON relationship.
-
-Attestations help reviewers verify where and how artifacts were built. They also help connect the generated SBOM JSON to the release JAR it describes.
-
-## What This Evidence Does Not Prove
-
-This evidence is intentionally conservative. It is not:
-
-- PGP signing.
-- Notarization.
-- A vulnerability scan.
-- Proof that dependencies are vulnerability-free.
-- Proof that runtime deployment is secure.
-- Production certification.
-- GitHub Release asset publication.
-- Container signing.
-- Docker image publishing.
-- Maven Central publishing.
-
-Trivy, GitHub dependency review, CodeQL, SBOM inventory, checksums, and attestations are separate controls. None of them alone proves complete supply-chain security or production readiness.
-
-## Browser Verification Guidance
-
-To review the `v1.9.0` release artifact evidence in the browser:
-
-1. Open the public GitHub repository: `https://github.com/richmond423/LoadBalancerPro`.
-2. Go to `Actions`.
-3. Open the `Release Artifacts` workflow.
-4. Open the `v1.9.0` workflow run.
-5. Confirm the workflow run passed.
-6. Download `loadbalancerpro-release-1.9.0`.
-7. Confirm the four expected files are present:
-   - `LoadBalancerPro-1.9.0.jar`
-   - `LoadBalancerPro-1.9.0-bom.json`
-   - `LoadBalancerPro-1.9.0-bom.xml`
-   - `LoadBalancerPro-1.9.0-SHA256SUMS.txt`
-8. Open the attestation links:
-   - `https://github.com/richmond423/LoadBalancerPro/attestations/26304650`
-   - `https://github.com/richmond423/LoadBalancerPro/attestations/26304653`
-
-## Optional GitHub CLI Verification
-
-If GitHub CLI is available and the release JAR has been downloaded locally, verify the artifact attestation with:
+Download all four assets from the release page, then verify the bundle checksum:
 
 ```sh
-gh attestation verify LoadBalancerPro-1.9.0.jar --repo richmond423/LoadBalancerPro
+sha256sum --check LoadBalancerPro-2.5.0-SHA256SUMS.txt
 ```
 
-This command requires GitHub CLI, a compatible GitHub authentication/environment, and the artifact file on the local filesystem.
+Where GitHub CLI attestation verification is available:
 
-## Remaining Future Work
+```sh
+gh attestation verify LoadBalancerPro-2.5.0.jar \
+  --repo RicheyWorks/LoadBalancerPro
+```
 
-- GitHub Release assets still do not exist.
-- Container signing still does not exist.
-- Docker image publishing still does not exist.
-- Maven Central publishing still does not exist.
-- Deployment evidence remains separate future work.
+The release workflow is the authoritative source for the build and attestation
+steps. GitHub's release API is the authoritative source for the published asset
+names, sizes, and recorded digests in the table above.
 
-This document records an enterprise-demo release evidence milestone. It does not certify production deployment readiness.
+## Evidence Boundary
+
+This proves that the named release workflow completed and published the listed
+JAR, SBOM, and checksum assets with the recorded digests. It does not prove:
+
+- that the current `main` head is identical to the release;
+- absence of all vulnerabilities;
+- PGP signing or notarization;
+- container signing or registry publication;
+- Maven Central publication;
+- live-cloud or real-tenant validation;
+- production capacity, SLOs, or readiness.
+
+Artifact integrity, provenance, dependency review, CodeQL, image scanning,
+runtime smoke, and deployment evidence remain distinct controls.

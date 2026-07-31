@@ -15,8 +15,8 @@ Use this contract with [`COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`](COMBINED_BUILD_
 - Source layout base: `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Campaign start main: `0f1e97b9ce4acceaad02877bf1fc2185997aba9d`.
 - Imported source artifacts:
-  - [`../AUDIT_2026-07-21.md`](../AUDIT_2026-07-21.md);
-  - [`../AUDIT_LAB_SHADOW_2026-07-21.md`](../AUDIT_LAB_SHADOW_2026-07-21.md);
+  - [`../AUDIT_2026-07-21.md`](../archive/project-history/AUDIT_2026-07-21.md);
+  - [`../AUDIT_LAB_SHADOW_2026-07-21.md`](../archive/project-history/AUDIT_LAB_SHADOW_2026-07-21.md);
   - [`../BUILD_PLAN_DEPLOYABLE.md`](../BUILD_PLAN_DEPLOYABLE.md);
   - [`../BUILD_PLAN_LAB_SHADOW.md`](../BUILD_PLAN_LAB_SHADOW.md);
   - [`../strategy-playground.html`](../strategy-playground.html).

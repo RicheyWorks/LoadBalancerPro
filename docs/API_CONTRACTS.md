@@ -134,13 +134,13 @@ evidence, execute replay, generate evidence packets, call external systems, muta
 readiness, live-cloud behavior, real-tenant behavior, load/stress behavior, or throughput/p95/p99 behavior.
 
 Decision Explorer Phase 1 reviewer examples live in
-[`agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They
+[`agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](archive/agent-history/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They
 provide bounded request/response fragments and human/AI-agent review questions for the current local surface without
 changing this read-only, simulation-only API contract or upgrading production-readiness, live-cloud, real-tenant,
 benchmark/load/stress, throughput/p95/p99, replay/export/storage, evidence-packet, or automation claims.
 
 Decision Explorer Phase 2 reviewer examples live in
-[`agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md). They
+[`agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md`](archive/agent-history/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md). They
 provide grounded partial fragments for the scenario catalog, factor drill-down rows, candidate comparison rows, reviewer badges,
 static page workflow, and additive API hardening without changing the read-only, same-origin, simulation-only
 contract or upgrading production-readiness, live-cloud, real-tenant, benchmark/load/stress, throughput/p95/p99,

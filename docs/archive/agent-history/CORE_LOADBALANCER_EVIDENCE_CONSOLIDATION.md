@@ -55,7 +55,7 @@ Each Core-LB PR used the same conservative verification posture:
 
 ## Reviewer Path
 
-Start with [`CORE_LOADBALANCER_FEATURE_CONTRACT.md`](CORE_LOADBALANCER_FEATURE_CONTRACT.md), then use the reviewer evidence map in that contract to jump to the focused tests. The reviewer trust map at [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md) links back to the core contract as the public reviewer entry point.
+Start with [`CORE_LOADBALANCER_FEATURE_CONTRACT.md`](CORE_LOADBALANCER_FEATURE_CONTRACT.md), then use the reviewer evidence map in that contract to jump to the focused tests. The reviewer trust map at [`../REVIEWER_TRUST_MAP.md`](../../REVIEWER_TRUST_MAP.md) links back to the core contract as the public reviewer entry point.
 
 ## Remaining Not-Proven Boundaries
 

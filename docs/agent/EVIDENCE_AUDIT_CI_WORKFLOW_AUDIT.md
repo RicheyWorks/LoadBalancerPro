@@ -48,7 +48,9 @@ The primary CI lane currently performs the following source-visible steps:
 6. Generates a JaCoCo coverage report with `mvn -B jacoco:report`.
 7. Summarizes JaCoCo instruction, branch, and line coverage from `target/site/jacoco/jacoco.csv`.
 8. Uploads the `jacoco-coverage-report` artifact with `retention-days: 30`.
-9. Packages the executable JAR with `mvn -B package`.
+9. Packages the executable JAR with `mvn -B -DskipTests package` after the explicit full-suite, zero-skip,
+   test-scope proof-report, and independent-supervisor proof gates have passed; the package step does not duplicate the
+   complete suite.
 10. Verifies packaged artifact resources, including the manifest, static pages, demo profiles, and `ProxyDemoFixtureLauncher.class`.
 11. Uploads the `packaged-artifact-smoke` artifact with `retention-days: 30`.
 12. Generates CycloneDX SBOM output in JSON and XML through `org.cyclonedx:cyclonedx-maven-plugin:2.9.1`.

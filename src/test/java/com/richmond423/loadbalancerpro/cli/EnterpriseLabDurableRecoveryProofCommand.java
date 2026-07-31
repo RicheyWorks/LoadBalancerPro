@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.cli;
 
+// Test/tool-only command; intentionally excluded from the production application artifact.
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabDurableRecoveryProofReport;

@@ -54,6 +54,37 @@ jobs:
             exit 1
           fi
 
+      - name: Verify four test-scope proof families ran
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for proof_report in \
+            EnterpriseLabAllocationProofRunnerTest \
+            EnterpriseLabEvidenceOwnershipProofCommandTest \
+            EnterpriseLabDurableRecoveryProofCommandTest \
+            EnterpriseLabExperimentProofRunnerTest
+          do
+            report="target/surefire-reports/TEST-com.richmond423.loadbalancerpro"
+            case "$proof_report" in
+              EnterpriseLabAllocationProofRunnerTest|EnterpriseLabExperimentProofRunnerTest)
+                report="${report}.lab.${proof_report}.xml"
+                ;;
+              *)
+                report="${report}.cli.${proof_report}.xml"
+                ;;
+            esac
+            test -f "$report"
+            grep -Eq 'tests="[1-9][0-9]*"' "$report"
+            grep -Eq 'failures="0"' "$report"
+            grep -Eq 'errors="0"' "$report"
+            grep -Eq 'skipped="0"' "$report"
+          done
+
+      - name: Run test-scope independent-supervisor proof
+        shell: pwsh
+        run: ./scripts/smoke/enterprise-lab-independent-supervisor-proof.ps1 -OutputDir target/ci-independent-supervisor-proof
+
       - name: Generate JaCoCo coverage report
         run: mvn -B jacoco:report
 
@@ -99,7 +130,7 @@ jobs:
           retention-days: 30
 
       - name: Package executable JAR
-        run: mvn -B package
+        run: mvn -B -DskipTests package
 
       - name: Verify packaged artifact resources
         shell: bash
@@ -150,6 +181,23 @@ jobs:
           require_entry "BOOT-INF/classes/application-proxy-demo-failover.properties"
           require_entry "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
 
+          forbid_pattern() {
+            local pattern="$1"
+            local description="$2"
+            if grep -Eq "$pattern" "$RESOURCE_LIST"; then
+              echo "Forbidden production artifact content: $description" | tee -a "$SUMMARY"
+              grep -E "$pattern" "$RESOURCE_LIST" | tee -a "$SUMMARY"
+              exit 1
+            fi
+            echo "ABSENT: $description" | tee -a "$SUMMARY"
+          }
+
+          forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/(cli|lab)/EnterpriseLab.*Proof' \
+            "Enterprise Lab proof command/runner/report/exporter classes"
+          forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/gui/(LoadBalancerGUI|ServerTableRow)' \
+            "application classes that directly import JavaFX"
+          forbid_pattern '^BOOT-INF/lib/javafx' "OpenJFX libraries"
+
           {
             echo ""
             echo "Output files:"
@@ -169,7 +217,7 @@ jobs:
           retention-days: 30
 
       - name: Generate CycloneDX SBOM
-        run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true
+        run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -DincludeProvidedScope=false -Dcyclonedx.skipAttach=true
 
       - name: Upload CycloneDX SBOM artifacts
         # actions/upload-artifact@v7

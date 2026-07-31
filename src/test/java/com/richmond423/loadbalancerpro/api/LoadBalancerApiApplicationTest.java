@@ -8,24 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LoadBalancerApiApplicationTest {
     @Test
-    void laseDemoFlagSkipsApiServerStartup() {
+    void productionCommandsSkipApiServerStartup() {
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--lase-demo"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--lase-demo=healthy"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--lase-replay=shadow-events.jsonl"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--adaptive-routing-experiment"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--adaptive-routing-experiment=all"}));
-        assertFalse(LoadBalancerApiApplication.shouldStartApi(
-                new String[]{"--enterprise-lab-experiment-proof=completion"}));
-        assertFalse(LoadBalancerApiApplication.shouldStartApi(
-                new String[]{"--enterprise-lab-durable-recovery-proof"}));
-        assertFalse(LoadBalancerApiApplication.shouldStartApi(
-                new String[]{"--enterprise-lab-ownership-proof"}));
-        assertFalse(LoadBalancerApiApplication.shouldStartApi(
-                new String[]{"--enterprise-lab-ownership-proof-child=contend"}));
-        assertFalse(LoadBalancerApiApplication.shouldStartApi(
-                new String[]{"--enterprise-lab-allocation-proof"}));
-        assertFalse(LoadBalancerApiApplication.shouldStartApi(
-                new String[]{"--enterprise-lab-allocation-proof-holder"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(
                 new String[]{"--enterprise-lab-supervisor"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(
@@ -37,6 +25,20 @@ class LoadBalancerApiApplicationTest {
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--version"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{"--server.port=18080"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{}));
+    }
+
+    @Test
+    void proofToolFlagsAreNotProductionCliDispatch() {
+        assertTrue(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--enterprise-lab-experiment-proof=completion"}));
+        assertTrue(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--enterprise-lab-durable-recovery-proof"}));
+        assertTrue(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--enterprise-lab-ownership-proof"}));
+        assertTrue(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--enterprise-lab-allocation-proof"}));
+        assertTrue(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--enterprise-lab-independent-supervisor-proof"}));
     }
 
     @Test

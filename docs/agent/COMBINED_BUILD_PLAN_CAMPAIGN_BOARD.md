@@ -13,19 +13,17 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 17 / 49.
-- Latest completed slot: `L-2.2` in merged [PR #515](https://github.com/RicheyWorks/LoadBalancerPro/pull/515);
-  final head `c83cd12a76cf3ef67ae24c620a8fbfb1000cb5a0`, merge
-  `1c1d6107e65b99075f39472b08f4c274b3272d68`, exact-main CI `30591199330` and CodeQL `30591199322` green.
-- Active implementation slot: `L-2.3`; make single-host takeover honor the held OS lock on
-  `codex/l-2-3-os-lock-aware-takeover` in [PR #516](https://github.com/RicheyWorks/LoadBalancerPro/pull/516) from exact
-  green main
-  `1c1d6107e65b99075f39472b08f4c274b3272d68`. The default OS-lock-authoritative path, explicit lease-guarded mode,
-  immediate separate-process restart proof, 3,070-test full suite, package/verify/SBOM, ownership and independent-
-  supervisor packaged proofs, and workflow smoke are locally green. Product head
-  `218be6ab4e5891e1bf28c0b6eee1192f15afd2a6` is published; the final campaign-checkpoint head and its exact-head remote
-  gates are pending.
-- Next implementation slot after the active gate: `L-2.4`.
+- `MAIN_GREEN` implementation slots: 18 / 49.
+- Latest completed slot: `L-2.3` in merged [PR #516](https://github.com/RicheyWorks/LoadBalancerPro/pull/516);
+  final head `8eadb65fcb80d0e68501a51904f087ad9b8f96fc`, merge
+  `03eca16a4f7114270567e99045400581559b3aea`, exact-main CI `30593875252` and CodeQL `30593875244` green.
+- Active implementation slot: `L-2.4`; move proof tooling and JavaFX classes out of the production artifact on
+  `codex/l-2-4-proof-tools-artifact` from exact green main
+  `03eca16a4f7114270567e99045400581559b3aea`. Local verification is green: all five test-scope proofs, the 3,076-test
+  clean package, verify, JAR/SBOM isolation, and packaged runtime profiles passed. Product head
+  `15c5c883eb0535f388cadcf32f8c753b82a52e57` is open as [PR #517](https://github.com/RicheyWorks/LoadBalancerPro/pull/517);
+  exact-final-head remote gates remain.
+- Next implementation slot after the active gate: `L-2.5`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -51,8 +49,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | MAIN_GREEN |
 | 16 | L-2.1 | L-2.1 | One chained JSONL engine | L-0.6 | MAIN_GREEN |
 | 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | MAIN_GREEN |
-| 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | IN_PROGRESS |
-| 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | OPEN |
+| 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | MAIN_GREEN |
+| 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | IN_PROGRESS |
 | 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | OPEN |
 | 21 | L-4.1 | L-4.1 | Fix or retire CLI | L0 complete | OPEN |
 | 22 | L-4.2 | L-4.2 | Delete or repair JavaFX | L0 complete | OPEN |

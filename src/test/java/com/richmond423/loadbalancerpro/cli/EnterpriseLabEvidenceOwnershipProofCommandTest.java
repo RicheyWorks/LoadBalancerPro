@@ -100,6 +100,7 @@ class EnterpriseLabEvidenceOwnershipProofCommandTest {
         String script = Files.readString(Path.of(
                 "scripts", "smoke", "enterprise-lab-ownership-proof.ps1")).toLowerCase();
         assertTrue(script.contains("--enterprise-lab-ownership-proof"));
+        assertTrue(script.contains("enterpriselabprooftoolsapplication"));
         assertTrue(script.contains("assert-outputundertarget"));
         assertTrue(script.contains("competingtakeoversinglewinner"));
         assertTrue(script.contains("abruptstaleownerclassified"));
@@ -107,6 +108,7 @@ class EnterpriseLabEvidenceOwnershipProofCommandTest {
         assertFalse(script.contains("invoke-webrequest"));
         assertFalse(script.contains("invoke-restmethod"));
         assertFalse(script.contains("force-unlock"));
+        assertFalse(script.contains("java -jar"));
     }
 
     @Test

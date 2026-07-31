@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only evidence exporter; intentionally excluded from the production application artifact.
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 

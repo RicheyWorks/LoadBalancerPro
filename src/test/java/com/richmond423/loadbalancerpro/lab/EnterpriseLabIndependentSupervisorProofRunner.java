@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only proof runner; intentionally excluded from the production application artifact.
+
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.AllocationPurpose;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.FailureClassification;
@@ -45,7 +47,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-/** Coordinates bounded packaged JVM proofs for the independent local supervisor. */
+/** Coordinates bounded test/tool JVM proofs for the independent local supervisor. */
 public final class EnterpriseLabIndependentSupervisorProofRunner {
     private static final String EVENT_PREFIX = "LBP_INDEPENDENT_SUPERVISOR_PROOF|";
     private static final Duration START_TIMEOUT = Duration.ofSeconds(30);
@@ -1182,7 +1184,7 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
         } else {
             command.add("-cp");
             command.add(classPath);
-            command.add("com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication");
+            command.add("com.richmond423.loadbalancerpro.cli.EnterpriseLabProofToolsApplication");
         }
         return command;
     }

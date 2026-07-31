@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.cli;
 
+// Test/tool-only command; intentionally excluded from the production application artifact.
+
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentProofExporter;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentProofReport;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentProofRunner;

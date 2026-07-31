@@ -100,7 +100,7 @@ Both routes use the existing API-key and OAuth2 operator-role rules. They expose
 directory or lock-file identity, file handle, raw record/lock bytes, release action, forced unlock, owner/generation
 override, or takeover action. An unconfigured durable repository returns the existing bounded conflict response.
 
-`scripts/smoke/enterprise-lab-ownership-proof.ps1` runs the packaged
+`scripts/smoke/enterprise-lab-ownership-proof.ps1` compiles and runs the test/tool-only
 `--enterprise-lab-ownership-proof` command. The foreground parent derives fresh roots only beneath `target/` and starts
 truly separate child JVMs. The executable proof covers live-owner refusal, owner append/reconciliation, non-owner
 append/compaction/retention/experiment/allocation refusal, bounded renewal, clean release and higher-generation handoff,

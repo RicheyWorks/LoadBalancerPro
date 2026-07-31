@@ -24,10 +24,14 @@ Use it when you specifically want to explore the desktop simulator experience. D
 
 ## Current Build Reality
 
-- The Maven project declares `org.openjfx:javafx-controls` using the `javafx.version` property in `pom.xml`.
+- The Maven project declares `org.openjfx:javafx-controls` as a provided dependency using the `javafx.version`
+  property in `pom.xml`.
 - The packaged Spring Boot jar main class remains `com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`.
+- The packaged Spring Boot server jar excludes the OpenJFX libraries and the two application classes that directly
+  import JavaFX (`LoadBalancerGUI` and `ServerTableRow`).
 - The Java fixture launcher remains `com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`.
-- The CLI has an interactive `Launch GUI` menu option that calls `LoadBalancerGUI.launch(...)`.
+- The source-tree CLI retains its interactive `Launch GUI` option for Maven/classpath development use; the server jar
+  is not a desktop-UI distribution.
 - No JavaFX-specific Maven plugin is bound to the default lifecycle.
 
 ## Launch Guidance
@@ -38,13 +42,14 @@ For normal API/proxy work, do not launch JavaFX. Start the API or proxy using th
 java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
-If you intentionally want to try the desktop UI, use the CLI entry point and choose the interactive `Launch GUI` option:
+If you intentionally want to try the desktop UI from the checked-out source tree, use the CLI entry point and choose
+the interactive `Launch GUI` option:
 
 ```bash
 mvn -q exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.cli.LoadBalancerCLI"
 ```
 
-This requires a JavaFX-capable runtime environment and a desktop display. If the local runtime cannot launch JavaFX, use the API/proxy/static browser paths instead.
+This requires Maven to resolve the provided JavaFX dependency. It also requires a JavaFX-capable runtime environment and a desktop display. The production server jar intentionally does not provide this path. If the local runtime cannot launch JavaFX, use the API/proxy/static browser paths instead.
 
 ## Platform Caveats
 

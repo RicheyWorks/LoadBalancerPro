@@ -98,7 +98,7 @@ holder is a production ownership authority.
 
 ## Not proven
 
-This local packaged proof does not prove production deployment, external traffic, real tenants, arbitrary private
+This local test/tool-only proof does not prove production deployment, external traffic, real tenants, arbitrary private
 networks, durable external routers, cross-host state, network-filesystem correctness, distributed consensus, performance,
 availability, throughput, p95/p99, or unattended production recovery. The separate holder demonstrates only the bounded
 local crash-window contract and is not available through the operator API.

@@ -21,7 +21,7 @@ class EnterpriseLabAllocationProofRunnerTest {
     }
 
     @Test
-    void packagedProofExercisesCrashWindowsExternalStateDriftAndFencing() throws Exception {
+    void testToolProofExercisesCrashWindowsExternalStateDriftAndFencing() throws Exception {
         Path output = Path.of("target", "allocation-proof-runner-test-" + UUID.randomUUID());
         EnterpriseLabAllocationProofReport report =
                 new EnterpriseLabAllocationProofRunner().run(output);

@@ -62,10 +62,12 @@ class EnterpriseLabDurableRecoveryProofCommandTest {
         String script = Files.readString(Path.of(
                 "scripts", "smoke", "enterprise-lab-durable-recovery-proof.ps1")).toLowerCase();
         assertTrue(script.contains("--enterprise-lab-durable-recovery-proof"));
+        assertTrue(script.contains("enterpriselabprooftoolsapplication"));
         assertTrue(script.contains("assert-outputundertarget"));
         assertTrue(script.contains("middlecorruptionquarantined"));
         assertTrue(script.contains("terminalcompactionverified"));
         assertFalse(script.contains("invoke-webrequest"));
         assertFalse(script.contains("invoke-restmethod"));
+        assertFalse(script.contains("java -jar"));
     }
 }

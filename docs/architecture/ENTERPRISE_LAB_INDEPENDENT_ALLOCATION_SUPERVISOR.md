@@ -229,7 +229,7 @@ The campaign sequence is:
 2. PR3 adds high-entropy authenticated client transport with no DNS, proxy, redirect, or external fallback;
 3. integrate supervisor-required mode without silent in-process fallback;
 4. reconcile application restart, supervisor restart, dual restart, stale application, and crash windows; and
-5. expose sanitized operator status and packaged multi-process proofs.
+5. expose sanitized operator status and test/tool-only multi-process proofs.
 
 The current proof-only allocation holder remains proof-only until those production Enterprise Lab boundaries are
 implemented and verified. Its raw in-memory CAS and run-token protocol are not the runtime supervisor contract.

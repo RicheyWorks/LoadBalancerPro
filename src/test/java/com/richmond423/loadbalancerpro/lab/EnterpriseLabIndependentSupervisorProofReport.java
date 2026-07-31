@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only evidence model; intentionally excluded from the production application artifact.
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -12,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-/** Bounded aggregate evidence from the packaged independent-supervisor proof. */
+/** Bounded aggregate evidence from the test/tool independent-supervisor proof. */
 public record EnterpriseLabIndependentSupervisorProofReport(
         String schemaVersion,
         Instant executedAt,

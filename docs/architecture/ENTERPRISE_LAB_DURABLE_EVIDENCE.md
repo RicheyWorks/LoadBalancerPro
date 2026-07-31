@@ -109,8 +109,8 @@ interrupted candidate.
 
 These are bounded single-host literal-loopback behaviors. They do not prove power-loss durability, arbitrary kill timing,
 filesystem or firmware guarantees, production supervision, external or tenant traffic, multi-host failover, distributed
-consensus, throughput, p95/p99 latency, load/stress capacity, or production readiness. Final packaged campaign proofs and
-operator-status refinements remain a later scoped change.
+consensus, throughput, p95/p99 latency, load/stress capacity, or production readiness. The campaign proofs execute from
+test/tool-only source and are not shipped in the production server jar.
 
 ## Terminal compaction and retention
 
@@ -271,8 +271,9 @@ For a local change affecting this boundary, verify in this order:
 1. Run focused codec, local journal, verifier, replay, startup reconciler, durable repository, operator, controller, API-key,
    OAuth2, and proof-command tests.
 2. Run `mvn -q test` and confirm Surefire reports zero failures, errors, and skips.
-3. Run `mvn -q "-DskipTests" package`, then `mvn -B package` at the exact candidate head.
-4. Run the existing completion/rollback proof and the durable recovery proof against the packaged JAR.
+3. Run `mvn -q clean package` once at the exact candidate head, inspect every Surefire report, then run
+   `mvn -q -DskipTests verify` without duplicating the complete suite.
+4. Run the completion/rollback and durable-recovery scripts from their test/tool-only source home.
 5. Verify embedded Tomcat resolution, JaCoCo output, CycloneDX SBOM generation, the executable JAR, and ignored target-only
    proof output.
 6. Inspect the diff for paths, non-loopback URLs, secret-like values, generated journal evidence, unbounded collections,
@@ -280,7 +281,7 @@ For a local change affecting this boundary, verify in this order:
 7. Require exact-head CI, CodeQL, dependency review, container runtime smoke, and Trivy results before merge.
 8. Merge normally, preserve the source branch, and require exact-merge main CI and CodeQL before declaring completion.
 
-The packaged proof report should show `ROLLED_BACK` for the interrupted case, `COMPLETED` for normal completion,
+The test/tool proof report should show `ROLLED_BACK` for the interrupted case, `COMPLETED` for normal completion,
 `ROLLED_BACK` for normal cancellation, and true values for both recovery passes, corruption quarantine, partial-tail
 quarantine, unresolved retention, active-compaction rejection, and terminal-compaction verification. Generated files belong
 under ignored `target/`; they are verification output and must not be committed.

@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only evidence model; intentionally excluded from the production application artifact.
+
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentEvaluation.Disposition;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentEvaluation.Trigger;
 
@@ -18,7 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Immutable summary and full operator records from one packaged real-loopback proof suite.
+ * Immutable summary and full operator records from one test/tool real-loopback proof suite.
  */
 public record EnterpriseLabExperimentProofReport(
         String schemaVersion,

@@ -76,12 +76,14 @@ class EnterpriseLabExperimentProofCommandTest {
         String script = Files.readString(SCRIPT).toLowerCase();
         assertTrue(script.contains("--enterprise-lab-experiment-proof=$suite"));
         assertTrue(script.contains("--enterprise-lab-experiment-output=$outputdir"));
+        assertTrue(script.contains("enterpriselabprooftoolsapplication"));
         assertTrue(script.contains("assert-outputundertarget"));
         assertTrue(script.contains("literal-loopback"));
         assertTrue(script.contains("convertfrom-json"));
         assertTrue(script.contains("baselineRestored".toLowerCase()));
         assertFalse(script.contains("invoke-webrequest"));
         assertFalse(script.contains("invoke-restmethod"));
+        assertFalse(script.contains("java -jar"));
     }
 
     private static CapturedRun runCommand(String... args) {

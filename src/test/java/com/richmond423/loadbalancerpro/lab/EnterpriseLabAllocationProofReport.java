@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only evidence model; intentionally excluded from the production application artifact.
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-/** Bounded aggregate evidence from the packaged allocation crash-window proof. */
+/** Bounded aggregate evidence from the test/tool allocation crash-window proof. */
 public record EnterpriseLabAllocationProofReport(
         String schemaVersion,
         Instant executedAt,

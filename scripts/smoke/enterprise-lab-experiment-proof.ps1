@@ -7,6 +7,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "enterprise-lab-proof-tool-runtime.ps1")
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -21,17 +22,6 @@ function Assert-OutputUnderTarget {
         throw "Enterprise Lab experiment proof output must stay under target/. Requested: $Path"
     }
     return $resolvedOutput
-}
-
-function Find-ExecutableJar {
-    $jar = Get-ChildItem -Path "target" -Filter "LoadBalancerPro-*.jar" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch "(-sources|-javadoc|-tests|\.original)\.jar$" } |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-    if ($null -eq $jar) {
-        return $null
-    }
-    return $jar.FullName
 }
 
 function Assert-NoSecretValues {
@@ -55,27 +45,17 @@ if ($DryRun) {
     Write-Host "Enterprise Lab experiment proof dry run."
     Write-Host "Suite: $Suite"
     Write-Host "Output directory: $OutputDir"
-    Write-Host "Planned command: java -jar target/LoadBalancerPro-*.jar --enterprise-lab-experiment-proof=$Suite --enterprise-lab-experiment-output=$OutputDir"
+    Write-Host "Planned command: test-compile then EnterpriseLabProofToolsApplication --enterprise-lab-experiment-proof=$Suite --enterprise-lab-experiment-output=$OutputDir"
     Write-Host "Safety: foreground bounded literal-loopback proof only; no API server, external target, cloud, tenant, production routing, release, container publication, or registry action."
     exit 0
 }
 
-$jarPath = Find-ExecutableJar
-if ($Package -or $null -eq $jarPath) {
-    & mvn -q -DskipTests package
-    if ($LASTEXITCODE -ne 0) {
-        throw "mvn package failed with exit code $LASTEXITCODE"
-    }
-    $jarPath = Find-ExecutableJar
-}
-if ($null -eq $jarPath) {
-    throw "Executable LoadBalancerPro jar was not found under target/."
-}
-
 New-Item -ItemType Directory -Force -Path $resolvedOutputDir | Out-Null
-$output = & java -jar $jarPath "--enterprise-lab-experiment-proof=$Suite" "--enterprise-lab-experiment-output=$OutputDir" 2>&1
-$exitCode = $LASTEXITCODE
-$text = ($output -join "`n")
+$run = Invoke-EnterpriseLabProofTool -Arguments @(
+    "--enterprise-lab-experiment-proof=$Suite",
+    "--enterprise-lab-experiment-output=$OutputDir")
+$exitCode = $run.ExitCode
+$text = ($run.Output -join "`n")
 if ($exitCode -ne 0) {
     throw "Enterprise Lab experiment proof CLI failed with exit code $exitCode`n$text"
 }

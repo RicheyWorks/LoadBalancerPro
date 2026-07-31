@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.cli;
 
+// Test/tool-only command; intentionally excluded from the production application artifact.
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationProofReport;
@@ -16,7 +18,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-/** Foreground packaged entrypoint for bounded allocation crash-window proofs. */
+/** Foreground test/tool entrypoint for bounded allocation crash-window proofs. */
 public final class EnterpriseLabAllocationProofCommand {
     private static final String FLAG = "--enterprise-lab-allocation-proof";
     private static final String HOLDER_FLAG = "--enterprise-lab-allocation-proof-holder";

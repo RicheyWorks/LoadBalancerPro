@@ -52,7 +52,14 @@ class ReverseProxyFailureTest {
                 .andExpect(jsonPath("$.metrics.statusClassCounts['5xx']").value(1))
                 .andExpect(jsonPath("$.metrics.lastSelectedUpstream").value("downstream-offline"))
                 .andExpect(jsonPath("$.metrics.upstreams[0].upstreamId").value("downstream-offline"))
-                .andExpect(jsonPath("$.metrics.upstreams[0].failures").value(1));
+                .andExpect(jsonPath("$.metrics.upstreams[0].failures").value(1))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.inFlightRequestCount").value(0))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.completedRequestCount").value(1))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.latencySampleCount").value(1))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.recentSuccessCount").value(0))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.recentFailureCount").value(1))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.recentErrorRate").value(1.0))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.lastUpdatedAt").isString());
     }
 
     private static int unusedLocalPort() {

@@ -4,6 +4,14 @@
 
 None.
 
+## Resolved campaign failures
+
+- P-1.2: the first full-suite wrapper expired after 304 seconds while the existing 10,000-command ledger soak was still progressing. A clean-package rerun with a larger bound exited zero after 2,467 tests with zero failures/errors/skips.
+- P-1.2: PowerShell split the first unquoted dotted CycloneDX property, so Maven rejected the invocation. Quoting each `-D` argument generated and validated fresh JSON/XML SBOMs.
+- P-1.2: `pwsh` was unavailable and the default profile-smoke port 18182 was occupied. The same checked-in scripts passed under Windows PowerShell on a prechecked alternate loopback port range.
+- P-1.2: local Docker image/runtime proof was unavailable because the installed client could not reach the absent Docker Desktop Linux engine. Remote Docker build and blocking Trivy image scan remain required.
+- P-1.2: the written campaign lifecycle includes `LOCAL_GREEN`, but the manifest guard accepts only `OPEN`, `IN_PROGRESS`, and `MAIN_GREEN`. The slot remains `IN_PROGRESS` through remote gating; this product PR does not widen campaign-infrastructure scope.
+
 ## Reusable technical lessons
 
 - Treat required checks as evidence for one exact head; stale, cancelled, skipped, or different-head results are not substitutes.

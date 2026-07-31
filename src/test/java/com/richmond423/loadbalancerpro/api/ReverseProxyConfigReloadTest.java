@@ -187,6 +187,35 @@ class ReverseProxyConfigReloadTest {
     }
 
     @Test
+    void runtimeStatsSurviveReloadForAnUnchangedUpstreamId() throws Exception {
+        mockMvc.perform(get("/proxy/startup?step=before-same-id-reload"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-LoadBalancerPro-Upstream", "startup-backend"));
+
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.completedRequestCount").value(1));
+
+        mockMvc.perform(post("/api/proxy/reload")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sameIdReloadBody()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/proxy/startup?step=after-same-id-reload"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-LoadBalancerPro-Upstream", "startup-backend"));
+
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.inFlightRequestCount").value(0))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.completedRequestCount").value(2))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.latencySampleCount").value(2))
+                .andExpect(jsonPath("$.upstreams[0].runtimeStats.recentSuccessCount").value(2));
+    }
+
+    @Test
     void reloadEndpointRejectsUnauthenticatedMutationEvenInLocalProfile() throws Exception {
         mockMvc.perform(post("/api/proxy/reload")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -260,6 +289,23 @@ class ReverseProxyConfigReloadTest {
                   ]
                 }
                 """.formatted(RELOADED_BACKEND.baseUrl());
+    }
+
+    private static String sameIdReloadBody() {
+        return """
+                {
+                  "enabled": true,
+                  "strategy": "ROUND_ROBIN",
+                  "upstreams": [
+                    {
+                      "id": "startup-backend",
+                      "url": "%s",
+                      "healthy": true,
+                      "weight": 1.0
+                    }
+                  ]
+                }
+                """.formatted(STARTUP_BACKEND.baseUrl());
     }
 
     private static String invalidReloadBody() {

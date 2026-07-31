@@ -69,7 +69,19 @@ public class ReverseProxyStatusController {
                         "proxy disabled; active probes not run",
                         0,
                         false,
-                        0))
+                        0,
+                        new ReverseProxyStatusResponse.UpstreamRuntimeStatus(
+                                0,
+                                0,
+                                0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0,
+                                0,
+                                0.0,
+                                null)))
                 .toList();
         ReverseProxyMetricsSnapshot metricsSnapshot = metrics.snapshot(upstreamIds);
         return decorate(new ReverseProxyStatusResponse(

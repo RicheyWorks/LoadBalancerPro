@@ -72,6 +72,7 @@ public class ReverseProxyService {
     private final AtomicLong nextGeneration = new AtomicLong(1);
     private final ConcurrentMap<String, ProbeState> probeStates = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ResilienceState> resilienceStates = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, UpstreamRuntimeStats> upstreamRuntimeStats = new ConcurrentHashMap<>();
 
     @Autowired
     public ReverseProxyService(ReverseProxyProperties properties,
@@ -263,6 +264,7 @@ public class ReverseProxyService {
             nextGeneration.updateAndGet(current -> Math.max(current, candidateConfig.generation() + 1));
             probeStates.clear();
             resilienceStates.clear();
+            retainConfiguredRuntimeStats(candidateConfig);
             ReloadState successState = ReloadState.success(attemptedAt, candidateConfig);
             reloadState.set(successState);
             logger.info("proxy.config.reload status=success generation={} routeCount={} backendTargetCount={}",
@@ -405,10 +407,19 @@ public class ReverseProxyService {
                                              Duration requestTimeout,
                                              String proxyPathSuffix) {
         String upstreamId = upstream.state().serverId();
+        UpstreamRuntimeStats runtimeStats = null;
+        long startedAtNanos = 0;
+        boolean runtimeTrackingStarted = false;
+        boolean runtimeSuccessful = false;
         try {
             HttpRequest outbound = buildOutboundRequest(
                     request, body, upstream, requestTimeout, proxyPathSuffix);
+            runtimeStats = runtimeStatsFor(upstreamId);
+            runtimeStats.requestStarted();
+            startedAtNanos = System.nanoTime();
+            runtimeTrackingStarted = true;
             HttpResponse<byte[]> response = httpClient.send(outbound, HttpResponse.BodyHandlers.ofByteArray());
+            runtimeSuccessful = response.statusCode() < 500;
             metrics.recordForwarded(upstreamId, response.statusCode());
             HttpHeaders responseHeaders = forwardedResponseHeaders(response.headers().map());
             responseHeaders.set(UPSTREAM_HEADER, upstreamId);
@@ -441,6 +452,11 @@ public class ReverseProxyService {
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy could not reach upstream " + upstreamId),
                     true);
+        } finally {
+            if (runtimeTrackingStarted) {
+                long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
+                runtimeStats.requestCompleted(Duration.ofNanos(elapsedNanos), runtimeSuccessful);
+            }
         }
     }
 
@@ -556,6 +572,7 @@ public class ReverseProxyService {
                             URI baseUri = configuredBaseUri(upstream, id);
                             EffectiveHealth health = effectiveHealth(properties, upstream, id, baseUri, now);
                             ResilienceState resilienceState = resilienceState(id);
+                            UpstreamRuntimeStats.Snapshot runtime = runtimeStatsFor(id).snapshot();
                             return new ReverseProxyStatusResponse.UpstreamStatus(
                                     id,
                                     safeConfiguredUrl(baseUri),
@@ -566,9 +583,36 @@ public class ReverseProxyService {
                                     health.lastProbeOutcome(),
                                     resilienceState.consecutiveFailures(),
                                     resilienceState.cooldownActive(now),
-                                    resilienceState.cooldownRemainingMillis(now));
+                                    resilienceState.cooldownRemainingMillis(now),
+                                    new ReverseProxyStatusResponse.UpstreamRuntimeStatus(
+                                            runtime.inFlightRequestCount(),
+                                            runtime.completedRequestCount(),
+                                            runtime.latencySampleCount(),
+                                            runtime.ewmaLatencyMillis(),
+                                            runtime.p50LatencyMillis(),
+                                            runtime.p95LatencyMillis(),
+                                            runtime.p99LatencyMillis(),
+                                            runtime.recentSuccessCount(),
+                                            runtime.recentFailureCount(),
+                                            runtime.recentErrorRate(),
+                                            isoInstant(runtime.lastUpdatedAt())));
                         }))
                 .toList();
+    }
+
+    private UpstreamRuntimeStats runtimeStatsFor(String upstreamId) {
+        return upstreamRuntimeStats.computeIfAbsent(
+                requireNonBlank(upstreamId, "upstreamId"),
+                ignored -> new UpstreamRuntimeStats(clock));
+    }
+
+    private void retainConfiguredRuntimeStats(ActiveProxyConfig config) {
+        Set<String> configuredIds = config.routes().stream()
+                .flatMap(route -> route.targets().stream())
+                .map(ReverseProxyProperties.Upstream::getId)
+                .map(String::trim)
+                .collect(Collectors.toSet());
+        upstreamRuntimeStats.keySet().retainAll(configuredIds);
     }
 
     private URI configuredBaseUri(ReverseProxyProperties.Upstream upstream, String id) {

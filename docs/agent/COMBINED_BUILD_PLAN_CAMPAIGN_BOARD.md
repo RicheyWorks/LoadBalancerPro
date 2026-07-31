@@ -18,10 +18,10 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   final head `a4464693d577e1860f43cb6075286319315867c8`, merge
   `11b23f530156cc01e4f4016a48f4051f70593697`, exact-main CI `30597718467` and CodeQL `30597718455` green.
 - Active implementation slot: `L-2.5`; make durability receipts honest and storage failures diagnosable on
-  `codex/l-2-5-durability-honesty` from exact green main
-  `11b23f530156cc01e4f4016a48f4051f70593697`. The 149-test product selector, six-test campaign guard, final
+  `codex/l-2-5-durability-honesty` in [PR #518](https://github.com/RicheyWorks/LoadBalancerPro/pull/518), from exact
+  green main `11b23f530156cc01e4f4016a48f4051f70593697`. The 149-test product selector, six-test campaign guard, final
   3,079-test clean package, verify/SBOM/artifact checks, packaged local proofs/runtime, and complete-diff scope review
-  are green; commit/PR creation and exact-head remote gates remain pending.
+  are green; the final checkpoint push and exact-head remote gates remain pending.
 - Next implementation slot after the active gate: `L-4.1`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -50,7 +50,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | MAIN_GREEN |
 | 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | MAIN_GREEN |
 | 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | MAIN_GREEN |
-| 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | LOCAL_GREEN |
+| 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | PR_OPEN |
 | 21 | L-4.1 | L-4.1 | Fix or retire CLI | L0 complete | OPEN |
 | 22 | L-4.2 | L-4.2 | Delete or repair JavaFX | L0 complete | OPEN |
 | 23 | L-4.3 | L-4.3 | Unify artifact selection | L0 complete | OPEN |

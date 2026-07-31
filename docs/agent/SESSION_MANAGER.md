@@ -6,6 +6,25 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 20 PR-Creation Checkpoint
+
+Timestamp: 2026-07-30T21:27:46-07:00
+
+Current slot/branch/PR: `L-2.5`; `codex/l-2-5-durability-honesty`;
+[#518](https://github.com/RicheyWorks/LoadBalancerPro/pull/518); product commit
+`e5244e83ee38061e6b4ce74d78439723e6a3ada8`; published pre-PR-checkpoint head
+`c10b97568c19b7342f2fb0127208225ed7699266`; exact green-main base
+`11b23f530156cc01e4f4016a48f4051f70593697`; status `PR_OPEN`.
+
+The PR was created as ready-for-review with the complete local verification, artifact/SBOM identity, Docker
+unavailability boundary, exact 30-path scope, complete-diff self-review, and remaining not-proven boundaries recorded.
+GitHub confirmed the requested head OID. The first push CI began; its push-event dependency-review job was skipped by
+event design and is not accepted as the required PR dependency-review result.
+
+Blocker: exact final-head remote checks are pending. Next: commit and push this checkpoint-only update, require CI,
+PR-event dependency review, CodeQL, Docker/runtime, artifact/SBOM evidence, and blocking Trivy on that unchanged final
+head, then merge automatically only if GitHub reports it mergeable.
+
 ## Combined Build Plan Slot 20 Complete-Diff Local-Green Candidate
 
 Timestamp: 2026-07-30T21:24:37-07:00

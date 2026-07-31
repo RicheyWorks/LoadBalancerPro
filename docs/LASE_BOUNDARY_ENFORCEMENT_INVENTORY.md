@@ -86,12 +86,12 @@ Observed current layout:
 | `com.richmond423.loadbalancerpro.api.proxy` | Lightweight reverse proxy, route planning, status, metrics, private-network validation gate, and loopback/private-network boundary helpers. | `infrastructure` or `api.proxy` boundary. | HIGH | Runtime proxy behavior. | LASE must not directly alter proxy behavior or private-network validation behavior. |
 | `com.richmond423.loadbalancerpro.cli` | CLI commands and local evidence/audit/report helpers. | `api`, `tooling`, or `infrastructure` depending on responsibility. | MEDIUM | CLI runtime and evidence tooling. | Future moves must not create release/export/share/download behavior accidentally. |
 | `com.richmond423.loadbalancerpro.lab` | Enterprise Lab run, evidence export, scenario catalog, and scorecard support. | `lase`, `evidence`, or `api` depending on future design. | MEDIUM | Lab evidence runtime. | Lab evidence must remain bounded and not become production authority. |
-| `com.richmond423.loadbalancerpro.gui` | JavaFX desktop UI and command abstractions. | `api/view` or legacy UI boundary. | MEDIUM | Optional UI runtime. | Keep optional UI separate from API/proxy runtime assumptions. |
+| `com.richmond423.loadbalancerpro.gui` | JavaFX-free legacy `Command` compatibility contract consumed by `CloudManager`; the desktop UI is retired. | Legacy compatibility boundary. | LOW | Runtime compatibility type only. | Keep the public compatibility contract separate from the retired UI and from LASE authority. |
 | `com.richmond423.loadbalancerpro.demo` | Local proxy fixture launcher. | `tooling` or `infrastructure.demo`. | LOW | Local demo/runtime fixture. | Loopback/local demo only; not production validation. |
 | `com.richmond423.loadbalancerpro.util` | File parsing, import/export, hashing, and utility helpers. | `infrastructure` or `tooling`. | MEDIUM | Runtime utility behavior. | Do not expand filesystem/export behavior during boundary work. |
 | `src/main/resources/static` | Static reviewer/operator pages: `routing-demo.html`, `load-balancing-cockpit.html`, `enterprise-lab-reviewer.html`, `operator-evidence-dashboard.html`, and related local pages. | `api/view` surface. | LOW | Static API/view-only surface. | Static UI must not invent unsafe claims or external scripts/CDNs. |
 
-There is no standalone `com.richmond423.loadbalancerpro.config` package in the observed tree. Configuration classes currently appear under `com.richmond423.loadbalancerpro.api.config`, with additional CLI/GUI configuration classes in their respective packages.
+There is no standalone `com.richmond423.loadbalancerpro.config` package in the observed tree. Runtime configuration classes currently appear under `com.richmond423.loadbalancerpro.api.config`; the retired JavaFX configuration helpers are absent.
 
 ## Future Boundary Buckets
 
@@ -199,7 +199,7 @@ This sprint does not introduce these packages. They are future categories for re
 | `ApiRateLimitFilter`, `RequestSizeLimitFilter` | `api.config` | `config.security` | MEDIUM | They enforce request safety limits. | Do not change request behavior during inventory work. | Runtime config/security. |
 | `TelemetryConfiguration`, `TelemetryProperties`, `TelemetryStartupGuard` | `api.config` | `config.telemetry` | MEDIUM | They guard telemetry configuration. | No new telemetry/storage/persistence in this sprint. | Runtime config. |
 | `WebConfig` | `api.config` | `config.web` | LOW | It configures web behavior. | No web behavior changes in inventory work. | Runtime config. |
-| `GuiConfig`, `ConfigLoader` | `gui` | GUI config or legacy boundary | LOW to MEDIUM | They configure the remaining JavaFX source pending its separate delete-or-repair decision. The retired synthetic CLI and `CliConfig` no longer exist. | Future moves should keep any retained GUI defaults explicit. | Runtime config. |
+| `Command` | `gui` | Legacy compatibility boundary | LOW | `CloudManager` still consumes this JavaFX-free public command/status contract; the desktop GUI and its configuration helpers are retired. | Moving or replacing this public type requires a separate compatibility-scoped change. | Runtime compatibility contract. |
 
 ## Boundary Risks Observed In Current Layout
 

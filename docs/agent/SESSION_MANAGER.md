@@ -6,6 +6,72 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 22 PR-Created Checkpoint
+
+Timestamp: 2026-07-31T04:50:00-07:00
+
+Active: `L-4.2`; `codex/l-4-2-retire-javafx`; [PR #520](https://github.com/RicheyWorks/LoadBalancerPro/pull/520);
+exact green-main base
+`952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`; corrected product head
+`91fed46584156952520fc7dfab7347c5e65b64fc`; locally verified pre-checkpoint branch head
+`437a7d6b513b281fcabd77d5d57f2cbff7ac035b`; status `REMOTE_PENDING`.
+
+Prior slot closure: L-4.1 final head `da0779b7feb48bfdcebb4a588e3da84a128a97a9` passed push CI
+`30625130126`, PR CI `30625132290`, dependency review, CodeQL `30625132265`, Docker/runtime, SBOM/artifact evidence,
+and zero-finding blocking Trivy, then merged in [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)
+as `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`. The merge parents and tree were exact. Exact-main local verification
+passed 170 tests across 15 reports with zero failures, errors, or skips; CI `30625619790` and CodeQL `30625619540`
+passed. Downloaded main evidence names the merge SHA, records Docker runtime passed, reports zero Ubuntu and zero JAR
+findings, and contains a 138-component CycloneDX 1.6 SBOM with Boot `3.5.16`, Framework `6.2.19`, Security `6.5.11`,
+and no OpenJFX.
+
+L-4.2 selected the source-plan deletion path. Current-tree usage analysis proved that eight desktop-only GUI source
+files and both checked-in copies of the single `gui/messages.properties` bundle have no consumer outside the retired
+simulator. Those files, `javafx.version`, `org.openjfx:javafx-controls`, and their now-stale packaging exclusions are
+removed. The JavaFX-free public
+`com.richmond423.loadbalancerpro.gui.Command` contract remains because `CloudManager` consumes it; moving that type
+would be a separate compatibility change. Current operator, security/testing, reviewer, and architecture documents
+now record retirement rather than advertising an unsupported launch path.
+
+Focused verification is current-tree green: skip-test `test-compile` passed; the 10-class selector passed 91 tests
+with zero failures, errors, or skips; and the 166-line effective dependency tree contains zero OpenJFX/JavaFX entries
+while still resolving Spring Boot `3.5.16`, Spring Framework `6.2.19`, and Spring Security `6.5.11`. Source scans find
+no JavaFX imports, only `Command.java` under the production `gui` package, and no remaining source consumer of a
+deleted desktop type.
+
+Pre-commit complete-diff self-review covers all 33 changed paths: eight Java sources and two copies of one desktop
+resource bundle are deleted;
+the only surviving production-Java edit is `Command` Javadoc; POM changes only remove the JavaFX declaration and
+stale excludes; the remaining changes are guards, current-state documentation, and campaign records. `git diff
+--check` is clean, there are no untracked files, and no workflow, Docker/Compose, runtime configuration, API/core
+implementation, new dependency/plugin, credential, external target, suppression, allowlist, or security-gate change
+is present.
+
+The first packaged-content audit then caught the duplicate resource copy under `src/main/resources/gui`. The
+correction removes it, extends the source-absence guard to both former locations, and passes a clean focused selector
+of 20 tests with zero failures, errors, or skips. No current production source loads `gui.messages`. Because the
+artifact gate changed the exact head, the complete full/gate ladder was rerun rather than reusing pre-correction
+evidence.
+
+Corrected-head local verification is green: clean full suite 3,076 tests across 414 fresh reports with zero failures,
+errors, or skips; package and verify passed; the 166-line dependency tree has zero JavaFX/OpenJFX entries and resolves
+Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`; CycloneDX 1.6 JSON/XML SBOM generation passed with 138
+components and zero OpenJFX; and the 1,258-entry JAR audit retained `gui.Command` while finding zero retired GUI
+classes, desktop message resources, proof-tool classes, or JavaFX/OpenJFX content. The executable JAR SHA-256 is
+`809fe1b68c5101d5bf87d6638763f38964db15ca72c24b822776eb05ef114d54`. Packaged healthy/overloaded/invalid proof
+dispatch and loopback `/api/health`, `/proxy-status.html`, and `/api/proxy/status` smoke passed. Local Docker is
+unavailable because the Docker Desktop Linux engine pipe is absent; Docker build, container runtime/health, and
+blocking Trivy remain mandatory exact-head remote CI gates.
+
+Scope/boundaries: no API/proxy/cloud behavior, workflow, Docker/Compose, configuration default, credential,
+external/cloud/tenant target, security suppression/allowlist, or live mutation is authorized. Deletion must not
+remove shared core behavior still used outside the retired simulator. Existing HTML cockpit pages remain bounded
+local reviewer/operator surfaces and do not prove production readiness or live-cloud validation.
+
+Blocker: none. Next: commit/push this concise PR-created checkpoint, require exact-head CI, dependency review, CodeQL,
+Docker runtime, SBOM/artifact evidence, and zero-finding blocking Trivy, then perform the final complete-diff
+self-review and merge automatically only while the PR remains mergeable and unchanged.
+
 ## Combined Build Plan Slot 21 Remote-Green Audit Checkpoint
 
 Timestamp: 2026-07-31T03:14:25-07:00

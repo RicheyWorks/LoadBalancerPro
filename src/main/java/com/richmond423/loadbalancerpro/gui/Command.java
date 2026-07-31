@@ -4,8 +4,10 @@ import org.json.JSONObject;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Enhanced Command interface for LoadBalancerGUI operations.
- * Supports async execution and serialization for real-time GUI integration.
+ * Legacy asynchronous command contract retained for {@code CloudManager} compatibility.
+ *
+ * <p>The retired JavaFX desktop simulator no longer consumes this type. Moving the public
+ * contract to another package would be a separate compatibility change.</p>
  */
 public interface Command {
     void execute();

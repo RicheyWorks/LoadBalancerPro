@@ -20,6 +20,8 @@ class ProductionArtifactIsolationTest {
             "com", "richmond423", "loadbalancerpro", "cli");
     private static final Path LAB = Path.of(
             "com", "richmond423", "loadbalancerpro", "lab");
+    private static final Path GUI = Path.of(
+            "com", "richmond423", "loadbalancerpro", "gui");
 
     private static final List<Path> PROOF_TOOL_SOURCES = List.of(
             CLI.resolve("EnterpriseLabAllocationProofCommand.java"),
@@ -63,19 +65,18 @@ class ProductionArtifactIsolationTest {
     }
 
     @Test
-    void javaFxAndProofClassesAreExplicitlyExcludedFromServerJar() throws Exception {
+    void javaFxDesktopSourceAndDependencyAreAbsentFromTheProject() throws Exception {
         String pom = read(Path.of("pom.xml"));
-        assertTrue(pom.contains("<artifactId>javafx-controls</artifactId>"));
-        assertTrue(pom.contains("<scope>provided</scope>"));
+        assertFalse(pom.contains("<javafx.version>"));
+        assertFalse(pom.contains("<groupId>org.openjfx</groupId>"));
+        assertFalse(pom.contains("<artifactId>javafx-controls</artifactId>"));
         assertTrue(pom.contains(
                 "<exclude>com/richmond423/loadbalancerpro/cli/EnterpriseLab*Proof*.class</exclude>"));
         assertTrue(pom.contains(
                 "<exclude>com/richmond423/loadbalancerpro/lab/EnterpriseLab*Proof*.class</exclude>"));
-        assertTrue(pom.contains(
-                "<exclude>com/richmond423/loadbalancerpro/gui/LoadBalancerGUI*.class</exclude>"));
-        assertTrue(pom.contains(
-                "<exclude>com/richmond423/loadbalancerpro/gui/ServerTableRow*.class</exclude>"));
-        assertTrue(pom.contains("<excludeGroupIds>org.openjfx</excludeGroupIds>"));
+        assertFalse(pom.contains("com/richmond423/loadbalancerpro/gui/LoadBalancerGUI"));
+        assertFalse(pom.contains("com/richmond423/loadbalancerpro/gui/ServerTableRow"));
+        assertFalse(pom.contains("<excludeGroupIds>org.openjfx</excludeGroupIds>"));
 
         List<Path> javaFxImporters = new ArrayList<>();
         try (var sources = Files.walk(MAIN_JAVA)) {
@@ -90,12 +91,24 @@ class ProductionArtifactIsolationTest {
                     .map(MAIN_JAVA::relativize)
                     .forEach(javaFxImporters::add);
         }
-        assertEquals(List.of(
-                        Path.of("com", "richmond423", "loadbalancerpro", "gui",
-                                "LoadBalancerGUI.java"),
-                        Path.of("com", "richmond423", "loadbalancerpro", "gui",
-                                "ServerTableRow.java")),
-                javaFxImporters.stream().sorted().toList());
+        assertEquals(List.of(), javaFxImporters.stream().sorted().toList());
+
+        for (String retiredSource : List.of(
+                "LoadBalancerGUI.java",
+                "ServerTableRow.java",
+                "GuiConfig.java",
+                "ConfigLoader.java",
+                "CliArgsParser.java",
+                "CliArgs.java",
+                "AddServerCommand.java",
+                "FailServerCommand.java")) {
+            assertFalse(Files.exists(MAIN_JAVA.resolve(GUI).resolve(retiredSource)),
+                    retiredSource + " must be removed with the desktop simulator");
+        }
+        assertTrue(Files.exists(MAIN_JAVA.resolve(GUI).resolve("Command.java")),
+                "CloudManager compatibility contract must remain");
+        assertFalse(Files.exists(Path.of("src", "main", "java", "gui", "messages.properties")));
+        assertFalse(Files.exists(Path.of("src", "main", "resources", "gui", "messages.properties")));
     }
 
     @Test

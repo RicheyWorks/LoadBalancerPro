@@ -42,6 +42,9 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
         for (String expected : List.of(
                 "slot 6",
                 "maven dependency posture",
+                "historical exact-commit audit",
+                "l-4.2",
+                "removed the javafx desktop source",
                 "documentation/test-only",
                 "pom.xml",
                 "codex/evidence-audit-maven-dependency-posture",
@@ -102,7 +105,7 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
         assertEquals("4.2.16.Final", property(pom, "netty.version"));
         assertEquals("2.21.4", property(pom, "jackson.version"));
         assertEquals("2.44.4", property(pom, "aws-sdk-v2.version"));
-        assertEquals("17.0.19", property(pom, "javafx.version"));
+        assertEquals("", property(pom, "javafx.version"));
         assertEquals("0.8.13", property(pom, "jacoco.version"));
 
         for (String dependency : List.of(
@@ -113,7 +116,6 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
                 "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17",
                 "io.micrometer:micrometer-registry-prometheus:",
                 "io.micrometer:micrometer-registry-otlp:",
-                "org.openjfx:javafx-controls:${javafx.version}",
                 "org.apache.logging.log4j:log4j-api:",
                 "org.apache.logging.log4j:log4j-core:",
                 "org.json:json:20251224",
@@ -126,6 +128,8 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
                 "org.springframework.security:spring-security-test:")) {
             assertTrue(dependencies(pom).contains(dependency), "Missing dependency declaration: " + dependency);
         }
+        assertFalse(dependencies(pom).stream().anyMatch(dependency -> dependency.startsWith("org.openjfx:")),
+                "retired JavaFX dependency must not remain in the current pom");
 
         for (String managed : List.of(
                 "com.fasterxml.jackson:jackson-bom:${jackson.version}",

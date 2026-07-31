@@ -82,13 +82,15 @@ class DependencyCiHygieneWorkflowTest {
     }
 
     @Test
-    void javaFxVersionStaysOnSameMajorSeventeenLine() throws Exception {
+    void retiredJavaFxDesktopDependencyDoesNotReturn() throws Exception {
         String pom = read(POM);
 
-        assertTrue(pom.contains("<javafx.version>17.0."));
-        assertTrue(pom.contains("<artifactId>javafx-controls</artifactId>"));
-        assertFalse(pom.contains("<javafx.version>21."));
-        assertFalse(pom.contains("<javafx.version>26."));
+        assertFalse(pom.contains("<javafx.version>"));
+        assertFalse(pom.contains("<groupId>org.openjfx</groupId>"));
+        assertFalse(pom.contains("<artifactId>javafx-controls</artifactId>"));
+        assertFalse(Files.exists(Path.of(
+                "src", "main", "java", "com", "richmond423", "loadbalancerpro", "gui",
+                "LoadBalancerGUI.java")));
     }
 
     @Test

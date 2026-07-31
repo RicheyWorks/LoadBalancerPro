@@ -2,6 +2,8 @@
 
 This note is slot 6 of the **LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign**. It is documentation/test-only. It audits the current `pom.xml` dependency and Maven plugin posture without changing Maven configuration, dependency versions, CI workflow behavior, Dockerfile contents, Compose behavior, scripts, runtime resources, endpoints, app behavior, runner services, automation, secrets, external targets, or production behavior.
 
+> Prospective current-state update (campaign slot L-4.2): this is a historical exact-commit audit. L-4.2 later removed the JavaFX desktop source, `javafx.version`, `org.openjfx:javafx-controls`, and their packaging exclusions. Historical `17.0.19` statements below remain evidence for the audited commit, not a description of the current `pom.xml`; the removal does not imply broader dependency remediation or security certification.
+
 ## Audit Timestamp
 
 - Audit timestamp: 2026-05-25T02:14-07:00.

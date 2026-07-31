@@ -72,7 +72,7 @@ Optional reverse proxy mode at `/proxy/**` is disabled by default and forwards c
 
 [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) maps the release-free Windows and Unix operator command paths for packaged jar, Maven exec, proxy profiles, status pages, CI artifacts, and smoke helpers. [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md) records the hard stops that must remain in place before any future release action is separately approved.
 
-[`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) clarifies that JavaFX is optional desktop UI support. The Spring API, `/proxy/**`, `/proxy-status.html`, `/load-balancing-cockpit.html`, proxy demo stack, CI artifact verification, and operator smoke paths do not require JavaFX and do not gain new API or security behavior from JavaFX documentation.
+[`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) records retirement of the JavaFX desktop simulator and dependency. The Spring API, `/proxy/**`, `/proxy-status.html`, `/load-balancing-cockpit.html`, proxy demo stack, CI artifact verification, and operator smoke paths remain JavaFX-free; the retirement does not add API or security behavior.
 
 [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) provides copy/adapt proxy examples for local or private HTTP services only. The examples use loopback placeholders, require no secrets or public upstreams, add no backend write/reset controls, and keep the same read-only `/api/proxy/status` verification boundary.
 

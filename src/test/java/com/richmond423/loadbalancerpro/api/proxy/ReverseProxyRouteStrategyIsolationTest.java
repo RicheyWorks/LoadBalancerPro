@@ -13,6 +13,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Collections;
@@ -128,6 +129,20 @@ class ReverseProxyRouteStrategyIsolationTest {
         assertNotSame(afterStrategyChange.get(0).strategy(), afterUpstreamSetChange.get(0).strategy());
         assertNotSame(afterStrategyChange.get(1).strategy(), afterUpstreamSetChange.get(1).strategy(),
                 "beta changed back from round-robin to weighted round-robin");
+    }
+
+    @Test
+    void plannerResolvesRouteTimeoutOverrideAndGlobalFallback() {
+        ReverseProxyProperties properties = twoWeightedRoutes();
+        properties.setRequestTimeout(Duration.ofSeconds(2));
+        properties.getRoutes().get("alpha").setRequestTimeout(Duration.ofMillis(125));
+
+        List<ReverseProxyRoutePlanner.ConfiguredRoute> routes =
+                ReverseProxyRoutePlanner.buildEnabledRoutes(
+                        properties, RoutingStrategyRegistry.defaultRegistry());
+
+        assertEquals(Duration.ofMillis(125), routes.get(0).requestTimeout());
+        assertEquals(Duration.ofSeconds(2), routes.get(1).requestTimeout());
     }
 
     @Test

@@ -170,6 +170,23 @@ class ReverseProxyConfigReloadTest {
     }
 
     @Test
+    void connectTimeoutChangeRequiresRestartAndPreservesLastKnownGoodConfig() throws Exception {
+        mockMvc.perform(post("/api/proxy/reload")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(connectTimeoutChangeBody()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.activeConfigGeneration").value(1))
+                .andExpect(jsonPath("$.validationErrors[0]")
+                        .value(containsString("connect-timeout requires application restart")));
+
+        mockMvc.perform(get("/proxy/startup?step=after-timeout-reload"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-LoadBalancerPro-Upstream", "startup-backend"));
+    }
+
+    @Test
     void reloadEndpointRejectsUnauthenticatedMutationEvenInLocalProfile() throws Exception {
         mockMvc.perform(post("/api/proxy/reload")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -225,6 +242,24 @@ class ReverseProxyConfigReloadTest {
                   }
                 }
                 """;
+    }
+
+    private static String connectTimeoutChangeBody() {
+        return """
+                {
+                  "enabled": true,
+                  "strategy": "ROUND_ROBIN",
+                  "connectTimeout": "PT2S",
+                  "upstreams": [
+                    {
+                      "id": "reloaded-backend",
+                      "url": "%s",
+                      "healthy": true,
+                      "weight": 1.0
+                    }
+                  ]
+                }
+                """.formatted(RELOADED_BACKEND.baseUrl());
     }
 
     private static String invalidReloadBody() {

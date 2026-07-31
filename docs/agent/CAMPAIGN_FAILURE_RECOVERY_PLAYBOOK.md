@@ -6,14 +6,14 @@ Use this playbook with CAMPAIGN_SYSTEM_INDEX.md, CAMPAIGN_SYSTEM_ARCHITECTURE.md
 
 ## Purpose
 
-Failures are not hidden or hand-waved during a campaign. A failure can be local, remote, procedural, or scope-related. The campaign either recovers inside the current task contract with explicit evidence, or it pauses for a human decision.
+Material failures are not hidden or hand-waved during a campaign. The campaign either recovers inside the current task contract with explicit evidence, or it pauses when the required recovery needs new authority.
 
 The playbook keeps recovery factual:
 
 - identify the failure type;
 - preserve the current branch and head SHA;
-- log the failure in FAILURE_LOG.md;
-- update SESSION_MANAGER.md with blocker, last known good state, checks run, and next action;
+- log only a material blocker or reusable lesson in FAILURE_LOG.md;
+- replace SESSION_MANAGER.md with the genuine blocker and next action;
 - decide whether the fix is obvious, safe, and inside scope;
 - rerun focused checks first after a fix;
 - rerun full local verification before merge;
@@ -22,24 +22,16 @@ The playbook keeps recovery factual:
 
 ## Failure Types
 
-Record the specific failure type:
+Create a repository failure record only when the event:
 
-- focused documentation guard failure;
-- relevant focused selector bundle failure;
-- `mvn -q test` failure;
-- package check failure;
-- diff or whitespace check failure;
-- scope audit failure;
-- enterprise lab package smoke failure;
-- remote PR check failure;
-- remote PR check cancellation;
-- stale remote check;
-- pending remote check at merge decision;
-- post-merge main CI/CodeQL failure;
-- tooling command failure;
-- mergeability or branch state failure;
-- unsafe scope expansion;
-- human decision needed.
+- exposes a product or security defect;
+- invalidates claimed evidence;
+- corrupts or risks persistent state;
+- requires a non-obvious recovery;
+- blocks a mandatory gate; or
+- provides a reusable technical lesson.
+
+Ordinary syntax errors, failed searches, unavailable optional local tools, polling, and corrections that changed no persistent state are not failure-log entries.
 
 ## Immediate Response
 
@@ -47,8 +39,8 @@ When a failure appears:
 
 1. Stop the campaign loop at the current step.
 2. Keep the current branch and working tree intact.
-3. Record the branch, PR, head SHA, failing command or job, suspected cause, fix attempted, result, and follow-up action in FAILURE_LOG.md.
-4. Update SESSION_MANAGER.md with the current blocker, last known good SHA, checks already run, and the next safe action.
+3. If the failure meets the materiality rule, record the blocker or reusable lesson concisely in FAILURE_LOG.md.
+4. Replace SESSION_MANAGER.md with the current blocker and next safe action.
 5. Do not merge while the failure is unresolved.
 6. Do not continue to the next campaign PR while the current PR or main branch is unresolved.
 
@@ -62,8 +54,8 @@ After a safe fix:
 
 - rerun the failing focused check first;
 - rerun the relevant focused selector bundle;
-- update FAILURE_LOG.md with the result;
-- update SESSION_MANAGER.md with the recovery checkpoint;
+- update FAILURE_LOG.md only when the recovery adds a reusable lesson or leaves a blocker;
+- replace SESSION_MANAGER.md with the recovered current state;
 - continue to full local verification only after focused recovery passes.
 
 If the fix requires production code, Maven config, CI/workflow, Dockerfile, Compose behavior, runtime behavior, endpoint behavior, k6 behavior, Bruno behavior, Toxiproxy behavior, scripts, secrets, external/cloud/tenant targets, or automation outside explicit scope, pause instead of continuing.
@@ -72,12 +64,12 @@ If the fix requires production code, Maven config, CI/workflow, Dockerfile, Comp
 
 If a remote PR check fails, is cancelled, is stale, or remains pending at a merge decision:
 
-- record the run id, job name, status, conclusion, branch, PR head SHA, and suspected cause in FAILURE_LOG.md;
+- keep run/job detail in the PR check surface; add a concise FAILURE_LOG.md entry only when the gate remains materially blocked or prior evidence is invalid;
 - refresh the PR rollup for the current head SHA;
 - do not treat a duplicate, skipped-only, stale, queued, in-progress, or pending check as green;
 - pause unless the cause is obvious, safe, and recoverable inside the current PR contract.
 
-If main CI/CodeQL is red after merge, record the merge commit, failing run, failing job, local main state, and last known good main SHA before pausing.
+If main CI/CodeQL is red after merge, preserve the remote run as evidence, put the blocker in current state, and add a concise failure entry because a mandatory gate is blocked.
 
 ## Resume Criteria
 
@@ -86,7 +78,7 @@ Resume a paused campaign only when:
 - the blocker is resolved;
 - the branch or main head SHA is known;
 - SESSION_MANAGER.md names the next safe action;
-- FAILURE_LOG.md records the failure result;
+- FAILURE_LOG.md records the result when the event met the materiality rule;
 - scope still matches BUILD_CONTRACT.md and the current PR contract;
 - focused checks are ready to rerun;
 - main is green if the next step starts a new PR.

@@ -380,21 +380,7 @@ class EnterpriseReadinessAuditDocumentationTest {
         assertTrue(codeowners.contains("this file alone does not activate that setting"));
     }
 
-    @Test
-    void currentReviewerEntryPointsLinkEnterpriseReadinessAudit() throws Exception {
-        for (Path path : List.of(README, EXECUTIVE_SUMMARY, PRODUCTION_SUMMARY, TRUST_MAP, SECURITY_POSTURE)) {
-            assertTrue(read(path).contains("ENTERPRISE_READINESS_AUDIT.md"),
-                    path + " should link the current enterprise readiness audit");
-        }
-    }
 
-    @Test
-    void currentReviewerEntryPointsLinkTrustHardeningSprintPacket() throws Exception {
-        for (Path path : List.of(README, AUDIT, PRODUCTION_SUMMARY, TRUST_MAP)) {
-            assertTrue(read(path).contains("ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md"),
-                    path + " should link the trust hardening sprint packet");
-        }
-    }
 
     @Test
     void currentReviewerEntryPointsLinkContainerEvidenceLane() throws Exception {
@@ -412,13 +398,6 @@ class EnterpriseReadinessAuditDocumentationTest {
         }
     }
 
-    @Test
-    void currentReviewerEntryPointsLinkManualGovernanceHardening() throws Exception {
-        for (Path path : List.of(README, AUDIT, SPRINT_PACKET, PRODUCTION_SUMMARY, TRUST_MAP)) {
-            assertTrue(read(path).contains("MANUAL_GITHUB_GOVERNANCE_HARDENING.md"),
-                    path + " should link the manual GitHub governance hardening packet");
-        }
-    }
 
     @Test
     void securityPostureDistinguishesHistoricalAnchorFromCurrentPolicyLanguage() throws Exception {

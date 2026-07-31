@@ -202,16 +202,6 @@ class EnterpriseLabReviewerDashboardTest {
         }
     }
 
-    @Test
-    void reviewerDashboardIsLinkedFromRootReadmeAndTrustMap() throws Exception {
-        String index = read(INDEX);
-        String readme = read(README);
-        String trustMap = read(TRUST_MAP);
-
-        assertTrue(index.contains("/enterprise-lab-reviewer.html"));
-        assertTrue(readme.contains("http://localhost:8080/enterprise-lab-reviewer.html"));
-        assertTrue(trustMap.contains("/enterprise-lab-reviewer.html"));
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

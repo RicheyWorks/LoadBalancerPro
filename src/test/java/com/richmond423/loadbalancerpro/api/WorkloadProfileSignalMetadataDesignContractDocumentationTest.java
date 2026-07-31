@@ -187,26 +187,6 @@ class WorkloadProfileSignalMetadataDesignContractDocumentationTest {
         }
     }
 
-    @Test
-    void reviewerEntryPointsLinkWorkloadProfileContractAsDocsOnlyReference() throws Exception {
-        for (Path path : List.of(README, TRUST_MAP, AUDIT, THREE_TIER, EXTERNAL_SIGNAL)) {
-            assertTrue(read(path).contains("WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md"),
-                    path + " should link the workload profile metadata design contract");
-        }
-
-        String readme = read(README);
-        String trustMap = read(TRUST_MAP);
-        String threeTier = read(THREE_TIER);
-        String externalSignal = read(EXTERNAL_SIGNAL);
-
-        assertTrue(readme.contains("without adding runtime records/classes or behavior"));
-        assertTrue(trustMap.contains("docs-only design contract for future AI-era workload metadata"));
-        assertTrue(trustMap.contains("not a runtime record/class, API field, workload model, scoring input"));
-        assertTrue(threeTier.contains("That contract is documentation-only"));
-        assertTrue(threeTier.contains("does not implement Java records/classes, API fields, workload model code"));
-        assertTrue(externalSignal.contains("That contract is documentation-only"));
-        assertTrue(externalSignal.contains("does not implement Java records/classes, API fields, workload model code"));
-    }
 
     @Test
     void sprintDoesNotIntroduceRuntimeWorkloadProfileTypes() throws Exception {

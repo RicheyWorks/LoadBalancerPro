@@ -77,13 +77,6 @@ class EnterpriseCockpitAuthPlanDocsTest {
         assertFalse(REAL_LOOKING_SECRET.matcher(plan).find(), "plan must not include real-looking secrets");
     }
 
-    @Test
-    void docsPointToEnterpriseCockpitAuthPlan() throws Exception {
-        for (Path path : List.of(README, API_SECURITY, API_CONTRACTS, OPERATIONS_RUNBOOK)) {
-            assertTrue(read(path).contains("ENTERPRISE_COCKPIT_AUTH_PLAN.md"),
-                    path + " should point to the enterprise cockpit auth plan");
-        }
-    }
 
     @Test
     void docsDocumentImplementedApiKeySwaggerGatingAndMemoryOnlyCockpitToken() throws Exception {

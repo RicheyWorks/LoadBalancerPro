@@ -12,19 +12,19 @@ Use this index when starting, resuming, handing off, auditing, or closing a boun
 - AGENT_WORKFLOW_QUICKSTART.md is the startup path for using README.md, AGENTS.md, BUILD_CONTRACT.md, and docs/agent files together.
 - GOAL_MODE_LONG_RUN_PROTOCOL.md defines `/goal`, `/plan`, `/goal pause`, `/goal resume`, and `/goal clear` behavior.
 - VERIFICATION_PROTOCOL.md defines focused checks, relevant selector bundles, full local verification, remote PR checks, and post-merge main checks.
-- SESSION_MANAGER.md records current campaign branch, PR, head SHA, changed files, checks run, blockers, and next action.
-- FAILURE_LOG.md records failures, suspected causes, fixes attempted, results, and follow-up action.
+- SESSION_MANAGER.md records only active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action.
+- FAILURE_LOG.md records only unresolved material blockers and reusable lessons.
 
 ## Campaign Control Documents
 
-- CAMPAIGN_SYSTEM_ARCHITECTURE.md defines the ten-PR campaign model, execution loop, checkpoints, stop conditions, and not-proven boundaries.
-- CAMPAIGN_CHECKPOINT_LEDGER.md defines required checkpoint fields and counting rules.
+- CAMPAIGN_SYSTEM_ARCHITECTURE.md defines the campaign execution loop, current-state discipline, stop conditions, and evidence boundaries.
+- CAMPAIGN_CHECKPOINT_LEDGER.md defines the minimal current-state fields.
 - CAMPAIGN_PR_READINESS_CHECKLIST.md defines the per-PR opening, merge, post-merge, scope, and stop-condition checklist.
 - CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md defines changed-file, forbidden-scope, claim, guard-test, and stop-condition audits.
 - CAMPAIGN_REMOTE_CHECK_AUDIT.md defines current-head PR remote check and merge-commit main check auditing.
 - CAMPAIGN_MERGE_GATE.md defines the final pre-merge and post-merge gate before a PR can count.
 - CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md defines failure logging, safe recovery, pause, and resume rules.
-- CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md defines factual handoff reporting for pauses, resumes, checkpoints, and human review.
+- CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md defines factual handoff reporting for material pauses, resumes, and closeout.
 - CAMPAIGN_CLOSEOUT_PROTOCOL.md defines final campaign count, verification, merged PR summary, and closeout report rules.
 - COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md defines the active 49-slot deployable-proxy and lab/shadow/analysis
   implementation campaign, including source provenance, user-authorized implementation scope, one-PR sequencing,
@@ -39,7 +39,7 @@ Run one scoped PR at a time:
 
 1. Start from clean main and confirm main remote checks are green.
 2. Choose one small docs/test-only slice unless a task explicitly scopes a different surface.
-3. Create a `codex/` branch and update SESSION_MANAGER.md.
+3. Create a `codex/` branch and replace SESSION_MANAGER.md with the concise current state.
 4. Make the scoped edit and keep the diff inside the contract.
 5. Run focused checks while editing.
 6. Run the relevant selector bundle and full local verification before merge.
@@ -87,7 +87,7 @@ Pause instead of improvising if scope becomes unsafe, checks fail, main is red, 
 
 ## Closeout Use
 
-Use CAMPAIGN_CLOSEOUT_PROTOCOL.md for the final report after the tenth PR merges and main post-merge checks are green. The closeout report must name the merged PRs, branches, PR head SHAs, merge commits, verification commands, remote check states, failures logged, scope audit, and remaining not-proven boundaries.
+Use CAMPAIGN_CLOSEOUT_PROTOCOL.md after the final PR merges and main post-merge checks are green. Keep transient command, check, and artifact evidence in the PR and CI surfaces rather than copying it into repository narration.
 
 If the final PR cannot merge safely, use CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md and report the campaign as paused rather than complete.
 

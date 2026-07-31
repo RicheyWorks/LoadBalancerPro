@@ -31,7 +31,7 @@ use this document as the naming and boundary anchor.
 - Do not start the next PR until the current PR is merged and main CI/CodeQL are green.
 - Prefer docs/test-only changes.
 - Keep `SESSION_MANAGER.md` current and concise.
-- Log local, remote, scope, or tooling failures in `FAILURE_LOG.md` before continuing.
+- Record only material blockers or reusable technical lessons in `FAILURE_LOG.md`.
 - Preserve branches; do not delete campaign branches.
 - Keep all claims bounded to reviewer evidence, documentation, normalization, and local/test proof.
 

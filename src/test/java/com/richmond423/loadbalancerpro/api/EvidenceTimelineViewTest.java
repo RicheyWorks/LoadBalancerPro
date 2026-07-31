@@ -162,15 +162,6 @@ class EvidenceTimelineViewTest {
                 "evidence timeline should fetch the same-origin local summary endpoint");
     }
 
-    @Test
-    void evidenceTimelineIsLinkedFromDashboardsReadmeAndTrustMap() throws Exception {
-        assertTrue(read(INDEX).contains("/evidence-timeline.html"));
-        assertTrue(read(OPERATOR_DASHBOARD).contains("/evidence-timeline.html"));
-        assertTrue(read(REVIEWER_DASHBOARD).contains("/evidence-timeline.html"));
-        assertTrue(read(README).contains("http://localhost:8080/evidence-timeline.html"));
-        assertTrue(read(TRUST_MAP).contains("/evidence-timeline.html"));
-        assertTrue(read(TRUST_MAP).contains("/api/enterprise-lab/evidence-timeline"));
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

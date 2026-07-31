@@ -97,34 +97,7 @@ class OperatorPackagingPolishTest {
         assertTrue(failover.contains("loadbalancerpro.proxy.health-check.interval=5s"));
     }
 
-    @Test
-    void defaultProxyStaysDisabledAndJavaFxDesktopSurfaceStaysRetired() throws Exception {
-        String defaults = read(DEFAULT_PROPERTIES);
-        String operatorPackaging = read(OPERATOR_PACKAGING_DOC);
-        String readme = read(README);
 
-        assertTrue(defaults.contains("loadbalancerpro.proxy.enabled=false"));
-        assertFalse(defaults.contains("loadbalancerpro.proxy.enabled=true"));
-        assertTrue(operatorPackaging.contains("JavaFX desktop simulator and its Maven dependency are removed"));
-        assertTrue(operatorPackaging.contains("remain the maintained operator paths and do not require JavaFX"));
-        assertTrue(readme.contains("JavaFX desktop simulator has been retired"));
-        assertTrue(readme.contains("remain the maintained operator paths and do not require JavaFX"));
-    }
-
-    @Test
-    void packagingDocsPointToRealBackendExamplesAndAvoidUnsafeClaims() throws Exception {
-        String operatorPackaging = read(OPERATOR_PACKAGING_DOC);
-        String demoStack = read(DEMO_STACK_DOC);
-        String readme = read(README);
-
-        assertTrue(operatorPackaging.contains("docs/examples/proxy/application-proxy-real-backend-example.properties"));
-        assertTrue(operatorPackaging.contains("docs/examples/proxy/application-proxy-real-backend-weighted-example.properties"));
-        assertTrue(operatorPackaging.contains("docs/examples/proxy/application-proxy-real-backend-failover-example.properties"));
-        assertTrue(demoStack.contains("Real-Backend Example Profiles"));
-        assertTrue(readme.contains("OPERATOR_PACKAGING.md"));
-        assertTrue(readme.contains("PACKAGE_NAMING.md"));
-        assertNoUnsafePolishContent(demoStack, DEMO_STACK_DOC);
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

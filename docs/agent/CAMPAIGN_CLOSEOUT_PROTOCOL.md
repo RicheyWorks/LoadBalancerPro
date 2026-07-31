@@ -8,7 +8,7 @@ Use this protocol with CAMPAIGN_SYSTEM_INDEX.md, CAMPAIGN_SYSTEM_ARCHITECTURE.md
 
 The closeout protocol keeps campaign completion factual. A campaign is complete only after the target count is reached, each PR has merged through its merge gate, local post-merge checks have run, and main remote checks are green for the final merge commit.
 
-For the current LoadBalancerPro campaign, the target count is ten successful merged PRs. Do not count a PR until:
+Use the target count defined by the active campaign. Do not count a PR until:
 
 - the PR was separately scoped;
 - the reviewed PR head SHA is recorded;
@@ -22,37 +22,9 @@ For the current LoadBalancerPro campaign, the target count is ten successful mer
 - enterprise lab package smoke passed on main;
 - main CI and CodeQL passed for the merge commit.
 
-## Required Closeout Fields
+## Closeout Report
 
-Use this structure for the final campaign report:
-
-```text
-Campaign:
-Target count:
-Completed count:
-Final main SHA:
-Final PR:
-Final merge commit:
-
-Merged PRs:
-- PR:
-  Branch:
-  PR head SHA:
-  Merge commit:
-  Scope:
-  Local verification:
-  Remote PR checks:
-  Main post-merge checks:
-  Failures logged:
-
-Campaign scope audit:
-Verification summary:
-Remote check summary:
-Failures and recoveries:
-Open blockers:
-Remaining not-proven boundaries:
-Next recommended action:
-```
+Report the campaign result, final main commit, final PR/merge, scope audit, applicable verification, genuine blockers, remaining evidence boundaries, and next action in the task or PR. Do not commit a repository document solely to narrate green heads, commands, polling, check history, or repeated totals.
 
 ## Counting Rules
 
@@ -64,7 +36,7 @@ Count conservatively:
 - do not count a PR with pending, failed, cancelled, stale, skipped-only, or duplicate-only required checks;
 - do not count a PR if main CI or CodeQL is red for its merge commit;
 - do not count a PR if the scope expanded beyond its contract without review;
-- do not count a PR if SESSION_MANAGER.md and FAILURE_LOG.md disagree about an unresolved blocker.
+- do not count a PR while SESSION_MANAGER.md or FAILURE_LOG.md identifies an unresolved blocker.
 
 If the campaign reaches nine PRs but the tenth PR cannot safely merge, pause the campaign and use CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md instead of claiming closeout.
 
@@ -89,8 +61,8 @@ Do not claim green main while remote checks are pending. Do not accept failed, c
 
 If closeout is blocked:
 
-- update SESSION_MANAGER.md with the current branch, PR, head SHA, final known green main SHA, checks run, blocker, and next safe action;
-- update FAILURE_LOG.md with the failure type, failing command or remote job, suspected cause, fix attempted, result, and follow-up action;
+- replace SESSION_MANAGER.md with the concise current blocker and next safe action;
+- update FAILURE_LOG.md only when the failure meets the materiality rule;
 - pause the campaign instead of improvising;
 - resume only after the blocker is resolved and the next step still fits BUILD_CONTRACT.md and AGENTS.md.
 
@@ -113,7 +85,7 @@ Use CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md before writing the final scope audit.
 
 ## Final Report Discipline
 
-The final report must be grounded in actual checks run. It should name the ten PRs, branch names, PR head SHAs, merge commits, verification commands, remote check states, failures logged, and remaining boundaries.
+The final task/PR report must be grounded in actual checks and identify the final exact head and merge. Keep detailed run history in GitHub checks, logs, and artifacts rather than permanent repository prose.
 
 If any evidence is missing, report WARN or PAUSED instead of PASS. If any required check failed, report FAIL and include the failing command, run, or job.
 

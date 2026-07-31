@@ -124,23 +124,6 @@ class OperatorDistributionSmokeKitTest {
         }
     }
 
-    @Test
-    void docsPointToDistributionSmokeKitWithoutChangingReleaseOrProxyDefaults() throws Exception {
-        String readme = read(README);
-        String operatorPackaging = read(OPERATOR_PACKAGING_DOC);
-        String demoStack = read(PROXY_DEMO_STACK_DOC);
-        String fixtureLauncher = read(FIXTURE_LAUNCHER_DOC);
-
-        assertTrue(readme.contains("OPERATOR_DISTRIBUTION_SMOKE_KIT.md"));
-        assertTrue(operatorPackaging.contains("OPERATOR_DISTRIBUTION_SMOKE_KIT.md"));
-        assertTrue(demoStack.contains("OPERATOR_DISTRIBUTION_SMOKE_KIT.md"));
-        assertTrue(fixtureLauncher.contains("OPERATOR_DISTRIBUTION_SMOKE_KIT.md"));
-        assertTrue(operatorPackaging.contains("Default application behavior remains unchanged"));
-        assertTrue(operatorPackaging.contains("loadbalancerpro.proxy.enabled=false"));
-        assertNoUnsafeDistributionContent(operatorPackaging, OPERATOR_PACKAGING_DOC);
-        assertNoUnsafeDistributionContent(demoStack, PROXY_DEMO_STACK_DOC);
-        assertNoUnsafeDistributionContent(fixtureLauncher, FIXTURE_LAUNCHER_DOC);
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

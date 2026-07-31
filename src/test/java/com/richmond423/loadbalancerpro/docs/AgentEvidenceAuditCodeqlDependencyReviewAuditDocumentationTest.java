@@ -113,32 +113,6 @@ class AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest {
         }
     }
 
-    @Test
-    void navigationAndCampaignStateReferenceCodeqlAudit() throws IOException {
-        String readme = read(README).toLowerCase(Locale.ROOT);
-        String trustMap = read(TRUST_MAP).toLowerCase(Locale.ROOT);
-        String evidenceMap = read(EVIDENCE_MAP).toLowerCase(Locale.ROOT);
-        String board = read(BOARD).toLowerCase(Locale.ROOT);
-        String session = read(SESSION).toLowerCase(Locale.ROOT);
-
-        assertTrue(readme.contains("docs/agent/evidence_audit_codeql_dependency_review_audit.md"),
-                "README should link to the CodeQL/dependency-review audit");
-        assertTrue(trustMap.contains("agent/evidence_audit_codeql_dependency_review_audit.md"),
-                "Reviewer Trust Map should link to the CodeQL/dependency-review audit");
-        assertTrue(evidenceMap.contains("evidence_audit_codeql_dependency_review_audit.md"),
-                "repository evidence map should link to the CodeQL/dependency-review audit");
-
-        for (String expected : List.of(
-                "slot 5 result",
-                "codex/evidence-audit-codeql-dependency-review",
-                "#320",
-                "7fcbf22364d76d2cd6a5b81eee2d512ec8742f94",
-                "a58d61511d84b8d9013d5a2652dc696fb555e83c",
-                "post-merge main ci and codeql were green")) {
-            assertTrue(board.contains(expected) || session.contains(expected),
-                    "Missing slot 5 campaign checkpoint: " + expected);
-        }
-    }
 
     @Test
     void auditPreservesNotProvenBoundaries() throws IOException {

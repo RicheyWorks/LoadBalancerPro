@@ -13,14 +13,14 @@ Goal campaigns stretch Codex across multiple PRs, so the agent must act like a c
 - current-head local verification before PR creation;
 - current-head remote verification before merge;
 - post-merge main verification before counting the slot;
-- SESSION_MANAGER.md updates after every checkpoint;
-- FAILURE_LOG.md entries before continuing after any failure.
+- SESSION_MANAGER.md replacement only when current state materially changes;
+- FAILURE_LOG.md entries only for material blockers or reusable technical lessons.
 
 ## Required Agent Behavior
 
 - Read README.md, AGENTS.md, BUILD_CONTRACT.md, the goal-mode protocol, the campaign contract, the board, the verification protocol, SESSION_MANAGER.md, and FAILURE_LOG.md before changing a campaign slot.
-- Keep the active branch, PR URL, head SHA, changed files, checks run, remote status, blocker, next action, and continue/pause decision factual in SESSION_MANAGER.md.
-- Log local command failures, documentation guard failures, diff hygiene failures, remote check failures, ambiguous check states, scope conflicts, and unsafe requests in FAILURE_LOG.md before continuing.
+- Keep only active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action in SESSION_MANAGER.md.
+- Record a failure only when it exposes a product/security defect, invalidates evidence, risks persistent state, requires non-obvious recovery, blocks a mandatory gate, or yields a reusable lesson.
 - Use focused checks while editing, then run the full required verification ladder before opening or merging a PR.
 - Merge only when the latest active required checks are green for the current head SHA.
 - Do not accept pending, failed, cancelled, stale, or duplicate-only required checks.

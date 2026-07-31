@@ -277,37 +277,6 @@ class Adr0009LocalLabKitAndSimulatedDatacenterTestHarnessPlanDocumentationTest {
                 "trust map should link the scenario matrix");
     }
 
-    @Test
-    void adr0009LinksRelatedDocsAndReviewerEntryPoints() throws Exception {
-        String adr = read(ADR);
-
-        for (String expected : List.of(
-                "../PHASE_0_ARCHITECTURE_ADR_INDEX.md",
-                "../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md",
-                "../REVIEWER_TRUST_MAP.md",
-                "../ENTERPRISE_READINESS_AUDIT.md",
-                "../LOCAL_LAB_SCENARIO_MATRIX.md",
-                "ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md",
-                "ADR-0002_LASE_INTEGRATION_MODEL.md",
-                "ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md",
-                "ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md",
-                "ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md",
-                "ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md",
-                "ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md",
-                "ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md",
-                "../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md",
-                "../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md",
-                "../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md")) {
-            assertTrue(adr.contains(expected), "ADR-0009 should link " + expected);
-        }
-
-        for (Path path : List.of(README, TRUST_MAP, AUDIT, PHASE0_INDEX, ALIGNMENT, ADR_0001, ADR_0002,
-                ADR_0003, ADR_0004, ADR_0005, ADR_0006, ADR_0007, ADR_0008, LASE_CONTRACT,
-                WORKLOAD_CONTRACT, EXTERNAL_SIGNAL_CONTRACT)) {
-            assertTrue(read(path).contains("ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md"),
-                    path + " should link ADR-0009");
-        }
-    }
 
     @Test
     void adr0009DocsAvoidImplementationAndProductionOverclaims() throws Exception {

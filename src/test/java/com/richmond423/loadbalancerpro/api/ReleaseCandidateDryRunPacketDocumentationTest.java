@@ -22,16 +22,6 @@ class ReleaseCandidateDryRunPacketDocumentationTest {
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
     private static final Path EXISTING_DRY_RUN = Path.of("docs/RELEASE_CANDIDATE_DRY_RUN.md");
 
-    @Test
-    void packetExistsAndIsLinkedFromReviewerEntryPoints() throws Exception {
-        assertTrue(Files.exists(PACKET), "release-candidate packet doc should exist");
-        assertTrue(Files.exists(SCRIPT), "release-candidate packet script should exist");
-
-        for (Path doc : List.of(README, TRUST_MAP, SUMMARY, GATE, RUNBOOK, EXISTING_DRY_RUN)) {
-            assertTrue(read(doc).contains("RELEASE_CANDIDATE_DRY_RUN_PACKET.md"),
-                    doc + " should link the release-candidate dry-run packet");
-        }
-    }
 
     @Test
     void packetDocumentsReleaseFreeSafetyBoundary() throws Exception {

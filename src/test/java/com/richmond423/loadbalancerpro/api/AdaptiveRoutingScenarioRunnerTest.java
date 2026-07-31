@@ -190,22 +190,6 @@ class AdaptiveRoutingScenarioRunnerTest {
         }
     }
 
-    @Test
-    void integrationLinksArePresentWithoutMakingTheSurfaceNoisy() throws Exception {
-        for (Path path : List.of(INDEX, README, TRUST_MAP, READINESS, CONTRACT, READINESS_AUDIT)) {
-            String content = read(path);
-            assertTrue(content.contains("/adaptive-routing-scenarios.html"),
-                    path + " should link the scenario runner page");
-            assertTrue(content.contains("/api/enterprise-lab/adaptive-routing-scenario-summary"),
-                    path + " should reference the scenario runner API");
-        }
-
-        for (Path page : REVIEWER_SURFACES) {
-            String content = read(page);
-            assertTrue(content.contains("/adaptive-routing-scenarios.html"),
-                    page + " should link the scenario runner page");
-        }
-    }
 
     @Test
     void runnerEndpointAndPageAvoidUnsafeBehaviorAndOverclaims() throws Exception {

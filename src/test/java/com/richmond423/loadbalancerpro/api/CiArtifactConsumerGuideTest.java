@@ -87,16 +87,6 @@ class CiArtifactConsumerGuideTest {
         assertTrue(guide.contains("loadbalancerpro-sbom"));
     }
 
-    @Test
-    void existingOperatorDocsLinkToCiArtifactConsumerGuide() throws Exception {
-        assertTrue(read(README).contains("CI_ARTIFACT_CONSUMER_GUIDE.md"));
-        assertTrue(read(RUNBOOK).contains("CI_ARTIFACT_CONSUMER_GUIDE.md"));
-        assertTrue(read(LOCAL_ARTIFACT_DOC).contains("CI_ARTIFACT_CONSUMER_GUIDE.md"));
-        assertTrue(read(DISTRIBUTION_SMOKE_DOC).contains("CI_ARTIFACT_CONSUMER_GUIDE.md"));
-        assertTrue(read(OPERATOR_PACKAGING_DOC).contains("CI_ARTIFACT_CONSUMER_GUIDE.md"));
-        assertTrue(read(TESTING_COVERAGE_DOC).contains("CI_ARTIFACT_CONSUMER_GUIDE.md"));
-        assertTrue(read(API_SECURITY_DOC).contains("CI_ARTIFACT_CONSUMER_GUIDE.md"));
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

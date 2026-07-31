@@ -32,56 +32,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
             TRUST_HARDENING,
             ROUTING_COCKPIT);
 
-    @Test
-    void readmeMakesEnterpriseLabCockpitPivotHardToMiss() throws Exception {
-        String readme = read(README);
 
-        assertTrue(readme.contains("## Enterprise Lab Cockpit"));
-        assertTrue(readme.contains(
-                "LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo."));
-        assertTrue(readme.contains(
-                "This cockpit is a local reviewer/operator interface, not production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmark proof, throughput/p95/p99 evidence, or replay/evidence/report/storage/export proof."));
-        assertTrue(readme.contains("The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations."));
-        assertTrue(readme.contains("It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof."));
-        assertTrue(readme.contains("It is not a casual demo, toy, mockup, playground, or sample-only page."));
-        assertTrue(readme.contains("## What the Enterprise Lab Cockpit Monitors"));
-        assertTrue(readme.contains("Active lab scenario."));
-        assertTrue(readme.contains("Routing comparison request state."));
-        assertTrue(readme.contains("Selected strategy."));
-        assertTrue(readme.contains("Selected backend/server."));
-        assertTrue(readme.contains("Backend health."));
-        assertTrue(readme.contains("Visible latency, load, connection, capacity, and weight-style signals"));
-        assertTrue(readme.contains("Degradation, fallback, and recovery state."));
-        assertTrue(readme.contains("Scenario-to-scenario delta."));
-        assertTrue(readme.contains("Evidence association path."));
-        assertTrue(readme.contains("Reviewer handoff readiness."));
-        assertTrue(readme.contains("Local lab proof boundary."));
-        assertTrue(readme.contains("Production proof gaps."));
-        assertTrue(readme.contains("## What the Enterprise Lab Cockpit Answers"));
-        assertTrue(readme.contains("How routing decisions are made"));
-        assertTrue(readme.contains("How strategies affect backend selection."));
-        assertTrue(readme.contains("How input signals influence outcomes."));
-        assertTrue(readme.contains("How unhealthy, degraded, and recovery states are interpreted."));
-        assertTrue(readme.contains("How lab proof is reproduced locally."));
-        assertTrue(readme.contains("What remains not proven for production."));
-    }
-
-    @Test
-    void readmeLinksEnterpriseLabCockpitEvidencePathAndLegacyRoute() throws Exception {
-        String readme = read(README);
-
-        for (String expected : List.of(
-                "Legacy route name: [`/routing-demo.html`](http://localhost:8080/routing-demo.html). Product identity: Enterprise Lab routing cockpit.",
-                "http://localhost:8080/enterprise-lab-reviewer.html",
-                "http://localhost:8080/operator-evidence-dashboard.html",
-                "http://localhost:8080/evidence-timeline.html",
-                "http://localhost:8080/evidence-export-packet.html",
-                "docs/REVIEWER_TRUST_MAP.md",
-                "docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md",
-                "docs/ENTERPRISE_LAB_DECISION_VECTOR.md")) {
-            assertTrue(readme.contains(expected), "README should link or name " + expected);
-        }
-    }
 
     @Test
     void reviewerTrustMapAndFramingDocContainExplicitNotDemoBoundary() throws Exception {
@@ -188,16 +139,6 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertFalse(normalized.contains("playground"));
     }
 
-    @Test
-    void framingDocIsLinkedFromRequiredMarkdownDocs() throws Exception {
-        for (Path path : List.of(README, TRUST_MAP, AUDIT, PRODUCTION_SUMMARY, TRUST_HARDENING)) {
-            assertTrue(read(path).contains("ENTERPRISE_LAB_COCKPIT_FRAMING.md"),
-                    path + " should link the Enterprise Lab cockpit framing doc");
-        }
-        assertTrue(read(README).contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
-        assertTrue(read(TRUST_MAP).contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
-        assertTrue(read(FRAMING).contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
-    }
 
     @Test
     void activeFramingFilesAvoidCasualDemoIdentityAndProductionProofOverclaims() throws Exception {

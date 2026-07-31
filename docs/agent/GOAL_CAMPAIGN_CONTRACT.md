@@ -16,8 +16,8 @@ The campaign contract must state:
 - allowed files and forbidden files;
 - number of PR slots;
 - per-PR deliverables;
-- required SESSION_MANAGER.md updates;
-- required FAILURE_LOG.md entries for failures;
+- concise SESSION_MANAGER.md current state;
+- FAILURE_LOG.md materiality rules;
 - verification levels;
 - remote check rules;
 - merge rules;
@@ -60,21 +60,11 @@ Merge one scoped PR at a time. Use the normal GitHub merge commit unless the tas
 
 After merge, pull main, confirm the PR head is contained in main, rerun the requested post-merge checks, inspect main CI/CodeQL for the merge commit, and only then count the slot.
 
-## Checkpoint Rules
+## State Rules
 
-Update SESSION_MANAGER.md after every checkpoint:
+SESSION_MANAGER.md is a concise replacement snapshot containing only the active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action. Do not append command history, polling, repeated test totals, or agent reasoning.
 
-- branch created;
-- edit batch completed;
-- focused verification completed;
-- full local verification completed;
-- PR opened;
-- remote checks completed;
-- merge decision completed;
-- post-merge main checks completed;
-- pause or final report.
-
-Log failures in FAILURE_LOG.md with timestamp, branch/PR, failing check, failure type, suspected cause, fix attempted, result, recovery status, and next action.
+Use FAILURE_LOG.md only for product/security defects, invalidated evidence, persistent-state risk, non-obvious recovery, mandatory-gate blocks, or reusable technical lessons.
 
 ## Stop Conditions
 
@@ -87,7 +77,7 @@ Pause the goal if:
 - scope requires CI/Maven/Docker/Compose/runtime changes not explicitly allowed;
 - GitHub check state is ambiguous;
 - Codex is uncertain whether to continue;
-- human approval is needed;
+- a material decision or new authority is needed;
 - 10 PRs are merged.
 
 ## Not-Proven Boundaries

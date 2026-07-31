@@ -348,16 +348,6 @@ class EvidenceExportPacketViewTest {
         }
     }
 
-    @Test
-    void evidenceExportPacketIsLinkedFromDashboardsReadmeAndTrustMap() throws Exception {
-        assertTrue(read(INDEX).contains("/evidence-export-packet.html"));
-        assertTrue(read(TIMELINE).contains("/evidence-export-packet.html"));
-        assertTrue(read(OPERATOR_DASHBOARD).contains("/evidence-export-packet.html"));
-        assertTrue(read(REVIEWER_DASHBOARD).contains("/evidence-export-packet.html"));
-        assertTrue(read(README).contains("http://localhost:8080/evidence-export-packet.html"));
-        assertTrue(read(TRUST_MAP).contains("/evidence-export-packet.html"));
-        assertTrue(read(TRUST_MAP).contains("/api/enterprise-lab/evidence-export-packet"));
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

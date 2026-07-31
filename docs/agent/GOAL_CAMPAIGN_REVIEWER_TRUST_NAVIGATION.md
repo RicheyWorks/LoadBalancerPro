@@ -15,18 +15,16 @@ This lane does not replace the campaign contract. It helps reviewers find the co
 3. Use `docs/agent/GOAL_CAMPAIGN_CONTRACT.md` for the 10-PR campaign contract.
 4. Use `docs/agent/GOAL_CAMPAIGN_BOARD.md` for the current slot status, PR history, and merge status.
 5. Use `docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md` and `docs/agent/VERIFICATION_PROTOCOL.md` for focused checks, full checks, remote checks, and main post-merge checks.
-6. Use `docs/agent/SESSION_MANAGER.md` for the active checkpoint.
-7. Use `docs/agent/FAILURE_LOG.md` for failures and recovery.
+6. Use `docs/agent/SESSION_MANAGER.md` for concise active state.
+7. Use `docs/agent/FAILURE_LOG.md` for unresolved material blockers and reusable lessons.
 8. Use `docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md` when the campaign reaches 10 merged PRs or pauses.
 
 ## Campaign Trust Rules
 
 - Work one scoped PR at a time.
 - Prefer docs/test-only scope for every campaign slot.
-- Update `SESSION_MANAGER.md` after every checkpoint.
-- SESSION_MANAGER.md after every checkpoint is the durable campaign checkpoint rule.
-- Log failures in `FAILURE_LOG.md` before continuing.
-- FAILURE_LOG.md before continuing is the durable campaign failure logging rule.
+- Replace `SESSION_MANAGER.md` only when current state materially changes.
+- Record only material blockers or reusable lessons in `FAILURE_LOG.md`.
 - Run focused checks while editing.
 - Run full local verification before opening or merging a PR.
 - Merge only when latest/current-head required checks are green.
@@ -39,9 +37,9 @@ This lane does not replace the campaign contract. It helps reviewers find the co
 | Reviewer question | Start here | What it proves | What it does not prove |
 | --- | --- | --- | --- |
 | What is the campaign objective? | `GOAL_CAMPAIGN_CONTRACT.md` | The bounded 10-PR goal, allowed scope, verification expectations, and stop conditions. | Production readiness, production certification, live-cloud validation, real-tenant validation, or runtime enforcement. |
-| Which PR slot is active? | `GOAL_CAMPAIGN_BOARD.md` and `SESSION_MANAGER.md` | Current branch, PR URL when opened, head tracking, checks run, blockers, and next action. | That a pending PR is mergeable or green before remote checks finish. |
+| Which PR slot is active? | `GOAL_CAMPAIGN_BOARD.md` and `SESSION_MANAGER.md` | Current branch/PR, completed gates, blocker, and next action. | That a pending PR is mergeable or green before remote checks finish. |
 | What should be checked before merge? | `GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md` and `CAMPAIGN_MERGE_GATE.md` | Focused verification, full local verification, remote PR checks, and post-merge main checks required by the campaign. | Permission to accept stale, failed, cancelled, pending, or duplicate-only checks. |
-| What happened when a check failed? | `FAILURE_LOG.md` and `GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md` | Failure type, suspected cause, attempted fix, result, recovery status, and next action. | Permission to keep going through unsafe scope or ambiguous check state. |
+| What happened when a material check failed? | `FAILURE_LOG.md` | Unresolved blocker or reusable technical lesson. | Routine command history or permission to keep going through unsafe scope. |
 | How is the final campaign reported? | `GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md` | Final status fields for PRs attempted, PRs merged, main state, verification, scope, failures, and remaining boundaries. | Production proof or automation beyond the docs/test-only campaign scaffold. |
 
 ## Scope Boundary

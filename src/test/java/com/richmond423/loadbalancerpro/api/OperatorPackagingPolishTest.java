@@ -96,17 +96,17 @@ class OperatorPackagingPolishTest {
     }
 
     @Test
-    void defaultProxyStaysDisabledAndJavaFxIsOptionalForOperatorPath() throws Exception {
+    void defaultProxyStaysDisabledAndJavaFxDesktopSurfaceStaysRetired() throws Exception {
         String defaults = read(DEFAULT_PROPERTIES);
         String operatorPackaging = read(OPERATOR_PACKAGING_DOC);
         String readme = read(README);
 
         assertTrue(defaults.contains("loadbalancerpro.proxy.enabled=false"));
         assertFalse(defaults.contains("loadbalancerpro.proxy.enabled=true"));
-        assertTrue(operatorPackaging.contains("JavaFX UI support exists"));
-        assertTrue(operatorPackaging.contains("do not require JavaFX"));
-        assertTrue(readme.contains("JavaFX UI support is optional"));
-        assertTrue(readme.contains("API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX"));
+        assertTrue(operatorPackaging.contains("JavaFX desktop simulator and its Maven dependency are removed"));
+        assertTrue(operatorPackaging.contains("remain the maintained operator paths and do not require JavaFX"));
+        assertTrue(readme.contains("JavaFX desktop simulator has been retired"));
+        assertTrue(readme.contains("remain the maintained operator paths and do not require JavaFX"));
     }
 
     @Test

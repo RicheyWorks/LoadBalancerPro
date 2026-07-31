@@ -87,11 +87,11 @@ curl -s http://127.0.0.1:8080/api/proxy/status
 
 The examples avoid public upstream URLs, secrets, cloud settings, generated runtime files, and backend reset controls.
 
-## JavaFX Optional
+## JavaFX Desktop UI Retired
 
-JavaFX UI support exists in the project, but the API, proxy, CLI, Java fixture launcher, static browser pages, and Maven exec recipes do not require JavaFX. Treat JavaFX as optional desktop UI support with platform-sensitive deployment considerations, not as a required operator path for the Spring API or reverse proxy demos.
+The JavaFX desktop simulator and its Maven dependency are removed. The API, proxy, offline report CLI, Java fixture launcher, static browser pages, and Maven exec recipes remain the maintained operator paths and do not require JavaFX.
 
-See [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) for desktop UI scope, platform caveats, launch guidance, troubleshooting, and the recommended API/proxy/static browser operator paths.
+See [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) for the retirement record, the retained JavaFX-free compatibility contract, and the maintained API/proxy/static browser operator paths.
 
 ## Naming Note
 

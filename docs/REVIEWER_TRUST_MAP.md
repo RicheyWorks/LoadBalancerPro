@@ -160,7 +160,7 @@ Recommended first paths:
 - I want to evaluate release readiness without releasing: start with [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md), [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), then use [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md), [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md), [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md), [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md), and [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
 - I want to know what container publication would require: start with [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md) and [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md).
 - I want install/run commands: start with [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) and [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md).
-- I want to understand JavaFX: start with [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md). JavaFX is optional.
+- I want to understand the JavaFX retirement: start with [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md).
 - I want to understand the repository/package naming split: start with [`PACKAGE_NAMING.md`](PACKAGE_NAMING.md).
 
 ## Evidence Page Navigation
@@ -325,7 +325,7 @@ Safety boundaries preserved by this path:
 | Should distribution stay JAR/docs-first or become container-based? | Two-track release decision summary | [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md), [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md), [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md) | Verified `v2.5.0` JAR/docs-first release evidence, container rollout cost/gates, release notes, and remaining non-certification limits | Reviewers can use the released JAR/docs bundle now or defer container distribution until registry/signing gates are implemented | Container publication or production certification |
 | Can a release candidate be rehearsed without publishing? | Dry-run packet and checklist | [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md), [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md), [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) | Current-main packet script, release-intent review packet, exact-version authorization checklist, reviewer packet template, go/no-go table | CI artifacts, local verification, SBOM, checksums, security gates, jar smoke, status UI, demos, and the recommended `v2.5.0` JAR/docs-first human decision map into ignored review evidence | Any tag, GitHub Release, asset upload, registry image, or container signature |
 | Is there a hard stop before future release action? | Release-intent and v2.5.0 authorization checklists | [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md), [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) | Intent questions, exact tag `v2.5.0`, exact commit, release notes, dry-run packet, SBOM/checksum review, rollback review, and explicit approval gates | Reviewers see what must be true before a separate real release request | A release process by itself |
-| Is JavaFX required? | Optional JavaFX doc | [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) | Desktop UI launch guidance | JavaFX is optional and API/proxy/static browser paths do not require it | Server/headless desktop support across all platforms |
+| Is JavaFX present or required? | JavaFX retirement doc | [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) | Desktop simulator and dependency retirement plus the retained JavaFX-free compatibility contract | JavaFX is absent; API/proxy/static browser paths remain the maintained operator surfaces | Desktop simulator support or server/headless desktop support |
 | Why does the Java namespace differ from the GitHub org? | Package naming note | [`PACKAGE_NAMING.md`](PACKAGE_NAMING.md) | `RicheyWorks/LoadBalancerPro`, `com.richmond423.loadbalancerpro` | The package name is a stable legacy namespace decision for now | A functional defect or runtime behavior change |
 
 ## Recommended Reviewer Flows
@@ -385,7 +385,7 @@ Read [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION
 2. Use [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) for packaged jar and Maven exec details.
 3. Use [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md) for release-free smoke helpers.
 4. Use [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md) for Java fixture launcher options.
-5. Use [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) only if the optional desktop UI is part of your review.
+5. Use [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) to review the retired desktop surface and retained JavaFX-free compatibility contract.
 
 ### Docs/Trust Review
 
@@ -398,7 +398,7 @@ Read [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION
 
 - Proxy is disabled by default.
 - Container/default deployment mode is protected by the prod API-key profile; provide `LOADBALANCERPRO_API_KEY` at run time for prod `/api/**`, proxy, OpenAPI, and Swagger usage. The explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests.
-- JavaFX is optional and not required for API, proxy, static browser, artifact, or operator smoke paths.
+- JavaFX desktop source and dependencies are absent; API, proxy, static browser, artifact, and operator smoke paths remain JavaFX-free.
 - Release-free docs do not create tags, GitHub Releases, or release assets.
 - Semantic version tags can publish GitHub Release assets only through the separate Release Artifacts workflow; normal docs, tests, CI review paths, and smoke dry-runs remain release-free.
 - `release-downloads/` remains manual and explicit only.
@@ -421,7 +421,7 @@ Read [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION
 - The proxy is intentionally lightweight and optional.
 - TLS termination, WebSocket proxying, WAF behavior, distributed rate limiting, durable monitoring, and deployment identity controls are outside the documented proxy evidence.
 - CI artifacts are workflow artifacts for review; they are not release assets.
-- JavaFX desktop behavior can be platform-sensitive and may not be available in headless/server environments.
+- The JavaFX desktop simulator is retired; no supported desktop launch path remains.
 
 ## Post-App-Service Compose Handoff Update
 

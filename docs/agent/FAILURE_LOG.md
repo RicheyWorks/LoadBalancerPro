@@ -6,6 +6,18 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-31T04:12:31-07:00
+
+Branch/PR: `codex/l-4-2-retire-javafx` / no PR yet
+
+Failure/resolution: a read-only JavaFX documentation reference search included the assumed directory
+`docs/agent/evidence-audit`, which does not exist; `rg` reported that path error while the same command's valid
+explicit `docs/agent` and operator-document searches completed. No file or process state changed. The located Maven
+posture source is `docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md`, and subsequent searches use only
+verified paths.
+
+## Entry
+
 Date/time: 2026-07-31T03:53:38-07:00
 
 Branch/PR: `codex/l-4-1-operator-cli-surface` / [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)
@@ -9767,3 +9779,25 @@ The L-2.5 product commit itself succeeded, but the trailing read-only display le
 PowerShell transformed the brace expression and `git rev-parse` received an invalid extra token, so no tree value is
 accepted from that display. Correction: quote revision expressions containing braces, then independently verify the
 commit, parent, tree, and clean worktree before push.
+
+The first L-4.2 current-documentation patch included a guessed assertion-list context for
+`AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest`; `apply_patch` rejected the complete patch without
+changing any file. Correction: inspect the actual assertion block, split the documentation edits into verified
+contexts, and apply only the intended JavaFX-retirement alignment.
+
+The first L-4.2 focused selector compiled and ran 91 tests, but
+`JavaFxOptionalUiDocumentationTest.retirementDocNamesMaintainedOperatorAlternativesAndCompatibilityBoundary` failed
+because its path assertion expected a backtick-delimited `/proxy-status.html` substring while the retirement document
+correctly uses a full backtick-delimited loopback URL. All other 90 focused tests passed with zero errors or skips, but
+the selector is not accepted. Correction: make the guard assert the stable page-name fragments already present in the
+document, then rerun the complete unchanged selector.
+
+The first L-4.2 campaign-record search passed a Windows wildcard path directly to `rg`; Windows rejected the wildcard
+as an invalid filename after returning only the explicit session-manager matches. No campaign-file inventory is
+accepted from that command. Correction: resolve the intended campaign filenames with `Get-ChildItem`, then pass the
+explicit paths to `rg`.
+
+The first L-4.2 deleted-file declaration summary assumed every deleted path had a Java type declaration and called
+`.Trim()` on a null match for `src/main/java/gui/messages.properties`. The symbol-usage output completed, but the
+aggregate deleted-path summary is not accepted. Correction: handle the non-Java resource explicitly and rerun the
+complete deletion inventory with a null-safe declaration formatter.

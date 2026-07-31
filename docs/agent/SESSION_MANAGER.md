@@ -6,9 +6,9 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Combined Build Plan Slot 22 Start Checkpoint
+## Combined Build Plan Slot 22 Focused-Verification Checkpoint
 
-Timestamp: 2026-07-31T04:10:32-07:00
+Timestamp: 2026-07-31T04:22:30-07:00
 
 Active: `L-4.2`; `codex/l-4-2-retire-javafx`; exact green-main base
 `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`; status `IN_PROGRESS`.
@@ -22,21 +22,34 @@ passed. Downloaded main evidence names the merge SHA, records Docker runtime pas
 findings, and contains a 138-component CycloneDX 1.6 SBOM with Boot `3.5.16`, Framework `6.2.19`, Security `6.5.11`,
 and no OpenJFX.
 
-L-4.2 contract: delete or repair the remaining JavaFX GUI, with the source plan recommending deletion because the
-desktop simulator is runtime-broken and the maintained HTML cockpit surfaces cover the operator UI need. Initial
-inventory finds ten `com.richmond423.loadbalancerpro.gui` source files plus `gui/messages.properties`, a
-`javafx-controls` declaration, artifact excludes, JavaFX/current-state documentation, and dependency/artifact guard
-tests. The production JAR already excludes the two direct-JavaFX classes and OpenJFX libraries. The exact deletion
-boundary and all non-JavaFX consumers must be proven before editing.
+L-4.2 selected the source-plan deletion path. Current-tree usage analysis proved that eight desktop-only GUI source
+files and `gui/messages.properties` have no consumer outside the retired simulator. Those files, `javafx.version`,
+`org.openjfx:javafx-controls`, and their now-stale packaging exclusions are removed. The JavaFX-free public
+`com.richmond423.loadbalancerpro.gui.Command` contract remains because `CloudManager` consumes it; moving that type
+would be a separate compatibility change. Current operator, security/testing, reviewer, and architecture documents
+now record retirement rather than advertising an unsupported launch path.
+
+Focused verification is current-tree green: skip-test `test-compile` passed; the 10-class selector passed 91 tests
+with zero failures, errors, or skips; and the 166-line effective dependency tree contains zero OpenJFX/JavaFX entries
+while still resolving Spring Boot `3.5.16`, Spring Framework `6.2.19`, and Spring Security `6.5.11`. Source scans find
+no JavaFX imports, only `Command.java` under the production `gui` package, and no remaining source consumer of a
+deleted desktop type.
+
+Pre-commit complete-diff self-review covers all 32 changed paths: eight Java sources and one resource are deleted;
+the only surviving production-Java edit is `Command` Javadoc; POM changes only remove the JavaFX declaration and
+stale excludes; the remaining changes are guards, current-state documentation, and campaign records. `git diff
+--check` is clean, there are no untracked files, and no workflow, Docker/Compose, runtime configuration, API/core
+implementation, new dependency/plugin, credential, external target, suppression, allowlist, or security-gate change
+is present.
 
 Scope/boundaries: no API/proxy/cloud behavior, workflow, Docker/Compose, configuration default, credential,
 external/cloud/tenant target, security suppression/allowlist, or live mutation is authorized. Deletion must not
 remove shared core behavior still used outside the retired simulator. Existing HTML cockpit pages remain bounded
 local reviewer/operator surfaces and do not prove production readiness or live-cloud validation.
 
-Blocker: none. Next: audit all GUI-package consumers and tests, distinguish JavaFX-only helpers from any shared
-command contract, choose the minimal safe deletion set, and run focused compile/guard verification before the product
-commit.
+Blocker: none. Next: validate the updated campaign records, perform the complete-diff scope/safety review, freeze the
+intentional product commit, then run the deletion-full clean test/package/verify/SBOM/artifact/Docker/runtime/security
+gate ladder before PR creation.
 
 ## Combined Build Plan Slot 21 Remote-Green Audit Checkpoint
 

@@ -62,7 +62,7 @@ Current package observations:
 | `com.richmond423.loadbalancerpro.api.config` | Contains security, auth, rate limit, request size, telemetry, policy, and web configuration classes. | `config`. |
 | `com.richmond423.loadbalancerpro.api.proxy` | Contains optional proxy behavior, route planning, status, metrics, and private-network validation boundaries. | `infrastructure` or guarded `api.proxy` boundary. |
 | `com.richmond423.loadbalancerpro.lab` | Contains Enterprise Lab run, scenario catalog, scorecard, and evidence exporter concepts. | `evidence` or `lase` depending on future ADRs. |
-| `com.richmond423.loadbalancerpro.cli` and `com.richmond423.loadbalancerpro.gui` | Contain CLI/GUI commands, local evidence helpers, and optional UI behavior. | `api/view`, `tooling`, or legacy UI/CLI boundary. |
+| `com.richmond423.loadbalancerpro.cli` and `com.richmond423.loadbalancerpro.gui` | The CLI contains offline report commands and local evidence helpers; `gui` retains only the JavaFX-free `Command` compatibility contract used by `CloudManager` after desktop UI retirement. | `tooling` or legacy compatibility boundary. |
 | `src/main/resources/static` | Contains static UI pages and reviewer dashboards. | `api` / view surface. |
 
 Current class observations include `LoadBalancer`, `AllocatorService`, `Server`, `ServerStateVector`, `ServerScoreCalculator`, `AdaptiveRoutingPolicyEngine`, `LaseShadowAdvisor`, `LaseEvaluationEngine`, `LaseShadowReplayEngine`, `AdaptiveRoutingScenario` classes, evidence/reviewer metadata classes, `CloudManager` and cloud/infrastructure classes, static UI pages, and reviewer dashboards.

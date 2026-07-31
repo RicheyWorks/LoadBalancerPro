@@ -34,8 +34,7 @@ Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST
 - The matrix does not create tags, GitHub Releases, release assets, or `release-downloads/` files.
 - The matrix does not change default application behavior or enable proxy mode by default.
 - Proxy rows describe lightweight local/operator behavior only, not a production gateway or certification claim.
-- JavaFX is optional desktop UI support and is not required for the API/proxy/operator paths.
-- The retired interactive CLI no longer exposes a JavaFX launch option. The remaining JavaFX source has no supported
-  operator run-matrix row pending its separate delete-or-repair decision. See
-  [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md).
+- The JavaFX desktop simulator, its launch surface, and its Maven dependency are retired. The maintained
+  API/proxy/offline-report/browser paths do not require JavaFX. See
+  [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) for the retirement and compatibility boundary.
 - Future release publication requires a separate, explicit user request after completing [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).

@@ -17,7 +17,6 @@
         <netty.version>4.2.16.Final</netty.version>
         <jackson.version>2.21.4</jackson.version>
         <aws-sdk-v2.version>2.44.4</aws-sdk-v2.version>
-        <javafx.version>17.0.19</javafx.version>
         <mockito.version>5.17.0</mockito.version>
         <jacoco.version>0.8.13</jacoco.version>
         <argLine></argLine>
@@ -109,14 +108,6 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-otlp</artifactId>
-        </dependency>
-
-        <!-- JavaFX GUI -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -254,8 +245,6 @@
                     <excludes>
                         <exclude>com/richmond423/loadbalancerpro/cli/EnterpriseLab*Proof*.class</exclude>
                         <exclude>com/richmond423/loadbalancerpro/lab/EnterpriseLab*Proof*.class</exclude>
-                        <exclude>com/richmond423/loadbalancerpro/gui/LoadBalancerGUI*.class</exclude>
-                        <exclude>com/richmond423/loadbalancerpro/gui/ServerTableRow*.class</exclude>
                     </excludes>
                     <archive>
                         <manifest>
@@ -273,7 +262,6 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication</mainClass>
-                    <excludeGroupIds>org.openjfx</excludeGroupIds>
                 </configuration>
                 <executions>
                     <execution>

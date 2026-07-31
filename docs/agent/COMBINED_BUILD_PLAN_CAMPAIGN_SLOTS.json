@@ -301,7 +301,7 @@
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "Active on codex/l-4-2-retire-javafx from exact green main 952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555. Initial inventory confirms the JavaFX simulator source, messages resource, and javafx-controls declaration remain even though direct-JavaFX classes and OpenJFX libraries are already excluded from the production JAR. Current-main usage, non-JavaFX gui-package consumers, dependency/test guard updates, and the exact safe deletion set are being audited before product edits."
+      "currentState": "Active on codex/l-4-2-retire-javafx from exact green main 952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555. The deletion path removes eight desktop-only Java files, the message bundle, javafx.version, org.openjfx:javafx-controls, and stale packaging exclusions while retaining the JavaFX-free public gui.Command contract consumed by CloudManager. Skip-test compilation, 91 focused tests with zero failures/errors/skips, source scans, and a 166-line effective dependency tree with zero JavaFX/OpenJFX entries are green. Full deletion-profile verification remains pending."
     },
     {
       "ordinal": 23,

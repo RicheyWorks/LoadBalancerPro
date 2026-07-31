@@ -19,9 +19,10 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`, exact-main CI `30625619790` and CodeQL `30625619540` green.
 - Active implementation slot: `L-4.2`; delete or repair the JavaFX GUI on
   `codex/l-4-2-retire-javafx`, from exact green main
-  `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`. Initial inventory confirms the JavaFX simulator source and
-  dependency remain despite being excluded from the production JAR; current-main usage and the exact safe deletion
-  set are being audited before product edits.
+  `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`. The deletion path removes eight desktop-only Java files, the message
+  bundle, OpenJFX dependency/property, and stale packaging exclusions while retaining the JavaFX-free public
+  `gui.Command` contract consumed by `CloudManager`. Skip-test compilation, 91 focused tests, source scans, and the
+  effective dependency-tree audit are green; the deletion-full gate ladder remains pending.
 - Next implementation slot after the active gate: `L-4.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

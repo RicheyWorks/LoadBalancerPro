@@ -21,47 +21,33 @@ class JavaFxOptionalUiDocumentationTest {
     private static final Path TESTING_COVERAGE = Path.of("docs/TESTING_COVERAGE.md");
 
     @Test
-    void javaFxOptionalDocStatesApiProxyAndBrowserIndependence() throws Exception {
+    void retirementDocStatesDesktopSourceAndDependencyAreGone() throws Exception {
         String doc = read(JAVAFX_DOC);
 
-        assertTrue(doc.contains("# JavaFX Optional UI"));
-        assertTrue(doc.contains("JavaFX is optional"));
-        assertTrue(doc.contains("not required for the Spring API"));
-        assertTrue(doc.contains("not required for reverse proxy mode"));
-        assertTrue(doc.contains("not required for `/proxy-status.html`"));
-        assertTrue(doc.contains("not required for `/load-balancing-cockpit.html`"));
-        assertTrue(doc.contains("not required for CI artifact verification"));
-        assertTrue(doc.contains("not required for the operator distribution smoke kit"));
-        assertTrue(doc.contains("not required for the proxy demo stack"));
+        assertTrue(doc.contains("# JavaFX Desktop UI Retirement"));
+        assertTrue(doc.contains("no longer includes or distributes the JavaFX desktop simulator"));
+        assertTrue(doc.contains("`org.openjfx:javafx-controls` Maven dependency were removed"));
+        assertTrue(doc.contains("no `javafx.version`, `org.openjfx`, or `javafx-controls` declaration"));
+        assertTrue(doc.contains("no JavaFX imports or JavaFX `Application` entry point"));
+        assertTrue(doc.contains("There is no supported JavaFX launch command"));
     }
 
     @Test
-    void javaFxOptionalDocCapturesPlatformAndHeadlessCaveats() throws Exception {
-        String doc = read(JAVAFX_DOC);
-
-        assertTrue(doc.contains("platform-specific JavaFX runtime configuration"));
-        assertTrue(doc.contains("JavaFX-capable runtime environment and a desktop display"));
-        assertTrue(doc.contains("Headless CI, containers, SSH sessions, and servers without a desktop display may not support the JavaFX UI."));
-        assertTrue(doc.contains("desktop display"));
-        assertTrue(doc.contains("No JavaFX-specific Maven plugin is bound to the default lifecycle."));
-    }
-
-    @Test
-    void javaFxOptionalDocUsesRepoBackedLaunchGuidance() throws Exception {
+    void retirementDocNamesMaintainedOperatorAlternativesAndCompatibilityBoundary() throws Exception {
         String doc = read(JAVAFX_DOC);
 
         assertTrue(doc.contains("com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication"));
         assertTrue(doc.contains("com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher"));
-        assertTrue(doc.contains("LoadBalancerGUI"));
-        assertTrue(doc.contains("former synthetic interactive CLI"));
-        assertTrue(doc.contains("no supported operator CLI path launches JavaFX"));
-        assertTrue(doc.contains("pending the separate delete-or-repair decision"));
-        assertFalse(doc.contains("com.richmond423.loadbalancerpro.cli.LoadBalancerCLI"));
-        assertFalse(doc.contains("then choose `15. Launch GUI`"));
+        assertTrue(doc.contains("/proxy-status.html"));
+        assertTrue(doc.contains("/load-balancing-cockpit.html"));
+        assertTrue(doc.contains("`com.richmond423.loadbalancerpro.gui.Command`"));
+        assertTrue(doc.contains("JavaFX-free compatibility contract used by"));
+        assertTrue(doc.contains("`CloudManager`"));
+        assertTrue(doc.contains("CI continues to reject OpenJFX libraries"));
     }
 
     @Test
-    void existingOperatorDocsLinkToJavaFxOptionalDoc() throws Exception {
+    void currentOperatorDocsLinkToRetirementDoc() throws Exception {
         assertTrue(read(README).contains("JAVAFX_OPTIONAL_UI.md"));
         assertTrue(read(MATRIX).contains("JAVAFX_OPTIONAL_UI.md"));
         assertTrue(read(PACKAGING).contains("JAVAFX_OPTIONAL_UI.md"));
@@ -71,21 +57,22 @@ class JavaFxOptionalUiDocumentationTest {
     }
 
     @Test
-    void javaFxDocsAvoidRequiredOperatorPathConfusionAndUnsafeClaims() throws Exception {
+    void currentDocsAvoidRestoringTheDesktopPathOrInflatingClaims() throws Exception {
         String combined = read(JAVAFX_DOC) + "\n" + read(README) + "\n" + read(MATRIX)
-                + "\n" + read(PACKAGING) + "\n" + read(RUNBOOK);
+                + "\n" + read(PACKAGING) + "\n" + read(RUNBOOK)
+                + "\n" + read(API_SECURITY) + "\n" + read(TESTING_COVERAGE);
         String normalized = combined.toLowerCase(Locale.ROOT);
         String javaFxDoc = read(JAVAFX_DOC).toLowerCase(Locale.ROOT);
 
-        assertFalse(normalized.contains("javafx is required"), "JavaFX must not be documented as required");
-        assertFalse(normalized.contains("requires javafx for proxy"), "Proxy path must not require JavaFX");
-        assertFalse(normalized.contains("requires javafx for api"), "API path must not require JavaFX");
+        assertFalse(normalized.contains("javafx is optional"), "current docs must describe retirement, not optionality");
+        assertFalse(normalized.contains("optional javafx"), "current docs must not advertise an optional launch path");
+        assertFalse(normalized.contains("launch javafx"), "current docs must not advertise a JavaFX launcher");
         assertFalse(normalized.contains("new cloudmanager"), "docs must not construct CloudManager");
         assertFalse(normalized.contains("cloudmanager("), "docs must not construct CloudManager");
-        assertFalse(javaFxDoc.contains("production-grade"), "JavaFX docs must not add production-grade claims");
-        assertFalse(javaFxDoc.contains("benchmark proof"), "JavaFX docs must not add benchmark claims");
-        assertFalse(javaFxDoc.contains("certification proof"), "JavaFX docs must not add certification claims");
-        assertFalse(javaFxDoc.contains("identity proof"), "JavaFX docs must not add identity claims");
+        assertFalse(javaFxDoc.contains("production-grade"), "retirement docs must not add production-grade claims");
+        assertFalse(javaFxDoc.contains("benchmark proof"), "retirement docs must not add benchmark claims");
+        assertFalse(javaFxDoc.contains("certification proof"), "retirement docs must not add certification claims");
+        assertFalse(javaFxDoc.contains("identity proof"), "retirement docs must not add identity claims");
     }
 
     private static String read(Path path) throws IOException {

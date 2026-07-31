@@ -49,7 +49,7 @@ git diff --check
 The current Maven/CycloneDX SBOM command used by CI is:
 
 ```bash
-mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true
+mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -DincludeProvidedScope=false -Dcyclonedx.skipAttach=true
 ```
 
 If Docker is available, reviewers can run local-only image commands:

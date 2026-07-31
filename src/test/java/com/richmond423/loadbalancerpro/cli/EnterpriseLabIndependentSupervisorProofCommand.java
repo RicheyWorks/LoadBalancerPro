@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.cli;
 
+// Test/tool-only command; intentionally excluded from the production application artifact.
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentProofExporter;
@@ -15,7 +17,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-/** Foreground packaged entry point for the independent-supervisor proof matrix. */
+/** Foreground test/tool entry point for the independent-supervisor proof matrix. */
 public final class EnterpriseLabIndependentSupervisorProofCommand {
     private static final String FLAG = "--enterprise-lab-independent-supervisor-proof";
     private static final String OUTPUT_FLAG = FLAG + "-output=";

@@ -184,7 +184,7 @@ jobs:
           assert_not_contains "$INVALID_LOG" "java.lang"
 
       - name: Generate CycloneDX SBOM
-        run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true
+        run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -DincludeProvidedScope=false -Dcyclonedx.skipAttach=true
 
       - name: Stage deterministic release artifacts
         shell: bash

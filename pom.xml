@@ -116,6 +116,7 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -250,6 +251,12 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.5.0</version>
                 <configuration>
+                    <excludes>
+                        <exclude>com/richmond423/loadbalancerpro/cli/EnterpriseLab*Proof*.class</exclude>
+                        <exclude>com/richmond423/loadbalancerpro/lab/EnterpriseLab*Proof*.class</exclude>
+                        <exclude>com/richmond423/loadbalancerpro/gui/LoadBalancerGUI*.class</exclude>
+                        <exclude>com/richmond423/loadbalancerpro/gui/ServerTableRow*.class</exclude>
+                    </excludes>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -266,6 +273,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication</mainClass>
+                    <excludeGroupIds>org.openjfx</excludeGroupIds>
                 </configuration>
                 <executions>
                     <execution>

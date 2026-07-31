@@ -265,7 +265,7 @@
       "dependencies": ["L-2.3"],
       "riskClass": "PACKAGING",
       "verificationProfile": "deletion-full",
-      "currentState": "Started on codex/l-2-4-proof-tools-artifact from exact green main 03eca16a4f7114270567e99045400581559b3aea. The active contract is to remove the five proof runner/report/exporter families and JavaFX classes from the production server JAR while retaining proof execution in CI from a test/tool-only home and removing or isolating production CLI dispatch. Inventory and build-layout reconciliation are in progress."
+      "currentState": "Local verification is green on codex/l-2-4-proof-tools-artifact from exact green main 03eca16a4f7114270567e99045400581559b3aea. Seventeen proof command/runner/report/helper sources now live only under src/test, the production application has no proof dispatch, the server JAR contains no proof/direct-JavaFX/OpenJFX entries, all five test-scope proofs passed, the clean 3,076-test package and verify passed, the 138-component SBOM contains no OpenJFX, and packaged local/API-key/proxy-loopback runtime smoke passed. Local Docker is unavailable; exact-head remote CI, dependency review, CodeQL, Docker/runtime, artifact/SBOM, and blocking Trivy remain mandatory."
     },
     {
       "ordinal": 20,

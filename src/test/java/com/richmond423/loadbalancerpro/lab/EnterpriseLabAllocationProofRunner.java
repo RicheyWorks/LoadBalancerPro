@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only proof runner; intentionally excluded from the production application artifact.
+
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciler.DriftClassification;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciler.ReconciliationAction;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciler.ReconciliationTrigger;
@@ -24,7 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/** Foreground bounded packaged proof for allocation transactions and reconciliation. */
+/** Foreground bounded test/tool proof for allocation transactions and reconciliation. */
 public final class EnterpriseLabAllocationProofRunner {
     private static final String SCENARIO = "tail-latency-pressure";
     private static final Instant PROOF_TIME = Instant.parse("2026-07-18T18:00:00Z");

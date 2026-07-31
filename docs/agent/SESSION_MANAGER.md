@@ -6,6 +6,36 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 19 Local-Verification Checkpoint
+
+Timestamp: 2026-07-30T18:40:00-07:00
+
+Current slot/branch: `L-2.4`; `codex/l-2-4-proof-tools-artifact`; base
+`03eca16a4f7114270567e99045400581559b3aea`; pre-product head
+`b56272bf0f2e103bbc17751317ff5a778deb9e67`; status `LOCAL_VERIFIED`.
+
+Implemented: the five proof command/runner/report families plus shared exporter and allocation holder (17 source files,
+about 7,000 lines) now live only under `src/test/java`; the production application has no proof CLI dispatch. The
+tracked PowerShell proof scripts compile and launch `EnterpriseLabProofToolsApplication` on the test classpath. The
+production JAR excludes `LoadBalancerGUI`, `ServerTableRow`, every defensive proof-class pattern, and the `org.openjfx`
+dependency group; JavaFX remains provided for source-tree Maven/classpath exploration only. CI verifies four Surefire
+proof families, runs the full independent-supervisor proof separately, rejects proof/JavaFX JAR entries, and generates
+artifact-aligned SBOMs with provided scope excluded.
+
+Verified: focused packaging/contract selectors passed; all five proof scripts passed, including 360 experiment
+loopback requests, ten allocation drift cases, ownership takeover before prior lease expiry, 124 durable-recovery
+requests, and the independent matrix across 22 application JVMs, 24 supervisor JVMs, eight crash windows, and 18 IPC
+checks. The authoritative `mvn -q clean package` passed 3,076 tests across 415 reports with zero failures, errors, or
+skips; `mvn -q -DskipTests verify` passed. The final JAR is 85,630,238 bytes with 1,270 entries and zero proof,
+direct-JavaFX-application, or OpenJFX entries. CycloneDX JSON/XML schema 1.6 contains 138 components, zero OpenJFX
+components, and Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`. The repository-owned packaged runtime matrix
+passed local, API-key, and proxy-loopback profiles and cleaned every child. Local Docker remains unavailable because
+the Docker Desktop Linux named pipe is absent; exact-head remote Docker/runtime and blocking Trivy remain mandatory.
+
+Blocker: none. Next: complete the final full-diff/scope/secret audit, commit the exact product head, create the PR, update
+this checkpoint with the PR/head, and require exact-head CI, dependency review, CodeQL, Docker/runtime, artifact/SBOM,
+and blocking Trivy before merge.
+
 ## Combined Build Plan Slot 18 Main-Green / Slot 19 Start
 
 Timestamp: 2026-07-30T17:42:13-07:00

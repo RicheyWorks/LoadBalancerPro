@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only proof process; intentionally excluded from the production application artifact.
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -33,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
-/** Separate-JVM, literal-loopback installed-state holder used only by packaged proof. */
+/** Separate-JVM, literal-loopback installed-state holder used only by test/tool proof. */
 public final class EnterpriseLabAllocationProofStateHolder {
     public static final int MAX_REQUESTS = 128;
     public static final Duration START_TIMEOUT = Duration.ofSeconds(8);
@@ -347,7 +349,7 @@ public final class EnterpriseLabAllocationProofStateHolder {
         } else {
             command.add("-cp");
             command.add(classPath);
-            command.add("com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication");
+            command.add("com.richmond423.loadbalancerpro.cli.EnterpriseLabProofToolsApplication");
         }
         return command;
     }

@@ -5,6 +5,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "enterprise-lab-proof-tool-runtime.ps1")
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -19,15 +20,6 @@ function Assert-OutputUnderTarget {
         throw "Enterprise Lab allocation proof output must stay under target/. Requested: $Path"
     }
     return $resolvedOutput
-}
-
-function Find-ExecutableJar {
-    $jar = Get-ChildItem -Path "target" -Filter "LoadBalancerPro-*.jar" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch "(-sources|-javadoc|-tests|\.original)\.jar$" } |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-    if ($null -eq $jar) { return $null }
-    return $jar.FullName
 }
 
 function Assert-SanitizedEvidence {
@@ -49,23 +41,17 @@ $resolvedOutputDir = Assert-OutputUnderTarget -Path $OutputDir
 if ($DryRun) {
     Write-Host "Enterprise Lab allocation crash-window proof dry run."
     Write-Host "Output directory: $OutputDir"
-    Write-Host "Planned command: java -jar target/LoadBalancerPro-*.jar --enterprise-lab-allocation-proof --enterprise-lab-allocation-proof-output=$OutputDir"
+    Write-Host "Planned command: test-compile then EnterpriseLabProofToolsApplication --enterprise-lab-allocation-proof --enterprise-lab-allocation-proof-output=$OutputDir"
     Write-Host "Safety: bounded foreground proof and authenticated separate local holder JVM; no API server, arbitrary path, allocation override, external target, native command, cloud, tenant, or production action."
     exit 0
 }
 
-$jarPath = Find-ExecutableJar
-if ($Package -or $null -eq $jarPath) {
-    & mvn -q -DskipTests package
-    if ($LASTEXITCODE -ne 0) { throw "mvn package failed with exit code $LASTEXITCODE" }
-    $jarPath = Find-ExecutableJar
-}
-if ($null -eq $jarPath) { throw "Executable LoadBalancerPro jar was not found under target/." }
-
 New-Item -ItemType Directory -Force -Path $resolvedOutputDir | Out-Null
-$output = & java -jar $jarPath "--enterprise-lab-allocation-proof" "--enterprise-lab-allocation-proof-output=$OutputDir" 2>&1
-$exitCode = $LASTEXITCODE
-$text = ($output -join "`n")
+$run = Invoke-EnterpriseLabProofTool -Arguments @(
+    "--enterprise-lab-allocation-proof",
+    "--enterprise-lab-allocation-proof-output=$OutputDir")
+$exitCode = $run.ExitCode
+$text = ($run.Output -join "`n")
 if ($exitCode -ne 0) { throw "Enterprise Lab allocation proof CLI failed with exit code $exitCode`n$text" }
 Assert-SanitizedEvidence -Text $text
 

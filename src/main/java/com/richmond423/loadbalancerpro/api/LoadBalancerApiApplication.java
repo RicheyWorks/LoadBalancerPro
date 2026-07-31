@@ -1,11 +1,6 @@
 package com.richmond423.loadbalancerpro.api;
 
 import com.richmond423.loadbalancerpro.cli.AdaptiveRoutingExperimentCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabAllocationProofCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabDurableRecoveryProofCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabEvidenceOwnershipProofCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabExperimentProofCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabIndependentSupervisorProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabStorageRepairCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabSupervisorCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabWorkflowCommand;
@@ -39,49 +34,6 @@ public class LoadBalancerApiApplication {
             if (supervisorResult.requested()) {
                 if (supervisorResult.exitCode() != 0) {
                     System.exit(supervisorResult.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabAllocationProofCommand.Result allocationProofResult =
-                    EnterpriseLabAllocationProofCommand.runIfRequested(
-                            args, System.out, System.err);
-            if (allocationProofResult.requested()) {
-                if (allocationProofResult.exitCode() != 0) {
-                    System.exit(allocationProofResult.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabIndependentSupervisorProofCommand.Result independentSupervisorProof =
-                    EnterpriseLabIndependentSupervisorProofCommand.runIfRequested(
-                            args, System.out, System.err);
-            if (independentSupervisorProof.requested()) {
-                if (independentSupervisorProof.exitCode() != 0) {
-                    System.exit(independentSupervisorProof.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabEvidenceOwnershipProofCommand.Result ownershipProofResult =
-                    EnterpriseLabEvidenceOwnershipProofCommand.runIfRequested(
-                            args, System.out, System.err);
-            if (ownershipProofResult.requested()) {
-                if (ownershipProofResult.exitCode() != 0) {
-                    System.exit(ownershipProofResult.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabDurableRecoveryProofCommand.Result durableProofResult =
-                    EnterpriseLabDurableRecoveryProofCommand.runIfRequested(args, System.out, System.err);
-            if (durableProofResult.requested()) {
-                if (durableProofResult.exitCode() != 0) {
-                    System.exit(durableProofResult.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabExperimentProofCommand.Result proofResult =
-                    EnterpriseLabExperimentProofCommand.runIfRequested(args, System.out, System.err);
-            if (proofResult.requested()) {
-                if (proofResult.exitCode() != 0) {
-                    System.exit(proofResult.exitCode());
                 }
                 return;
             }
@@ -121,11 +73,6 @@ public class LoadBalancerApiApplication {
         return !isVersionRequested(args)
                 && !EnterpriseLabStorageRepairCommand.isRequested(args)
                 && !EnterpriseLabSupervisorCommand.isRequested(args)
-                && !EnterpriseLabAllocationProofCommand.isRequested(args)
-                && !EnterpriseLabIndependentSupervisorProofCommand.isRequested(args)
-                && !EnterpriseLabEvidenceOwnershipProofCommand.isRequested(args)
-                && !EnterpriseLabDurableRecoveryProofCommand.isRequested(args)
-                && !EnterpriseLabExperimentProofCommand.isRequested(args)
                 && !AdaptiveRoutingExperimentCommand.isRequested(args)
                 && !EnterpriseLabWorkflowCommand.isRequested(args)
                 && !LaseDemoCommand.isRequested(args)

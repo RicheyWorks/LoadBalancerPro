@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only proof runner; intentionally excluded from the production application artifact.
+
 import com.richmond423.loadbalancerpro.core.ServerDegradationState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentEvaluation.Disposition;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentEvaluation.Trigger;

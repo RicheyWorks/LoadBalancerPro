@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only proof runner; intentionally excluded from the production application artifact.
+
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.ArmRequest;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.RequestBatchRequest;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentStartupReconciler.RecoveryClassification;
@@ -166,7 +168,7 @@ public final class EnterpriseLabDurableRecoveryProofRunner {
         live.service.start(experimentId, "start-normal-rollback", true);
         clock.advance(Duration.ofSeconds(1));
         var cancelled = live.service.cancel(
-                experimentId, "cancel-normal-rollback", "packaged normal rollback proof");
+                experimentId, "cancel-normal-rollback", "test/tool normal rollback proof");
         EnterpriseLabExperimentState state = cancelled.experimentRecord().orElseThrow().lifecycle().state();
         live.service.close();
         boolean preserved = terminalRestartPreserved(live.directory, targets, clock, experimentId, state);

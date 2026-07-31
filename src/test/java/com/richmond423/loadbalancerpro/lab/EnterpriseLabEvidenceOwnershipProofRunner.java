@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
+// Test/tool-only proof runner; intentionally excluded from the production application artifact.
+
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.FailureClassification;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OperationStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Policy;
@@ -466,7 +468,7 @@ public final class EnterpriseLabEvidenceOwnershipProofRunner {
         } else {
             command.add("-cp");
             command.add(classPath);
-            command.add("com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication");
+            command.add("com.richmond423.loadbalancerpro.cli.EnterpriseLabProofToolsApplication");
         }
         command.add("--enterprise-lab-ownership-proof-child=" + action.wireValue);
         command.add("--enterprise-lab-ownership-proof-output=" + output);

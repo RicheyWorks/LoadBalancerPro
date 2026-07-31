@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.cli;
 
+// Test/tool-only command; intentionally excluded from the production application artifact.
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipProofReport;
@@ -15,7 +17,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-/** Foreground packaged entrypoint for the bounded separate-process ownership proof. */
+/** Foreground test/tool entrypoint for the bounded separate-process ownership proof. */
 public final class EnterpriseLabEvidenceOwnershipProofCommand {
     private static final String FLAG = "--enterprise-lab-ownership-proof";
     private static final String OUTPUT_FLAG = "--enterprise-lab-ownership-proof-output=";

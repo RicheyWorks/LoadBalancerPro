@@ -126,7 +126,7 @@ Reviewers can run these safe current commands now:
 mvn -q test
 mvn -q -DskipTests package
 git diff --check
-mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true
+mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -DincludeProvidedScope=false -Dcyclonedx.skipAttach=true
 docker build -t loadbalancerpro:local .
 ```
 

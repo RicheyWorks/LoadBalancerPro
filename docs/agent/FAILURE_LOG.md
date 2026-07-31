@@ -9365,3 +9365,43 @@ key, and two rapidly created files received the same creation timestamp. That ru
 fixture now establishes a deliberately distinct creation time through `BasicFileAttributeView` when the platform
 collides, the focused identity proof passed, and the subsequent fresh 3,054-test clean package passed with zero
 failures, errors, or skips.
+
+# 2026-07-30 - L-2.3 OS-lock-aware takeover
+
+Branch: `codex/l-2-3-os-lock-aware-takeover`
+
+The first focused Maven selector was parsed by PowerShell before Maven because its comma-separated `-Dtest` value was
+not quoted, so no test process started and no result is accepted. Correction: quote the complete
+`-Dtest=...` argument on PowerShell and retain that form for all comma-separated Maven selectors.
+
+The corrected focused selector stopped at test compilation because the new configuration assertion used a nonexistent
+`InitializationState.NOT_CONFIGURED`. The in-memory-only gate intentionally reports `READY` with
+`DURABLE_RECOVERY_NOT_CONFIGURED`. No test result is accepted. Correction: assert the existing state plus reason-code
+pair, then rerun the same focused selector.
+
+The post-package inventory correctly reported the fresh JAR as `LoadBalancerPro-2.5.0.jar` but the same read-only
+command attempted to hash a stale `1.0.0` filename, producing no hash. The clean-package result and fresh Surefire
+totals remain valid; no artifact-hash result is accepted from that command. Correction: resolve the single packaged
+JAR from the fresh target inventory, require its exact expected filename, then hash that literal path.
+
+The first post-verify SBOM inspection assumed `verify` writes `target/bom.json`; this repository intentionally invokes
+the pinned CycloneDX goal separately, so no such file existed and no SBOM result is accepted from that inspection.
+The JAR class listing itself was read-only and valid. Correction: run
+`org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom` with JSON/XML enabled and attachment disabled, then inspect
+the generated files at their reported target paths.
+
+A read-only verification-contract search included nonexistent
+`docs/agent/CAMPAIGN_VERIFICATION_PROTOCOL.md`, so `rg` returned exit one after useful matches. Correction: enumerate
+the repository-owned protocol paths first and use the actual `docs/agent/VERIFICATION_PROTOCOL.md`; no verification
+result depends on the failed search.
+
+The first independent-supervisor JSON projection looked for the derived Java `allPassed()` method as a serialized
+property and counted PowerShell dictionary objects as arrays, yielding null/one display values after the successful CLI
+gate. No aggregate JSON result is accepted from that projection. Correction: inspect the report's serialized fixed
+booleans directly and count the `PSObject.Properties` in its crash-window and IPC dictionaries; the packaged command's
+own required `report.allPassed()` check remains the authoritative aggregate gate.
+
+The L-2.3 local Docker preflight could not connect to the Docker Desktop Linux engine because its named pipe is absent,
+matching the workstation limitation already observed in prior slots. No local image build/runtime result is claimed.
+Correction: keep exact-head remote Docker build, runtime smoke, SBOM/artifact proof, and blocking Trivy mandatory; do
+not weaken, skip, or relabel those remote gates.

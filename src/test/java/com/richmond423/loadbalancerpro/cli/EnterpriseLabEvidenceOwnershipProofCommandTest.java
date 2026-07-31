@@ -50,6 +50,7 @@ class EnterpriseLabEvidenceOwnershipProofCommandTest {
         assertTrue(report.path("cleanTakeoverClassified").asBoolean());
         assertTrue(report.path("restartedPriorOwnerDenied").asBoolean());
         assertTrue(report.path("abruptStaleOwnerClassified").asBoolean());
+        assertTrue(report.path("abruptTakeoverBeforePriorLeaseExpiry").asBoolean());
         assertTrue(report.path("journalsVerifiedAndReplayed").asBoolean());
         assertTrue(report.path("interruptedExperimentRolledBack").asBoolean());
         assertTrue(report.path("baselineRestorationVerified").asBoolean());
@@ -102,6 +103,7 @@ class EnterpriseLabEvidenceOwnershipProofCommandTest {
         assertTrue(script.contains("assert-outputundertarget"));
         assertTrue(script.contains("competingtakeoversinglewinner"));
         assertTrue(script.contains("abruptstaleownerclassified"));
+        assertTrue(script.contains("abrupttakeoverbeforepriorleaseexpiry"));
         assertFalse(script.contains("invoke-webrequest"));
         assertFalse(script.contains("invoke-restmethod"));
         assertFalse(script.contains("force-unlock"));

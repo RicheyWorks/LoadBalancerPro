@@ -169,6 +169,35 @@ class EnterpriseLabExperimentControllerTest {
     }
 
     @Test
+    void ownershipTakeoverModeIsExactAndExplicit() {
+        var configuration =
+                new EnterpriseLabExperimentController.EnterpriseLabExperimentConfiguration();
+
+        try (EnterpriseLabExperimentOperatorService guarded =
+                     configuration.enterpriseLabExperimentOperatorService(
+                             EnterpriseLabExperimentTargetCatalog.empty(),
+                             "",
+                             "in-process",
+                             "multi-host-lease-guarded")) {
+            assertEquals(InitializationState.READY, guarded.recoveryStatus().state());
+            assertEquals("DURABLE_RECOVERY_NOT_CONFIGURED",
+                    guarded.recoveryStatus().reasonCode());
+        }
+        assertThrows(IllegalArgumentException.class,
+                () -> configuration.enterpriseLabExperimentOperatorService(
+                        EnterpriseLabExperimentTargetCatalog.empty(),
+                        "",
+                        "in-process",
+                        " multi-host-lease-guarded"));
+        assertThrows(IllegalArgumentException.class,
+                () -> configuration.enterpriseLabExperimentOperatorService(
+                        EnterpriseLabExperimentTargetCatalog.empty(),
+                        "",
+                        "in-process",
+                        "distributed"));
+    }
+
+    @Test
     void externalRequiredModeFailsStartupWithoutSupervisorAndNeverFallsBackInProcess() {
         var configuration =
                 new EnterpriseLabExperimentController.EnterpriseLabExperimentConfiguration();

@@ -48,9 +48,8 @@ public final class EnterpriseLabEvidenceOwnershipProofRunner {
     private static final Duration CHILD_START_TIMEOUT = Duration.ofSeconds(20);
     private static final Duration CHILD_RELEASE_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration CHILD_HOLD_TIMEOUT = Duration.ofSeconds(45);
-    private static final Duration STALE_WAIT = Duration.ofMillis(2_300);
     private static final Policy PROOF_POLICY = new Policy(
-            Duration.ofSeconds(2), Duration.ofMillis(500), 1, 2, Duration.ofMillis(10));
+            Duration.ofSeconds(30), Duration.ofSeconds(10), 1, 2, Duration.ofMillis(10));
     private static final EnterpriseLabEvidenceMutationAuthority REJECTING_AUTHORITY = () -> {
         throw new EnterpriseLabEvidenceOwnershipException(
                 FailureClassification.LOCK_LOST,
@@ -72,6 +71,7 @@ public final class EnterpriseLabEvidenceOwnershipProofRunner {
         ChildEvidence cleanTakeover;
         ChildEvidence restartedDenial;
         ChildEvidence abruptTakeover;
+        boolean abruptTakeoverBeforePriorLeaseExpiry;
         ChildEvidence firstRestart;
         ChildEvidence repeatedRestart;
         boolean simultaneousAcquisitionSingleWinner;
@@ -92,19 +92,21 @@ public final class EnterpriseLabEvidenceOwnershipProofRunner {
             cleanTakeover = cleanOwner.awaitEvidence(CHILD_START_TIMEOUT);
             requireReady(cleanTakeover, "clean-release takeover owner");
             restartedDenial = runOneShot(output, runToken, ProofCase.LIFECYCLE, ChildAction.CONTEND);
+            Instant priorLeaseExpiresAt = currentOwnership(lifecycleRoot).leaseExpiresAt();
             cleanOwner.killAbruptly();
+            ChildProcess recoveredOwner = startChild(
+                    output, runToken, ProofCase.LIFECYCLE, ChildAction.HOLD_RECOVER);
+            try {
+                abruptTakeover = recoveredOwner.awaitEvidence(CHILD_START_TIMEOUT);
+                abruptTakeoverBeforePriorLeaseExpiry =
+                        Instant.now().isBefore(priorLeaseExpiresAt);
+                requireReady(abruptTakeover, "abrupt-loss takeover owner");
+                recoveredOwner.release();
+            } finally {
+                recoveredOwner.closeIfAlive();
+            }
         } finally {
             cleanOwner.closeIfAlive();
-        }
-        awaitStaleBoundary();
-
-        ChildProcess recoveredOwner = startChild(output, runToken, ProofCase.LIFECYCLE, ChildAction.HOLD_RECOVER);
-        try {
-            abruptTakeover = recoveredOwner.awaitEvidence(CHILD_START_TIMEOUT);
-            requireReady(abruptTakeover, "abrupt-loss takeover owner");
-            recoveredOwner.release();
-        } finally {
-            recoveredOwner.closeIfAlive();
         }
 
         ChildProcess restartOne = startChild(output, runToken, ProofCase.LIFECYCLE, ChildAction.HOLD_RECOVER);
@@ -129,7 +131,6 @@ public final class EnterpriseLabEvidenceOwnershipProofRunner {
         simultaneousAcquisitionSingleWinner = acquisitionRace.singleWinner();
         acquisitionRace.winner().killAbruptly();
         acquisitionRace.closeAll();
-        awaitStaleBoundary();
         RaceResult takeoverRace = race(
                 output, runToken, ProofCase.RACE, ChildAction.HOLD_RECOVER, true);
         competingTakeoverSingleWinner = takeoverRace.singleWinner()
@@ -165,6 +166,7 @@ public final class EnterpriseLabEvidenceOwnershipProofRunner {
                 restartedDenial.deniedByLiveOwner(),
                 abruptTakeover.mode() == ClaimMode.TAKEOVER
                         && abruptTakeover.staleClassification() == StaleClassification.STALE_CANDIDATE,
+                abruptTakeoverBeforePriorLeaseExpiry,
                 abruptTakeover.journalsVerified(),
                 abruptTakeover.interruptedRolledBack(),
                 abruptTakeover.baselineVerified(),
@@ -486,18 +488,17 @@ public final class EnterpriseLabEvidenceOwnershipProofRunner {
         return root;
     }
 
+    private static EnterpriseLabEvidenceOwnership.OwnershipRecord currentOwnership(Path root)
+            throws IOException {
+        EnterpriseLabEvidenceOwnershipPaths paths =
+                EnterpriseLabEvidenceOwnershipPaths.create(root);
+        return new EnterpriseLabEvidenceOwnershipCodec().decode(
+                Files.readAllBytes(paths.recordFile()));
+    }
+
     private static void requireReady(ChildEvidence evidence, String step) {
         if (evidence.status() != ChildStatus.READY) {
             throw new IllegalStateException(step + " was not ready: " + evidence.failure());
-        }
-    }
-
-    private static void awaitStaleBoundary() {
-        try {
-            Thread.sleep(STALE_WAIT.toMillis());
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("ownership proof stale wait was interrupted", exception);
         }
     }
 

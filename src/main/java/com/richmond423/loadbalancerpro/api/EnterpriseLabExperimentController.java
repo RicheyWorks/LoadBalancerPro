@@ -462,9 +462,14 @@ public class EnterpriseLabExperimentController {
                 @Value("${loadbalancer.enterprise-lab.experiment-journal-data-directory:}")
                 String journalDataDirectory,
                 @Value("${loadbalancer.enterprise-lab.allocation-supervisor-mode:in-process}")
-                String allocationSupervisorMode) {
+                String allocationSupervisorMode,
+                @Value("${loadbalancer.enterprise-lab.ownership-takeover-mode:single-host-os-lock}")
+                String ownershipTakeoverMode) {
             EnterpriseLabAllocationRuntimeMode runtimeMode =
                     EnterpriseLabAllocationRuntimeMode.parse(allocationSupervisorMode);
+            EnterpriseLabEvidenceOwnership.TakeoverLeaseMode takeoverLeaseMode =
+                    EnterpriseLabEvidenceOwnership.TakeoverLeaseMode.parse(
+                            ownershipTakeoverMode);
             if (journalDataDirectory == null || journalDataDirectory.isBlank()) {
                 if (runtimeMode
                         == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED) {
@@ -486,7 +491,8 @@ public class EnterpriseLabExperimentController {
                     EnterpriseLabExperimentRecoveryGate.pending();
             Clock clock = Clock.systemUTC();
             EnterpriseLabEvidenceOwnership.Policy ownershipPolicy =
-                    EnterpriseLabEvidenceOwnership.Policy.safetyFirstDefaults();
+                    EnterpriseLabEvidenceOwnership.Policy.safetyFirstDefaults()
+                            .withTakeoverLeaseMode(takeoverLeaseMode);
             EnterpriseLabProcessLocalAllocationRecovery allocationRecovery =
                     new EnterpriseLabProcessLocalAllocationRecovery(targetCatalog);
 
@@ -633,7 +639,16 @@ public class EnterpriseLabExperimentController {
                 EnterpriseLabExperimentTargetCatalog targetCatalog,
                 String journalDataDirectory) {
             return enterpriseLabExperimentOperatorService(
-                    targetCatalog, journalDataDirectory, "in-process");
+                    targetCatalog, journalDataDirectory, "in-process", "single-host-os-lock");
+        }
+
+        EnterpriseLabExperimentOperatorService enterpriseLabExperimentOperatorService(
+                EnterpriseLabExperimentTargetCatalog targetCatalog,
+                String journalDataDirectory,
+                String allocationSupervisorMode) {
+            return enterpriseLabExperimentOperatorService(
+                    targetCatalog, journalDataDirectory, allocationSupervisorMode,
+                    "single-host-os-lock");
         }
 
         private static void closeAfterFailure(

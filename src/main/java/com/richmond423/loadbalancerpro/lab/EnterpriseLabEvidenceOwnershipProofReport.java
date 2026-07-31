@@ -30,6 +30,7 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
         boolean cleanTakeoverClassified,
         boolean restartedPriorOwnerDenied,
         boolean abruptStaleOwnerClassified,
+        boolean abruptTakeoverBeforePriorLeaseExpiry,
         boolean journalsVerifiedAndReplayed,
         boolean interruptedExperimentRolledBack,
         boolean baselineRestorationVerified,
@@ -40,7 +41,7 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
         boolean allPassed,
         String contentFingerprint,
         List<String> scopeBoundaries) {
-    public static final String SCHEMA_VERSION = "enterprise-lab-evidence-ownership-proof/v1";
+    public static final String SCHEMA_VERSION = "enterprise-lab-evidence-ownership-proof/v2";
 
     public EnterpriseLabEvidenceOwnershipProofReport {
         if (!SCHEMA_VERSION.equals(schemaVersion)) {
@@ -70,6 +71,7 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
                 && cleanTakeoverClassified
                 && restartedPriorOwnerDenied
                 && abruptStaleOwnerClassified
+                && abruptTakeoverBeforePriorLeaseExpiry
                 && journalsVerifiedAndReplayed
                 && interruptedExperimentRolledBack
                 && baselineRestorationVerified
@@ -101,6 +103,7 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
             boolean cleanTakeoverClassified,
             boolean restartedPriorOwnerDenied,
             boolean abruptStaleOwnerClassified,
+            boolean abruptTakeoverBeforePriorLeaseExpiry,
             boolean journalsVerifiedAndReplayed,
             boolean interruptedExperimentRolledBack,
             boolean baselineRestorationVerified,
@@ -121,6 +124,7 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
                 && cleanTakeoverClassified
                 && restartedPriorOwnerDenied
                 && abruptStaleOwnerClassified
+                && abruptTakeoverBeforePriorLeaseExpiry
                 && journalsVerifiedAndReplayed
                 && interruptedExperimentRolledBack
                 && baselineRestorationVerified
@@ -143,7 +147,8 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
                 nonOwnerExperimentStartDenied, nonOwnerAllocationChangeDenied,
                 renewalSucceeded, cleanReleaseRecorded, repeatedReleaseIdempotent,
                 cleanTakeoverClassified, restartedPriorOwnerDenied,
-                abruptStaleOwnerClassified, journalsVerifiedAndReplayed,
+                abruptStaleOwnerClassified, abruptTakeoverBeforePriorLeaseExpiry,
+                journalsVerifiedAndReplayed,
                 interruptedExperimentRolledBack, baselineRestorationVerified,
                 takeoverRecoveryRecorded, repeatedRestartIdempotent,
                 simultaneousAcquisitionSingleWinner, competingTakeoverSingleWinner,
@@ -156,7 +161,8 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
                 nonOwnerExperimentStartDenied, nonOwnerAllocationChangeDenied,
                 renewalSucceeded, cleanReleaseRecorded, repeatedReleaseIdempotent,
                 cleanTakeoverClassified, restartedPriorOwnerDenied,
-                abruptStaleOwnerClassified, journalsVerifiedAndReplayed,
+                abruptStaleOwnerClassified, abruptTakeoverBeforePriorLeaseExpiry,
+                journalsVerifiedAndReplayed,
                 interruptedExperimentRolledBack, baselineRestorationVerified,
                 takeoverRecoveryRecorded, repeatedRestartIdempotent,
                 simultaneousAcquisitionSingleWinner, competingTakeoverSingleWinner,
@@ -180,6 +186,8 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
         addFailure(failed, cleanTakeoverClassified, "cleanTakeoverClassified");
         addFailure(failed, restartedPriorOwnerDenied, "restartedPriorOwnerDenied");
         addFailure(failed, abruptStaleOwnerClassified, "abruptStaleOwnerClassified");
+        addFailure(failed, abruptTakeoverBeforePriorLeaseExpiry,
+                "abruptTakeoverBeforePriorLeaseExpiry");
         addFailure(failed, journalsVerifiedAndReplayed, "journalsVerifiedAndReplayed");
         addFailure(failed, interruptedExperimentRolledBack, "interruptedExperimentRolledBack");
         addFailure(failed, baselineRestorationVerified, "baselineRestorationVerified");

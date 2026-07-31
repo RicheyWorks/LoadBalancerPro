@@ -253,7 +253,7 @@
       "dependencies": ["L-2.2"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Started on codex/l-2-3-os-lock-aware-takeover from exact green main 1c1d6107e65b99075f39472b08f4c274b3272d68. The active contract is immediate single-host takeover when the taker holds the exclusive OS lock, while retaining lease semantics only for an explicitly configured genuinely multi-host mode and preserving multi-writer exclusion. Inventory and reconciliation with the current ownership implementation are in progress."
+      "currentState": "On codex/l-2-3-os-lock-aware-takeover from exact green main 1c1d6107e65b99075f39472b08f4c274b3272d68, the default validated exclusive-OS-lock path now takes over an unexpired prior owner through the existing fenced reconciliation flow, while live lock holders remain excluded. The exact multi-host-lease-guarded opt-in preserves unexpired-lease refusal without claiming distributed or network-filesystem safety. Immediate separate-process restart, focused and 3,070-test full suites, package/verify/SBOM, ownership and independent-supervisor packaged proofs, and workflow smoke are locally green; PR publication and exact-head remote gates are pending."
     },
     {
       "ordinal": 19,

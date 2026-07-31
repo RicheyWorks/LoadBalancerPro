@@ -11,6 +11,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Reconc
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReleaseStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.StaleClassification;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.StaleOwnerFinding;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.TakeoverLeaseMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.TakeoverResult;
 
 import java.io.IOException;
@@ -184,7 +185,8 @@ public final class EnterpriseLabEvidenceOwnershipManager {
                 return failedTakeover(FailureClassification.LOCK_IDENTITY_MISMATCH,
                         observed, Optional.of(mismatch), reconciliationStatus);
             }
-            finding = Optional.of(classifyPrior(prior, safeClock.instant()));
+            finding = Optional.of(classifyPrior(
+                    prior, safeClock.instant(), safePolicy.takeoverLeaseMode()));
             StaleClassification classification = finding.orElseThrow().classification();
             if (classification == StaleClassification.TIMESTAMP_INVALID) {
                 return failedTakeover(FailureClassification.CLOCK_REGRESSION,
@@ -431,7 +433,8 @@ public final class EnterpriseLabEvidenceOwnershipManager {
 
     private static StaleOwnerFinding classifyPrior(
             OwnershipRecord prior,
-            Instant now) {
+            Instant now,
+            TakeoverLeaseMode takeoverLeaseMode) {
         if (now.isBefore(prior.lastRenewedAt())) {
             return staleFinding(
                     StaleClassification.TIMESTAMP_INVALID,
@@ -442,7 +445,8 @@ public final class EnterpriseLabEvidenceOwnershipManager {
                     StaleClassification.CLEANLY_RELEASED,
                     Optional.of(prior), true, "CLEAN_RELEASED_TAKEOVER");
         }
-        if (now.isBefore(prior.leaseExpiresAt())) {
+        if (now.isBefore(prior.leaseExpiresAt())
+                && takeoverLeaseMode == TakeoverLeaseMode.MULTI_HOST_LEASE_GUARDED) {
             return staleFinding(
                     StaleClassification.ACTIVE_LOOKING_WITHOUT_LOCK,
                     Optional.of(prior), true, "UNEXPIRED_OWNER_WITHOUT_LOCK");
@@ -455,9 +459,12 @@ public final class EnterpriseLabEvidenceOwnershipManager {
                     StaleClassification.TAKEOVER_INCOMPLETE,
                     Optional.of(prior), true, "INCOMPLETE_TAKEOVER_RECOVERY");
         }
+        String reasonCode = now.isBefore(prior.leaseExpiresAt())
+                ? "UNEXPIRED_OWNER_WITHOUT_LOCK_SINGLE_HOST"
+                : "EXPIRED_OWNER_WITHOUT_LOCK";
         return staleFinding(
                 StaleClassification.STALE_CANDIDATE,
-                Optional.of(prior), true, "EXPIRED_OWNER_WITHOUT_LOCK");
+                Optional.of(prior), true, reasonCode);
     }
 
     private static OwnershipRecord takeoverRecord(

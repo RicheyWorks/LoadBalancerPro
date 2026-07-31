@@ -350,7 +350,9 @@ flowchart TD
 - LASE telemetry/scoring/routing foundation: `com.richmond423.loadbalancerpro.core.ServerStateVector`, `com.richmond423.loadbalancerpro.core.ServerScoreCalculator`, `com.richmond423.loadbalancerpro.core.RoutingDecision`, `com.richmond423.loadbalancerpro.core.TailLatencyPowerOfTwoStrategy`, and the controlled `AdaptiveRoutingPolicyEngine` provide a foundation for tail-latency-aware, queue-aware, explainable routing decisions. Default allocation behavior remains unchanged; any active-experiment influence is explicit, bounded, audited, and lab/evaluation-grade.
 - ServerMonitor / health monitoring: `com.richmond423.loadbalancerpro.core.ServerMonitor` tracks local and mocked cloud health paths, emits health events, and coordinates with load balancer state without requiring real cloud resources in the default test suite.
 - API layer: the Spring Boot API exposes calculation-only allocation endpoints, request validation, browser CORS behavior, security headers, request-size limits, an optional process-local rate limiter, structured error envelopes, Swagger/OpenAPI docs, and Actuator health/metrics endpoints.
-- CLI workflow: `com.richmond423.loadbalancerpro.cli.LoadBalancerCLI` provides interactive local workflows and optional cloud integration while retaining ownership of monitor lifecycle cleanup.
+- Offline CLI workflow: the packaged Spring Boot JAR dispatches `RemediationReportCli` evidence/report commands
+  without starting the API. The former synthetic interactive `LoadBalancerCLI` menu and its cloud/undo/config helpers
+  are retired; its class remains only as a fail-closed compatibility launcher for the retained offline commands.
 - CSV/JSON import/export utilities: parser and utility code validate schema, reject malformed input, neutralize CSV injection risk, and keep import/export contracts aligned.
 - CloudManager / AWS safety boundary: `com.richmond423.loadbalancerpro.core.CloudManager` is the only AWS mutation boundary. Live ASG creation, scaling, registration, and deletion paths are guarded, dry-run by default, and covered with mocked AWS clients.
 - Docker/CI/release gates: GitHub Actions runs dependency resolution, tests, packaging, packaged-JAR smoke checks, and Docker image builds. The Docker runtime uses a non-root user and a container healthcheck.
@@ -1133,79 +1135,28 @@ Telemetry can expose service names, route names, error rates, latency, host/runt
 
 The `prod` and `cloud-sandbox` profiles expose only `/actuator/health` and `/actuator/info` by default, leave Prometheus endpoint exposure disabled, and leave OTLP metrics export disabled unless explicitly enabled. Keep metrics and Prometheus behind deployment-specific network and authentication controls before enabling them outside a demo environment.
 
-## CLI
+## Offline CLI
 
-Run the interactive CLI:
-
-```bash
-mvn -q exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.cli.LoadBalancerCLI"
-```
-
-For a local allocation demo, run the interactive CLI and choose the balance-load workflow. The CLI does not currently expose a `--allocator-demo` flag.
-
-Enable cloud integration for the CLI only when explicitly needed:
+The supported CLI surface is the local evidence/report tool documented in
+[`REMEDIATION_REPORT_CLI.md`](docs/REMEDIATION_REPORT_CLI.md). The packaged JAR dispatches those commands directly
+without starting the API:
 
 ```bash
-mvn -q exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.cli.LoadBalancerCLI" "-Dexec.args=--cloud-enabled"
+java -jar target/LoadBalancerPro-2.5.0.jar \
+  --remediation-report \
+  --input saved-evaluation.json \
+  --output incident-report.md
 ```
 
-CLI general settings may be supplied in `cli.config` or with `--config <file>`. Cloud credentials and guardrails are loaded from system properties or environment variables.
+Existing output files are preserved unless the command includes `--force`; symbolic-link targets, non-file targets,
+and output/source-input aliases remain rejected even with `--force`. The checksum-chained `--audit-log` is append-only
+and is not an overwrite target.
 
-## CLI Cloud Configuration
-
-Use system properties:
-
-```text
--Daws.accessKeyId=...
--Daws.secretAccessKey=...
--Daws.region=us-east-1
--Dcloud.liveMode=false
--Dcloud.launchTemplateId=...
--Dcloud.subnetId=...
--Dcloud.maxDesiredCapacity=3
--Dcloud.maxScaleStep=1
--Dcloud.allowLiveMutation=false
--Dcloud.operatorIntent=
--Dcloud.allowAutonomousScaleUp=false
--Dcloud.environment=dev
--Dcloud.resourceNamePrefix=lbp-sandbox-
--Dcloud.allowedAwsAccountIds=123456789012
--Dcloud.currentAwsAccountId=123456789012
--Dcloud.allowedRegions=us-east-1,us-west-2
--Dcloud.allowResourceDeletion=false
--Dcloud.confirmResourceOwnership=false
-```
-
-Or environment variables:
-
-```text
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_REGION
-AWS_DEFAULT_REGION
-CLOUD_LIVE_MODE
-CLOUD_LAUNCH_TEMPLATE_ID
-CLOUD_SUBNET_ID
-CLOUD_MAX_DESIRED_CAPACITY
-CLOUD_MAX_SCALE_STEP
-CLOUD_ALLOW_LIVE_MUTATION
-CLOUD_OPERATOR_INTENT
-CLOUD_ALLOW_AUTONOMOUS_SCALE_UP
-CLOUD_ENVIRONMENT
-CLOUD_RESOURCE_NAME_PREFIX
-CLOUD_ALLOWED_AWS_ACCOUNT_IDS
-CLOUD_CURRENT_AWS_ACCOUNT_ID
-CLOUD_ALLOWED_REGIONS
-CLOUD_ALLOW_RESOURCE_DELETION
-CLOUD_CONFIRM_RESOURCE_OWNERSHIP
-```
-
-Required credentials are rejected if they are blank or placeholder values. Missing required cloud config disables CLI cloud mode safely and prints an operator-facing error.
-
-Interactive integer prompts use a dedicated out-of-range abort sentinel after an explicit cancel or three failed
-attempts. Every current caller checks that sentinel before acting. In particular, cancelling the `Scale Cloud`
-adjustment performs no `CloudManager` interaction, while an intentionally entered `-1` remains a valid scale-down
-adjustment and still passes through the separate cloud live-mutation guardrails below.
+The old synthetic interactive menu, its `--cloud-enabled` path, blocking prompts, idle-timeout behavior, and
+Java-serialization undo history are retired. Calling the historical
+`com.richmond423.loadbalancerpro.cli.LoadBalancerCLI` main class without a documented offline evidence/report command
+fails closed and does not construct `CloudManager`, start a monitor, read interactive input, or create undo state.
+This retirement does not change the separately guarded `CloudManager` APIs or enable cloud mutation.
 
 ## Dependency Lifecycle Notes
 

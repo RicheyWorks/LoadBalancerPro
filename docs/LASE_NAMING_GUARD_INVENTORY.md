@@ -178,7 +178,7 @@ API and static UI names should distinguish response/view presentation from route
 | `ApiSecurityConfiguration`, `AuthModeConfiguration`, `AuthProperties`, security filters | `api.config` | Security/config naming | MEDIUM | Security and auth names make runtime boundaries visible. | Keep; do not change security behavior. |
 | `TelemetryConfiguration`, `TelemetryProperties`, `TelemetryStartupGuard` | `api.config` | Telemetry/config naming | MEDIUM | Telemetry names are explicit. | Keep; no telemetry/storage/persistence additions. |
 | `ReverseProxyConfiguration`, `ReverseProxyProperties` | `api.proxy` | Proxy/config naming | HIGH | Proxy config names control runtime proxy behavior. | Keep; do not change proxy behavior. |
-| `CliConfig`, `GuiConfig`, `ConfigLoader` | `cli`, `gui` | CLI/UI configuration naming | LOW to MEDIUM | CLI and GUI config names are understandable. | Keep; avoid package moves in naming work. |
+| `GuiConfig`, `ConfigLoader` | `gui` | GUI configuration naming | LOW to MEDIUM | The retired synthetic CLI and `CliConfig` no longer exist; the remaining names belong to JavaFX source pending its separate delete-or-repair decision. | Keep unchanged during naming-only work. |
 
 Configuration naming should not hide production activation, LASE authority, external clients, secrets, credentials, or new properties.
 

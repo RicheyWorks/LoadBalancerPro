@@ -30,8 +30,8 @@ Use it when you specifically want to explore the desktop simulator experience. D
 - The packaged Spring Boot server jar excludes the OpenJFX libraries and the two application classes that directly
   import JavaFX (`LoadBalancerGUI` and `ServerTableRow`).
 - The Java fixture launcher remains `com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`.
-- The source-tree CLI retains its interactive `Launch GUI` option for Maven/classpath development use; the server jar
-  is not a desktop-UI distribution.
+- The former synthetic interactive CLI and its `Launch GUI` menu option are retired. The server JAR is not a
+  desktop-UI distribution, and no supported operator CLI path launches JavaFX.
 - No JavaFX-specific Maven plugin is bound to the default lifecycle.
 
 ## Launch Guidance
@@ -42,26 +42,23 @@ For normal API/proxy work, do not launch JavaFX. Start the API or proxy using th
 java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
-If you intentionally want to try the desktop UI from the checked-out source tree, use the CLI entry point and choose
-the interactive `Launch GUI` option:
-
-```bash
-mvn -q exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.cli.LoadBalancerCLI"
-```
-
-This requires Maven to resolve the provided JavaFX dependency. It also requires a JavaFX-capable runtime environment and a desktop display. The production server jar intentionally does not provide this path. If the local runtime cannot launch JavaFX, use the API/proxy/static browser paths instead.
+The JavaFX source remains pending the separate delete-or-repair decision. The retired interactive CLI is no longer a
+launcher for it, and this document does not advertise a supported desktop run command. A source-level JavaFX entry
+point still exists, but the current action-button threading defects and platform-specific launcher requirements have
+not been repaired or revalidated. Use the API/proxy/static browser paths instead.
 
 ## Platform Caveats
 
 - JavaFX desktop launch behavior can vary by operating system, JDK distribution, graphics stack, and module/classpath setup.
+- Any future repaired launcher would still require a JavaFX-capable runtime environment and a desktop display.
 - Headless CI, containers, SSH sessions, and servers without a desktop display may not support the JavaFX UI.
 - A packaged Spring Boot API jar starting successfully does not prove that a desktop JavaFX session can open on every workstation.
 - JavaFX dependency upgrades should be treated as GUI/runtime compatibility work and verified separately from API/proxy checks.
 
 ## Troubleshooting
 
-- If a JavaFX class or module is missing, confirm Maven dependency resolution succeeded and the runtime can load JavaFX controls.
-- If the window does not open in CI, a container, or an SSH session, retry on a machine with a desktop display.
+- Do not use the retired interactive CLI as a JavaFX launcher.
+- Treat the JavaFX source as unsupported pending its separate delete-or-repair slot.
 - If JavaFX launch fails but API/proxy work is the goal, continue with `java -jar`, `mvn spring-boot:run`, `/proxy-status.html`, and `/load-balancing-cockpit.html`.
 - If cloud-related GUI controls are explored, keep cloud live-mutation guardrails disabled unless a separate cloud-safety task explicitly approves otherwise.
 

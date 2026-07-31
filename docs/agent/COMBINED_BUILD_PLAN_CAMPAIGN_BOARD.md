@@ -13,16 +13,23 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 19 / 49.
-- Latest completed slot: `L-2.4` in merged [PR #517](https://github.com/RicheyWorks/LoadBalancerPro/pull/517);
-  final head `a4464693d577e1860f43cb6075286319315867c8`, merge
-  `11b23f530156cc01e4f4016a48f4051f70593697`, exact-main CI `30597718467` and CodeQL `30597718455` green.
-- Active implementation slot: `L-2.5`; make durability receipts honest and storage failures diagnosable on
-  `codex/l-2-5-durability-honesty` in [PR #518](https://github.com/RicheyWorks/LoadBalancerPro/pull/518), from exact
-  green main `11b23f530156cc01e4f4016a48f4051f70593697`. The 149-test product selector, six-test campaign guard, final
-  3,079-test clean package, verify/SBOM/artifact checks, packaged local proofs/runtime, and complete-diff scope review
-  are green; the final checkpoint push and exact-head remote gates remain pending.
-- Next implementation slot after the active gate: `L-4.1`.
+- `MAIN_GREEN` implementation slots: 20 / 49.
+- Latest completed slot: `L-2.5` in merged [PR #518](https://github.com/RicheyWorks/LoadBalancerPro/pull/518);
+  final head `cdb42b57097c06749ce79f53e4d325a939d3aed2`, merge
+  `c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`, exact-main CI `30604704044` and CodeQL `30604704028` green.
+- Active implementation slot: `L-4.1`; fix or retire the operator CLI in
+  [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519) on
+  `codex/l-4-1-operator-cli-surface`, from exact green main
+  `c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`. The synthetic interactive menu is retired while a small compatibility
+  launcher retains offline evidence/report commands; the shipped JAR dispatches those commands directly, and all
+  replaceable file outputs require explicit `--force`, which never permits an output/source-input alias. The final
+  164-test focused selector, 3,077-test clean package, skip-test verify, SBOM/artifact inspection, packaged CLI/LASE,
+  loopback profile matrix, and seven packaged evidence lanes are green at product head
+  `747805eaa515d01119dc15760da71851c30c9f97`. PR head `3989782acb5c2d22634cf97860ec4da7cde50754`
+  passed push CI `30607750831`, PR CI `30607753578`, dependency review, CodeQL `30607753573`, Docker/runtime,
+  SBOM/artifact evidence, and zero-finding blocking Trivy. The final remote-audit checkpoint and its resulting
+  exact-head rerun remain pending.
+- Next implementation slot after the active gate: `L-4.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -50,8 +57,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | MAIN_GREEN |
 | 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | MAIN_GREEN |
 | 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | MAIN_GREEN |
-| 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | PR_OPEN |
-| 21 | L-4.1 | L-4.1 | Fix or retire CLI | L0 complete | OPEN |
+| 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | MAIN_GREEN |
+| 21 | L-4.1 | L-4.1 | Fix or retire CLI | L0 complete | IN_PROGRESS |
 | 22 | L-4.2 | L-4.2 | Delete or repair JavaFX | L0 complete | OPEN |
 | 23 | L-4.3 | L-4.3 | Unify artifact selection | L0 complete | OPEN |
 | 24 | L-4.4 | L-4.4 | Consolidate viewers and archive ceremony | L-1.1, L-2.4 | OPEN |

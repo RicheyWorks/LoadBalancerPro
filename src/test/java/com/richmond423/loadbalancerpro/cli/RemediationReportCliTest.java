@@ -78,6 +78,166 @@ class RemediationReportCliTest {
     }
 
     @Test
+    void existingReportOutputIsPreservedUnlessForceIsExplicit() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("existing-report.md");
+        Files.writeString(output, "operator-owned" + System.lineSeparator(), StandardCharsets.UTF_8);
+
+        CapturedRun refused = runReport(
+                "--remediation-report",
+                "--input", input.toString(),
+                "--output", output.toString());
+
+        assertEquals(2, refused.result().exitCode());
+        assertTrue(refused.output().isBlank());
+        assertTrue(refused.error().contains("--output output already exists; use --force"));
+        assertEquals("operator-owned" + System.lineSeparator(), Files.readString(output));
+
+        CapturedRun replaced = runReport(
+                "--remediation-report",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--force");
+
+        assertEquals(0, replaced.result().exitCode());
+        assertTrue(replaced.error().isBlank());
+        assertTrue(Files.readString(output).contains("Source: EVALUATION"));
+    }
+
+    @Test
+    void multiOutputPreflightAvoidsPartialReportWhenManifestAlreadyExists() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("new-report.md");
+        Path manifest = tempDir.resolve("existing.manifest.json");
+        Files.writeString(manifest, "operator-owned", StandardCharsets.UTF_8);
+
+        CapturedRun run = runReport(
+                "--remediation-report",
+                "--input", input.toString(),
+                "--output", output.toString(),
+                "--manifest", manifest.toString());
+
+        assertEquals(2, run.result().exitCode());
+        assertTrue(run.error().contains("--manifest output already exists; use --force"));
+        assertFalse(Files.exists(output));
+        assertEquals("operator-owned", Files.readString(manifest));
+    }
+
+    @Test
+    void forceNeverTurnsDirectoriesIntoReplaceableOutputFiles() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path outputDirectory = Files.createDirectory(tempDir.resolve("output-directory"));
+
+        CapturedRun run = runReport(
+                "--remediation-report",
+                "--input", input.toString(),
+                "--output", outputDirectory.toString(),
+                "--force");
+
+        assertEquals(2, run.result().exitCode());
+        assertTrue(run.error().contains("--output output must be a regular file"));
+        assertTrue(Files.isDirectory(outputDirectory));
+    }
+
+    @Test
+    void forceNeverAuthorizesReplacingACommandInput() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        byte[] original = Files.readAllBytes(input);
+
+        CapturedRun run = runReport(
+                "--remediation-report",
+                "--input", input.toString(),
+                "--output", input.toString(),
+                "--force");
+
+        assertEquals(2, run.result().exitCode());
+        assertTrue(run.output().isBlank());
+        assertTrue(run.error().contains("--output refuses to replace --input"));
+        assertArrayEquals(original, Files.readAllBytes(input));
+    }
+
+    @Test
+    void retainedEvidenceCommandsShareTheSameForcePolicy() throws Exception {
+        Path output = tempDir.resolve("policy.json");
+        Files.writeString(output, "operator-owned", StandardCharsets.UTF_8);
+
+        CapturedRun refused = runReport(
+                "--export-policy-template", "regulated-handoff",
+                "--policy-output", output.toString());
+        assertEquals(2, refused.result().exitCode());
+        assertTrue(refused.error().contains("--policy-output output already exists; use --force"));
+        assertEquals("operator-owned", Files.readString(output));
+
+        CapturedRun replaced = runReport(
+                "--export-policy-template", "regulated-handoff",
+                "--policy-output", output.toString(),
+                "--force");
+        assertEquals(0, replaced.result().exitCode());
+        assertTrue(replaced.error().isBlank());
+        assertEquals(
+                new EvidencePolicyTemplateService().templateJson("regulated-handoff"),
+                Files.readString(output));
+    }
+
+    @Test
+    void existingIncidentBundleIsPreservedUnlessForceIsExplicit() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+        Files.writeString(bundle, "operator-owned", StandardCharsets.UTF_8);
+
+        CapturedRun refused = runReport(
+                "--input", input.toString(),
+                "--bundle", bundle.toString());
+
+        assertEquals(2, refused.result().exitCode());
+        assertTrue(refused.error().contains("--bundle output already exists; use --force"));
+        assertEquals("operator-owned", Files.readString(bundle));
+
+        CapturedRun replaced = runReport(
+                "--input", input.toString(),
+                "--bundle", bundle.toString(),
+                "--force");
+
+        assertEquals(0, replaced.result().exitCode());
+        assertTrue(replaced.error().isBlank());
+        assertTrue(zipEntries(bundle).containsKey("manifest.json"));
+    }
+
+    @Test
+    void walkthroughPreflightsItsReportBeforeExportingExampleFiles() throws Exception {
+        Path exportDirectory = tempDir.resolve("walkthrough");
+        Path output = tempDir.resolve("existing-walkthrough.md");
+        Files.writeString(output, "operator-owned", StandardCharsets.UTF_8);
+
+        CapturedRun run = runReport(
+                "--walkthrough-policy-example", "receiver-redaction-warn",
+                "--example-output-dir", exportDirectory.toString(),
+                "--policy-output", output.toString());
+
+        assertEquals(2, run.result().exitCode());
+        assertTrue(run.error().contains("--policy-output output already exists; use --force"));
+        assertFalse(Files.exists(exportDirectory));
+        assertEquals("operator-owned", Files.readString(output));
+    }
+
+    @Test
+    void trainingLabPreflightsItsTranscriptBeforeExportingExamples() throws Exception {
+        Path exportDirectory = tempDir.resolve("training-export");
+        Path output = tempDir.resolve("existing-training.md");
+        Files.writeString(output, "operator-owned", StandardCharsets.UTF_8);
+
+        CapturedRun run = runReport(
+                "--run-policy-training-lab",
+                "--training-lab-export-dir", exportDirectory.toString(),
+                "--training-lab-output", output.toString());
+
+        assertEquals(2, run.result().exitCode());
+        assertTrue(run.error().contains("--training-lab-output output already exists; use --force"));
+        assertFalse(Files.exists(exportDirectory));
+        assertEquals("operator-owned", Files.readString(output));
+    }
+
+    @Test
     void markdownReportCanEmitChecksumManifest() throws Exception {
         Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
         Path output = tempDir.resolve("incident-report.md");

@@ -273,11 +273,11 @@
       "sourceIds": ["L-2.5"],
       "track": "lab",
       "title": "Make durability receipts honest and storage failures diagnosable",
-      "status": "PR_OPEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-2.4"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "PR #518 was opened from codex/l-2-5-durability-honesty on exact green main 11b23f530156cc01e4f4016a48f4051f70593697. The bounded implementation reports supported versus unsupported directory synchronization, aborts receipt emission at an injected post-rename fsync failure while preserving recoverable bytes, logs classified storage failures, and evicts last-user process mutexes. The 149-test product selector, six-test campaign guard, final 3,079-test clean package, verify/SBOM/artifact checks, packaged local proofs/runtime, and complete-diff self-review are green; the final checkpoint push and exact-head remote gates remain pending."
+      "currentState": "PR #518 final head cdb42b57097c06749ce79f53e4d325a939d3aed2 passed exact-head push/PR CI, dependency review, CodeQL, Docker/runtime, SBOM/artifact evidence, blocking Trivy, the 3,079-test full suite, packaged proofs/runtime, and complete-diff self-review, then merged as c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3. Exact-main 149-test verification, CI 30604704044, CodeQL 30604704028, Docker/runtime, 138-component SBOM, packaged-artifact smoke, and zero-finding Ubuntu/JAR Trivy passed."
     },
     {
       "ordinal": 21,
@@ -285,11 +285,11 @@
       "sourceIds": ["L-4.1"],
       "track": "lab",
       "title": "Fix or retire the operator CLI",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "OPERATOR",
       "verificationProfile": "java-full",
-      "currentState": "The keep-or-delete current-state decision and resulting acceptance contract are unproven."
+      "currentState": "PR #519 is open from codex/l-4-1-operator-cli-surface against exact green main c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3. Product head 747805eaa515d01119dc15760da71851c30c9f97 retires the synthetic interactive menu and its cloud/config/prompt/undo helpers, retains a fail-closed compatibility launcher for offline evidence/report commands, dispatches those commands from the shipped Spring Boot JAR, and requires explicit --force plus regular non-symlink targets for file replacement while rejecting output/source-input aliases. The 164-test focused selector, 3,077-test clean package, skip-test verify, 138-component SBOM/artifact inspection, packaged CLI/LASE, loopback profile matrix, and seven packaged evidence lanes are green. PR head 3989782acb5c2d22634cf97860ec4da7cde50754 passed push CI 30607750831, PR CI 30607753578, dependency review, CodeQL 30607753573, Docker/runtime, SBOM/artifact evidence, and zero-finding blocking Trivy; the final remote-audit checkpoint and its resulting exact-head rerun remain pending. No cloud, API, workflow, dependency, external-target, or production behavior expansion is authorized."
     },
     {
       "ordinal": 22,

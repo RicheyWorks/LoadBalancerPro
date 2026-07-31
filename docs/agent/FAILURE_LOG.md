@@ -6,6 +6,193 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-31T03:53:38-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)
+
+Failure/resolution: a second locally timed GitHub poll was suspended by the execution host for about 34 minutes and
+expired with exit 124 rather than returning its planned 50-second snapshot. It did not alter repository or GitHub
+state. Direct explicit-run queries then confirmed push CI `30622985859`, PR CI `30622988487`, and CodeQL
+`30622988333` all passed for `28ba79fc1667375ff81e9e77fbfebeb3f916177a`. This factual tooling entry supersedes
+that head; after it is pushed, final monitoring will attach directly to explicit runs without local timed sleeps.
+
+## Entry
+
+Date/time: 2026-07-31T03:16:11-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)
+
+Failure/resolution: the first final-cycle run-list command interpolated the exact head into an incorrectly escaped
+`gh --jq` expression, so that optional list subcommand rejected its filter. The subsequent direct PR query in the
+same read-only command succeeded and identified push CI `30622938084`, PR CI `30622941198`, CodeQL `30622940815`,
+and dependency review for `2dd8b2370fe2de7ffb044eef8dcc0b7e91398b89`. No remote or product state changed. This
+failure is being checkpointed, and future snapshots use `gh run view` with explicit run IDs rather than interpolated
+JQ.
+
+## Entry
+
+Date/time: 2026-07-31T03:13:23-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)
+
+Failure/resolution: a bounded 50-second GitHub monitoring command was suspended by the local execution host until its
+multi-hour outer timeout and returned exit 124 without producing a status snapshot. It did not alter repository or
+GitHub state. A fresh direct query confirmed exact-head push CI `30607750831`, PR CI `30607753578`, CodeQL
+`30607753573`, and PR dependency review completed successfully for `3989782acb5c2d22634cf97860ec4da7cde50754`;
+artifact/step inspection remains required before merge.
+
+## Entry
+
+Date/time: 2026-07-30T22:43:47-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the local Docker CLI is installed, but its read-only server-version preflight cannot connect
+because the Docker Desktop Linux named pipe does not exist; local Trivy is also absent. No image build or local scan
+claim is made. Exact-head GitHub CI remains the mandatory Docker build/runtime, controlled-container evidence, SBOM,
+and blocking HIGH/CRITICAL Trivy lane before merge.
+
+## Entry
+
+Date/time: 2026-07-30T22:35:23-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: six of seven sequential packaged evidence smokes passed, but the independent-supervisor proof's
+child missed its bounded report deadline after the preceding long-running proof sequence; the lease then failed
+closed with `RENEWAL_DEADLINE_EXCEEDED`. Its output remained under ignored `target/`, and no external target or product
+state was touched. A follow-up process inventory printed the timestamp but returned exit 1 because no Java process
+remained to match `Get-Process`; that check was read-only and confirms there is no stale Java helper to terminate.
+The independent proof was rerun alone on a fresh target-only directory and passed all 22 application-process, 24
+supervisor-process, 8 crash-window, and 18 IPC-boundary checks, so the first miss is bounded as transient host
+scheduling rather than a reproduced product regression.
+
+## Entry
+
+Date/time: 2026-07-30T22:21:43-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first local operator-profile runtime matrix stopped during its read-only port preflight
+because default loopback backend port `18182` was already owned by Windows system PID 4. No application or helper
+process had started, and no product output was changed. The matrix is being rerun with an isolated alternate
+loopback-only port set. The retry passed local, prod API-key, and two-backend proxy profiles on ports
+`19080`-`19182`, and all helpers stopped cleanly.
+
+## Entry
+
+Date/time: 2026-07-30T22:11:50-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first focused-count checkpoint patch matched the campaign board and JSON but used an
+inexact continuation line in `SESSION_MANAGER.md`; `apply_patch` rejected the whole patch without changing any file.
+The exact current checkpoint paragraph was inspected and the count/alias evidence is being patched with exact
+context.
+
+## Entry
+
+Date/time: 2026-07-30T22:09:34-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first output/source-alias hardening patch used stale prose context in
+`docs/REMEDIATION_REPORT_CLI.md`, so `apply_patch` rejected the entire multi-file patch without changing any file.
+The follow-up combined read used `rg` as the final PowerShell statement and returned exit 1 when one narrow prose
+pattern was absent, even though the requested source excerpts were printed; it was read-only. The current exact
+source and documentation lines are being used for smaller bounded patches.
+
+## Entry
+
+Date/time: 2026-07-30T21:57:11-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first 12-class L-4.1 expanded selector ran 142 tests and failed three assertions, with no
+errors or skips. Two JavaFX documentation guards still expected the removed interactive-launch prerequisite phrase
+and a matrix link that had lived only in the deleted run row. The bounded docs now retain the platform prerequisite
+as a caveat and link the no-supported-launch boundary explicitly. The inventory determinism test wrote its catalogs
+to fixed names in the shared parent of `@TempDir`; fail-closed overwrite semantics correctly refused a stale prior-run
+file. The test now derives fresh sibling names from the unique temp-directory name, preserving its intent without
+using `--force`. No product output was overwritten by the failed run.
+
+## Entry
+
+Date/time: 2026-07-30T21:56:08-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first JavaFX documentation patch used an inexact two-line launch-guidance context and
+`apply_patch` rejected the entire patch before changing any file. The exact current lines were inspected, and the same
+bounded documentation/test update is being applied with matching context. No partial edit occurred.
+
+## Entry
+
+Date/time: 2026-07-30T21:54:08-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: another read-only `Select-String` lookup treated the literal `put(` token as a regular expression
+and rejected the unmatched parenthesis. It did not alter files or process state. Literal source searches for this slot
+now use `-SimpleMatch`; the intended template assertion is also being made against the service's exact deterministic
+output rather than an assumed JSON field.
+
+## Entry
+
+Date/time: 2026-07-30T21:51:12-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: a read-only `Select-String` search passed `CliOptions(` as a regular expression without escaping
+the opening parenthesis, so PowerShell rejected the pattern before searching. It changed no state. The constructor
+inventory is being rerun with `-SimpleMatch`.
+
+## Entry
+
+Date/time: 2026-07-30T21:44:40-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a parallel read-only CLI inventory returned exit 1 because at least one bounded `rg` query had no
+matches, and its combined test output was too broad and truncated. It changed no state and revealed no product
+failure. Subsequent inspection uses one source at a time with exact line ranges and treats a no-match inventory result
+as data rather than a failed batch.
+
+## Entry
+
+Date/time: 2026-07-30T21:44:18-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a read-only `rg` inventory used Bash brace expansion in a PowerShell command, which PowerShell
+parsed as an invalid argument list; the parallel read batch stopped without changing repository or remote state. The
+inventory is being rerun with the CLI directory plus explicit `--glob` filters, which is portable in this shell.
+
+## Entry
+
+Date/time: 2026-07-30T21:43:51-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a read-only PowerShell status command used a `foreach` statement directly before a pipeline and
+failed at parse time with `An empty pipe element is not allowed`; it did not reach process or report inspection and
+changed no state. The status audit is being rerun by accumulating rows before formatting them. The focused Maven
+process remains bounded and independently observable through its exit marker and Surefire XML.
+
+## Entry
+
+Date/time: 2026-07-30T21:40:49-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a read-only L-4.1 inventory command repeated the already-known Windows `rg` invocation mistake:
+it named the nonexistent historical `docs/audit-and-playground` path and passed PowerShell wildcard strings as literal
+paths, so that parallel read batch returned exit 1 before displaying its other two successful results. No repository,
+workflow, PR, or remote state was changed. The inventory is being rerun against the actual build-plan/audit files and
+with `rg --files`-resolved paths; the exact-main focused test process and GitHub checks continued independently.
+
+## Entry
+
 Date/time: 2026-07-30T19:06:27-07:00
 
 Branch/PR: `main`, then `codex/l-2-5-durability-honesty` / no L-2.5 PR yet

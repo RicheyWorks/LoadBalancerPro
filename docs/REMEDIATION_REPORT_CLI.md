@@ -2,6 +2,9 @@
 
 LoadBalancerPro can generate deterministic remediation reports from saved API JSON without starting the API server:
 
+The commands below are dispatched by the packaged Spring Boot JAR itself. They no longer depend on the retired
+synthetic interactive CLI launcher.
+
 ```bash
 java -jar target/LoadBalancerPro-2.5.0.jar \
   --remediation-report \
@@ -139,7 +142,7 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--scorecard-format markdown\|json` | Scorecard grading report format. Defaults to `markdown`. |
 | `--scorecard-output <path>` | Optional scorecard report output file. If omitted, output is written to stdout. |
 | `--fail-on-score-below <percent>` | Exits non-zero when the graded score is below the supplied percentage. |
-| `--force` | Allows packaged example export, walkthrough export, or training-lab export to overwrite existing example files. |
+| `--force` | Allows an existing regular output file to be replaced. Without it, every file-producing mode preserves existing files and exits non-zero. Symbolic links and non-file targets are always rejected. |
 
 ## Output Semantics
 
@@ -154,6 +157,14 @@ Markdown output is intended for humans and incident tickets. JSON output is the 
 - warnings and limitations.
 
 The CLI reuses `RemediationReportService`, so output semantics match `POST /api/remediation/report`.
+
+All file-producing modes preflight their output paths. Existing report, manifest, redacted-input, redaction-summary,
+bundle, inventory, diff, policy, training-lab, and scorecard files are preserved unless `--force` is supplied.
+Multi-file report generation checks every planned target before writing the first file, so an existing manifest cannot
+leave a new partial report behind. `--force` permits replacement only for regular files; it never authorizes a
+symbolic-link or directory target, or an output that aliases one of the same command's source inputs. The
+`--audit-log` path is intentionally different: it appends checksum-chained entries and never truncates the existing
+log.
 
 ## Checksum Manifests
 

@@ -6,6 +6,184 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 21 Remote-Green Audit Checkpoint
+
+Timestamp: 2026-07-31T03:14:25-07:00
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519);
+exact green-main base `c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; audited PR head
+`3989782acb5c2d22634cf97860ec4da7cde50754`; product commit
+`747805eaa515d01119dc15760da71851c30c9f97`; status `PR_OPEN`.
+
+Exact-head remote results: push CI `30607750831` passed; PR CI `30607753578` and its dependency-review job passed;
+CodeQL `30607753573` passed. Both CI copies completed the test, zero-skip, proof-family, separate-process
+independent-supervisor, coverage, package, artifact, CycloneDX, LASE, packaged-JAR, Docker build/runtime,
+controlled-container-evidence, and blocking HIGH/CRITICAL image-scan steps successfully. PR #519 is mergeable and
+its merge state was clean at this audited head.
+
+Downloaded PR-run evidence names source SHA `3989782acb5c2d22634cf97860ec4da7cde50754` and records Docker runtime
+smoke passed before capture. Trivy reports zero Ubuntu 22.04 findings and zero packaged-JAR findings. The remote
+CycloneDX 1.6 SBOM has 138 components, no OpenJFX, and retains Spring Boot `3.5.16`, Spring Framework `6.2.19`, and
+Spring Security `6.5.11`. Remote artifact smoke SHA-256 is
+`70F75874C672EEA5E51252573B5D0EE6D42848C7C28C89DA76304BD3A1B1DA53`; required resources are present and
+Enterprise Lab proof classes, direct-JavaFX application classes, and OpenJFX libraries are absent. No image was
+published or signed, and no registry login, release, or tag occurred.
+
+Complete-diff self-review: GitHub and local comparisons agree on 26 changed paths from unchanged base
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; the audited tree has 912 insertions and 1,898 deletions including
+campaign history. No `pom.xml`, dependency, workflow, Docker/Compose, endpoint-contract, configuration-default,
+credential, external/cloud/tenant target, security suppression/allowlist, or live-mutation change is present. The
+implementation is unchanged from locally verified product commit `747805ea`. Independent human review is advisory
+and unavailable; the full-diff self-review found no unresolved correctness, security, boundary, or scope issue.
+
+Blocker: none. Next: commit and push this factual remote-audit checkpoint, then treat all current results as stale and
+require the resulting exact final head's push/PR CI, dependency review, CodeQL, Docker/runtime, container evidence,
+SBOM/artifact proofs, and blocking Trivy to pass before automatic merge.
+
+## Combined Build Plan Slot 21 PR-Created Checkpoint
+
+Timestamp: 2026-07-30T22:46:05-07:00
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519);
+exact green-main base `c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; pushed local-green head
+`6db976efc630fd08bfe34b427785be9e63e228f3`; product commit
+`747805eaa515d01119dc15760da71851c30c9f97`; status `PR_OPEN`.
+
+PR state at creation: ready for review, mergeable, and blocked only by queued/in-progress required checks. Initial push
+CI `30607684579`, PR CI `30607698046`, CodeQL `30607698051`, and PR dependency review started for pushed head
+`6db976ef`; those results become stale when this required PR-created campaign checkpoint is pushed. Independent human
+review remains advisory and unavailable; the complete 26-path diff has a clean self-review.
+
+Verified local evidence remains the 164-test focused selector, 3,077-test full clean package, skip-test verify,
+138-component SBOM, artifact/package inspection, offline shipped-JAR overwrite proofs, LASE 0/0/2 smoke, loopback
+profile matrix, and seven packaged evidence lanes. Local Docker/Trivy remain unavailable and are not claimed.
+
+Blocker: none. Next: commit and push this checkpoint, then require all CI, dependency-review, CodeQL, Docker/runtime,
+container-evidence, SBOM/artifact, and blocking Trivy results to name the resulting unchanged exact PR head before
+automatic merge.
+
+## Combined Build Plan Slot 21 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T22:44:09-07:00
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; exact green-main base
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; executable product head
+`747805eaa515d01119dc15760da71851c30c9f97`; status `IN_PROGRESS`.
+
+Local verification: the final focused selector passed 164 tests across 14 reports with zero failures, errors, or
+skips, and the campaign guard passed 6 tests. `mvn -q clean package` passed 3,077 tests across 414 reports with zero
+failures, errors, or skips; `mvn -q -DskipTests verify` also passed. The executable JAR SHA-256 is
+`D395338D59C1AD16472B795DBCD528318E4CFD89DD03873F47975E7F7E9955FC`. Local artifact verification found every
+required resource; retained `LoadBalancerCLI` and `RemediationReportCli` classes are packaged, while the retired
+interactive helpers, direct-JavaFX application classes, Enterprise Lab proof classes, and OpenJFX libraries are
+absent.
+
+The generated CycloneDX 1.6 JSON/XML SBOM has 138 components, no OpenJFX component, and resolves Spring Boot
+`3.5.16`, Spring Framework `6.2.19`, and Spring Security `6.5.11`. Its JSON SHA-256 is
+`D5C373FB7E6CBCFC3515A1A7AA1ABE6731354F2B156698E9B27B0A617A8517EC`; its XML SHA-256 is
+`A124C1CC36713C614550235BB2A805A4BD53853DBCE95159B3215FA8240860DA`.
+
+Packaged/runtime verification: shipped-JAR report plus manifest generation passed; a second write without `--force`
+exited 2 without changing the report; explicit force replacement and policy-template listing passed; all stayed
+offline with no Spring/Tomcat startup. Packaged LASE demo exits were 0/0/2. The local, prod API-key, and two-backend
+proxy profile matrix passed on isolated literal-loopback ports. Enterprise Lab workflow, adaptive experiment,
+allocation, durable recovery, experiment, ownership, and independent-supervisor proof lanes passed with ignored
+target-only evidence. The independent proof's first post-sequence child deadline miss failed closed and its isolated
+retry passed all checks. Docker Desktop's Linux engine is unavailable locally and local Trivy is absent, so no local
+image or scan claim is made; exact-head remote Docker/runtime/evidence and blocking Trivy remain mandatory.
+
+Complete-diff/scope audit: product commit `747805ea` contains exactly 26 intentional paths, 711 insertions, and 1,886
+deletions. It changes only CLI dispatch/output mechanics, deletes five interactive-only helpers and one obsolete
+prompt test, and updates focused tests, six operator/current-state documents, and campaign records. There is no
+`pom.xml`, dependency, workflow, Docker/Compose, endpoint-contract, configuration-default, credential,
+external/cloud/tenant target, security suppression/allowlist, or live-mutation change. The shared API and retained
+evidence commands remain covered, and no independent reviewer is available; the complete-diff self-review found no
+unresolved defect or scope expansion. Checksums remain integrity evidence, not signatures or identity proof, and no
+production readiness, live-cloud validation, performance, or broader automation is claimed.
+
+Blocker: none. Next: commit this local-green checkpoint, publish the branch, open the L-4.1 PR, record its exact
+checkpoint head, and require exact-head push/PR CI, dependency review, CodeQL, Docker build/runtime, container
+evidence, SBOM/artifact proofs, and blocking Trivy before automatic merge.
+
+## Combined Build Plan Slot 21 Focused-Green Checkpoint
+
+Timestamp: 2026-07-30T22:06:01-07:00
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; exact green-main base
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; pre-product checkpoint
+`200a73b00ecdd0f74e5985f88c483fbe0b897068`; status `IN_PROGRESS`.
+
+Decision/implementation: retire the synthetic interactive menu instead of preserving a second local simulator/control
+surface. `LoadBalancerCLI` is now a small fail-closed compatibility launcher for the retained offline
+`RemediationReportCli` commands and version output. The prompt/config/animation/action and Java-serialization undo
+helpers are deleted, so the compatibility path has no `System.in`, monitor, `CloudManager`, JavaFX, deserialization, or
+undo-file behavior. The Spring Boot entry point now recognizes the retained evidence/report commands and skips API
+startup for them.
+
+File-producing report, manifest, redacted-input, redaction-summary, bundle, inventory, diff, policy, walkthrough,
+training-lab, scorecard, and packaged-example paths preflight every planned target. Existing regular files require
+explicit `--force`; symbolic links and non-file targets remain rejected. Non-force writes use `CREATE_NEW` at the
+actual output boundary so a preflight race cannot silently truncate an operator file. Multi-output report,
+walkthrough, and training operations preflight before their first write. Checksum-chained `--audit-log` remains an
+intentional append-only path and is never truncated by this policy. `--force` cannot make a file-producing command
+replace one of its own source inputs.
+
+Focused verification: the final 14-report selector passed 164 tests with zero failures, errors, or skips. It covers the
+primary/compatibility entry points, all retained evidence CLI families, report/bundle/manifest overwrite refusal and
+explicit replacement, no-partial-output preflight, the retired-source guard, JavaFX/operator docs, release-version
+alignment, and the two current LASE inventory documents. Production and test compilation pass; `git diff --check` and
+the current source/reference/security scan are clean.
+
+Scope/boundaries: current changes are limited to the two CLI entry points, retained local evidence-output mechanics,
+retirement of five interactive-only helpers and their obsolete prompt test, focused tests, six operator/current-state
+documents, and campaign records. No dependency, Maven, workflow, Docker/Compose, endpoint contract, configuration
+default, credential, external/cloud/tenant target, security suppression/allowlist, or live mutation change is present.
+The separate JavaFX implementation/dependency decision remains L-4.2. Offline checksums are not signatures or identity
+proof; no production readiness, live-cloud validation, performance, or broader automation is claimed.
+
+Blocker: none. Next: freeze the intentional product diff, run the campaign guard and full clean suite, package/verify,
+inspect the SBOM/JAR, execute packaged-JAR report and overwrite smokes plus applicable runtime proofs, then complete the
+final diff review before PR creation.
+
+## Combined Build Plan Slot 20 Main-Green / Slot 21 Start
+
+Timestamp: 2026-07-30T21:47:38-07:00
+
+Completed: `L-2.5`; `codex/l-2-5-durability-honesty`;
+[#518](https://github.com/RicheyWorks/LoadBalancerPro/pull/518); final head
+`cdb42b57097c06749ce79f53e4d325a939d3aed2`; merge
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`.
+
+Verified: the final head retained its exact 30-path durability/logging/mutex scope and passed the 149-test focused
+selector, six-test campaign guard, 3,079-test clean package, verify, all packaged proof/runtime gates, complete-diff
+self-review, push CI `30604251278`, PR CI/dependency review `30604253531`, and CodeQL `30604253537`. Its remote
+container evidence names the exact final head, Docker runtime passed, and blocking Trivy reports zero Ubuntu and zero
+JAR HIGH/CRITICAL findings. The PR was `CLEAN` and `MERGEABLE` immediately before automatic merge.
+
+The merge has exact parents `11b23f530156cc01e4f4016a48f4051f70593697` and
+`cdb42b57097c06749ce79f53e4d325a939d3aed2`; its tree equals the reviewed PR tree. Exact-main focused verification
+passed 149 tests across 10 reports with zero failures, errors, or skips. Main CI `30604704044` and CodeQL
+`30604704028` passed. Exact-main container evidence names the merge SHA, Docker runtime passed, and Trivy reports zero
+Ubuntu and zero JAR findings. The main 138-component CycloneDX SBOM retains Boot `3.5.16`, Framework `6.2.19`, and
+Security `6.5.11`; packaged-artifact smoke retains all required resources and excludes proof-tool,
+direct-JavaFX-application, and OpenJFX entries. Unsupported providers, drive firmware, universal power-loss survival,
+remote-filesystem semantics, multi-host/distributed durability, production readiness, throughput, and latency remain
+not proven.
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; exact green-main base
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; status `IN_PROGRESS`. Current-main inventory confirms the Spring Boot
+entry point does not dispatch `RemediationReportCli`; its evidence-output paths do not share a fail-closed overwrite
+contract; and the separate synthetic interactive `LoadBalancerCLI` retains dead undo/deserialization and blocking-menu
+concerns. Preserve the offline evidence/report tooling and its no-network/no-cloud-mutation boundary. Decide and prove
+the smallest complete repair-or-retirement of the interactive menu, make shipped-JAR report commands work, and apply
+one explicit `--force` policy to intentional output replacement. Do not broaden into L-4.2 JavaFX implementation,
+L-4.3 artifact selection, cloud mutation, API behavior, dependencies, workflows, external targets, or production
+claims.
+
+Tooling-only PowerShell/`rg` inventory failures after the merge are recorded in `FAILURE_LOG.md`; none changed product
+or remote state. Blocker: none. Next: finish the exact current-main CLI caller/output/documentation/test inventory,
+choose the bounded keep/delete contract, then run focused tests before any broader verification.
+
 ## Combined Build Plan Slot 20 PR-Creation Checkpoint
 
 Timestamp: 2026-07-30T21:27:46-07:00

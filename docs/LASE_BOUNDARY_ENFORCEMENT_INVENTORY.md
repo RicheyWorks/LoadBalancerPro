@@ -199,7 +199,7 @@ This sprint does not introduce these packages. They are future categories for re
 | `ApiRateLimitFilter`, `RequestSizeLimitFilter` | `api.config` | `config.security` | MEDIUM | They enforce request safety limits. | Do not change request behavior during inventory work. | Runtime config/security. |
 | `TelemetryConfiguration`, `TelemetryProperties`, `TelemetryStartupGuard` | `api.config` | `config.telemetry` | MEDIUM | They guard telemetry configuration. | No new telemetry/storage/persistence in this sprint. | Runtime config. |
 | `WebConfig` | `api.config` | `config.web` | LOW | It configures web behavior. | No web behavior changes in inventory work. | Runtime config. |
-| `CliConfig`, `GuiConfig`, `ConfigLoader` | `cli` and `gui` | CLI/UI config or legacy boundary | LOW to MEDIUM | They configure CLI and GUI behavior. | Future moves should keep UI/CLI defaults intact. | Runtime config. |
+| `GuiConfig`, `ConfigLoader` | `gui` | GUI config or legacy boundary | LOW to MEDIUM | They configure the remaining JavaFX source pending its separate delete-or-repair decision. The retired synthetic CLI and `CliConfig` no longer exist. | Future moves should keep any retained GUI defaults explicit. | Runtime config. |
 
 ## Boundary Risks Observed In Current Layout
 

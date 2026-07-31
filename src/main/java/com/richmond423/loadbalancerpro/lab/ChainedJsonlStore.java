@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.lab;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -20,14 +21,17 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Shared bounded-I/O engine for the local append-only JSONL chains.
@@ -38,7 +42,9 @@ import java.util.regex.Pattern;
  * frame buffer per append, bounded reads, synchronization while the exclusive
  * lock is still held, and pinned file-key plus creation-time identity.</p>
  */
-final class ChainedJsonlStore {
+final class ChainedJsonlStore implements AutoCloseable {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ChainedJsonlStore.class);
     static final String SEGMENTS_DIRECTORY_NAME = "segments-v1";
     static final String REPAIR_QUARANTINE_DIRECTORY_NAME =
             "repair-quarantine-v1";
@@ -58,17 +64,32 @@ final class ChainedJsonlStore {
             PosixFilePermissions.fromString("rwx------");
     private static final Set<PosixFilePermission> FILE_PERMISSIONS =
             PosixFilePermissions.fromString("rw-------");
-    private static final Map<Path, Object> PROCESS_MUTEXES = new ConcurrentHashMap<>();
+    private static final Cleaner PROCESS_MUTEX_CLEANER = Cleaner.create();
+    private static final Map<Path, ProcessMutexEntry> PROCESS_MUTEXES =
+            new HashMap<>();
 
     private final Path file;
     private final Path segmentsDirectory;
     private final Path repairQuarantineDirectory;
     private final long maxBytes;
     private final Object processMutex;
+    private final EnterpriseLabStorageDurability.DirectorySyncer directorySyncer;
+    private final Cleaner.Cleanable processMutexCleanable;
     private FileIdentity pinnedIdentity;
     private StorageVersion lastObservedVersion;
+    private volatile boolean closed;
 
     ChainedJsonlStore(Path file, long maxBytes) {
+        this(
+                file,
+                maxBytes,
+                EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
+    }
+
+    ChainedJsonlStore(
+            Path file,
+            long maxBytes,
+            EnterpriseLabStorageDurability.DirectorySyncer directorySyncer) {
         this.file = Objects.requireNonNull(file, "file cannot be null")
                 .toAbsolutePath().normalize();
         if (this.file.getParent() == null) {
@@ -96,11 +117,36 @@ final class ChainedJsonlStore {
                     "maxBytes must fit the bounded in-memory replay contract");
         }
         this.maxBytes = maxBytes;
-        this.processMutex = PROCESS_MUTEXES.computeIfAbsent(this.file, ignored -> new Object());
+        this.directorySyncer = Objects.requireNonNull(
+                directorySyncer, "directorySyncer cannot be null");
+        ProcessMutexLease lease = acquireProcessMutex(this.file);
+        this.processMutex = lease.entry().mutex();
+        this.processMutexCleanable =
+                PROCESS_MUTEX_CLEANER.register(this, lease);
     }
 
     Object processMutex() {
+        if (closed) {
+            throw new IllegalStateException("chained JSONL store is closed");
+        }
         return processMutex;
+    }
+
+    static int processMutexCountForTesting() {
+        synchronized (PROCESS_MUTEXES) {
+            return PROCESS_MUTEXES.size();
+        }
+    }
+
+    @Override
+    public void close() {
+        synchronized (processMutex) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            processMutexCleanable.clean();
+        }
     }
 
     Path file() {
@@ -117,6 +163,7 @@ final class ChainedJsonlStore {
 
     void validateRepairQuarantine() throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             if (!Files.exists(
                     repairQuarantineDirectory,
                     LinkOption.NOFOLLOW_LINKS)) {
@@ -169,17 +216,21 @@ final class ChainedJsonlStore {
      * A never-created read-only store remains a valid empty store.
      */
     void requireMissingFileWasNeverObserved() throws StoreIOException {
-        synchronized (this) {
-            if (pinnedIdentity != null) {
-                throw failure(
-                        Failure.FILE_IDENTITY_CHANGED,
-                        "the pinned chained JSONL file is no longer present");
+        synchronized (processMutex) {
+            requireOpen();
+            synchronized (this) {
+                if (pinnedIdentity != null) {
+                    throw failure(
+                            Failure.FILE_IDENTITY_CHANGED,
+                            "the pinned chained JSONL file is no longer present");
+                }
             }
         }
     }
 
     byte[] readBoundedBytes() throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             return readBoundedBytesLocked();
         }
     }
@@ -244,6 +295,7 @@ final class ChainedJsonlStore {
 
     StorageVersion storageVersion() throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) {
                 if (Files.exists(segmentsDirectory, LinkOption.NOFOLLOW_LINKS)
                         && !listSegmentsLocked().isEmpty()) {
@@ -276,6 +328,7 @@ final class ChainedJsonlStore {
 
     void prepareRotationDirectory() throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             prepareRotationDirectoryLocked();
         }
     }
@@ -283,13 +336,23 @@ final class ChainedJsonlStore {
     RotationRecovery recoverRotationArtifacts(Guard guard)
             throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             Guard safeGuard = Objects.requireNonNull(guard, "guard cannot be null");
-            prepareRotationDirectoryLocked();
+            EnterpriseLabDirectorySyncStatus directorySyncStatus =
+                    prepareRotationDirectoryLocked();
             if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) {
-                cleanupExistingRepairInstallingFilesLocked(safeGuard);
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        cleanupExistingRepairInstallingFilesLocked(safeGuard));
+                InstallingCleanup cleanup =
+                        removeInstallingFilesLocked(safeGuard);
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        cleanup.directorySyncStatus());
                 return new RotationRecovery(
-                        removeInstallingFilesLocked(safeGuard),
-                        false);
+                        cleanup.removedFiles(),
+                        false,
+                        directorySyncStatus);
             }
 
             FileIdentity before = pinCurrentIdentity();
@@ -301,25 +364,44 @@ final class ChainedJsonlStore {
                  FileLock ignored = channel.lock()) {
                 safeGuard.requireCurrent();
                 requireCurrentIdentity(before);
-                int removedInstallingFiles =
+                InstallingCleanup cleanup =
                         removeInstallingFilesLocked(safeGuard);
-                cleanupExistingRepairInstallingFilesLocked(safeGuard);
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        cleanup.directorySyncStatus());
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        cleanupExistingRepairInstallingFilesLocked(safeGuard));
                 List<Path> segments = listSegmentsLocked();
                 if (segments.isEmpty()) {
-                    return new RotationRecovery(removedInstallingFiles, false);
+                    return new RotationRecovery(
+                            cleanup.removedFiles(),
+                            false,
+                            directorySyncStatus);
                 }
                 byte[] current = readChannelBounded(channel);
                 byte[] lastArchive = readArchiveBytes(
                         segments.get(segments.size() - 1));
                 if (!Arrays.equals(lastArchive, current)) {
-                    return new RotationRecovery(removedInstallingFiles, false);
+                    return new RotationRecovery(
+                            cleanup.removedFiles(),
+                            false,
+                            directorySyncStatus);
                 }
                 safeGuard.requireCurrent();
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        synchronizeDirectory(
+                                segmentsDirectory,
+                                "pending chained JSONL rotation"));
                 channel.truncate(0L);
                 channel.force(true);
                 requireCurrentIdentity(before);
                 lastObservedVersion = storageVersionUnderLock(channel);
-                return new RotationRecovery(removedInstallingFiles, true);
+                return new RotationRecovery(
+                        cleanup.removedFiles(),
+                        true,
+                        directorySyncStatus);
             } catch (StoreIOException exception) {
                 throw exception;
             } catch (IOException | UnsupportedOperationException exception) {
@@ -334,8 +416,10 @@ final class ChainedJsonlStore {
     RotationReceipt rotateCurrentSegment(Guard guard)
             throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             Guard safeGuard = Objects.requireNonNull(guard, "guard cannot be null");
-            prepareRotationDirectoryLocked();
+            EnterpriseLabDirectorySyncStatus directorySyncStatus =
+                    prepareRotationDirectoryLocked();
             FileIdentity before = pinCurrentIdentity();
             try (FileChannel channel = FileChannel.open(
                     file,
@@ -353,7 +437,7 @@ final class ChainedJsonlStore {
                 }
                 byte[] current = readChannelBounded(channel);
                 if (current.length == 0) {
-                    return RotationReceipt.notRotated();
+                    return RotationReceipt.notRotated(directorySyncStatus);
                 }
                 if (current[current.length - 1] != '\n') {
                     throw failure(
@@ -385,6 +469,12 @@ final class ChainedJsonlStore {
                         destination,
                         StandardCopyOption.ATOMIC_MOVE);
                 restrictPermissions(destination, FILE_PERMISSIONS);
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        synchronizeMove(
+                                installing,
+                                destination,
+                                "chained JSONL archive installation"));
                 if (!Arrays.equals(current, readArchiveBytes(destination))) {
                     throw failure(
                             Failure.CONCURRENT_CHANGE,
@@ -405,7 +495,8 @@ final class ChainedJsonlStore {
                 return new RotationReceipt(
                         true,
                         nextIndex,
-                        current.length);
+                        current.length,
+                        directorySyncStatus);
             } catch (StoreIOException exception) {
                 throw exception;
             } catch (IOException | UnsupportedOperationException exception) {
@@ -433,8 +524,10 @@ final class ChainedJsonlStore {
         Guard safeGuard = Objects.requireNonNull(
                 guard, "guard cannot be null");
         synchronized (processMutex) {
+            requireOpen();
             safeGuard.requireCurrent();
-            prepareRepairQuarantineDirectoryLocked();
+            EnterpriseLabDirectorySyncStatus directorySyncStatus =
+                    prepareRepairQuarantineDirectoryLocked();
             FileIdentity before = pinCurrentIdentity();
             try (FileChannel channel = FileChannel.open(
                     file,
@@ -470,10 +563,14 @@ final class ChainedJsonlStore {
                         .normalize();
                 requireRepairPath(quarantine);
                 requireRepairPath(installing);
-                cleanupRepairInstallingFilesLocked(safeGuard);
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        cleanupRepairInstallingFilesLocked(safeGuard));
                 safeGuard.requireCurrent();
-                installRepairQuarantine(
-                        installing, quarantine, current);
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        installRepairQuarantine(
+                                installing, quarantine, current));
                 if (!Arrays.equals(
                         current, readControlledRepairBytes(quarantine))) {
                     throw failure(
@@ -494,7 +591,8 @@ final class ChainedJsonlStore {
                         expectedTailBytes,
                         fingerprint,
                         quarantine.getFileName().toString(),
-                        true);
+                        true,
+                        directorySyncStatus);
             } catch (StoreIOException exception) {
                 throw exception;
             } catch (IOException | UnsupportedOperationException exception) {
@@ -513,6 +611,7 @@ final class ChainedJsonlStore {
             int maxFrameBytes,
             TailPolicy tailPolicy) throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             SegmentedBytes source = readSegmentedBytesLocked();
             SegmentedChainReplay<T> replay = decodeSegmentedChain(
                     source,
@@ -533,6 +632,7 @@ final class ChainedJsonlStore {
             int maxFrameBytes,
             TailPolicy tailPolicy) throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             return decodeChain(
                     readBoundedBytesLocked(),
                     codec,
@@ -745,6 +845,7 @@ final class ChainedJsonlStore {
             Checkpoint afterAppendBeforeSync,
             Checkpoint afterSync) throws StoreIOException {
         synchronized (processMutex) {
+            requireOpen();
             appendFrameLocked(
                     encoded,
                     expectedSize,
@@ -1070,7 +1171,8 @@ final class ChainedJsonlStore {
         }
     }
 
-    private void prepareRotationDirectoryLocked() throws StoreIOException {
+    private EnterpriseLabDirectorySyncStatus prepareRotationDirectoryLocked()
+            throws StoreIOException {
         validateControlledParent();
         if (!Files.exists(segmentsDirectory, LinkOption.NOFOLLOW_LINKS)) {
             try {
@@ -1100,6 +1202,9 @@ final class ChainedJsonlStore {
                     "chained JSONL archive directory permissions could not be restricted",
                     exception);
         }
+        return synchronizeDirectory(
+                segmentsDirectory.getParent(),
+                "chained JSONL archive-directory preparation");
     }
 
     private void validateControlledParent() throws StoreIOException {
@@ -1154,7 +1259,7 @@ final class ChainedJsonlStore {
         }
     }
 
-    private void prepareRepairQuarantineDirectoryLocked()
+    private EnterpriseLabDirectorySyncStatus prepareRepairQuarantineDirectoryLocked()
             throws StoreIOException {
         validateControlledParent();
         if (!Files.exists(
@@ -1191,6 +1296,9 @@ final class ChainedJsonlStore {
                     "repair quarantine permissions could not be restricted",
                     exception);
         }
+        return synchronizeDirectory(
+                repairQuarantineDirectory.getParent(),
+                "repair-quarantine directory preparation");
     }
 
     private void validateControlledDirectory(
@@ -1220,8 +1328,11 @@ final class ChainedJsonlStore {
         }
     }
 
-    private void cleanupRepairInstallingFilesLocked(Guard guard)
+    private EnterpriseLabDirectorySyncStatus cleanupRepairInstallingFilesLocked(
+            Guard guard)
             throws StoreIOException {
+        EnterpriseLabDirectorySyncStatus directorySyncStatus =
+                EnterpriseLabDirectorySyncStatus.NOT_REQUIRED_EXISTING_ENTRY;
         try (var entries = Files.newDirectoryStream(
                 repairQuarantineDirectory)) {
             for (Path path : entries) {
@@ -1234,6 +1345,11 @@ final class ChainedJsonlStore {
                         identityOfControlledRegularFile(path);
                 guard.requireCurrent();
                 Files.delete(path);
+                directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                        directorySyncStatus,
+                        synchronizeDirectory(
+                                repairQuarantineDirectory,
+                                "repair installing-file deletion"));
             }
         } catch (StoreIOException exception) {
             throw exception;
@@ -1243,23 +1359,28 @@ final class ChainedJsonlStore {
                     "repair installing-file cleanup failed",
                     exception);
         }
+        return directorySyncStatus;
     }
 
-    private void cleanupExistingRepairInstallingFilesLocked(Guard guard)
+    private EnterpriseLabDirectorySyncStatus
+    cleanupExistingRepairInstallingFilesLocked(Guard guard)
             throws StoreIOException {
         if (!Files.exists(
                 repairQuarantineDirectory,
                 LinkOption.NOFOLLOW_LINKS)) {
-            return;
+            return EnterpriseLabDirectorySyncStatus
+                    .NOT_REQUIRED_EXISTING_ENTRY;
         }
         validateControlledDirectory(
                 repairQuarantineDirectory,
                 "repair quarantine");
-        cleanupRepairInstallingFilesLocked(guard);
+        EnterpriseLabDirectorySyncStatus directorySyncStatus =
+                cleanupRepairInstallingFilesLocked(guard);
         validateRepairQuarantine();
+        return directorySyncStatus;
     }
 
-    private void installRepairQuarantine(
+    private EnterpriseLabDirectorySyncStatus installRepairQuarantine(
             Path installing,
             Path destination,
             byte[] bytes) throws StoreIOException {
@@ -1270,7 +1391,9 @@ final class ChainedJsonlStore {
                         Failure.CONCURRENT_CHANGE,
                         "existing repair quarantine does not match source bytes");
             }
-            return;
+            return synchronizeDirectory(
+                    repairQuarantineDirectory,
+                    "existing repair-quarantine installation");
         }
         try (FileChannel channel = FileChannel.open(
                 installing,
@@ -1307,6 +1430,10 @@ final class ChainedJsonlStore {
                     destination,
                     StandardCopyOption.ATOMIC_MOVE);
             restrictPermissions(destination, FILE_PERMISSIONS);
+            return synchronizeMove(
+                    installing,
+                    destination,
+                    "repair-quarantine installation");
         } catch (IOException exception) {
             throw failure(
                     Failure.IO_FAILURE,
@@ -1433,15 +1560,23 @@ final class ChainedJsonlStore {
         return installing;
     }
 
-    private int removeInstallingFilesLocked(Guard guard)
+    private InstallingCleanup removeInstallingFilesLocked(Guard guard)
             throws StoreIOException {
         int removed = 0;
+        EnterpriseLabDirectorySyncStatus directorySyncStatus =
+                EnterpriseLabDirectorySyncStatus.NOT_REQUIRED_EXISTING_ENTRY;
         for (Path path : listInstallingFilesLocked()) {
             FileIdentity ignored = identityOfControlledRegularFile(path);
             try {
                 guard.requireCurrent();
                 if (Files.deleteIfExists(path)) {
                     removed++;
+                    directorySyncStatus =
+                            EnterpriseLabDirectorySyncStatus.combine(
+                                    directorySyncStatus,
+                                    synchronizeDirectory(
+                                            segmentsDirectory,
+                                            "orphan archive installing-file deletion"));
                 }
             } catch (RuntimeException exception) {
                 throw exception;
@@ -1452,7 +1587,7 @@ final class ChainedJsonlStore {
                         exception);
             }
         }
-        return removed;
+        return new InstallingCleanup(removed, directorySyncStatus);
     }
 
     private Path segmentPath(int index) {
@@ -1555,6 +1690,52 @@ final class ChainedJsonlStore {
         }
     }
 
+    private static ProcessMutexLease acquireProcessMutex(Path file) {
+        synchronized (PROCESS_MUTEXES) {
+            ProcessMutexEntry entry = PROCESS_MUTEXES.computeIfAbsent(
+                    file, ignored -> new ProcessMutexEntry());
+            entry.users++;
+            return new ProcessMutexLease(file, entry);
+        }
+    }
+
+    private EnterpriseLabDirectorySyncStatus synchronizeDirectory(
+            Path directory,
+            String operation) throws StoreIOException {
+        try {
+            return EnterpriseLabStorageDurability.synchronizeDirectory(
+                    directory, directorySyncer);
+        } catch (IOException exception) {
+            throw failure(
+                    Failure.IO_FAILURE,
+                    operation + " parent directory could not be synchronized",
+                    exception);
+        }
+    }
+
+    private EnterpriseLabDirectorySyncStatus synchronizeMove(
+            Path source,
+            Path destination,
+            String operation) throws StoreIOException {
+        try {
+            return EnterpriseLabStorageDurability.synchronizeMove(
+                    source, destination, directorySyncer);
+        } catch (IOException exception) {
+            throw failure(
+                    Failure.IO_FAILURE,
+                    operation + " parent directory could not be synchronized",
+                    exception);
+        }
+    }
+
+    private void requireOpen() throws StoreIOException {
+        if (closed) {
+            throw failure(
+                    Failure.IO_FAILURE,
+                    "chained JSONL store is closed");
+        }
+    }
+
     static FileIdentity identityOfControlledRegularFile(Path value)
             throws StoreIOException {
         Path file = Objects.requireNonNull(value, "file cannot be null")
@@ -1629,6 +1810,10 @@ final class ChainedJsonlStore {
     }
 
     private static StoreIOException failure(Failure failure, String message) {
+        LOGGER.warn(
+                "Enterprise Lab chained JSONL storage failure [{}]: {}",
+                failure,
+                message);
         return new StoreIOException(failure, message);
     }
 
@@ -1636,6 +1821,16 @@ final class ChainedJsonlStore {
             Failure failure,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab chained JSONL storage failure [{}]: {}; cause={}: {}",
+                failure,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab chained JSONL storage failure stack [{}]",
+                failure,
+                cause);
         return new StoreIOException(failure, message, cause);
     }
 
@@ -1734,7 +1929,8 @@ final class ChainedJsonlStore {
     record RotationReceipt(
             boolean rotated,
             int archiveIndex,
-            long archivedBytes) {
+            long archivedBytes,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
         RotationReceipt {
             if (rotated
                     ? archiveIndex < 1 || archivedBytes < 1L
@@ -1742,21 +1938,33 @@ final class ChainedJsonlStore {
                 throw new IllegalArgumentException(
                         "chained JSONL rotation receipt is inconsistent");
             }
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
         }
 
-        static RotationReceipt notRotated() {
-            return new RotationReceipt(false, 0, 0L);
+        static RotationReceipt notRotated(
+                EnterpriseLabDirectorySyncStatus directorySyncStatus) {
+            return new RotationReceipt(
+                    false,
+                    0,
+                    0L,
+                    directorySyncStatus);
         }
     }
 
     record RotationRecovery(
             int removedInstallingFiles,
-            boolean completedPendingTruncate) {
+            boolean completedPendingTruncate,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
         RotationRecovery {
             if (removedInstallingFiles < 0) {
                 throw new IllegalArgumentException(
                         "removed installing-file count cannot be negative");
             }
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
         }
     }
 
@@ -1764,7 +1972,8 @@ final class ChainedJsonlStore {
             long removedTailBytes,
             String sourceFingerprint,
             String quarantineFileName,
-            boolean exactTruncateVerified) {
+            boolean exactTruncateVerified,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
         TailRepairReceipt {
             if (removedTailBytes < 1L || !exactTruncateVerified) {
                 throw new IllegalArgumentException(
@@ -1781,6 +1990,9 @@ final class ChainedJsonlStore {
                 throw new IllegalArgumentException(
                         "tail repair quarantine filename is inconsistent");
             }
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
         }
     }
 
@@ -1839,6 +2051,56 @@ final class ChainedJsonlStore {
                         "chained JSONL archive index is outside its bound");
             }
             path = Objects.requireNonNull(path, "path cannot be null");
+        }
+    }
+
+    private record InstallingCleanup(
+            int removedFiles,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
+        private InstallingCleanup {
+            if (removedFiles < 0) {
+                throw new IllegalArgumentException(
+                        "removed installing-file count cannot be negative");
+            }
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
+        }
+    }
+
+    private static final class ProcessMutexEntry {
+        private final Object mutex = new Object();
+        private int users;
+
+        private Object mutex() {
+            return mutex;
+        }
+    }
+
+    private static final class ProcessMutexLease implements Runnable {
+        private final Path file;
+        private final ProcessMutexEntry entry;
+
+        private ProcessMutexLease(Path file, ProcessMutexEntry entry) {
+            this.file = file;
+            this.entry = entry;
+        }
+
+        private ProcessMutexEntry entry() {
+            return entry;
+        }
+
+        @Override
+        public void run() {
+            synchronized (PROCESS_MUTEXES) {
+                if (entry.users < 1) {
+                    return;
+                }
+                entry.users--;
+                if (entry.users == 0) {
+                    PROCESS_MUTEXES.remove(file, entry);
+                }
+            }
         }
     }
 

@@ -17,11 +17,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Bounded, read-only verifier for canonical local experiment journals.
  * The controlled directory supplies the backing path without exposing it to callers.
  */
 public final class EnterpriseLabExperimentJournalVerifier {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(
+                    EnterpriseLabExperimentJournalVerifier.class);
     private final EnterpriseLabExperimentJournalCodec codec;
     private final long maxJournalBytes;
     private final int maxJournalEntries;
@@ -63,9 +69,9 @@ public final class EnterpriseLabExperimentJournalVerifier {
         long acceptedCompleteBytes = 0;
         long frameStartOffset = 0;
         byte[] source;
-        try {
-            source = new ChainedJsonlStore(journalPath, maxJournalBytes)
-                    .readBoundedBytes();
+        try (ChainedJsonlStore store =
+                     new ChainedJsonlStore(journalPath, maxJournalBytes)) {
+            source = store.readBoundedBytes();
         } catch (ChainedJsonlStore.StoreIOException exception) {
             Classification classification = switch (exception.failure()) {
                 case SIZE_LIMIT_EXCEEDED -> Classification.JOURNAL_SIZE_EXCEEDED;
@@ -322,6 +328,11 @@ public final class EnterpriseLabExperimentJournalVerifier {
             long tailBytes,
             long observedBytes,
             long totalBytes) {
+        LOGGER.warn(
+                "Enterprise Lab journal verification failure [{}] at frame {}: {}",
+                classification,
+                frameNumber,
+                message);
         return VerificationResult.invalid(
                 journalId,
                 new Finding(classification, frameNumber, byteOffset, code, message),

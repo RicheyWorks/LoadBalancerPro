@@ -24,6 +24,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * One append-only allocation transaction chain beneath the controlled
  * Enterprise Lab evidence namespace. One fixed current file and bounded
@@ -32,6 +35,8 @@ import java.util.Set;
  * replay never manufactures that authority.
  */
 public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabAllocationStateStore.class);
     public static final long HARD_MAX_STORE_BYTES = 8L * 1024L * 1024L;
     public static final int HARD_MAX_RECORDS = 4_096;
     public static final long HARD_MAX_HISTORY_BYTES =
@@ -72,6 +77,8 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
     private int currentSegmentRecords;
     private ReadResult cachedReplay;
     private ChainedJsonlStore.StorageVersion cachedVersion;
+    private EnterpriseLabDirectorySyncStatus directorySyncStatus =
+            EnterpriseLabDirectorySyncStatus.NOT_REQUIRED_EXISTING_ENTRY;
     private boolean failed;
     private boolean closed;
 
@@ -119,15 +126,24 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         this.processMutex = jsonlStore.processMutex();
         this.rotationEnabled = maxStoreBytes == HARD_MAX_STORE_BYTES
                 && maxRecords == HARD_MAX_RECORDS;
-        if (prepareForMutation && rotationEnabled) {
-            synchronized (processMutex) {
-                requireSameMutationAuthorization(authorization);
-                try {
-                    jsonlStore.recoverRotationArtifacts(
-                            () -> requireSameMutationAuthorization(authorization));
-                } catch (ChainedJsonlStore.StoreIOException exception) {
-                    throw mapEngineFailure(exception);
+        boolean initialized = false;
+        try {
+            if (prepareForMutation && rotationEnabled) {
+                synchronized (processMutex) {
+                    requireSameMutationAuthorization(authorization);
+                    try {
+                        jsonlStore.recoverRotationArtifacts(
+                                () -> requireSameMutationAuthorization(
+                                        authorization));
+                    } catch (ChainedJsonlStore.StoreIOException exception) {
+                        throw mapEngineFailure(exception);
+                    }
                 }
+            }
+            initialized = true;
+        } finally {
+            if (!initialized) {
+                jsonlStore.close();
             }
         }
     }
@@ -251,7 +267,8 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                         safe.currentRecordFingerprint(),
                         after.totalBytes(),
                         SyncPolicy.FORCE_DATA_AND_METADATA,
-                        true);
+                        true,
+                        directorySyncStatus);
             } catch (IOException exception) {
                 if (writeStarted) {
                     failed = true;
@@ -277,7 +294,10 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
 
     @Override
     public synchronized void close() {
-        closed = true;
+        if (!closed) {
+            closed = true;
+            jsonlStore.close();
+        }
     }
 
     Path controlledStoreFile() {
@@ -473,16 +493,16 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         validateControlledDirectory(storeDirectory, namespace, "allocation store directory");
         if (Files.exists(storeFile, LinkOption.NOFOLLOW_LINKS)) {
             validateStoreFile();
-            return;
+        } else {
+            try (FileChannel ignored = openFileForCreation(storeFile)) {
+                // Creation only; append happens after the empty file is validated.
+            } catch (FileAlreadyExistsException ignored) {
+                // Another repository-controlled store instance won the process-local race.
+            }
+            restrictPermissions(storeFile, FILE_PERMISSIONS);
+            validateStoreFile();
         }
-        try (FileChannel ignored = openFileForCreation(storeFile)) {
-            // Creation only; append happens after the empty file is validated.
-        } catch (FileAlreadyExistsException ignored) {
-            // Another repository-controlled store instance won the process-local race.
-        }
-        restrictPermissions(storeFile, FILE_PERMISSIONS);
-        validateStoreFile();
-        forceDirectoryMetadataIfSupported(storeDirectory);
+        recordDirectorySync(storeDirectory);
     }
 
     private void appendFrame(
@@ -672,7 +692,7 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         }
     }
 
-    private static Path prepareControlledDirectory(Path parent, String name) {
+    private Path prepareControlledDirectory(Path parent, String name) {
         Path directory = controlledPath(parent, name);
         try {
             if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
@@ -686,6 +706,7 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             }
             restrictPermissions(directory, DIRECTORY_PERMISSIONS);
             validateControlledDirectory(directory, parent, "allocation storage directory");
+            recordDirectorySync(parent);
             return directory;
         } catch (StoreException exception) {
             throw exception;
@@ -764,23 +785,12 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         }
     }
 
-    private static void forceDirectoryMetadataIfSupported(Path directory) {
-        if (Files.getFileAttributeView(
-                directory,
-                java.nio.file.attribute.PosixFileAttributeView.class,
-                LinkOption.NOFOLLOW_LINKS) == null) {
-            return;
-        }
-        try (FileChannel channel = FileChannel.open(
-                directory, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
-            channel.force(true);
-        } catch (AccessDeniedException exception) {
-            throw failure(Failure.PERMISSION_DENIED,
-                    "allocation store directory metadata could not be synchronized", exception);
-        } catch (IOException | UnsupportedOperationException exception) {
-            throw failure(Failure.STORAGE_UNAVAILABLE,
-                    "allocation store directory metadata synchronization is unavailable", exception);
-        }
+    private void recordDirectorySync(Path directory) throws IOException {
+        directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                directorySyncStatus,
+                EnterpriseLabStorageDurability.synchronizeDirectory(
+                        directory,
+                        EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER));
     }
 
     private static FileAttribute<Set<PosixFilePermission>> directoryAttribute() {
@@ -792,6 +802,10 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
     }
 
     private static StoreException failure(Failure classification, String message) {
+        LOGGER.warn(
+                "Enterprise Lab allocation-store failure [{}]: {}",
+                classification,
+                message);
         return new StoreException(classification, message);
     }
 
@@ -799,6 +813,16 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             Failure classification,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab allocation-store failure [{}]: {}; cause={}: {}",
+                classification,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab allocation-store failure stack [{}]",
+                classification,
+                cause);
         return new StoreException(classification, message, cause);
     }
 
@@ -856,7 +880,8 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             String recordFingerprint,
             long totalBytes,
             SyncPolicy syncPolicy,
-            boolean exactReadBackVerified) {
+            boolean exactReadBackVerified,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
         public AppendReceipt {
             if (recordCount < 1 || recordCount > HARD_MAX_HISTORY_RECORDS) {
                 throw new IllegalArgumentException("recordCount is outside hard bounds");
@@ -866,6 +891,9 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                 throw new IllegalArgumentException("totalBytes is outside hard bounds");
             }
             syncPolicy = Objects.requireNonNull(syncPolicy, "syncPolicy cannot be null");
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
             if (!exactReadBackVerified) {
                 throw new IllegalArgumentException("append receipt requires exact durable read-back");
             }

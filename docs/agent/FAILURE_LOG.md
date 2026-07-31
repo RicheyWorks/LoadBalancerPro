@@ -6,6 +6,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T19:06:27-07:00
+
+Branch/PR: `main`, then `codex/l-2-5-durability-honesty` / no L-2.5 PR yet
+
+Failure/resolution: three read-only post-merge audit commands had bounded tooling issues. A Windows-quoted `gh --jq`
+expression lost the quotes around the merge SHA and failed before filtering; the same response was verified with
+PowerShell JSON filtering. Two compact `gh run watch` calls reached their 14-second and 64-second local timeboxes
+while healthy exact-main jobs remained in progress; bounded JSON status polling subsequently observed both jobs
+complete successfully. An `rg` inventory included the nonexistent historical path `docs/audit-and-playground`, so it
+returned exit 1 after still reporting repository matches; the audit was rerun against the actual
+`docs/BUILD_PLAN_LAB_SHADOW.md` and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` paths. No repository, workflow, PR, or remote
+state was changed by any failed command.
+
+## Entry
+
 Date/time: 2026-07-30T16:12:00-07:00
 
 Branch/PR: `codex/l-2-2-rotation-recovery` / no PR yet
@@ -9478,3 +9493,90 @@ The L-2.4 local Docker preflight could not connect to the Docker Desktop Linux e
 `//./pipe/dockerDesktopLinuxEngine` is absent. No local image build, container runtime, or local Trivy result is claimed.
 Correction: the repository-owned packaged local/API-key/proxy-loopback runtime smoke remains local evidence, while
 exact-head remote Docker build/runtime, controlled image evidence, and blocking HIGH/CRITICAL Trivy remain mandatory.
+
+# 2026-07-30 - L-2.5 durability honesty
+
+Branch: `codex/l-2-5-durability-honesty`
+
+The first expanded focused selector outlived the tool cell retained across context compaction. Eight selected reports
+were recoverable and green, but the requested journal-directory and storage-repair class names do not exist: directory
+coverage lives in `EnterpriseLabExperimentLocalJournalTest`, and the repair entry point is covered by
+`EnterpriseLabStorageRepairCommandTest`. No complete focused bundle result is accepted. Correction: finish the
+retry/directory-sync audit, then rerun an inventory-backed selector from the final source head and accept only its direct
+exit status plus all expected current report summaries.
+
+The first read-only Surefire-summary script used an invalid PowerShell pipeline directly after a `foreach` block and
+failed before reading any report. It made no working-tree change and no result is accepted from it. Correction: collect
+the loop output into an array before piping; the corrected command recovered eight green reports and confirmed the two
+missing reports described above.
+
+A later read-only test-source inspection again assumed a nonexistent lab-package
+`EnterpriseLabStorageRepairServiceTest` path and exited after the other requested files were read. No repair-test
+inventory is accepted from that command. Correction: use `rg --files` before selecting the actual CLI-package
+`EnterpriseLabStorageRepairCommandTest`; do not infer test paths from production package names.
+
+The first inventory-corrected L-2.5 selector ran 121 tests with zero errors or skips but failed the directory-sync fault
+test. The hardened preparation path now synchronizes the pre-existing archive-directory entry first, so the injector
+failed before the archive rename and the test's expected pending archive did not exist. No focused-bundle result is
+accepted. Correction: let the preparation sync succeed and inject the second sync, immediately after the archive
+rename; continue to require no success receipt, preserved current bytes, and successful pending-truncate recovery.
+
+A read-only supervisor-state test inventory passed a guessed nonexistent
+`EnterpriseLabSupervisorStateStoreTest` path to `rg`; the companion source reads were useful, but no state-store test
+inventory is accepted from that lookup. Correction: inventory matching files first; the state-store behavior is covered
+through the existing supervisor service/server suites rather than a dedicated class at that guessed path.
+
+The first post-focused force-directory audit used Windows-incompatible wildcard path arguments for store, ledger, and
+ownership sources. The explicitly named files and silent-catch inventory were read-only and useful, but no complete
+force-directory inventory is accepted. Correction: search the literal lab source directory once, then filter returned
+paths and symbols; keep release/cleanup fallbacks distinct from successful storage-mutation receipt paths.
+
+The first post-package SBOM/proof command search included nonexistent top-level `workflows` and
+`docs/BUILD_CONTRACT.md` paths, so `rg` exited after returning valid matches from `.github/workflows`, `scripts`,
+`pom.xml`, and `docs/agent`. No complete contract-search result is accepted. Correction: use the exact CI-owned
+CycloneDX command recovered from `.github/workflows/ci.yml` and enumerate repository paths before any later proof audit.
+
+The L-2.5 local Docker preflight could not connect to the Docker Desktop Linux engine because
+`//./pipe/dockerDesktopLinuxEngine` is absent. No local image build, container runtime, or local Trivy result is claimed.
+Correction: retain the successful repository-owned packaged workflow/proof evidence locally and require exact-head
+remote Docker build, runtime smoke, SBOM/artifact evidence, and blocking HIGH/CRITICAL Trivy before merge.
+
+The first packaged operator-profile runtime matrix refused to start because loopback backend port `18182` was already
+occupied. The script failed before launching any of its application or backend children, so no runtime result or cleanup
+is pending. Correction: inspect the existing listener without terminating it, select a verified-free alternate
+five-port range, and rerun the unchanged tracked script with explicit local-only ports.
+
+The first listener/free-port inspection used an invalid PowerShell pipeline directly after a `foreach` block and failed
+before returning any process or port result. It made no state change and no inventory is accepted. Correction: collect
+the loop output into an array before formatting, then use only the resulting verified-free ports.
+
+The first post-self-review focused selector exceeded the shell wrapper's two-minute timeout while Maven and its Surefire
+JVM were still running normally. The wrapper returned no exit status and the two final supervisor reports were not yet
+present, so no selector result is accepted from that invocation. Correction: allow the already-running bounded Maven
+process to finish, recover its process exit plus all 11 requested fresh report summaries if possible, and otherwise
+rerun the unchanged inventory-backed selector with a sufficient timeout before accepting focused evidence.
+
+The first final-artifact audit expected `target/bom.json` and `target/bom.xml` to remain after `clean package` plus the
+normal skip-test `verify`, but this repository generates those files only through its explicit CI-owned CycloneDX goal.
+The JAR and cleanup checks completed successfully, but no final SBOM result is accepted from that command. Correction:
+run the exact CycloneDX invocation from `.github/workflows/ci.yml`, then inspect both generated formats and recheck the
+unchanged packaged artifact.
+
+The first narrow supervisor-server logging patch used an incorrect guessed import/context block and `apply_patch`
+refused it without changing the source. Correction: inspect the file's actual import and class declaration context, then
+apply only the intended logger and exception-diagnostic additions.
+
+The first frozen-tree security-weakening scan treated the two explicit checkpoint statements that there is no
+suppression or allowlist change as positive weakening matches. Every other artifact, cleanup, path, conflict, secret,
+URL, and scope check passed, but the aggregate command exited nonzero and is not accepted as the final static audit.
+Correction: inspect those two boundary-only matches, then rerun the weakening scan against executable/configuration
+additions while retaining the explicit no-weakening prose.
+
+The first read-only new-file line-count command piped directly after a PowerShell `foreach` block, which Windows
+PowerShell rejected before reading either file. No inventory result is accepted. Correction: collect the loop output
+into an array before formatting it, as already established elsewhere in this slot.
+
+The L-2.5 product commit itself succeeded, but the trailing read-only display left `HEAD^{tree}` unquoted. Windows
+PowerShell transformed the brace expression and `git rev-parse` received an invalid extra token, so no tree value is
+accepted from that display. Correction: quote revision expressions containing braces, then independently verify the
+commit, parent, tree, and clean worktree before push.

@@ -68,6 +68,9 @@ class EnterpriseLabExperimentLocalJournalTest {
             assertFalse(receipt.userSpaceBufferRetained());
             assertTrue(receipt.operatingSystemWriteCompleted());
             assertTrue(receipt.forceCompleted());
+            assertEquals(
+                    expectedDirectorySyncStatus(tempDirectory),
+                    receipt.directorySyncStatus());
             assertEquals(List.of(first), journal.read().events());
             journal.close();
         }
@@ -829,5 +832,15 @@ class EnterpriseLabExperimentLocalJournalTest {
             Thread.currentThread().interrupt();
             throw new IOException("bounded test wait was interrupted", exception);
         }
+    }
+
+    private static EnterpriseLabDirectorySyncStatus expectedDirectorySyncStatus(
+            Path directory) {
+        return Files.getFileAttributeView(
+                directory,
+                PosixFileAttributeView.class) == null
+                ? EnterpriseLabDirectorySyncStatus
+                        .UNSUPPORTED_ON_LOCAL_FILESYSTEM
+                : EnterpriseLabDirectorySyncStatus.SYNCHRONIZED;
     }
 }

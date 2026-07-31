@@ -590,20 +590,27 @@ public final class EnterpriseLabSupervisorAllocationBridge
     private EnterpriseLabCommandLedgerEvent readSupervisorOutcome(
             Request request,
             Response response) {
-        EnterpriseLabSupervisorCommandLedger inspection =
-                EnterpriseLabSupervisorCommandLedger.inspect(trustedRoot);
-        return inspection.replay().eventsFor(request.requestId()).stream()
-                .filter(event -> event.correlates(request))
-                .reduce((first, second) -> second)
-                .orElseThrow(() -> failure(
-                        "supervisor response lacks independently readable command evidence"));
+        try (EnterpriseLabSupervisorCommandLedger inspection =
+                     EnterpriseLabSupervisorCommandLedger.inspect(trustedRoot)) {
+            return inspection.replay().eventsFor(request.requestId()).stream()
+                    .filter(event -> event.correlates(request))
+                    .reduce((first, second) -> second)
+                    .orElseThrow(() -> failure(
+                            "supervisor response lacks independently readable command evidence"));
+        }
     }
 
     private EnterpriseLabCommandHistoryReconciler commandHistoryReconciler(
             EnterpriseLabAllocationTransactionCoordinator coordinator) {
         return new EnterpriseLabCommandHistoryReconciler(
                 applicationCommandLedger,
-                () -> EnterpriseLabSupervisorCommandLedger.inspect(trustedRoot).replay(),
+                () -> {
+                    try (EnterpriseLabSupervisorCommandLedger inspection =
+                                 EnterpriseLabSupervisorCommandLedger.inspect(
+                                         trustedRoot)) {
+                        return inspection.replay();
+                    }
+                },
                 Objects.requireNonNull(coordinator, "coordinator cannot be null"),
                 this::readAuthoritative,
                 clock);

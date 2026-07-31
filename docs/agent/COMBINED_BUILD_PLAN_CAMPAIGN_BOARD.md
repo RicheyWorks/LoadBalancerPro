@@ -13,17 +13,16 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 18 / 49.
-- Latest completed slot: `L-2.3` in merged [PR #516](https://github.com/RicheyWorks/LoadBalancerPro/pull/516);
-  final head `8eadb65fcb80d0e68501a51904f087ad9b8f96fc`, merge
-  `03eca16a4f7114270567e99045400581559b3aea`, exact-main CI `30593875252` and CodeQL `30593875244` green.
-- Active implementation slot: `L-2.4`; move proof tooling and JavaFX classes out of the production artifact on
-  `codex/l-2-4-proof-tools-artifact` from exact green main
-  `03eca16a4f7114270567e99045400581559b3aea`. Local verification is green: all five test-scope proofs, the 3,076-test
-  clean package, verify, JAR/SBOM isolation, and packaged runtime profiles passed. Product head
-  `15c5c883eb0535f388cadcf32f8c753b82a52e57` is open as [PR #517](https://github.com/RicheyWorks/LoadBalancerPro/pull/517);
-  exact-final-head remote gates remain.
-- Next implementation slot after the active gate: `L-2.5`.
+- `MAIN_GREEN` implementation slots: 19 / 49.
+- Latest completed slot: `L-2.4` in merged [PR #517](https://github.com/RicheyWorks/LoadBalancerPro/pull/517);
+  final head `a4464693d577e1860f43cb6075286319315867c8`, merge
+  `11b23f530156cc01e4f4016a48f4051f70593697`, exact-main CI `30597718467` and CodeQL `30597718455` green.
+- Active implementation slot: `L-2.5`; make durability receipts honest and storage failures diagnosable on
+  `codex/l-2-5-durability-honesty` in [PR #518](https://github.com/RicheyWorks/LoadBalancerPro/pull/518), from exact
+  green main `11b23f530156cc01e4f4016a48f4051f70593697`. The 149-test product selector, six-test campaign guard, final
+  3,079-test clean package, verify/SBOM/artifact checks, packaged local proofs/runtime, and complete-diff scope review
+  are green; the final checkpoint push and exact-head remote gates remain pending.
+- Next implementation slot after the active gate: `L-4.1`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -50,8 +49,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 16 | L-2.1 | L-2.1 | One chained JSONL engine | L-0.6 | MAIN_GREEN |
 | 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | MAIN_GREEN |
 | 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | MAIN_GREEN |
-| 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | IN_PROGRESS |
-| 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | OPEN |
+| 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | MAIN_GREEN |
+| 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | PR_OPEN |
 | 21 | L-4.1 | L-4.1 | Fix or retire CLI | L0 complete | OPEN |
 | 22 | L-4.2 | L-4.2 | Delete or repair JavaFX | L0 complete | OPEN |
 | 23 | L-4.3 | L-4.3 | Unify artifact selection | L0 complete | OPEN |

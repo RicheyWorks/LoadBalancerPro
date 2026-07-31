@@ -33,6 +33,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Supervisor-owned append-only command evidence. The existing supervisor OS
  * lock is the cross-process writer authority; a process-local mutex serializes
@@ -40,7 +43,10 @@ import java.util.Set;
  * readers from observing a short write to the fixed current JSONL segment.
  * Bounded immutable archive segments preserve the global predecessor chain.
  */
-public final class EnterpriseLabSupervisorCommandLedger {
+public final class EnterpriseLabSupervisorCommandLedger
+        implements AutoCloseable {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabSupervisorCommandLedger.class);
     public static final long HARD_MAX_LEDGER_BYTES = 8L * 1024L * 1024L;
     public static final int HARD_MAX_EVENTS = 4_096;
     public static final long HARD_MAX_HISTORY_BYTES =
@@ -88,7 +94,10 @@ public final class EnterpriseLabSupervisorCommandLedger {
     private int currentSegmentEvents;
     private ReadResult cachedReplay;
     private ChainedJsonlStore.StorageVersion cachedVersion;
+    private EnterpriseLabDirectorySyncStatus directorySyncStatus =
+            EnterpriseLabDirectorySyncStatus.NOT_REQUIRED_EXISTING_ENTRY;
     private boolean failed;
+    private boolean closed;
 
     private EnterpriseLabSupervisorCommandLedger(
             Path trustedRoot,
@@ -132,17 +141,26 @@ public final class EnterpriseLabSupervisorCommandLedger {
         this.rotationEnabled = maxLedgerBytes == HARD_MAX_LEDGER_BYTES
                 && maxEvents == HARD_MAX_EVENTS;
 
-        if (prepareForMutation) {
-            synchronized (processMutex) {
-                requireOwnership();
-                if (rotationEnabled) {
-                    try {
-                        jsonlStore.recoverRotationArtifacts(this::requireOwnership);
-                    } catch (ChainedJsonlStore.StoreIOException exception) {
-                        throw mapEngineFailure(exception);
+        boolean initialized = false;
+        try {
+            if (prepareForMutation) {
+                synchronized (processMutex) {
+                    requireOwnership();
+                    if (rotationEnabled) {
+                        try {
+                            jsonlStore.recoverRotationArtifacts(
+                                    this::requireOwnership);
+                        } catch (ChainedJsonlStore.StoreIOException exception) {
+                            throw mapEngineFailure(exception);
+                        }
                     }
+                    replayLocked();
                 }
-                replayLocked();
+            }
+            initialized = true;
+        } finally {
+            if (!initialized) {
+                jsonlStore.close();
             }
         }
     }
@@ -207,7 +225,19 @@ public final class EnterpriseLabSupervisorCommandLedger {
     /** Deterministically reconstructs the complete supervisor ledger. */
     public ReadResult replay() {
         synchronized (processMutex) {
+            ensureReadable();
             return replayLocked();
+        }
+    }
+
+    @Override
+    public void close() {
+        synchronized (processMutex) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            jsonlStore.close();
         }
     }
 
@@ -288,7 +318,8 @@ public final class EnterpriseLabSupervisorCommandLedger {
                         event.currentFingerprint(),
                         after.totalBytes(),
                         SyncPolicy.FORCE_DATA_AND_METADATA,
-                        true);
+                        true,
+                        directorySyncStatus);
             } catch (IOException exception) {
                 if (writeStarted) {
                     failed = true;
@@ -541,16 +572,16 @@ public final class EnterpriseLabSupervisorCommandLedger {
         validateOnlyControlledFile();
         if (Files.exists(ledgerFile, LinkOption.NOFOLLOW_LINKS)) {
             validateLedgerFile();
-            return;
+        } else {
+            try (FileChannel ignored = openFileForCreation(ledgerFile)) {
+                // Creation only; the first event appends after validating the empty file.
+            } catch (FileAlreadyExistsException ignored) {
+                // A repository-controlled initializer won the process-local race.
+            }
+            restrictPermissions(ledgerFile, FILE_PERMISSIONS);
+            validateLedgerFile();
         }
-        try (FileChannel ignored = openFileForCreation(ledgerFile)) {
-            // Creation only; the first event appends after validating the empty file.
-        } catch (FileAlreadyExistsException ignored) {
-            // A repository-controlled initializer won the process-local race.
-        }
-        restrictPermissions(ledgerFile, FILE_PERMISSIONS);
-        validateLedgerFile();
-        forceDirectoryMetadataIfSupported(ledgerDirectory);
+        recordDirectorySync(ledgerDirectory);
     }
 
     private void appendFrame(byte[] encoded) {
@@ -691,7 +722,14 @@ public final class EnterpriseLabSupervisorCommandLedger {
             throw failure(Failure.WRITER_FAILED,
                     "supervisor ledger writer is failed and must be reopened");
         }
+        ensureReadable();
         requireOwnership();
+    }
+
+    private void ensureReadable() {
+        if (closed) {
+            throw failure(Failure.CLOSED, "supervisor ledger is closed");
+        }
     }
 
     private void requireOwnership() {
@@ -735,7 +773,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
         }
     }
 
-    private static Path prepareControlledDirectory(Path parent, String name) {
+    private Path prepareControlledDirectory(Path parent, String name) {
         Path directory = controlledPath(parent, name);
         try {
             if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
@@ -750,6 +788,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
             restrictPermissions(directory, DIRECTORY_PERMISSIONS);
             validateControlledDirectory(
                     directory, parent, "supervisor ledger storage directory");
+            recordDirectorySync(parent);
             return directory;
         } catch (StoreException exception) {
             throw exception;
@@ -829,25 +868,12 @@ public final class EnterpriseLabSupervisorCommandLedger {
         }
     }
 
-    private static void forceDirectoryMetadataIfSupported(Path directory) {
-        if (Files.getFileAttributeView(
-                directory,
-                java.nio.file.attribute.PosixFileAttributeView.class,
-                LinkOption.NOFOLLOW_LINKS) == null) {
-            return;
-        }
-        try (FileChannel channel = FileChannel.open(
-                directory, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
-            channel.force(true);
-        } catch (AccessDeniedException exception) {
-            throw failure(Failure.PERMISSION_DENIED,
-                    "supervisor ledger directory metadata could not be synchronized",
-                    exception);
-        } catch (IOException | UnsupportedOperationException exception) {
-            throw failure(Failure.STORAGE_UNAVAILABLE,
-                    "supervisor ledger directory metadata synchronization is unavailable",
-                    exception);
-        }
+    private void recordDirectorySync(Path directory) throws IOException {
+        directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                directorySyncStatus,
+                EnterpriseLabStorageDurability.synchronizeDirectory(
+                        directory,
+                        EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER));
     }
 
     private static FileAttribute<Set<PosixFilePermission>> directoryAttribute() {
@@ -859,6 +885,10 @@ public final class EnterpriseLabSupervisorCommandLedger {
     }
 
     private static StoreException failure(Failure classification, String message) {
+        LOGGER.warn(
+                "Enterprise Lab supervisor-ledger storage failure [{}]: {}",
+                classification,
+                message);
         return new StoreException(classification, message);
     }
 
@@ -866,6 +896,16 @@ public final class EnterpriseLabSupervisorCommandLedger {
             Failure classification,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab supervisor-ledger storage failure [{}]: {}; cause={}: {}",
+                classification,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab supervisor-ledger storage failure stack [{}]",
+                classification,
+                cause);
         return new StoreException(classification, message, cause);
     }
 
@@ -1057,6 +1097,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
 
     public enum Failure {
         READ_ONLY,
+        CLOSED,
         WRITER_FAILED,
         INVALID_TRUSTED_ROOT,
         OWNERSHIP_ROOT_MISMATCH,
@@ -1105,7 +1146,8 @@ public final class EnterpriseLabSupervisorCommandLedger {
             String eventFingerprint,
             long totalBytes,
             SyncPolicy syncPolicy,
-            boolean exactReadBackVerified) {
+            boolean exactReadBackVerified,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
 
         public AppendReceipt {
             if (sequence < 1L
@@ -1118,6 +1160,9 @@ public final class EnterpriseLabSupervisorCommandLedger {
             Objects.requireNonNull(correlationId, "correlationId cannot be null");
             Objects.requireNonNull(eventFingerprint, "eventFingerprint cannot be null");
             syncPolicy = Objects.requireNonNull(syncPolicy, "syncPolicy cannot be null");
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
             if (!exactReadBackVerified) {
                 throw new IllegalArgumentException(
                         "supervisor append receipt requires exact durable read-back");

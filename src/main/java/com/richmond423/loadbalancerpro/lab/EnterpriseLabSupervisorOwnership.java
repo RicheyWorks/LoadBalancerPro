@@ -16,8 +16,13 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /** OS-backed single-owner capability for one local supervisor data directory. */
 public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabSupervisorOwnership.class);
     static final String DIRECTORY_NAME = "enterprise-lab-supervisor-v1";
     static final String LOCK_FILE_NAME = "supervisor.lock";
 
@@ -199,6 +204,9 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
             }
             validateControlledDirectory(directory, parent);
             restrictPermissions(directory, DIRECTORY_PERMISSIONS);
+            EnterpriseLabStorageDurability.synchronizeDirectory(
+                    parent,
+                    EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
             return directory;
         } catch (OwnershipException exception) {
             throw exception;
@@ -243,6 +251,9 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
         }
         validateControlledFile(lockFile, lockFile.getParent());
         restrictPermissions(lockFile, FILE_PERMISSIONS);
+        EnterpriseLabStorageDurability.synchronizeDirectory(
+                lockFile.getParent(),
+                EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
     }
 
     private static FileChannel openLockChannel(Path lockFile) throws IOException {
@@ -344,11 +355,25 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
         private OwnershipException(Failure failure, String message) {
             super(message);
             this.failure = Objects.requireNonNull(failure, "failure cannot be null");
+            LOGGER.warn(
+                    "Enterprise Lab supervisor-ownership storage failure [{}]: {}",
+                    failure,
+                    message);
         }
 
         private OwnershipException(Failure failure, String message, Throwable cause) {
             super(message, cause);
             this.failure = Objects.requireNonNull(failure, "failure cannot be null");
+            LOGGER.error(
+                    "Enterprise Lab supervisor-ownership storage failure [{}]: {}; cause={}: {}",
+                    failure,
+                    message,
+                    cause.getClass().getSimpleName(),
+                    cause.getMessage());
+            LOGGER.debug(
+                    "Enterprise Lab supervisor-ownership storage failure stack [{}]",
+                    failure,
+                    cause);
         }
 
         public Failure failure() {

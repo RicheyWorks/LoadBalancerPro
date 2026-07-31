@@ -7,6 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Explicit offline repair for one stable incomplete tail.
  *
@@ -17,6 +20,8 @@ import java.util.Objects;
  * truncating only the incomplete tail under the store file's exclusive lock.</p>
  */
 public final class EnterpriseLabStorageRepairService {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabStorageRepairService.class);
 
     public RepairReport execute(
             Path trustedRoot,
@@ -125,8 +130,8 @@ public final class EnterpriseLabStorageRepairService {
             ChainedJsonlStore.ChainValidator<T> validator,
             boolean apply) {
         validateStoreFile(root, file);
-        ChainedJsonlStore store = new ChainedJsonlStore(file, maxBytes);
-        try {
+        try (ChainedJsonlStore store =
+                     new ChainedJsonlStore(file, maxBytes)) {
             store.validateRepairQuarantine();
             ChainedJsonlStore.SegmentedChainReplay<T> plan =
                     store.replaySegmentedChain(
@@ -145,6 +150,8 @@ public final class EnterpriseLabStorageRepairService {
                         0L,
                         "",
                         "",
+                        EnterpriseLabDirectorySyncStatus
+                                .NOT_REQUIRED_EXISTING_ENTRY,
                         true);
             }
             if (!apply) {
@@ -157,6 +164,8 @@ public final class EnterpriseLabStorageRepairService {
                         plan.currentTailBytes(),
                         "",
                         "",
+                        EnterpriseLabDirectorySyncStatus
+                                .NOT_REQUIRED_EXISTING_ENTRY,
                         false);
             }
 
@@ -166,14 +175,16 @@ public final class EnterpriseLabStorageRepairService {
                             plan.currentTailBytes(),
                             plan.version(),
                             () -> { });
-            ChainedJsonlStore.SegmentedChainReplay<T> verified =
-                    new ChainedJsonlStore(file, maxBytes)
-                            .replaySegmentedChain(
+            ChainedJsonlStore.SegmentedChainReplay<T> verified;
+            try (ChainedJsonlStore verifier =
+                         new ChainedJsonlStore(file, maxBytes)) {
+                verified = verifier.replaySegmentedChain(
                                     codec,
                                     validator,
                                     maxEntries,
                                     maxFrameBytes,
                                     ChainedJsonlStore.TailPolicy.REJECT);
+            }
             return new RepairReport(
                     storeKind,
                     RepairStatus.REPAIRED,
@@ -183,9 +194,10 @@ public final class EnterpriseLabStorageRepairService {
                     receipt.removedTailBytes(),
                     receipt.sourceFingerprint(),
                     receipt.quarantineFileName(),
+                    receipt.directorySyncStatus(),
                     true);
         } catch (ChainedJsonlStore.StoreIOException | RuntimeException exception) {
-            throw new RepairException(
+            throw failure(
                     "storage repair refused because the complete chain was not safely repairable",
                     exception);
         }
@@ -232,7 +244,7 @@ public final class EnterpriseLabStorageRepairService {
         if (!safeFile.startsWith(safeRoot)
                 || safeFile.equals(safeRoot)
                 || safeRoot.relativize(safeFile).getNameCount() < 2) {
-            throw new RepairException(
+            throw failure(
                     "repair target escaped its explicit data root");
         }
         try {
@@ -250,7 +262,7 @@ public final class EnterpriseLabStorageRepairService {
                         || !directoryAttributes.isDirectory()
                         || !directory.toRealPath().getParent()
                         .equals(parent.toRealPath())) {
-                    throw new RepairException(
+                    throw failure(
                             "repair target hierarchy contains an unsafe directory");
                 }
                 parent = directory;
@@ -265,14 +277,29 @@ public final class EnterpriseLabStorageRepairService {
                     || !parent.toRealPath()
                     .equals(safeFile.toRealPath(LinkOption.NOFOLLOW_LINKS)
                             .getParent())) {
-                throw new RepairException(
+                throw failure(
                         "repair target is not the fixed controlled regular file");
             }
         } catch (IOException exception) {
-            throw new RepairException(
+            throw failure(
                     "repair target could not be validated",
                     exception);
         }
+    }
+
+    private static RepairException failure(String message) {
+        LOGGER.warn("Enterprise Lab storage-repair failure: {}", message);
+        return new RepairException(message);
+    }
+
+    private static RepairException failure(String message, Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab storage-repair failure: {}; cause={}: {}",
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug("Enterprise Lab storage-repair failure stack", cause);
+        return new RepairException(message, cause);
     }
 
     public enum StoreKind {
@@ -310,6 +337,7 @@ public final class EnterpriseLabStorageRepairService {
             long tailBytes,
             String sourceFingerprint,
             String quarantineFileName,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus,
             boolean exactPostRepairVerified) {
         public RepairReport {
             storeKind = Objects.requireNonNull(
@@ -319,6 +347,8 @@ public final class EnterpriseLabStorageRepairService {
                     sourceFingerprint, "sourceFingerprint cannot be null");
             quarantineFileName = Objects.requireNonNull(
                     quarantineFileName, "quarantineFileName cannot be null");
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus, "directorySyncStatus cannot be null");
             if (verifiedCompleteEntries < 0
                     || verifiedBytes < 0L
                     || tailBytes < 0L

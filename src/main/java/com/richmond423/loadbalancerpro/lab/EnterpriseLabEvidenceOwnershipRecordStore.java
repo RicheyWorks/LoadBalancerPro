@@ -20,8 +20,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /** Fixed-path durable owner-record installation and verification. */
 final class EnterpriseLabEvidenceOwnershipRecordStore {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(
+                    EnterpriseLabEvidenceOwnershipRecordStore.class);
     private final EnterpriseLabEvidenceOwnershipPaths paths;
     private final EnterpriseLabEvidenceOwnershipCodec codec;
     private final FailureInjector failureInjector;
@@ -427,6 +433,10 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
     private static EnterpriseLabEvidenceOwnershipException failure(
             FailureClassification classification,
             String message) {
+        LOGGER.warn(
+                "Enterprise Lab ownership-record storage failure [{}]: {}",
+                classification,
+                message);
         return new EnterpriseLabEvidenceOwnershipException(classification, message);
     }
 
@@ -434,6 +444,16 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
             FailureClassification classification,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab ownership-record storage failure [{}]: {}; cause={}: {}",
+                classification,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab ownership-record storage failure stack [{}]",
+                classification,
+                cause);
         return new EnterpriseLabEvidenceOwnershipException(classification, message, cause);
     }
 

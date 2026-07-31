@@ -36,12 +36,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * One-request-per-connection binary IPC server bound to literal 127.0.0.1.
  * It uses a fixed worker count, bounded queue, socket idle timeout, strict frame
  * sizes, and transport authentication separate from business evidence.
  */
 public final class EnterpriseLabSupervisorServer implements AutoCloseable {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabSupervisorServer.class);
     public static final String READINESS_SCHEMA_VERSION =
             EnterpriseLabSupervisorConnectionMetadata.SCHEMA_VERSION;
     public static final int FRAME_MAGIC = 0x4c425053;
@@ -328,6 +333,9 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
             }
             atomicPublish(temporary, destination);
             EnterpriseLabSupervisorOwnership.restrictFilePermissions(destination);
+            EnterpriseLabStorageDurability.synchronizeDirectory(
+                    destination.getParent(),
+                    EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
         } catch (AtomicMoveNotSupportedException exception) {
             throw new ServerException(
                     Failure.ATOMIC_PUBLICATION_UNSUPPORTED,
@@ -459,6 +467,7 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
             Arrays.fill(credential, (byte) 0);
             credential = null;
         }
+        service.close();
     }
 
     private void deleteCleanMetadata(Path path) {
@@ -555,6 +564,16 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
         private ServerException(Failure failure, String message, Throwable cause) {
             super(message, cause);
             this.failure = Objects.requireNonNull(failure, "failure cannot be null");
+            LOGGER.error(
+                    "Enterprise Lab supervisor-server storage failure [{}]: {}; cause={}: {}",
+                    failure,
+                    message,
+                    cause.getClass().getSimpleName(),
+                    cause.getMessage());
+            LOGGER.debug(
+                    "Enterprise Lab supervisor-server storage failure stack [{}]",
+                    failure,
+                    cause);
         }
 
         public Failure failure() {

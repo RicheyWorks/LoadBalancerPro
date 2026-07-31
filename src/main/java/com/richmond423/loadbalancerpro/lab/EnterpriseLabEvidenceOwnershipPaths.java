@@ -25,8 +25,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.LockSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /** Fixed, non-caller-directed ownership paths beneath the journal namespace. */
 public final class EnterpriseLabEvidenceOwnershipPaths {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabEvidenceOwnershipPaths.class);
     public static final String PATH_SCHEMA_VERSION = "enterprise-lab-evidence-ownership-paths/v1";
 
     static final String OWNERSHIP_DIRECTORY_NAME = "ownership-v1";
@@ -186,6 +191,9 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
             }
             validateControlledRegularFile(lockFile, "ownership lock file");
             restrictPermissions(lockFile, FILE_PERMISSIONS);
+            EnterpriseLabStorageDurability.synchronizeDirectory(
+                    ownershipDirectory,
+                    EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
             throw exception;
         } catch (AccessDeniedException exception) {
@@ -407,6 +415,9 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
             }
             validateControlledDirectory(directory, parent, "ownership namespace");
             restrictPermissions(directory, DIRECTORY_PERMISSIONS);
+            EnterpriseLabStorageDurability.synchronizeDirectory(
+                    parent,
+                    EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
             return directory;
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
             throw exception;
@@ -471,7 +482,11 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
                 }
             }
             restrictPermissions(file, FILE_PERMISSIONS);
-            return readDirectoryIdentityAfterConcurrentCreation(file);
+            String identity = readDirectoryIdentityAfterConcurrentCreation(file);
+            EnterpriseLabStorageDurability.synchronizeDirectory(
+                    file.getParent(),
+                    EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
+            return identity;
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
             throw exception;
         } catch (AccessDeniedException exception) {
@@ -677,6 +692,10 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
     private static EnterpriseLabEvidenceOwnershipException failure(
             FailureClassification classification,
             String message) {
+        LOGGER.warn(
+                "Enterprise Lab ownership-path storage failure [{}]: {}",
+                classification,
+                message);
         return new EnterpriseLabEvidenceOwnershipException(classification, message);
     }
 
@@ -684,6 +703,16 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
             FailureClassification classification,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab ownership-path storage failure [{}]: {}; cause={}: {}",
+                classification,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab ownership-path storage failure stack [{}]",
+                classification,
+                cause);
         return new EnterpriseLabEvidenceOwnershipException(classification, message, cause);
     }
 

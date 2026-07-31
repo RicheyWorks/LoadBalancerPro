@@ -27,7 +27,7 @@ For the session startup path that ties README, this file, the build contract, an
 ## Scope Discipline
 
 - Read the user request and the current branch diff before editing.
-- For long-running `/goal` work, keep the active objective inside the task contract and update the session manager at checkpoints.
+- For long-running `/goal` work, keep the active objective inside the task contract and keep the session manager limited to current state.
 - Keep edits close to the requested files and behavior surface.
 - Treat README and reviewer docs as claim contracts, not cosmetic copy.
 - Preserve reviewer trust wording when refactoring or reorganizing documentation.
@@ -36,10 +36,12 @@ For the session startup path that ties README, this file, the build contract, an
 ## Goal Campaign Discipline
 
 - For a goal campaign, work one scoped PR at a time and do not open a later slot before the current slot is merged and main CI/CodeQL are green.
+- Spend at least 90% of campaign effort on production code, infrastructure, security, deterministic tests, executable verification, deployment capability, and real lab evidence; routine documentation must remain at or below 10%.
 - Use [`docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md) with the campaign contract, board, session manager, failure log, verification protocol, merge gate, and [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md) when a campaign reaches closeout.
-- Update `docs/agent/SESSION_MANAGER.md` after branch creation, local verification, PR creation, merge, and post-merge main checks.
-- Log every local, remote, scope, or tooling failure in `docs/agent/FAILURE_LOG.md` before continuing.
+- Keep `docs/agent/SESSION_MANAGER.md` to the active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action. Do not store command history, polling, repeated test totals, or transient CI narration.
+- Add `docs/agent/FAILURE_LOG.md` entries only for product/security defects, invalidated evidence, persistent-state risk, non-obvious recovery, mandatory-gate blocks, or reusable technical lessons. Do not log harmless command mistakes, failed searches, optional-tool absence, or polling.
 - Keep no overclaiming as a campaign invariant: a multi-PR campaign does not upgrade evidence claims or relax the README trust contract.
+- Change README only for an actual user-facing capability, installation step, configuration contract, security default, operator command, or major verified limitation. Do not commit documentation solely to narrate work, green heads, checks, or merges.
 - Treat pending, failed, cancelled, stale, or duplicate-only required checks as a stop condition, not as progress.
 - Do not use the campaign format as permission to change production behavior, add automation, add CI/Maven/Docker/Compose/runtime behavior, introduce secrets or external/cloud/tenant targets, or weaken not-proven boundaries.
 - Continue only while the current slot remains docs/test-only or otherwise explicitly scoped, local verification is current-head clean, remote checks are current-head green, and main is green after merge.

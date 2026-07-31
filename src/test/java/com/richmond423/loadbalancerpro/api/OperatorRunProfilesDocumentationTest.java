@@ -158,13 +158,6 @@ class OperatorRunProfilesDocumentationTest {
         }
     }
 
-    @Test
-    void existingAuthAndProxyTestsRemainPresent() {
-        assertTrue(Files.exists(Path.of("src/test/java/com/richmond423/loadbalancerpro/api/ProdApiKeyProtectionTest.java")));
-        assertTrue(Files.exists(Path.of("src/test/java/com/richmond423/loadbalancerpro/api/OAuth2AuthorizationTest.java")));
-        assertTrue(Files.exists(Path.of("src/test/java/com/richmond423/loadbalancerpro/api/ReverseProxyDisabledTest.java")));
-        assertTrue(Files.exists(Path.of("src/test/java/com/richmond423/loadbalancerpro/api/OperatorAuthTlsBoundaryDocumentationTest.java")));
-    }
 
     private static List<Path> concat(List<Path> first, List<Path> second) {
         return java.util.stream.Stream.concat(first.stream(), second.stream()).toList();

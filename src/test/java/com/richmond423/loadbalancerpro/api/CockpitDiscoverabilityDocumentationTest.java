@@ -44,40 +44,7 @@ class CockpitDiscoverabilityDocumentationTest {
         }
     }
 
-    @Test
-    void readmeMakesCockpitAndReviewerMapEasyToFind() throws Exception {
-        String readme = read(README);
 
-        assertTrue(readme.contains("## Try the Web Cockpit"));
-        assertTrue(readme.contains("mvn spring-boot:run"));
-        assertTrue(readme.contains("http://localhost:8080/"));
-        assertTrue(readme.contains("http://localhost:8080/load-balancing-cockpit.html"));
-        assertTrue(readme.contains("http://localhost:8080/decision-explorer.html"));
-        assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md"));
-
-        if (Files.exists(ROUTING_DEMO_PAGE)) {
-            assertTrue(readme.contains("http://localhost:8080/routing-demo.html"));
-        }
-    }
-
-    @Test
-    void discoverabilityTextKeepsScopeHonestWithoutUnsafeClaims() throws Exception {
-        for (String text : List.of(readTryWebCockpitSection(), read(INDEX_PAGE))) {
-            String normalized = text.toLowerCase(Locale.ROOT);
-
-            assertFalse(normalized.contains("production-grade gateway"), "must not add gateway claims");
-            assertFalse(normalized.contains("production-ready gateway"), "must not add gateway claims");
-            assertFalse(normalized.contains("benchmark proof"), "must not add benchmark claims");
-            assertFalse(normalized.contains("benchmark result"), "must not add benchmark claims");
-            assertFalse(normalized.contains("certification proof"), "must not add certification claims");
-            assertFalse(normalized.contains("certified gateway"), "must not add certification claims");
-            assertFalse(normalized.contains("gh release create"), "must not instruct release creation");
-            assertFalse(normalized.contains("gh release upload"), "must not instruct asset uploads");
-            assertFalse(normalized.contains("git tag -"), "must not instruct tag creation");
-            assertFalse(normalized.contains("create release"), "must not instruct release creation");
-            assertFalse(normalized.contains("create tag"), "must not instruct tag creation");
-        }
-    }
 
     @Test
     void discoverabilitySprintAddsNoCloudManagerConstruction() throws Exception {

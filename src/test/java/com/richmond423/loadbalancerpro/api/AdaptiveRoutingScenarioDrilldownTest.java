@@ -219,18 +219,6 @@ class AdaptiveRoutingScenarioDrilldownTest {
         }
     }
 
-    @Test
-    void reviewerAndCiEvidenceLinksIncludeTheDetailEndpointWithoutNoise() throws Exception {
-        for (Path path : List.of(README, TRUST_MAP, READINESS, CONTRACT, READINESS_AUDIT, CI_GATE_PAGE, INDEX)) {
-            String content = read(path);
-            assertTrue(content.contains("/adaptive-routing-scenarios.html"),
-                    path + " should link the scenario runner page");
-            assertTrue(content.contains("/api/enterprise-lab/adaptive-routing-scenario-summary"),
-                    path + " should reference the scenario runner summary API");
-            assertTrue(content.contains("/api/enterprise-lab/adaptive-routing-scenario-detail"),
-                    path + " should reference the scenario runner detail API");
-        }
-    }
 
     @Test
     void drilldownEndpointCodeAvoidsSideEffectsAndUnsafeClaims() throws Exception {

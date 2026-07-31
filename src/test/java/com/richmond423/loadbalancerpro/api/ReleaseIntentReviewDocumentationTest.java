@@ -22,16 +22,6 @@ class ReleaseIntentReviewDocumentationTest {
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
 
-    @Test
-    void releaseIntentReviewExistsAndIsLinkedFromReviewerEntryPoints() throws Exception {
-        assertTrue(Files.exists(REVIEW), "release-intent review doc should exist");
-        assertTrue(Files.exists(SCRIPT), "release-intent review script should exist");
-
-        for (Path doc : List.of(README, DRY_RUN_PACKET, SUMMARY, GATE, TRUST_MAP, RUNBOOK)) {
-            assertTrue(read(doc).contains("RELEASE_INTENT_REVIEW.md"),
-                    doc + " should link the release-intent review");
-        }
-    }
 
     @Test
     void releaseIntentReviewDocumentsExactVersionRecommendationAndReasoning() throws Exception {

@@ -78,8 +78,9 @@ The canonical state path is:
 
 `PAUSED` and `BLOCKED` are exceptional states. Only one slot may be `IN_PROGRESS` or later without being `MAIN_GREEN`.
 The next slot cannot start until the exact merge commit for the current slot is on main and main CI and CodeQL are
-green. Update the board, manifest, `SESSION_MANAGER.md`, and `FAILURE_LOG.md` in the active slot PR; reconcile their
-expected prepend/table conflicts without dropping either history.
+green. Replace the board, manifest, and `SESSION_MANAGER.md` with the newest concise state when needed. Update
+`FAILURE_LOG.md` only for a material blocker or reusable lesson; do not preserve routine history during conflict
+resolution.
 
 At each slot:
 
@@ -107,7 +108,7 @@ The campaign is complete only when:
 - a final repository-wide scope, dependency, security, packaging, and claim audit passes;
 - full local verification passes at the final main head;
 - exact final-main CI and CodeQL are green;
-- the final handoff lists every PR head, merge commit, verification record, failure/recovery, and remaining boundary.
+- the final task/PR handoff identifies the exact final head and merge, verification result, genuine blockers, and remaining boundaries without committing routine execution history.
 
 The source plan calls L3.4 and L4 stretch work, but the user's complete-campaign instruction makes them required here.
 Milestone wording never upgrades evidence: production readiness/certification, live-cloud or real-tenant validation,

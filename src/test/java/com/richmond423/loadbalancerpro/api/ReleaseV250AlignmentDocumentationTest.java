@@ -42,19 +42,6 @@ class ReleaseV250AlignmentDocumentationTest {
         assertTrue(intent.contains("release-intent-review.ps1 -DryRun -RecommendedVersion 2.5.0"));
     }
 
-    @Test
-    void releaseNotesAndAuthorizationChecklistExistAndAreLinked() throws Exception {
-        assertTrue(Files.exists(RELEASE_NOTES), "v2.5.0 release notes should exist");
-        assertTrue(Files.exists(AUTH_CHECKLIST), "v2.5.0 release authorization checklist should exist");
-
-        for (Path doc : List.of(README, RELEASE_INTENT, DECISION_SUMMARY, TRUST_MAP, READINESS_SUMMARY)) {
-            String content = read(doc);
-            assertTrue(content.contains("RELEASE_NOTES_v2.5.0.md"),
-                    doc + " should link v2.5.0 release notes");
-            assertTrue(content.contains("V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md"),
-                    doc + " should link v2.5.0 authorization checklist");
-        }
-    }
 
     @Test
     void releaseNotesCoverEnterpriseReadinessScopeAndLimits() throws Exception {

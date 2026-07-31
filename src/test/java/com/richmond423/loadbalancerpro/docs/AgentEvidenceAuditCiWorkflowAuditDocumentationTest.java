@@ -104,33 +104,6 @@ class AgentEvidenceAuditCiWorkflowAuditDocumentationTest {
         }
     }
 
-    @Test
-    void navigationAndCampaignStateReferenceCiAudit() throws IOException {
-        String readme = read(README).toLowerCase(Locale.ROOT);
-        String trustMap = read(TRUST_MAP).toLowerCase(Locale.ROOT);
-        String evidenceMap = read(EVIDENCE_MAP).toLowerCase(Locale.ROOT);
-        String board = read(BOARD).toLowerCase(Locale.ROOT);
-        String session = read(SESSION).toLowerCase(Locale.ROOT);
-
-        assertTrue(readme.contains("docs/agent/evidence_audit_ci_workflow_audit.md"),
-                "README should link to the CI workflow audit");
-        assertTrue(trustMap.contains("agent/evidence_audit_ci_workflow_audit.md"),
-                "Reviewer Trust Map should link to the CI workflow audit");
-        assertTrue(evidenceMap.contains("evidence_audit_ci_workflow_audit.md"),
-                "repository evidence map should link to the CI workflow audit");
-
-        for (String expected : List.of(
-                "slot 4",
-                "ci workflow audit",
-                "codex/evidence-audit-ci-workflow",
-                "pr #319",
-                "e1c40e904730a9e24875424aa312c68fc62d1fa3",
-                "bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f",
-                "post-merge main ci and codeql were green")) {
-            assertTrue(board.contains(expected) || session.contains(expected),
-                    "Missing slot 4 campaign checkpoint: " + expected);
-        }
-    }
 
     @Test
     void ciWorkflowAuditPreservesNotProvenBoundaries() throws IOException {

@@ -46,19 +46,6 @@ class AntivirusSafeContainmentDocumentationTest {
             Pattern.compile("(?i)\\b(download|fetch|curl|invoke-webrequest)\\b[^\\n]*(\\.(exe|msi|dll)\\b)");
     private static final Pattern EXE_REFERENCE = Pattern.compile("(?i)\\.exe\\b");
 
-    @Test
-    void containmentDocsExistAndAreLinkedFromReviewerEntryPoints() throws Exception {
-        assertTrue(Files.exists(ANTIVIRUS_DOC), "antivirus-safe development doc should exist");
-        assertTrue(Files.exists(LIVE_PROXY_DOC), "live proxy containment doc should exist");
-
-        for (Path doc : List.of(README, RUNBOOK, CONTAINER_DOC, POSTMAN_DOC, TRUST_MAP)) {
-            String content = read(doc);
-            assertTrue(content.contains("ANTIVIRUS_SAFE_DEVELOPMENT.md"),
-                    doc + " should link to antivirus-safe development guidance");
-            assertTrue(content.contains("LIVE_PROXY_CONTAINMENT.md"),
-                    doc + " should link to live proxy containment guidance");
-        }
-    }
 
     @Test
     void antivirusSafeDocDefinesSafeAndAvoidedArtifactTypes() throws Exception {
@@ -137,15 +124,6 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(normalized.contains("call external networks"));
     }
 
-    @Test
-    void readmeLinksBothContainmentDocs() throws Exception {
-        String readme = read(README);
-
-        assertTrue(readme.contains("[`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md)"));
-        assertTrue(readme.contains("[`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md)"));
-        assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#local-proxy-evidence-export"));
-        assertTrue(readme.contains("source-visible local-only smoke harness that is dry-run safe by default"));
-    }
 
     @Test
     void postmanSmokeHarnessIsDocumentedAsSourceVisibleAndDryRunSafeByDefault() throws Exception {

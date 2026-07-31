@@ -130,14 +130,6 @@ class RealBackendProxyExamplesDocumentationTest {
         assertFalse(defaults.contains("loadbalancerpro.proxy.enabled=true"));
     }
 
-    @Test
-    void operatorDocsLinkToRealBackendGuide() throws Exception {
-        for (Path doc : List.of(README, REVERSE_PROXY_MODE, HEALTH_METRICS, RESILIENCE, DEMO_STACK,
-                STRATEGY_LAB, STATUS_UI, INSTALL_MATRIX, PACKAGING, RUNBOOK, TESTING, API_SECURITY,
-                RELEASE_INTENT)) {
-            assertTrue(read(doc).contains("REAL_BACKEND_PROXY_EXAMPLES.md"), doc + " should link to guide");
-        }
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

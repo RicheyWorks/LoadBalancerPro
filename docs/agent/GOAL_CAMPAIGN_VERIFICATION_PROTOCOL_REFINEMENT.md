@@ -63,11 +63,11 @@ Do not start the next slot until main is current locally, the merged PR head is 
 
 Do not claim green main while remote checks are pending.
 
-## Checkpoints And Failures
+## Current State And Material Failures
 
-Update SESSION_MANAGER.md after every checkpoint: branch created, edit batch completed, focused verification, full local verification, PR opened, final-head verification, remote checks green, merge completed, and post-merge main green.
+Keep SESSION_MANAGER.md as a concise replacement snapshot for active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action.
 
-Log failures in FAILURE_LOG.md before continuing when a focused guard, focused selector bundle, dependency tree, full test, package check, diff check, enterprise smoke, remote check, scope audit, GitHub operation, merge decision, or main post-merge check fails.
+Use FAILURE_LOG.md only when a failure exposes a product/security defect, invalidates evidence, risks persistent state, requires non-obvious recovery, blocks a mandatory gate, or yields a reusable lesson.
 
 Pause instead of improvising when GitHub check state is ambiguous, required checks fail or remain pending, scope becomes unsafe, human approval is needed, or the recovery path would leave the current BUILD_CONTRACT.md scope.
 

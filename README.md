@@ -1,1217 +1,252 @@
 # LoadBalancerPro
 
-## Enterprise Lab Cockpit
+LoadBalancerPro is a Java 17 / Spring Boot adaptive-routing service and controlled enterprise lab. It combines a calculation API, deterministic routing comparison, an opt-in HTTP reverse proxy, operator status surfaces, durable local experiment evidence, and guarded cloud-management code.
 
-LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
+The default posture is conservative: API-key authentication is selected, proxying and LASE shadow mode are disabled, cloud mutation is dry-run, telemetry export is off, and only health/info Actuator endpoints are exposed.
 
-This README is intentionally an Advanced README and public trust surface: it is the human front door, reviewer starting point, high-level claim contract, trust-boundary summary, and agent-visible context surface for the repository.
+## Current capabilities
 
-This cockpit is a local reviewer/operator interface, not production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmark proof, throughput/p95/p99 evidence, or replay/evidence/report/storage/export proof.
+- Capacity-aware, predictive, and evaluation-only allocation APIs.
+- Deterministic request-level comparison for round-robin, weighted round-robin, weighted least-load, weighted least-connections, and tail-latency-aware strategies.
+- Read-only Decision Explorer and browser cockpit surfaces for local review.
+- Optional reverse proxy with configured routes, bounded request size and timeout, active health checks, retry controls, cooldown/recovery, status, and guarded reload.
+- Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools.
+- API-key and OAuth2 resource-server modes with deny-by-default API classification.
+- Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
+- A guarded AWS `CloudManager` boundary using AWS SDK v2; live mutation requires explicit operator and account/region/capacity gates.
+- Executable Spring Boot JAR, non-root Docker image, CycloneDX SBOM generation, and local smoke helpers.
 
-It is not a casual demo, toy, mockup, playground, or sample-only page. It is built for controlled pre-production routing validation, reviewer/operator "how" questions, controlled lab evidence, local reproducibility, and explicit proof boundaries.
+## Honest boundaries
 
-The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
+This repository provides deployable software and controlled local evidence; it is not production certification. It does not by itself prove public-ingress safety, high availability, real-tenant or live-cloud operation, production SLOs, sustained load/soak capacity, p95/p99 guarantees, identity lifecycle, secret rotation, or environment-specific disaster recovery.
 
-## What LoadBalancerPro Is
-
-- A Java 17 / Spring Boot Enterprise Adaptive Routing Lab with controlled local routing scenarios, reviewer surfaces, and explicit evidence boundaries.
-- A public trust contract that separates implemented behavior, local-lab evidence, release artifacts, and future roadmap work.
-- A reviewer/operator starting point for local reproducibility, safe proof paths, and high-level project claims.
-- An agent-visible context surface for Codex and other automation so task scope, safety boundaries, and verification expectations stay visible.
-
-## What LoadBalancerPro Is Not
-
-- It is not production readiness, production certification, live-cloud validation, real-tenant validation, or runtime enforcement.
-- It is not load/stress/benchmark proof and does not claim throughput/p95/p99 evidence from local-lab or README-level examples.
-- It is not replay execution, evidence/report generation, storage/export proof unless a specific implemented lane and verification result says so.
-- It is not permission to add CI/Maven wiring, Docker/Compose behavior, runtime behavior, endpoints, secrets, external/cloud/tenant targets, or production-looking defaults outside an explicitly scoped change.
-
-## Current Local-Lab Status
-
-- The local-lab Compose path is optional/manual/local-lab-only and remains bounded by the Compose readiness gate and app-service/runbook guardrails.
-- The current local-lab Compose skeleton includes Toxiproxy and the app-under-test service; k6 and Bruno remain manual and separate.
-- No k6 runner service or Bruno runner service exists.
-- Compose is not CI-gated, not Maven-wired, and not production Docker packaging.
-- Local-lab docs begin with [`docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and [`docs/LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md).
-
-## Agent / Codex Operating Context
-
-Codex and other repo agents should treat this README as the public claim boundary, not as disposable marketing text. Preserve safety boundaries, keep docs/test-only scope when requested, and report only what was actually verified.
-
-Use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md) for the Codex session startup path, [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md) for `/goal` long-running session rules, [`AGENTS.md`](AGENTS.md) for project operating rules, [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) for reusable task contracts, [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md) for focused/full verification expectations, [`docs/agent/SESSION_MANAGER.md`](docs/agent/SESSION_MANAGER.md) for long-session state capture, and [`docs/agent/FAILURE_LOG.md`](docs/agent/FAILURE_LOG.md) for failure recording.
-
-For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md) and use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md) to keep each PR separately scoped, checkpointed, verified, and bounded by this README's trust contract.
-
-## Goal Mode Campaign Summary
-
-The completed LoadBalancerPro Goal Mode 10-PR Trial used this README as the public trust surface while campaign execution details lived in the agent docs. The campaign remained bounded: one scoped PR at a time, docs/test-only by default, with SESSION_MANAGER.md checkpoints, FAILURE_LOG.md recovery entries, focused checks while editing, full local verification before merge, current-head remote checks before merge, and post-merge main checks before any slot counted.
-
-Use [`docs/agent/GOAL_CAMPAIGN_BOARD.md`](docs/agent/GOAL_CAMPAIGN_BOARD.md) for the completed 10-slot board, [`docs/agent/GOAL_CAMPAIGN_CONTRACT.md`](docs/agent/GOAL_CAMPAIGN_CONTRACT.md) for campaign rules, [`docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md) for the filled task contract, [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) for campaign verification order, [`docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md) for closeout reporting format, and [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md) for the final post-merge trial closeout.
-
-The current audit campaign is the LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign. It starts from the completed 10-PR trial and uses [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md), [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md), [`docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md`](docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md), [`docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_COMPOSE_LOCAL_LAB_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_COMPOSE_LOCAL_LAB_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CHECKPOINT_TEMPLATE.md), and [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_FINAL_REPORT_TEMPLATE.md). It is an audit and documentation/test campaign, not a production-hardening implementation campaign.
-
-The active implementation campaign imports the July 21 deployable-proxy and lab/shadow/analysis audits, plans, and
-interactive strategy-simulator source artifact into one ordered 49-slot goal campaign. Use
-[`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md),
-[`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md), and
-[`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json). Every slot
-starts open and requires a current-main audit plus its full acceptance and verification gates; imported audit wording
-is planning input, not completion evidence or a production-readiness claim.
-
-The evidence audit campaign does not relax scope. It does not authorize production code changes, Maven config changes, CI/workflow changes, Dockerfile changes, Compose behavior changes, runtime behavior changes, endpoint changes, k6/Bruno/Toxiproxy behavior changes, runner services, automation, secrets, external/cloud/tenant targets, or unsupported claims.
-
-The evidence audit campaign also does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmarking, throughput/p95/p99 evidence, replay/evidence/report/storage/export proof, or broader automation.
-
-The LASE Core Expansion Campaign uses [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`](docs/agent/LASE_CORE_EXPANSION_GOALS.md) as its WARN-classified goal ledger. It defines PR-sized goals for adaptive routing intelligence, tail-latency-aware scoring, degradation/recovery behavior, lab-mode concurrency or shedding experiments, scenario evidence, and reviewer explanations. The ledger is a planning surface only: future goals are not complete until their own PRs are merged and main checks are green, and it does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmarking, throughput/p95/p99 production evidence, replay/evidence/report/storage/export proof, or broader automation.
-
-The Core LoadBalancer Reliability Contract Campaign uses [`docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md) as its WARN-classified core feature contract. It maps the current allocation facade, load-distribution planner/evaluator, server registry, routing strategy registry, request-level strategies, tested invariants, follow-up hardening goals, and not-proven boundaries without changing production behavior.
-
-The Decision Explorer Architecture Bootstrap Campaign uses [`docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md) as its WARN-classified board for DX-G01 through DX-G10. It plans the Interactive Decision Explorer as a reviewer/operator and agent-readable explanation surface for routing decisions. During this bootstrap campaign it remains docs/test-only, planned, read-only, and simulation-only; it does not create endpoints, runtime behavior, storage/export behavior, automation, deployment behavior, cloud behavior, tenant behavior, production traffic-control behavior, production readiness, production certification, live-cloud validation, real-tenant validation, load/stress/benchmarking evidence, throughput/p95/p99 evidence, replay/export/storage proof, or broader automation.
-
-The current Decision Explorer entry point is [`/decision-explorer.html`](http://localhost:8080/decision-explorer.html), backed by bounded `POST /api/routing/decision-explorer` and documented in [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md). It returns one compact `RoutingExplanation` v2 result per strategy with candidate factor contributions, dominant-factor rows, selected-vs-alternative delta analysis, and numeric `counterfactualWeightScenarios`. The page is same-origin, read-only, simulation-only, and memory-only for optional API keys. It does not shift traffic, mutate routing, call cloud or tenant systems, persist storage, execute replay, export files, generate evidence packets, or prove production readiness, production certification, live-cloud validation, real-tenant validation, load/stress/benchmarking evidence, throughput/p95/p99 evidence, replay/export/storage proof, or broader automation.
-
-The Decision Explorer bootstrap, Phase 1, Phase 2, and LASE Phase 6 documents remain historical campaign records. Their former multi-layer payload vocabulary is not the current API contract; use [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md) and [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md) for the compact reviewer path and current not-proven boundaries.
-
-## Where Detailed Rules Live
-
-- Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
-- Agent workflow quickstart: [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md).
-- Goal-mode long-run protocol: [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md).
-- Campaign system index: [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md).
-- Campaign system architecture: [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
-- Active combined build-plan campaign contract: [`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md).
-- Active combined build-plan campaign board: [`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md).
-- Active combined build-plan slot manifest: [`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json).
-- Goal campaign board: [`docs/agent/GOAL_CAMPAIGN_BOARD.md`](docs/agent/GOAL_CAMPAIGN_BOARD.md).
-- Evidence audit campaign board: [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md).
-- Evidence audit campaign contract: [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md).
-- Evidence audit repository evidence map: [`docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md`](docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md).
-- Evidence audit CI workflow audit: [`docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md).
-- Evidence audit CodeQL and dependency review audit: [`docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md).
-- Evidence audit Maven dependency posture audit: [`docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md).
-- Evidence audit Dockerfile runtime audit: [`docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md).
-- Evidence audit Compose/local-lab audit: [`docs/agent/EVIDENCE_AUDIT_COMPOSE_LOCAL_LAB_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_COMPOSE_LOCAL_LAB_AUDIT.md).
-- Evidence audit runtime configuration audit: [`docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md).
-- Evidence audit proxy demo fixture audit: [`docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md).
-- Evidence audit CLI app startup audit: [`docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md).
-- LASE core expansion goal ledger: [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`](docs/agent/LASE_CORE_EXPANSION_GOALS.md).
-- Core LoadBalancer feature contract: [`docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md).
-- Decision Explorer architecture bootstrap campaign board: [`docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md).
-- Decision Explorer Phase 1 local reviewer page: [`/decision-explorer.html`](http://localhost:8080/decision-explorer.html).
-- Decision Explorer Phase 1 reviewer examples: [`docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md).
-- Decision Explorer Phase 1 final handoff: [`docs/agent/DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md`](docs/agent/DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md).
-- Decision Explorer Phase 2 campaign board: [`docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md).
-- Decision Explorer Phase 2 reviewer examples: [`docs/agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md`](docs/agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md).
-- Decision Explorer Phase 2 final handoff: [`docs/agent/DECISION_EXPLORER_PHASE2_FINAL_HANDOFF.md`](docs/agent/DECISION_EXPLORER_PHASE2_FINAL_HANDOFF.md).
-- Goal campaign verification refinement: [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md).
-- Goal campaign final handoff/report: [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md).
-- Agent operating rules: [`AGENTS.md`](AGENTS.md).
-- Task contract template: [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md).
-- Verification protocol: [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md).
-- Session manager template: [`docs/agent/SESSION_MANAGER.md`](docs/agent/SESSION_MANAGER.md).
-- Failure log template: [`docs/agent/FAILURE_LOG.md`](docs/agent/FAILURE_LOG.md).
-- Local-lab and Compose docs: [`docs/LOCAL_LAB_PROGRESS_HANDOFF.md`](docs/LOCAL_LAB_PROGRESS_HANDOFF.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md), and [`docs/LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md).
-
-## Not-Proven Boundaries
-
-The repository intentionally preserves these not-proven boundaries unless a later, separately scoped implementation and verification result explicitly changes them:
-
-- no production readiness;
-- no production certification;
-- no live-cloud validation;
-- no real-tenant validation;
-- no runtime enforcement;
-- no load/stress/benchmarking proof;
-- no throughput/p95/p99 evidence;
-- no replay execution, evidence/report generation, storage/export proof;
-- no broader automation, production traffic shifting, cloud/tenant target validation, or production Docker packaging claim.
-
-## Verification Expectations
-
-Use focused checks while editing, then full verification before merge. A typical escalation is: focused failing test or documentation guard, relevant selector bundle, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, remote PR checks, and post-merge main checks when a PR is merged.
-
-Do not claim a PR or main is fully green while required remote checks are pending, failed, cancelled, or stale.
-
-## What the Enterprise Lab Cockpit Monitors
-
-- Active lab scenario.
-- Routing comparison request state.
-- Selected strategy.
-- Selected backend/server.
-- Backend health.
-- Visible latency, load, connection, capacity, and weight-style signals where exposed by the local lab response.
-- Degradation, fallback, and recovery state.
-- Scenario-to-scenario delta.
-- Evidence association path.
-- Reviewer handoff readiness.
-- Local lab proof boundary.
-- Production proof gaps.
-
-## What the Enterprise Lab Cockpit Answers
-
-- How routing decisions are made from the visible controlled lab response.
-- How strategies affect backend selection.
-- How input signals influence outcomes.
-- How unhealthy, degraded, and recovery states are interpreted.
-- How scenario changes affect decisions.
-- How evidence pages support reviewer handoff.
-- How lab proof is reproduced locally.
-- What is proven in the lab.
-- What remains not proven for production.
-
-## Enterprise Lab Cockpit Navigation
-
-- Legacy route name: [`/routing-demo.html`](http://localhost:8080/routing-demo.html). Product identity: Enterprise Lab routing cockpit.
-- Reviewer dashboard: [`/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html).
-- Operator evidence dashboard: [`/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html).
-- Adaptive routing scenarios: [`/adaptive-routing-scenarios.html`](http://localhost:8080/adaptive-routing-scenarios.html), including same-origin summary, drilldown, packet, gate-evaluation, and strategy-comparison-matrix APIs for local synthetic strategy explanations.
-- Evidence timeline: [`/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html).
-- Evidence export packet: [`/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html).
-- Decision Explorer: [`/decision-explorer.html`](http://localhost:8080/decision-explorer.html).
-- Reviewer trust map: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
-- Framing guide: [`docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md`](docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md).
-- Strategic architecture positioning: [`docs/THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](docs/THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) frames the current Tier 1 L4-L7 routing focus and future-oriented Tier 2/Tier 3 signal concepts without claiming implementation.
-- Architecture report alignment index: [`docs/ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](docs/ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md) maps the uploaded architecture report phases to current repo docs as docs/test-only reviewer guidance without claiming implementation of future roadmap items.
-- Phase 0 architecture ADR index: [`docs/PHASE_0_ARCHITECTURE_ADR_INDEX.md`](docs/PHASE_0_ARCHITECTURE_ADR_INDEX.md) names the initial planning-only ADR set recommended by the architecture report without adding ADR implementation, package moves, runtime architecture changes, or roadmap completion claims.
-- ADR-0001 layered architecture boundary: [`docs/adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](docs/adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) drafts the proposed future layer model as docs/test-only planning without moving packages, adding ArchUnit, enforcing package boundaries, changing runtime behavior, or claiming ADR approval.
-- ADR-0002 LASE integration model: [`docs/adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](docs/adr/ADR-0002_LASE_INTEGRATION_MODEL.md) drafts the proposed future LASE integration model as docs/test-only planning without runtime LASE enforcement, `LaseObservationPort`, live allocation changes, replay execution, evidence packet implementation, or production claims.
-- ADR-0003 evidence as first-class artifact: [`docs/adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](docs/adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) drafts the proposed future evidence architecture model as docs/test-only planning without EvidencePacket implementation, EvidenceAssembler implementation, report generation, JSON output, storage/persistence/telemetry, replay execution, or production claims.
-- ADR-0004 workload realism and scenario modeling: [`docs/adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](docs/adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) drafts the proposed future workload realism and scenario modeling architecture as docs/test-only planning without WorkloadProfile implementation, ScenarioGenerator implementation, workload generators, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, or production claims.
-- ADR-0005 safety boundaries and guardrails: [`docs/adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](docs/adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) drafts the proposed future safety mode and guardrail model as docs/test-only planning without runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, external signal ingestion, or production claims.
-- ADR-0006 evidence packet and replay boundary model: [`docs/adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](docs/adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) drafts the proposed future EvidencePacket, EvidenceAssembler, and replay-facing evidence boundary as docs/test-only planning without EvidencePacket implementation, EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, or production claims.
-- ADR-0007 reviewer evidence and trust model: [`docs/adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](docs/adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) drafts the proposed future reviewer evidence and trust model as docs/test-only planning without reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, export/upload/download/PDF/ZIP behavior, or production claims.
-- ADR-0008 runtime enforcement and package boundary plan: [`docs/adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](docs/adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md) drafts the proposed future runtime enforcement and package-boundary plan as docs/test-only planning without runtime enforcement, package moves, ArchUnit dependency/enforcement, routing/scoring/strategy/proxy/API behavior changes, reviewer portal/dashboard/API behavior, replay/report/storage/export behavior, or production claims.
-- ADR-0009 local lab kit and simulated datacenter test harness plan: [`docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md) drafts the proposed future Local Lab Kit and simulated datacenter test harness as docs/test-only planning without Docker Compose files, scripts, simulated backend node implementation, k6 scenarios, Bruno collections, Toxiproxy configuration, Prometheus/Grafana dashboards, replay/storage/export behavior, runtime routing behavior, hardware-production claims, or production certification.
-- Local lab scenario matrix: [`docs/LOCAL_LAB_SCENARIO_MATRIX.md`](docs/LOCAL_LAB_SCENARIO_MATRIX.md) lists future local lab scenario categories, expected signals, evidence expectations, hardware expansion boundaries, and not-production-proof warnings as planning-only material.
-- External signal design contract: [`docs/EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](docs/EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) defines a future read-only `ExternalSignalPort` boundary for Tier 2/Tier 3 context signals without adding runtime implementation.
-- Workload profile design contract: [`docs/WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](docs/WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) defines future `WorkloadProfile` signal metadata for AI-era workload modeling without adding runtime records/classes or behavior.
-- LASE boundary architecture contract: [`docs/LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](docs/LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md) defines the future docs-only boundary between live allocation and LASE shadow/evidence paths without adding runtime enforcement or package refactors.
-- LASE boundary enforcement inventory: [`docs/LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](docs/LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) maps current classes into future boundary buckets as a docs/test-only migration-readiness inventory without moving classes, adding runtime interfaces, or enforcing package boundaries.
-- LASE package-boundary enforcement plan: [`docs/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](docs/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) stages future package-boundary enforcement as docs/test-only planning without adding ArchUnit, package-boundary tooling, class moves, runtime interfaces, Maven build changes, or enforcement claims.
-- LASE boundary naming guard plan: [`docs/LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](docs/LASE_BOUNDARY_NAMING_GUARD_PLAN.md) prepares future docs/test-only naming guard vocabulary without adding source scanning, runtime naming enforcement, ArchUnit, package-boundary tooling, class moves, runtime interfaces, Maven build changes, or enforcement claims.
-- LASE naming guard inventory: [`docs/LASE_NAMING_GUARD_INVENTORY.md`](docs/LASE_NAMING_GUARD_INVENTORY.md) maps current class/file naming against the naming plan as docs/test-only preparation without renaming classes, moving packages, adding source-name guard tests, runtime naming enforcement, ArchUnit, Maven build changes, or enforcement claims.
-- LASE source-name guard feasibility plan: [`docs/LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](docs/LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md) scopes a future narrow source-name guard as docs/test-only feasibility without adding source scanning, runtime naming enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard review checklist: [`docs/SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md`](docs/SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md) gives reviewers a docs/test-only checklist for evaluating any future source-name guard proposal without adding source scanning, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard dry-run design plan: [`docs/SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](docs/SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md) defines future report-only dry-run concepts as docs/test-only planning without adding source scanning, dry-run commands, report generation, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard report schema plan: [`docs/SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](docs/SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md) defines future report field vocabulary as docs/test-only planning without adding source scanning, dry-run report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard report review checklist: [`docs/SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](docs/SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md) gives reviewers a docs/test-only checklist for evaluating future dry-run reports without adding source scanning, report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard report sample plan: [`docs/SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md`](docs/SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md) gives reviewers docs/test-only static examples for future dry-run reports without adding source scanning, report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard report acceptance criteria plan: [`docs/SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md`](docs/SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md) gives reviewers docs/test-only acceptance criteria for future dry-run report quality without adding source scanning, report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard rule catalog plan: [`docs/SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](docs/SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md) gives reviewers docs/test-only candidate future rule categories, severity guidance, allowlist expectations, false-positive risks, and implementation gates without adding source scanning, report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard rule review checklist: [`docs/SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md`](docs/SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md) gives reviewers docs/test-only per-rule review questions before future source-name guard implementation without adding source scanning, report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard allowlist design plan: [`docs/SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md`](docs/SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md) gives reviewers docs/test-only future allowlist semantics before any allowlist file or source-name guard implementation without adding source scanning, report generation, JSON/YAML/TOML output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard allowlist review checklist: [`docs/SOURCE_NAME_GUARD_ALLOWLIST_REVIEW_CHECKLIST.md`](docs/SOURCE_NAME_GUARD_ALLOWLIST_REVIEW_CHECKLIST.md) gives reviewers docs/test-only allowlist candidate review criteria before any allowlist file or implementation without adding source scanning, report generation, JSON/YAML/TOML output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard allowlist sample plan: [`docs/SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md`](docs/SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md) gives reviewers docs/test-only static examples for future allowlist entry shapes before any allowlist file or implementation without adding source scanning, report generation, JSON/YAML/TOML output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Source-name guard allowlist lifecycle plan: [`docs/SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](docs/SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md) gives reviewers docs/test-only future allowlist lifecycle rules before any allowlist file or implementation without adding source scanning, report generation, JSON/YAML/TOML output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit, Maven build changes, or enforcement claims.
-- Decision Vector and retained read-only explanation contracts: [`docs/ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md), [`docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md), [`docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md), [`docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md), [`docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md), [`docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md), [`docs/ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md), and [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md).
-
-LoadBalancerPro is becoming **LoadBalancerPro Enterprise Lab**: a Java 17 / Spring Boot lab for adaptive-routing scenarios, deterministic replay, LASE shadow/influence comparison, policy gates, scorecards, evidence export, SRE walkthroughs, and a carefully bounded Production Gateway Candidate track.
-
-Its primary identity is **Enterprise Adaptive Routing Lab**. Its secondary identity is **Production Gateway Candidate** for future optional proxy/runtime hardening, deployment guides, and signed container distribution if that path is explicitly approved later.
-
-It is built as a polished Enterprise Lab cockpit system: the code demonstrates production-minded boundaries, tests, packaging, and cloud guardrails, but it is not a drop-in production cloud load balancer or a live enterprise gateway.
-
-The API and CLI are safe by default: allocation endpoints do not call AWS, CLI cloud integration is disabled unless requested, Docker/local runs do not require AWS credentials, and cloud mutation stays disabled unless every live-mode guardrail is configured explicitly.
-
-The JavaFX desktop simulator has been retired. The API, proxy, offline report CLI, Java fixture launcher, and static browser workflows remain the maintained operator paths and do not require JavaFX. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md) for the retirement and compatibility boundary.
-
-For the product identity, start with [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md) and [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md), then use [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](docs/THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) for strategic architecture positioning across current Tier 1 L4-L7 routing focus and future-oriented Tier 2/Tier 3 read-only signal concepts, plus [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](docs/EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) for the future read-only external signal port contract, [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](docs/WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) for the future docs-only workload profile metadata contract, [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](docs/LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md) for the future docs-only live allocation versus LASE shadow/evidence boundary contract, [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](docs/LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) for the docs/test-only current-tree inventory that maps classes into future boundary buckets without runtime enforcement, [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](docs/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) for the docs/test-only staged package-boundary enforcement plan without ArchUnit, package moves, runtime interfaces, Maven build changes, or enforcement claims, [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](docs/LASE_BOUNDARY_NAMING_GUARD_PLAN.md) for the docs/test-only naming guard plan without source scanning, runtime naming enforcement, ArchUnit, package moves, runtime interfaces, Maven build changes, or enforcement claims, and [`LASE_NAMING_GUARD_INVENTORY.md`](docs/LASE_NAMING_GUARD_INVENTORY.md) for the docs/test-only current naming inventory without class renames, package moves, source-name guard tests, runtime naming enforcement, ArchUnit, Maven build changes, or enforcement claims. Use [`ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md) for the structured controlled-lab decision explanation contract, [`ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md) for the additive read-only lane that summarizes returned contribution data, [`ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md) for selected-vs-closest-alternative score gap and factor contribution differences without changing routing behavior, [`ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md) for deterministic read-only snapshot evidence and local fingerprints without replay execution or what-if mutation, [`ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md) for deterministic read-only reconstruction evidence steps without replay execution, what-if mutation, or trace persistence, [`ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md) for deterministic read-only canonical evidence packaging without replay execution, what-if mutation, capsule persistence, or export/share/download behavior, and [`ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md) for read-only lab replay-readiness checklist status derived from already-built evidence lanes without replay execution, what-if mutation, persistence, or production-readiness claims. Replay execution, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling remain future work unless later implemented and verified. Use [`ENTERPRISE_LAB_ROADMAP.md`](docs/ENTERPRISE_LAB_ROADMAP.md) and [`NEXT_GOAL_PROMPTS.md`](docs/NEXT_GOAL_PROMPTS.md) for the next product pushes. For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For the combined local performance and auth proof story, use [`MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md`](docs/MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md). For the future CI evidence gate readiness story, local prototype, and artifact packet shape, use [`CI_EVIDENCE_GATE_READINESS_LANE.md`](docs/CI_EVIDENCE_GATE_READINESS_LANE.md), [`CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md`](docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md), [`ci-evidence-gate-summary.template.json`](docs/examples/ci-evidence-gate-summary.template.json), `/ci-evidence-gate.html`, and `GET /api/enterprise-lab/ci-evidence-gate-summary`. For measured local performance evidence, use [`PERFORMANCE_BASELINE.md`](evidence/PERFORMANCE_BASELINE.md) and `scripts/smoke/performance-baseline.ps1`. For the mocked enterprise auth proof lane, use [`ENTERPRISE_AUTH_PROOF_LANE.md`](docs/ENTERPRISE_AUTH_PROOF_LANE.md). For the verified `v2.5.0` release, use [`V2_5_0_POST_RELEASE_VERIFICATION.md`](docs/V2_5_0_POST_RELEASE_VERIFICATION.md) and [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md). For release-candidate rehearsal without publishing, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md), and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). For a guided local reviewer walkthrough, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) as a legacy-named script. For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
-
-For the current enterprise-readiness verdict and lab-transition decision, use [`ENTERPRISE_READINESS_AUDIT.md`](docs/ENTERPRISE_READINESS_AUDIT.md): Enterprise Lab ready, production gateway not certified.
-For the trust-hardening sprint packet and reviewer-ready governance plan, use [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md).
-For repo-side manual governance hardening guidance, use [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md).
-For browser-based review surfaces, run the app and open [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html) for reviewer posture, [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html) for operator evidence paths, [`http://localhost:8080/adaptive-routing-scenarios.html`](http://localhost:8080/adaptive-routing-scenarios.html) for deterministic local synthetic routing scenario output, [`http://localhost:8080/ci-evidence-gate.html`](http://localhost:8080/ci-evidence-gate.html) for the local CI evidence gate prototype, [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html) for the evidence timeline/history view, or [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html) for the reviewer handoff packet.
-
-## Why This Project Matters
-
-LoadBalancerPro is designed to show how a load-balancing system can grow from an algorithm simulator into an operator-focused service without losing safety boundaries. It combines routing strategy comparison, local reverse-proxy validation, API-key/OAuth2 deployment boundaries, reload/status observability, release-free evidence, and container smoke posture in one reviewable Java/Spring codebase.
-
-For reviewers and recruiters, the useful signal is not a single flashy demo. It is the combination of conservative defaults, explicit guardrails, repeatable local validation, CI-published artifacts, and documentation that distinguishes implemented behavior from roadmap work.
-
-The current product push has moved that Enterprise Adaptive Routing Lab path into an observable controlled adaptive-routing slice: first-class lab scenario APIs, deterministic lab runs, bounded in-memory run storage, scorecards, protected lab metrics, Prometheus-style sample output, ignored `target/` evidence export, a no-dependency browser lab page, an explicit LASE policy gate with `off`, `shadow`, `recommend`, and `active-experiment` modes, a measured local performance baseline lane, and a mocked enterprise auth proof lane. The next pushes should add richer production rollout design, tenant-specific IdP integration, and gated future container/live-sandbox paths.
-
-## Start Here For Reviewers
-
-Use [`REVIEWER_TRUST_MAP.md#reviewer-lab-review-path`](docs/REVIEWER_TRUST_MAP.md#reviewer-lab-review-path) for the shortest safe proof path, then use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) for a quick screen-share script.
-
-The reviewer path shows how to generate local proxy evidence with `mvn -Dtest=LocalProxyEvidenceExportTest test`, private-network config-only dry-run evidence with `mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test`, loopback-only live gate proof with `mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test`, Postman and operator smoke dry-runs with source-visible PowerShell scripts, and CI/CodeQL evidence from GitHub checks. Evidence is written under ignored `target/` output, secrets are redacted, and runtime private-LAN live validation remains intentionally unimplemented until a separate approved gate is satisfied.
-
-Use [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md) first when the review question is "what is this becoming?" Use [`ENTERPRISE_LAB_ROADMAP.md`](docs/ENTERPRISE_LAB_ROADMAP.md) when the review question is "what should be built next?"
-
-## Evaluate In 5 Minutes
-
-1. Read [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) for the short positioning and limitation summary.
-2. Run `mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"`, then open [`http://localhost:8080/`](http://localhost:8080/), [`http://localhost:8080/routing-demo.html`](http://localhost:8080/routing-demo.html) as the legacy route for the Enterprise Lab routing cockpit, [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html), [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html), [`http://localhost:8080/adaptive-routing-scenarios.html`](http://localhost:8080/adaptive-routing-scenarios.html), [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html), [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html), [`http://localhost:8080/enterprise-lab.html`](http://localhost:8080/enterprise-lab.html), and [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html). The explicit `local` profile selects `loadbalancerpro.auth.mode=none`, emits a security warning, and must stay loopback-only.
-3. Use `GET /api/lab/scenarios`, `POST /api/lab/decisions`, `POST /api/lab/runs`, `GET /api/lab/policy`, and `GET /api/lab/audit-events` to list deterministic scenarios, inspect a complete bounded adaptive decision record, run baseline/observe/shadow/recommend/active-experiment comparisons, inspect scorecards, and review policy audit events. Decision evaluation is response-only and always reports `trafficActionPerformed=false`. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package` to export ignored lab evidence under `target/enterprise-lab-runs/`, or run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\controlled-adaptive-routing-policy.ps1 -Package` to export controlled policy evidence under `target/controlled-adaptive-routing/`.
-4. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -Package` for local loopback latency/error-rate evidence under `target/performance-baseline/`, then run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-auth-proof.ps1 -Package` for mocked OAuth2 role-claim proof under `target/enterprise-auth-proof/`.
-5. Use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) to validate the packaged jar, API-key boundary, and proxy-loopback recipe on localhost.
-6. Use [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) when choosing local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, or container modes.
-7. Use [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for the local-only Docker build/run path, and [`API_SECURITY.md`](docs/API_SECURITY.md) plus [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) before exposing any operator surface beyond a trusted environment.
-
-## Enterprise-Style Operator Foundation
-
-- Operator-configured proxy routes and backend targets can be loaded from application configuration while proxy mode remains disabled by default.
-- Prod/cloud-sandbox API-key modes protect `/proxy/**` and `GET /api/proxy/status`; OAuth2 mode is documented where configured.
-- Proxy status, metrics, retry/cooldown counters, reload status, and the read-only `/proxy-status.html` page expose operator diagnostics without adding external telemetry vendors.
-- The deployment smoke kit validates packaged-jar startup, API-key behavior, and proxy-loopback forwarding locally; CI also builds and smoke-tests the Docker runtime.
-- The project keeps release, cloud, and `CloudManager` mutation boundaries explicit so lab evidence does not become a hidden production or release claim.
-
-## Coverage And Evidence
-
-CI publishes `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` workflow artifacts for reviewer inspection. The README intentionally does not claim a fixed coverage percentage; inspect the generated JaCoCo report or the CI `Summarize JaCoCo coverage` log step for the exact numbers from a specific run. [`TESTING_COVERAGE.md`](docs/TESTING_COVERAGE.md) and [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md) explain how to review those artifacts without creating tags, GitHub Releases, or release assets. [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](docs/DEPENDENCY_SAST_RISK_WORKFLOW.md) explains how CodeQL, Dependency Review, Trivy, SBOM, and dependency findings get owners, severity decisions, rationale, review dates, and follow-up.
-
-## Try the Web Cockpit
-
-Run the Spring Boot app locally:
-
-```bash
-mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"
-```
-
-Then open [`http://localhost:8080/`](http://localhost:8080/) for the app landing page, [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html) for the reviewer dashboard, [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html) for the operator evidence dashboard, [`http://localhost:8080/adaptive-routing-scenarios.html`](http://localhost:8080/adaptive-routing-scenarios.html) for deterministic local synthetic selected-server distribution evidence, [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html) for the evidence timeline/history view, [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html) for the reviewer handoff packet, [`http://localhost:8080/decision-explorer.html`](http://localhost:8080/decision-explorer.html) for the read-only Decision Explorer, or [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html) for the cockpit.
-
-The web cockpit is the quickest first look at LoadBalancerPro. It uses existing health, allocation, evaluation, and routing comparison endpoints with controlled local inputs, keeps output in the browser, and preserves the existing cockpit URLs. Legacy route name: [`/routing-demo.html`](http://localhost:8080/routing-demo.html). Product identity: Enterprise Lab routing cockpit. This is a local lab reviewer/operator surface, not managed cloud load-balancing infrastructure; proxy mode remains optional and disabled by default unless explicitly enabled.
-
-## What This Project Demonstrates
-
-- Java 17 and Spring Boot API design with validation, structured errors, health/metrics endpoints, OpenAPI docs, and conservative profile defaults.
-- A guarded cloud boundary where AWS mutation is isolated in `com.richmond423.loadbalancerpro.core.CloudManager`, disabled by default, and covered through mocked tests.
-- Package, release, and supply-chain discipline: semantic version tags, Maven/JAR alignment checks, CycloneDX SBOMs, SHA-256 checksums, GitHub attestations, and release evidence notes.
-- Docker runtime hardening with a non-root user, container healthcheck, loopback-bound local smoke tests, and post-v2.4.0 runtime verification.
-- Portfolio-grade engineering hygiene: focused dependency maintenance, documented residual risks, explicit safety boundaries, and evidence-backed claims.
-
-## What This Project Is Not
-
-- It is not production-certified infrastructure, a managed cloud load balancer, or a replacement for provider-native load-balancing services.
-- It does not mutate live AWS resources unless live mode, operator intent, account/region/capacity guardrails, and dry-run opt-out are all configured explicitly.
-- It does not claim production SLOs, unmanaged internet exposure readiness, complete identity/authorization, or production-grade secret rotation.
-- LASE routing and shadow-advisor features remain lab/evaluation-grade unless a section explicitly says a behavior is wired into a controlled policy path. `active-experiment` is explicit, guarded, and not a default production traffic mode.
-
-## Current Release Evidence
-
-- `v2.5.0` is the verified JAR/docs-first enterprise readiness release at commit `4cc03750be5479d9f8f88f8ef8014e05a8dc587a`. [`docs/V2_5_0_POST_RELEASE_VERIFICATION.md`](docs/V2_5_0_POST_RELEASE_VERIFICATION.md) records the GitHub Release URL, successful release workflow, exact asset set, checksum verification, SBOM JSON/XML presence, artifact attestation verification, and deferred container publication/signing status.
-- `v2.4.2` is the dependency-maintenance release baseline for `org.json:json` and AWS SDK v2 BOM updates. Future semantic version tags publish GitHub Release assets through the release-artifacts workflow; see [`docs/RELEASE_PROCESS.md`](docs/RELEASE_PROCESS.md).
-- [`docs/V2_4_2_DEPENDENCY_MAINTENANCE_RELEASE.md`](docs/V2_4_2_DEPENDENCY_MAINTENANCE_RELEASE.md) summarizes the v2.4.2 dependency scope and safety posture.
-- [`docs/V2_4_0_RELEASE_ARTIFACT_EVIDENCE.md`](docs/V2_4_0_RELEASE_ARTIFACT_EVIDENCE.md) records the v2.4.0 release artifact, checksum, SBOM, and attestation evidence.
-- [`docs/V2_4_0_DOCKER_RUNTIME_EVIDENCE.md`](docs/V2_4_0_DOCKER_RUNTIME_EVIDENCE.md) records Docker build/runtime verification after the v2.4.0 namespace migration.
-- [`docs/V2_4_0_NAMESPACE_MIGRATION_RELEASE.md`](docs/V2_4_0_NAMESPACE_MIGRATION_RELEASE.md) summarizes the package namespace migration and downstream compatibility note.
-
-## Release Timeline
-
-- `v2.5.0`: verified JAR/docs-first enterprise readiness release covering container prod defaults, prod API-key deny-by-default, OAuth2 dedicated role claims, DTO omitted-field validation, release dry-run packets, evidence gates, risk workflow, and container rollout planning. Container publication and container signing remain deferred.
-- `v2.4.2`: dependency maintenance for `org.json:json` and AWS SDK v2 BOM updates.
-- `v2.4.1`: compatibility maintenance after the namespace migration, including deprecated-shim caller cleanup, cloud metrics wrapper refactor, and README/CODEOWNERS/docs polish.
-- `v2.4.0`: package namespace migration to `com.richmond423.loadbalancerpro.*` and Maven `groupId` `com.richmond423`.
-- `v2.3.5`: GitHub Actions workflow maintenance for Node.js 24 action versions.
-- `v2.3.4`: Caffeine dependency maintenance, `3.1.8` to `3.2.4`.
-- `v2.3.3`: Gson dependency maintenance, `2.10.1` to `2.14.0`.
-
-## Architecture Overview
-
-The diagram shows the project boundaries: user entry points, core routing logic, shadow and controlled-policy LASE analysis, guarded cloud integration, runtime health checks, and release evidence.
-
-```mermaid
-flowchart TD
-    reviewer["User / Reviewer"]
-    cli["CLI workflows"]
-    api["REST API / Actuator"]
-    core["LoadBalancer core"]
-    routing["Routing strategy evaluation"]
-    lase["LASE shadow advisor"]
-    obs["Observability / evidence outputs"]
-    cloud["Guarded CloudManager boundary"]
-    dryrun["Dry-run by default"]
-    aws["AWS resources"]
-    docker["Docker runtime healthcheck"]
-    ci["CI / Release Artifacts"]
-    jar["Executable JAR"]
-    sbom["CycloneDX SBOM"]
-    sums["SHA-256 checksums"]
-    attest["GitHub attestations"]
-
-    reviewer --> cli
-    reviewer --> api
-    cli --> core
-    api --> core
-    core --> routing
-    core --> lase
-    core --> obs
-    core --> cloud
-    cloud --> dryrun
-    dryrun -. "Live AWS only with explicit guardrails" .-> aws
-    docker --> api
-    ci --> jar
-    ci --> sbom
-    ci --> sums
-    ci --> attest
-```
-
-- Core load-balancing engine: `com.richmond423.loadbalancerpro.core.LoadBalancer`, `com.richmond423.loadbalancerpro.core.Server`, and related strategy/result types model server health, capacity, weighted distribution, predictive allocation, and failure handling.
-- LASE telemetry/scoring/routing foundation: `com.richmond423.loadbalancerpro.core.ServerStateVector`, `com.richmond423.loadbalancerpro.core.ServerScoreCalculator`, `com.richmond423.loadbalancerpro.core.RoutingDecision`, `com.richmond423.loadbalancerpro.core.TailLatencyPowerOfTwoStrategy`, and the controlled `AdaptiveRoutingPolicyEngine` provide a foundation for tail-latency-aware, queue-aware, explainable routing decisions. Default allocation behavior remains unchanged; any active-experiment influence is explicit, bounded, audited, and lab/evaluation-grade.
-- ServerMonitor / health monitoring: `com.richmond423.loadbalancerpro.core.ServerMonitor` tracks local and mocked cloud health paths, emits health events, and coordinates with load balancer state without requiring real cloud resources in the default test suite.
-- API layer: the Spring Boot API exposes calculation-only allocation endpoints, request validation, browser CORS behavior, security headers, request-size limits, an optional process-local rate limiter, structured error envelopes, Swagger/OpenAPI docs, and Actuator health/metrics endpoints.
-- Offline CLI workflow: the packaged Spring Boot JAR dispatches `RemediationReportCli` evidence/report commands
-  without starting the API. The former synthetic interactive `LoadBalancerCLI` menu and its cloud/undo/config helpers
-  are retired; its class remains only as a fail-closed compatibility launcher for the retained offline commands.
-- CSV/JSON import/export utilities: parser and utility code validate schema, reject malformed input, neutralize CSV injection risk, and keep import/export contracts aligned.
-- CloudManager / AWS safety boundary: `com.richmond423.loadbalancerpro.core.CloudManager` is the only AWS mutation boundary. Live ASG creation, scaling, registration, and deletion paths are guarded, dry-run by default, and covered with mocked AWS clients.
-- Docker/CI/release gates: GitHub Actions runs dependency resolution, tests, packaging, packaged-JAR smoke checks, and Docker image builds. The Docker runtime uses a non-root user and a container healthcheck.
-
-## Roadmap: LoadBalancer Adaptive Systems Engine
-
-The LoadBalancer Adaptive Systems Engine (LASE) is the north-star direction for this repository: a research-grade adaptive systems engine for telemetry-driven routing, overload protection, failure modeling, cloud-safety simulation, and explainable load-balancing decisions.
-
-The internal telemetry-driven routing foundation now exists through immutable server state vectors, deterministic score calculation, power-of-two candidate sampling, routing decision explanations, and a controlled active policy gate. `POST /api/allocate/evaluate` exposes an optional `laseShadow` summary when `loadbalancerpro.lase.shadow.enabled=true` and a `lasePolicy` decision summary for the controlled gate. The policy defaults to `off`; `shadow` and `recommend` do not alter the final allocation, and `active-experiment` requires explicit enablement plus health, eligibility, capacity, freshness, conflict, rollback, and bounded-context gates before it can alter experiment output.
-
-The first Enterprise Lab workflow exposes this foundation as a reviewer-facing product surface: `GET /api/lab/scenarios`, `GET /api/lab/scenarios/{id}`, `POST /api/lab/decisions`, `POST /api/lab/runs`, `GET /api/lab/runs`, `GET /api/lab/runs/{runId}`, `GET /api/lab/policy`, `GET /api/lab/audit-events`, `GET /api/lab/metrics`, and `GET /api/lab/metrics/prometheus`. The decision endpoint composes fixed local observations, rolling state, typed score factors, a bounded allocation recommendation, structured guardrails, rollback data, reasons, and a fingerprint into an immutable record; it never applies traffic. Runs compare baseline allocation, LASE shadow recommendation, recommend-mode output, and explicit active-experiment output across deterministic fixtures; they are process-local, bounded, in-memory, and labeled as lab evidence only / not production activation. The protected lab metrics endpoint reports process-local counters for lab runs, scenarios, policy decisions by mode, recommendations, active-experiment changes, guardrail blocks, rollback/fail-closed events, audit retention/drops, and rate-limit interactions without request bodies, secrets, backend internals, or private-network discovery data. The static browser page at `/enterprise-lab.html` lists scenarios, runs lab comparisons, renders scorecards, and shows policy/audit/metrics status without external CDN dependencies or browser secret persistence. The adaptive routing scenario runner at `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, `GET /api/enterprise-lab/adaptive-routing-scenario-detail`, and `GET /api/enterprise-lab/adaptive-routing-scenario-evidence-packet` compares the shared experiment fixtures through `RoutingComparisonEngine`, returns selected-server distribution evidence, explains observed local strategy behavior, and exposes a reviewer packet shape without wall-clock benchmark claims, live traffic validation, file output, active CI enforcement, or external calls. The local CI evidence gate prototype at `/ci-evidence-gate.html` and `GET /api/enterprise-lab/ci-evidence-gate-summary` summarizes ignored local evidence inputs, pass/warn/fail-style readiness semantics, manual checks, artifact contract metadata, the adaptive scenario packet shape, and not-enforced boundaries without reading files, running commands, calling GitHub, calling cloud services, or mutating anything. The packet shape is documented in [`CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md`](docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md), with a template-only JSON example at [`docs/examples/ci-evidence-gate-summary.template.json`](docs/examples/ci-evidence-gate-summary.template.json). The PowerShell smoke path `scripts/smoke/enterprise-lab-workflow.ps1 -Package` writes scenario catalog JSON, run JSON, Markdown summary, and metadata only under ignored `target/enterprise-lab-runs/`. The policy-gate smoke path `scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package` writes controlled adaptive-routing evidence under ignored `target/controlled-adaptive-routing/`. The observability pack smoke path `scripts/smoke/enterprise-lab-observability-pack.ps1 -Package` writes metrics JSON, Prometheus-style sample text, manifest, and Markdown summary under ignored `target/enterprise-lab-observability/`. The performance baseline path `scripts/smoke/performance-baseline.ps1 -Package` writes latency, error-rate, threshold, and dashboard-ready evidence under ignored `target/performance-baseline/`. The enterprise auth proof path `scripts/smoke/enterprise-auth-proof.ps1 -Package` writes mocked IdP/JWKS role-claim evidence under ignored `target/enterprise-auth-proof/`.
-
-The Enterprise Lab and reviewer pages insert server-derived scenario, policy, audit, metrics, and reviewer-path
-values through DOM text nodes. Hostile markup in those bounded fields renders inert rather than becoming page
-elements or executable handlers.
-
-Planned LASE work now moves from local proof lanes into richer tail-latency-aware routing, production rollout design, and cloud-safety simulation. Controlled active policy gating, lab-grade observability, measured local performance evidence, and mocked auth proof now exist as bounded Enterprise Lab capabilities, not production traffic-control, production SLO certification, or real tenant identity certification.
-
-Roadmap backlog:
-
-- Tail-latency-aware routing that accounts for p95/p99 service behavior, not only average utilization.
-- Adaptive concurrency limits to keep overloaded servers from accepting more work than they can drain.
-- Load shedding and priority classes for graceful degradation under stress.
-- Shadow autoscaling mode that compares simulated scale decisions against actual traffic without mutating infrastructure.
-- Failure scenario simulator for repeatable demos of degraded servers, region constraints, and guarded cloud paths.
-- Guardrail-preserving cloud sandbox validation before expanding live cloud behavior.
-- Optional auth and deployment profile for demos that need controlled browser/API access.
-
-## Safety Boundaries
-
-- Default tests use mocks for cloud-facing behavior and do not create, modify, or delete real AWS resources.
-- Docker and local API runs do not require AWS credentials by default.
-- Live AWS behavior requires explicit configuration, operator intent, capacity/account/region guardrails, and dry-run opt-out.
-- This repository is intended as a portfolio/Enterprise Lab cockpit implementation, not production cloud infrastructure ready to operate unmanaged traffic.
-
-## Evidence and Hardening
-
-The release evidence set lives in [`evidence/`](evidence/):
-
-- [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) provides a short public-facing overview, evaluation path, and limitations summary.
-- [`ENTERPRISE_READINESS_AUDIT.md`](docs/ENTERPRISE_READINESS_AUDIT.md) records the current enterprise-readiness audit, GitHub ruleset/alert snapshot, and decision to present the project as Enterprise Lab first.
-- [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md) records the reviewer-ready Enterprise Lab trust-hardening sprint packet, governance readiness plan, no-overclaim rules, and future gated path decision.
-- [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md) records repo-side CODEOWNERS coverage and manual GitHub governance recommendations without changing repository settings.
-- [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md) summarizes the current production-candidate posture, current validation posture, release/container signing limits, remaining production risks, and evidence links. [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) gives the two-track JAR/docs-first versus deferred container distribution decision.
-- [`SRE_DEMO_HIGHLIGHTS.md`](docs/SRE_DEMO_HIGHLIGHTS.md) gives a reviewer-ready product-value one-pager covering the verified `v2.5.0` release, guardrail depth, CloudManager safety, replay/LASE testing, optional rate limiting, and honest remaining risks.
-- [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](docs/CONTROLLED_ACTIVE_LASE_POLICY_GATE.md) documents the `off`, `shadow`, `recommend`, and `active-experiment` policy modes, guardrails, audit events, rollback reasons, status endpoints, and ignored evidence path.
-- [`docs/observability/grafana-enterprise-lab-dashboard.json`](docs/observability/grafana-enterprise-lab-dashboard.json), [`enterprise-lab-alerts.yml`](docs/observability/enterprise-lab-alerts.yml), and [`SLO_TEMPLATES.md`](docs/observability/SLO_TEMPLATES.md) provide the lab-grade observability pack for metrics review, dashboard import, alert examples, and SLO thinking without requiring live Grafana, Prometheus, cloud, or production certification.
-- [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) gives a 60 to 90 second local demo outline for the root page, cockpit, API-key boundary, proxy-loopback, observability, and container path.
-- [`HARDENING_AUDIT_001.md`](evidence/HARDENING_AUDIT_001.md) captures the formal hardening audit results.
-- [`SECURITY_POSTURE.md`](evidence/SECURITY_POSTURE.md) summarizes current auth, telemetry, cloud, replay, LASE, and input/API posture.
-- [`THREAT_MODEL.md`](evidence/THREAT_MODEL.md) documents assets, trust boundaries, threat scenarios, mitigations, and residual risks.
-- [`SAFETY_INVARIANTS.md`](evidence/SAFETY_INVARIANTS.md) defines non-negotiable safety rules and maps them to current evidence.
-- [`TEST_EVIDENCE.md`](evidence/TEST_EVIDENCE.md) maps major safety claims to Maven test coverage.
-- [`TESTING_COVERAGE.md`](docs/TESTING_COVERAGE.md) documents JaCoCo report paths, CI coverage artifacts, skipped-test evidence, coverage mapping, and limitations.
-- [`RESIDUAL_RISKS.md`](evidence/RESIDUAL_RISKS.md) tracks ranked residual risks with owners, status, evidence, and next actions.
-- [`RESILIENCE_SCORE.md`](evidence/RESILIENCE_SCORE.md) provides a conservative evidence-backed resilience scorecard.
-- [`SUPPLY_CHAIN_EVIDENCE.md`](evidence/SUPPLY_CHAIN_EVIDENCE.md) records current dependency and supply-chain evidence, gaps, and future hardening options.
-- [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](docs/DEPENDENCY_SAST_RISK_WORKFLOW.md) documents CodeQL, Dependency Review, Trivy, SBOM, and dependency finding ownership, severity handling, accepted-risk rationale, false-positive rationale, remediation targets, and evidence locations.
-- [`SBOM_GUIDE.md`](evidence/SBOM_GUIDE.md) documents manual CycloneDX SBOM generation, CI-published SBOM artifacts, and tag-triggered release JAR/SBOM/checksum artifact bundles.
-- [`RELEASE_ARTIFACT_EVIDENCE.md`](evidence/RELEASE_ARTIFACT_EVIDENCE.md) documents release artifact bundle, SHA-256 checksum, and GitHub attestation evidence.
-- [`MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md`](docs/MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md) connects local loopback performance evidence with mocked enterprise auth proof as one safe reviewer lane.
-- [`CI_EVIDENCE_GATE_READINESS_LANE.md`](docs/CI_EVIDENCE_GATE_READINESS_LANE.md), [`CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md`](docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md), [`ci-evidence-gate-summary.template.json`](docs/examples/ci-evidence-gate-summary.template.json), `/ci-evidence-gate.html`, and `GET /api/enterprise-lab/ci-evidence-gate-summary` prepare a future local-evidence CI gate and provide a deterministic local prototype without changing required checks, branch protection, rulesets, or GitHub settings.
-- `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, `GET /api/enterprise-lab/adaptive-routing-scenario-detail`, and `GET /api/enterprise-lab/adaptive-routing-scenario-evidence-packet` add deterministic local synthetic selected-server distribution evidence, strategy explanation drilldowns, and an in-memory reviewer packet shape from the shared experiment fixtures and routing comparison engine without live traffic, active CI enforcement, or production benchmark claims.
-- [`PERFORMANCE_BASELINE.md`](evidence/PERFORMANCE_BASELINE.md) provides the measured local loopback performance baseline lane with no production SLO claims.
-- [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) documents production-like deployment boundaries, edge controls, auth, telemetry, and cloud-safety guidance.
-- [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md) documents source-visible safe default artifact types, avoided native/binary tooling patterns, antivirus-response policy, repo hygiene, and future live/proxy tooling boundaries.
-- [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md) documents opt-in live/proxy validation, localhost/private-network defaults, no port scanning, no persistence, no scheduled tasks, no service installation, and operator-secret containment.
-- [`REVIEWER_TRUST_MAP.md#local-proxy-evidence-export`](docs/REVIEWER_TRUST_MAP.md#local-proxy-evidence-export) gives the focused Maven command and ignored `target/proxy-evidence/` Markdown/JSON review path for local proxy evidence export.
-- [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) gives the config-validation-only Maven/JUnit recipe and ignored `target/proxy-evidence/` Markdown/JSON review path for future private-network proxy validation without traffic.
-- [`ENTERPRISE_COCKPIT_AUTH_PLAN.md`](docs/ENTERPRISE_COCKPIT_AUTH_PLAN.md) documents the cockpit auth product mismatch, endpoint exposure matrix, and current Swagger/OpenAPI gating path.
-- [`POSTMAN_COLLECTION.md`](docs/POSTMAN_COLLECTION.md) documents the deterministic enterprise lab collection, local environment, and source-visible local-only smoke harness that is dry-run safe by default for local/demo and prod API-key API exploration with placeholders only.
-- [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) is the execution hub for local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, and container run recipes.
-- [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) gives a local-only smoke path for the packaged jar, prod API-key boundary, and proxy-loopback recipe.
-- [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) documents local-only Docker build/run recipes, API-key boundary checks, proxy-loopback caveats, and the no-registry-publish boundary.
-- [`CONTAINER_SIGNING_DECISION_RECORD.md`](docs/CONTAINER_SIGNING_DECISION_RECORD.md) records the current no-registry/no-container-signing posture and the future decision gate for registry target, image tag policy, immutable digest pinning, signing/attestation approach, vulnerability scan evidence, rollback, and retention. [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](docs/CONTAINER_REGISTRY_SIGNING_ROLLOUT.md) turns that gate into a concrete future rollout plan.
-- [`SECRET_MANAGEMENT_GUIDE.md`](docs/SECRET_MANAGEMENT_GUIDE.md) documents secret categories, storage guidance, leakage paths, rotation, and sanitized examples.
-- [`OPERATIONS_GUIDE.md`](docs/OPERATIONS_GUIDE.md) documents startup checks, health verification, monitoring, incident response, rollback, and release evidence review guidance.
-- [`LOAD_SHEDDING.md`](docs/LOAD_SHEDDING.md) documents public allocation overload semantics, load shedding, advisory remediation plans, metrics, and cloud-safety guarantees.
-- [`API_SECURITY.md`](docs/API_SECURITY.md) documents auth posture, rate-limit posture, validation protections, request-size limits, and abuse-resistance guarantees.
-- [`PERFORMANCE_BASELINES.md`](docs/PERFORMANCE_BASELINES.md) documents CI-safe performance smoke budgets for allocation, evaluation, and routing paths.
-- [`OBSERVABILITY.md`](docs/OBSERVABILITY.md) documents domain metrics, label cardinality policy, Prometheus query examples, and dashboard guidance.
-- [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md) documents degraded allocation, load-shedding, validation-failure, and cloud-safety incident response.
-- [`SCENARIO_SIMULATION.md`](docs/SCENARIO_SIMULATION.md) documents read-only traffic replay, advisory remediation plans, and degraded allocation/routing scenario simulation.
-- [`INCIDENT_FIXTURE_CATALOG.md`](docs/INCIDENT_FIXTURE_CATALOG.md) documents curated deterministic replay fixtures and regression-diff descriptors for common degraded incidents.
-- `POST /api/remediation/report` exports deterministic Markdown/JSON remediation reports from evaluation or replay results for operator handoff.
-- [`REMEDIATION_REPORT_CLI.md`](docs/REMEDIATION_REPORT_CLI.md) documents offline Markdown/JSON remediation report generation, incident ZIP bundle export, deterministic literal redaction, SHA-256 checksum manifest verification, local checksum-chained CLI audit logs, local evidence inventory catalogs, evidence catalog diff reports, handoff policy evaluation, packaged policy training labs, and operator scorecard grading for offline incident handoff workflows.
-- [`EVIDENCE_POLICY_TEMPLATES.md`](docs/EVIDENCE_POLICY_TEMPLATES.md) documents packaged local evidence handoff policy templates for zero-drift, receiver-redaction, audit-append, regulated-review, and active-investigation profiles.
-- [`EVIDENCE_POLICY_EXAMPLES.md`](docs/EVIDENCE_POLICY_EXAMPLES.md) documents packaged synthetic sender/receiver catalog examples, expected policy decisions, offline CLI walkthrough commands, the batch training lab, and scorecard answer-key grading for packaged evidence handoff templates.
-- [`POSTMAN_EVIDENCE_TRAINING.md`](docs/POSTMAN_EVIDENCE_TRAINING.md) documents the API/Postman onboarding surface for policy templates, examples, scorecards, answer templates, and deterministic in-memory grading.
-- [`POSTMAN_ROUTING_DEMO.md`](docs/POSTMAN_ROUTING_DEMO.md) documents the Enterprise Lab routing cockpit legacy route and Postman parity path for safe request-level strategy comparison.
-- [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md) documents the optional lightweight `/proxy/**` mode for forwarding real local HTTP traffic through existing routing concepts.
-- [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](docs/REVERSE_PROXY_HEALTH_AND_METRICS.md) documents optional active proxy health checks, read-only local counters, and a two-backend loopback demo fixture.
-- [`REVERSE_PROXY_RESILIENCE.md`](docs/REVERSE_PROXY_RESILIENCE.md) documents optional bounded retries, process-local cooldown state, and retry/cooldown status counters for local proxy demos.
-- [`PROXY_DEMO_STACK.md`](docs/PROXY_DEMO_STACK.md) documents the single Windows/Unix local proxy demo stack path with checked-in demo profiles, the Java loopback fixture launcher, two local backends, and copyable curl verification.
-- [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](docs/PROXY_DEMO_FIXTURE_LAUNCHER.md) documents the Java-only fixture launcher for cross-platform local proxy demos without Python, Node, Docker, cloud services, or public internet.
-- [`OPERATOR_PACKAGING.md`](docs/OPERATOR_PACKAGING.md) documents the Maven exec fixture launcher path, packaged-jar API/proxy commands, real-backend proxy example profiles, and JavaFX desktop retirement.
-- [`REAL_BACKEND_PROXY_EXAMPLES.md`](docs/REAL_BACKEND_PROXY_EXAMPLES.md) gives copy/adapt proxy profiles, named route configuration, and verification steps for local/private HTTP services beyond the fixture backends.
-- [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md) documents release-free Windows/Unix smoke checks for the packaged jar, Maven exec fixture launcher, proxy demo profiles, real-backend examples, and `/proxy-status.html`.
-- [`LOCAL_ARTIFACT_VERIFICATION.md`](docs/LOCAL_ARTIFACT_VERIFICATION.md) documents release-free local and CI checksum, jar manifest/resource inspection, static page verification, demo profile verification, and packaged run commands. CI publishes the same inspection output as the `packaged-artifact-smoke` workflow artifact.
-- [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md) documents how to download and review the `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` workflow artifacts, compare local and CI SHA-256 evidence, and prepare a release-free release candidate checklist.
-- [`RELEASE_CANDIDATE_DRY_RUN.md`](docs/RELEASE_CANDIDATE_DRY_RUN.md) ties CI artifacts, local verification, SBOM review, packaged jar smoke evidence, proxy status UI, and demo stack commands into one release-free go/no-go packet with a placeholder-only review template.
-- [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md) is the current reviewer packet for recording commit, test/verify/package, SBOM, checksum, security gate, smoke, and publication-boundary evidence under ignored `target/release-candidate-dry-run/`.
-- [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md) prepares the human decision for the recommended `v2.5.0` JAR/docs-first release path without creating tags, GitHub Releases, release assets, registry images, or signatures.
-- [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) summarizes the recommended `v2.5.0` JAR/docs-first human decision and the deferred container distribution path.
-- [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md) gives reviewer-ready v2.5.0 notes for enterprise readiness changes, validation evidence, known limits, and the JAR/docs-first distribution.
-- [`V2_5_0_POST_RELEASE_VERIFICATION.md`](docs/V2_5_0_POST_RELEASE_VERIFICATION.md) records the completed v2.5.0 release workflow, exact commit, verified assets, checksums, SBOMs, and artifact attestation status.
-- [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) is the historical exact-version hard stop that preceded the authorized `v2.5.0` tag, GitHub Release, and workflow-defined asset publication.
-- [`OPERATOR_INSTALL_RUN_MATRIX.md`](docs/OPERATOR_INSTALL_RUN_MATRIX.md) gives Windows and Unix command paths for packaged jar, Maven exec, Spring profiles, proxy demo stack, fixture launcher, status pages, CI artifacts, and smoke helpers.
-- [`RELEASE_INTENT_CHECKLIST.md`](docs/RELEASE_INTENT_CHECKLIST.md) adds the explicit release-intent hard stop before any future tag, release, upload, ruleset, or `release-downloads/` action is considered.
-- [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md) documents removal of the JavaFX desktop simulator and dependency, the retained JavaFX-free compatibility contract, and the maintained API/proxy/browser operator paths.
-- [`PACKAGE_NAMING.md`](docs/PACKAGE_NAMING.md) documents why the `RicheyWorks/LoadBalancerPro` repository currently keeps the stable `com.richmond423.loadbalancerpro` Java namespace.
-- [`PROXY_OPERATOR_STATUS_UI.md`](docs/PROXY_OPERATOR_STATUS_UI.md) documents the read-only `/proxy-status.html` browser view for proxy health, counters, retry/cooldown state, raw status JSON, and demo commands.
-- [`PROXY_STRATEGY_DEMO_LAB.md`](docs/PROXY_STRATEGY_DEMO_LAB.md) documents local strategy-specific proxy demos for `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover selected-upstream evidence.
-- [`POSTMAN_LOAD_BALANCING_COCKPIT.md`](docs/POSTMAN_LOAD_BALANCING_COCKPIT.md) documents the unified browser/Postman cockpit for allocation, routing, overload, and remediation-hint review.
-- [`OPERATOR_SCENARIO_GALLERY.md`](docs/OPERATOR_SCENARIO_GALLERY.md) documents packaged normal, overload, all-unhealthy, and recovery cockpit scenarios with Postman parity.
-- [`OPERATOR_COMPARISON_MATRIX.md`](docs/OPERATOR_COMPARISON_MATRIX.md) documents the cockpit matrix that runs all packaged scenarios and summarizes real endpoint output side by side.
-- [`OPERATOR_REPLAY_MODE.md`](docs/OPERATOR_REPLAY_MODE.md) documents the cockpit replay mode for baseline/comparison scenario pairs and deterministic reviewer notes.
-- [`OPERATOR_REVIEW_PACKET.md`](docs/OPERATOR_REVIEW_PACKET.md) documents the cockpit review packet for copyable and printable operator handoff notes.
-- [`OPERATOR_API_CONTRACT_TRACE.md`](docs/OPERATOR_API_CONTRACT_TRACE.md) documents the cockpit API contract trace for mapping visible claims to endpoint paths, request payloads, raw fields, derived labels, and unavailable fields.
-- [`OPERATOR_GUIDED_WALKTHROUGH.md`](docs/OPERATOR_GUIDED_WALKTHROUGH.md) documents the cockpit guided walkthrough that steps reviewers through scenario selection, endpoint execution, trace verification, replay comparison, and review packet handoff.
-- [`OPERATOR_NAVIGATION_READINESS.md`](docs/OPERATOR_NAVIGATION_READINESS.md) documents the cockpit section index, current-panel orientation, in-memory readiness badges, and deterministic readiness summary.
-- [`OPERATOR_EXPLANATION_DRILLDOWN.md`](docs/OPERATOR_EXPLANATION_DRILLDOWN.md) documents the cockpit explanation drill-down panels for routing, allocation, overload, remediation, and scenario-delta rationale.
-- [`OPERATOR_DEMO_WALKTHROUGH.md`](docs/OPERATOR_DEMO_WALKTHROUGH.md) provides a single local demo path from API health checks through the guided browser cockpit, Postman import, evidence training onboarding, and deterministic scorecard grading.
-- [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
-
-## Hardened Foundation Checklist
-
-- Cloud mutation guardrails fail closed for unsafe ASG creation, describe failures before scaling, and non-owned instance registration.
-- CSV/JSON handling validates schemas, handles robust CSV quoting, rejects malformed records, and neutralizes spreadsheet formula injection.
-- API hardening includes request-size enforcement, safe JSON error envelopes, validation response consistency, CORS coverage, and security headers.
-- Concurrency and lifecycle cleanup removed unsafe shared hashing state, bounded cache risk, and clarified CLI monitor shutdown ownership.
-- The full Maven test suite passes in CI with broad mocked cloud-client coverage for cloud-adjacent behavior, zero skipped tests enforced from Surefire XML, and JaCoCo coverage artifacts for reviewer inspection.
-- CI release gates verify tests, packaging, packaged-JAR smoke startup, dependency review on pull requests, and Docker image builds.
-- Docker runtime hardening runs the app as a non-root user and exposes a Docker healthcheck backed by `/api/health`.
-- The internal LASE telemetry-driven routing foundation models server state, scores tail-latency and pressure signals, samples candidates deterministically in tests, and emits explainable routing decisions.
+The `local` profile disables authentication and is for loopback development only. Lab decisions and Decision Explorer output do not shift production traffic. Cloud mutation remains disabled unless every live-mode guard is deliberately configured. TLS termination and network access control are deployment responsibilities.
 
 ## Requirements
 
-- Java 17+
-- Maven 3.9+
+- Java 17 or later
+- Maven 3.9 or later
 - Docker, optional
+- PowerShell or Bash for the supplied smoke helpers
 
-Never commit AWS credentials, account IDs that should remain private, local config files containing secrets, or generated logs that may contain operational details.
+## Quick start
 
-## Build, Test, And Package
-
-Run the default test suite:
-
-```bash
-mvn test
-```
-
-Build the executable Spring Boot JAR:
+Run the local profile:
 
 ```bash
-mvn package
+mvn spring-boot:run "-Dspring-boot.run.arguments=--server.address=127.0.0.1 --spring.profiles.active=local"
 ```
 
-Use `mvn clean package` when you want to remove stale local build artifacts before creating the JAR.
-
-Run the packaged API locally:
-
-```bash
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
-```
-
-Verify the health endpoint:
-
-```bash
-curl http://127.0.0.1:18080/api/health
-```
-
-Run the API from Maven during development:
-
-```bash
-mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"
-```
-
-## Quick Demo Commands
-
-```bash
-mvn test
-mvn package
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
-curl http://127.0.0.1:18080/api/health
-docker build -t loadbalancerpro:local .
-docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
-```
-
-## Local Load-Test Evidence
-
-Local load testing is a reproducible sanity check for the API contract and JVM packaging path. It is not production benchmarking, capacity planning, or a universal performance claim; results depend on the local machine, JDK, OS, background load, and network loopback behavior.
-
-Start the local/demo API first:
-
-```bash
-mvn package
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
-```
-
-The commands below use `hey` against `127.0.0.1` only and do not require AWS credentials, live cloud resources, or CloudManager configuration.
-
-Health endpoint steady-load check:
-
-```bash
-hey -z 30s -c 10 http://127.0.0.1:18080/api/health
-```
-
-Allocation endpoint steady-load check:
-
-```bash
-hey -z 30s -c 10 \
-  -m POST \
-  -H "Content-Type: application/json" \
-  -D examples/capacity-aware-request.json \
-  http://127.0.0.1:18080/api/allocate/capacity-aware
-```
-
-Allocation endpoint burst/spike check:
-
-```bash
-hey -n 1000 -c 50 \
-  -m POST \
-  -H "Content-Type: application/json" \
-  -D examples/capacity-aware-request.json \
-  http://127.0.0.1:18080/api/allocate/capacity-aware
-```
-
-PowerShell helper:
-
-```powershell
-.\scripts\load-test.ps1 -BaseUrl http://127.0.0.1:18080
-```
-
-Capture these metrics from each run:
-
-- Requests/sec
-- p50 latency
-- p95 latency
-- p99 latency
-- Error rate, derived from non-2xx/3xx status codes and reported errors
-
-Sample local results should be labeled with machine, OS, JDK, command, and timestamp before being compared or shared. No committed result should be treated as a production SLO.
-
-## Deployment Profiles
-
-The unqualified default profile is fail-closed: it selects `loadbalancerpro.auth.mode=api-key` and refuses startup when `loadbalancerpro.api.key` is missing or blank. The explicit `local` profile is for loopback-only development, CI smoke tests, and portfolio demos. It selects `loadbalancerpro.auth.mode=none`, emits a prominent warning that authentication is disabled, keeps localhost browser CORS origins and Swagger/OpenAPI available, exposes Actuator health/info only, and keeps live AWS mutation disabled.
-
-Run the local/demo profile explicitly:
-
-```bash
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
-```
-
-The `prod` profile is an explicit opt-in production-like starting point, not full production readiness. It keeps `cloud.liveMode=false`, does not require AWS credentials just to start, exposes only Actuator health/info by default, leaves browser CORS origins empty unless configured through `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`, and protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger with the `X-API-Key` header when `loadbalancerpro.auth.mode=api-key` is active. The explicit public prod API-key exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests; Actuator health/info exposure is configured separately by profile.
-
-Run the production-like profile locally for validation:
-
-```bash
-LOADBALANCERPRO_API_KEY=replace-with-random-local-test-value \
-LOADBALANCERPRO_CORS_ALLOWED_ORIGINS=https://app.example.com \
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
-```
-
-Call protected prod-profile API endpoints with the configured key:
-
-```bash
-curl -H "X-API-Key: $LOADBALANCERPRO_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"requestedLoad":10,"servers":[{"id":"api-1","cpuUsage":10,"memoryUsage":20,"diskUsage":30,"capacity":100,"weight":1,"healthy":true}]}' \
-  http://127.0.0.1:18080/api/allocate/capacity-aware
-```
-
-If `LOADBALANCERPRO_API_KEY` is missing or blank while API-key mode is selected, the application refuses to start with a clear configuration error; it no longer starts an HTTP server that returns request-time 401 responses. With a configured key, `GET /api/health` and unauthenticated `OPTIONS` remain the explicit public API exceptions, and Actuator health/info remain separately exposed by the profile. Use the explicit `local` profile only for bounded loopback development that intentionally accepts the startup warning.
-
-The prod-profile API key is a minimal client-auth gate. It is not full user identity, production authorization, or secret rotation. Before using the prod profile beyond a local demo, add deployment-specific auth, TLS or trusted proxy termination, secret management, actuator/network lockdown, logging retention, and live-cloud change controls. This profile is a safer baseline for review, not a claim that the app is ready for unmanaged production traffic.
-
-For stronger app-native authorization, set `loadbalancerpro.auth.mode=oauth2` and configure either `loadbalancerpro.auth.oauth2.issuer-uri` or `loadbalancerpro.auth.oauth2.jwk-set-uri`. OAuth2 mode uses Spring Security's JWT resource-server support, keeps `/api/health` public, requires the `observer` or `operator` role for `GET /api/lase/shadow`, and requires the `operator` role for allocation, routing mutation, proxy, Enterprise Lab, evidence-training, remediation, and scenario-replay API prefixes. Destructive durable-evidence retention and compaction endpoints require the separately configured `admin` role. Unclassified `/api/**` routes are denied until explicitly assigned. Application roles are read from dedicated `roles`, `role`, `authorities`, and `realm_access.roles` claims; standard OAuth2 `scope` and `scp` claims are not promoted to app roles, so an IdP scope named `operator` or `admin` does not grant those roles by itself. Missing or invalid bearer tokens return HTTP 401; authenticated users without the required role return HTTP 403. OAuth2 mode fails startup if both issuer and JWK configuration are blank.
-
-OAuth2/JWT mode defaults:
-
-```properties
-loadbalancerpro.auth.mode=api-key
-loadbalancerpro.auth.oauth2.issuer-uri=
-loadbalancerpro.auth.oauth2.jwk-set-uri=
-loadbalancerpro.auth.docs-public=false
-loadbalancerpro.auth.required-role.lase-shadow=observer
-loadbalancerpro.auth.required-role.allocation=operator
-loadbalancerpro.auth.required-role.admin=admin
-```
-
-When OAuth2 mode is active, OpenAPI/Swagger is gated by default; set `loadbalancerpro.auth.docs-public=true` only for an intentional demo or private-network deployment. Trusted reverse-proxy auth is still a valid deployment pattern, but if identity is forwarded through headers, restrict that trust boundary to the proxy and do not accept identity headers directly from public clients.
-
-### Cloud Sandbox Profile
-
-The `cloud-sandbox` profile is an explicit opt-in profile for controlled cloud-integration validation. It is dry-run by default and is designed for sandbox preparation, mocked validation, and future live sandbox testing without changing the local/demo or prod defaults.
-
-Run the sandbox profile locally:
-
-```bash
-LOADBALANCERPRO_API_KEY=replace-with-random-local-test-value \
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=cloud-sandbox
-```
-
-Sandbox defaults remain fail-closed:
-
-- `cloud.liveMode=false`
-- `cloud.allowLiveMutation=false`
-- `cloud.allowResourceDeletion=false`
-- `cloud.confirmResourceOwnership=false`
-- `cloud.allowAutonomousScaleUp=false`
-- `cloud.maxDesiredCapacity=2`
-- `cloud.maxScaleStep=1`
-- `cloud.environment=sandbox`
-- `cloud.resourceNamePrefix=lbp-sandbox-`
-
-The profile does not require AWS credentials just to start the API, does not mutate AWS resources by default, and protects `/api/**`, proxy forwarding/status surfaces, `/v3/api-docs`, and Swagger UI with `X-API-Key` except for `GET /api/health` and unauthenticated `OPTIONS` preflight requests. Treat it as a cloud-safety validation lane, not production mode.
-
-Future live sandbox attempts should use disposable AWS resources and set all live guardrails explicitly:
-
-```text
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_REGION or AWS_DEFAULT_REGION
-CLOUD_LIVE_MODE=true
-CLOUD_ALLOW_LIVE_MUTATION=true
-CLOUD_OPERATOR_INTENT=LOADBALANCERPRO_LIVE_MUTATION
-CLOUD_ENVIRONMENT=sandbox
-CLOUD_RESOURCE_NAME_PREFIX=lbp-sandbox-
-CLOUD_ALLOWED_AWS_ACCOUNT_IDS=<12-digit sandbox account>
-CLOUD_CURRENT_AWS_ACCOUNT_ID=<same sandbox account>
-CLOUD_ALLOWED_REGIONS=<allowed sandbox region>
-CLOUD_MAX_DESIRED_CAPACITY=1 or 2
-CLOUD_MAX_SCALE_STEP=1
-CLOUD_LAUNCH_TEMPLATE_ID
-CLOUD_SUBNET_ID
-```
-
-Live sandbox mutation is denied unless the sandbox environment, account allow-list, region allow-list, operator intent, capacity caps, and sandbox resource-name prefix are all configured. Deletion remains off unless `CLOUD_ALLOW_RESOURCE_DELETION=true`, `CLOUD_CONFIRM_RESOURCE_OWNERSHIP=true`, live mode is enabled, and the existing CloudManager ownership checks pass. Do not use shared or production AWS resources for sandbox validation.
-
-## Production Deployment Considerations
-
-LoadBalancerPro is designed as a portfolio/Enterprise Lab cockpit system. The `prod` profile is a safer deployment starting point, not a complete production security system.
-
-Recommended deployment boundary:
-
-- Terminate TLS at a trusted reverse proxy or ingress such as nginx, Traefik, or a managed load balancer.
-- Keep the app bound to a private interface or container network; expose only the proxy publicly.
-- Configure the proxy to pass `Forwarded` or `X-Forwarded-*` headers, then enable `server.forward-headers-strategy=framework` through deployment config or by uncommenting the documented prod-profile setting.
-- Add external rate limiting and request filtering at the proxy or gateway layer. The optional process-local app limiter is disabled by default and is a single-instance guardrail, not a distributed quota system.
-- Keep `/proxy/**`, `/api/proxy/status`, and `/proxy-status.html` behind deployment-level access control and TLS termination before exposing proxy mode beyond localhost or a trusted private network.
-- Keep `/actuator/health` and `/actuator/info` behind private networking, firewall rules, or deployment-specific auth when running outside a local demo.
-- Send logs and metrics to your normal monitoring stack, with retention and access controls appropriate for operational data.
-- Store secrets in environment variables, a secret manager, or orchestrator-managed secret injection. Do not commit secrets, `.env` files, shell history, or generated logs containing sensitive values.
-
-Example local validation behind a trusted proxy configuration:
-
-```bash
-LOADBALANCERPRO_API_KEY=replace-with-random-deployment-secret \
-SERVER_FORWARD_HEADERS_STRATEGY=framework \
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
-```
-
-The API key is passed through `LOADBALANCERPRO_API_KEY`, mapped to `loadbalancerpro.api.key`, and is never documented as a real value. Rotate it outside the application and avoid logging request headers at the proxy.
-
-## Safe LASE Synthetic Demo
-
-The packaged JAR can print deterministic, synthetic LASE evaluation reports without starting the API server:
-
-```bash
-mvn package
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=healthy
-```
-
-This is a safe internal control-plane demo only. It is recommendation-only, uses synthetic inputs, does not touch live AWS resources, does not call `CloudManager`, does not mutate real routing state, does not require the API server, does not require AWS credentials, and does not require network access.
-
-Available demo commands:
-
-```bash
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=all
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=healthy
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=overloaded
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=error-storm
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=partial-outage
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=low-sample
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-demo=invalid-name
-```
-
-`--lase-demo` and `--lase-demo=all` print every scenario. Named scenarios print only that scenario. Invalid names fail safely with exit code `2`, print valid scenario names, and do not emit a raw stack trace.
-
-Scenario coverage:
-
-| Scenario | Demonstrates |
-| --- | --- |
-| `HEALTHY` | Normal low-risk evaluation, routing allowed, no scale-up pressure, and low failure severity. |
-| `OVERLOADED` | High utilization, queue, and latency signals with low-priority shedding, shadow scale-up recommendation, and high-pressure failure signals. |
-| `ERROR_STORM` | High error rate without matching scale-up pressure; recommends `INVESTIGATE` instead of blind scale-up. |
-| `PARTIAL_OUTAGE` | Reduced healthy-server ratio, critical failure severity, and route-around / investigate style mitigation. |
-| `LOW_SAMPLE` | Insufficient telemetry with conservative `HOLD` / `LOW` behavior. |
-
-Sample excerpt:
-
-```text
-=== LoadBalancerPro LASE Synthetic Demo ===
-Mode: synthetic demo, recommendation-only evaluation.
-Safety: No live AWS resources touched. No real routing mutation. No CloudManager calls.
-Runtime: deterministic local inputs; no AWS keys, network access, or API server required.
-
-Evaluation ID: lase-demo-overloaded
-Routing Decision:
-Adaptive Concurrency:
-Load Shedding:
-Shadow Autoscaling:
-Failure Scenario:
-Summary:
-```
-
-This command demonstrates the internal LASE control-plane lab: telemetry-driven routing decisions, adaptive concurrency, load shedding, shadow autoscaling, failure scenario evaluation, and a consolidated explanation report. It does not claim production autoscaling, production chaos engineering, production cloud load-balancing behavior, or live AWS integration.
-
-## Offline LASE Replay Lab
-
-Saved LASE shadow events can be replayed locally from JSON Lines without starting the API server:
-
-```bash
-mvn package
-java -jar "$(bash scripts/resolve-executable-jar.sh)" --lase-replay=shadow-events.jsonl
-```
-
-Replay mode is offline, read-only, and deterministic for a fixed input file. It does not change routing, does not call `CloudManager`, does not touch AWS resources, does not parse PCAP files, does not use Wireshark, does not open sockets, and does not require network access or AWS credentials. It evaluates previously saved shadow-observability records only; it is not a durable production telemetry store.
-
-Replay input uses schema-versioned JSON Lines with one record per line:
-
-```json
-{"schemaVersion":1,"event":{"evaluationId":"lase-shadow-capacity-aware","timestamp":"2026-04-30T12:00:00Z","strategy":"CAPACITY_AWARE","requestedLoad":50.0,"unallocatedLoad":0.0,"actualSelectedServerId":"api-1","recommendedServerId":"api-1","recommendedAction":"HOLD","decisionScore":42.0,"networkAwarenessSignal":{"targetId":"api-1","timeoutRate":0.0,"retryRate":0.0,"connectionFailureRate":0.0,"latencyJitterMillis":0.0,"recentErrorBurst":false,"requestTimeoutCount":0,"sampleSize":0,"timestamp":"2026-04-30T12:00:00Z"},"networkRiskScore":0.0,"reason":"Evaluation completed","agreedWithRouting":true,"failSafe":false,"failureReason":null}}
-```
-
-The replay report includes:
-
-| Metric | Meaning |
-| --- | --- |
-| Total events | Number of JSONL shadow records processed. |
-| Comparable events | Events where normal routing and LASE recommendation can be compared. |
-| Agreement rate | Comparable events where the LASE recommended server matches the observed selected server. |
-| Fail-safe rate | Share of events marked as safe shadow-evaluation failures. |
-| Recommendation counts | Counts by LASE recommended action, such as `HOLD`, `SCALE_UP`, or `FAIL_SAFE`. |
-| Decision score summary | Min/average/max of recorded decision scores when present. |
-| Network risk summary | Min/average/max of recorded network risk scores when present. |
-| Network signal summary | Average timeout/retry/connection-failure rates, max latency jitter, recent error bursts, and total request timeouts. |
-| Time range | First and latest event timestamps in the replay file. |
-
-Malformed JSON, unsupported schema versions, missing files, and overlong input lines fail safely with a nonzero exit code and line-numbered guidance. The command does not print raw malformed input or stack traces for expected user-input errors.
-
-## Continuous Integration
-
-GitHub Actions verifies the default release gates on every push and pull request:
-
-```bash
-mvn -B -DskipTests dependency:tree
-mvn -B test
-mvn -B jacoco:report
-mvn -B package
-JAR="$(bash scripts/resolve-executable-jar.sh)"
-java -jar "$JAR" --lase-demo=healthy
-java -jar "$JAR" --lase-demo=overloaded
-java -jar "$JAR" --lase-demo=invalid-name
-java -jar "$JAR" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
-docker build -t loadbalancerpro:ci .
-docker run --rm -d --name loadbalancerpro-ci -p 127.0.0.1:18081:8080 loadbalancerpro:ci
-curl -fsS http://127.0.0.1:18081/api/health
-docker inspect --format='{{.State.Health.Status}}' loadbalancerpro-ci
-trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 loadbalancerpro:ci
-docker stop loadbalancerpro-ci
-```
-
-The LASE demo smoke checks run deterministic synthetic reports, verify safe failure for an invalid scenario name, and confirm the demo path does not emit Spring startup markers. CI parses Surefire XML after `mvn -B test`, prints the total and skipped test counts, and fails if skipped tests are present without being surfaced. CI generates JaCoCo HTML/XML/CSV coverage under `target/site/jacoco`, prints instruction/branch/line percentages from `jacoco.csv`, and uploads the report as the `jacoco-coverage-report` workflow artifact. The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/health` to return HTTP 200, then stops the local process. CI also inspects the packaged jar, verifies required static resources/demo profiles/fixture launcher class, writes SHA-256 output, and uploads `artifact-smoke-summary.txt`, `artifact-sha256.txt`, and `jar-resource-list.txt` as the `packaged-artifact-smoke` workflow artifact. CI generates CycloneDX SBOM files and uploads them as workflow artifacts, then builds the Docker image, starts the container on a loopback-bound host port, verifies `/api/health`, waits for the Docker healthcheck to become healthy, stops the container, and runs a blocking Trivy image scan for fixed high/critical OS and library vulnerabilities. CI does not use AWS credentials, does not require live cloud resources, and does not create, modify, or delete AWS infrastructure. Pull requests also run GitHub's dependency review action for changed dependencies and fail on high-severity findings. The guarded CloudManager integration uses AWS SDK for Java 2.x while keeping dry-run and cloud-sandbox guardrails in place.
-
-GitHub Actions are pinned to reviewed commit SHAs, with comments preserving the upstream action names and version tags for update review. Docker base images are pinned by digest in the Dockerfile; update the tag and digest together in a focused PR after rebuilding, running the test/package/JAR/Docker smokes, and reviewing the Trivy result.
-
-Semantic version tags also trigger a separate Release Artifacts workflow that verifies Git tag and Maven version alignment, publishes deterministic JAR/SBOM/checksum GitHub Release assets, and preserves a GitHub Actions artifact bundle as backup evidence. The same workflow includes a non-publishing manual dry run documented in [`docs/RELEASE_PROCESS.md`](docs/RELEASE_PROCESS.md).
-
-The Trivy allowlist file is `.trivyignore`. Keep it empty unless a finding has been reviewed and accepted temporarily. Any allowlist entry should be added in a focused PR with the vulnerability ID, affected package or image layer, owner, reason for temporary acceptance, and an expiry or follow-up issue. Do not use the allowlist to hide broad dependency drift.
-
-## Docker
-
-The repository includes a multi-stage `Dockerfile` that builds the packaged Spring Boot JAR and runs it from a Java 17 JRE image as a non-root user. The runtime image includes `curl` for the Docker `HEALTHCHECK`.
-
-For the consolidated local-only container deployment path, including prod API-key boundary checks and proxy-loopback caveats, see [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md). For the current no-registry/no-container-signing posture, future publication/signing gate, and rollout plan, see [`CONTAINER_SIGNING_DECISION_RECORD.md`](docs/CONTAINER_SIGNING_DECISION_RECORD.md) and [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](docs/CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
-
-Build the image:
-
-```bash
-docker build -t loadbalancerpro:local .
-```
-
-The Docker build is self-contained and creates the packaged JAR inside the build stage; no local AWS credentials or prebuilt JAR are required.
-
-The build and runtime base images are pinned by digest for reproducibility. Treat digest refreshes as supply-chain changes: update the digest intentionally, rebuild the image, run the container health smoke, and review the vulnerability scan before merging.
-
-Run the API in the protected default container profile:
-
-```bash
-docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
-```
-
-The Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`, so container/default deployment mode is protected by the prod API-key profile. `LOADBALANCERPRO_API_KEY` is operator-provided at run time; do not bake real secrets into the image. The container binds the Spring Boot process to `0.0.0.0` inside the container so Docker port publishing works predictably. The command above binds the published host port to `127.0.0.1` for local-only access.
-
-Verify the API health endpoint:
+Verify the service:
 
 ```bash
 curl -fsS http://127.0.0.1:8080/api/health
 ```
 
-For detached runs, Docker also evaluates the image healthcheck:
+Open:
+
+- [Landing page](http://127.0.0.1:8080/)
+- [Load-balancing cockpit](http://127.0.0.1:8080/load-balancing-cockpit.html)
+- [Decision Explorer](http://127.0.0.1:8080/decision-explorer.html)
+- [Enterprise Lab](http://127.0.0.1:8080/enterprise-lab.html)
+- [Proxy status](http://127.0.0.1:8080/proxy-status.html)
+- [Swagger UI](http://127.0.0.1:8080/swagger-ui.html)
+
+Build and run the executable JAR:
 
 ```bash
-docker run --rm -d --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
-docker inspect --format='{{.State.Health.Status}}' loadbalancerpro-demo
-docker stop loadbalancerpro-demo
+mvn -B package
+java -jar "$(bash scripts/resolve-executable-jar.sh)" \
+  --server.address=127.0.0.1 \
+  --server.port=18080 \
+  --spring.profiles.active=local
 ```
 
-Docker mode starts the prod API-key profile by default and does not require AWS credentials. Prod/cloud-sandbox API-key mode protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger with `X-API-Key` by default; the explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests. Local developer mode is intentionally permissive for source-checkout demos and can be selected explicitly with `-e SPRING_PROFILES_ACTIVE=local`, but do not expose local/demo mode on public interfaces. Pass cloud settings only through your runtime secret/config system, do not bake credentials into the image, and enable live AWS behavior only with the explicit CloudManager guardrails described below.
+PowerShell resolves the same Maven `project.build.finalName`:
 
-## REST API
-
-Run the Spring Boot API, then call:
-
-```text
-GET  /api/health
-GET  /api/lase/shadow
-GET  /api/lab/policy
-GET  /api/lab/audit-events
-GET  /api/evidence-training/onboarding
-GET  /api/evidence-training/templates
-GET  /api/evidence-training/examples
-GET  /api/evidence-training/scorecards
-GET  /api/evidence-training/scorecards/{name}
-GET  /api/evidence-training/scorecards/{name}/answer-template
-POST /api/allocate/capacity-aware
-POST /api/allocate/predictive
-POST /api/routing/compare
-POST /api/evidence-training/scorecards/grade
+```powershell
+$jar = & .\scripts\resolve-executable-jar.ps1
+java -jar $jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
-Example request:
+## Run profiles
+
+| Profile | Intended use | Authentication | Proxy |
+| --- | --- | --- | --- |
+| default | Protected configuration baseline | API key; startup fails without a configured key | Disabled |
+| `local` | Loopback development and browser review | Disabled with a startup warning | Disabled |
+| `prod` | Protected deployment baseline | API key from `LOADBALANCERPRO_API_KEY` | Disabled |
+| `cloud-sandbox` | Guarded sandbox configuration | API key; cloud dry-run and mutation disabled | Disabled |
+| OAuth2 configuration | Trusted issuer/JWK deployment | JWT roles | Disabled unless explicitly enabled |
+| `proxy-demo-*` | Scripted loopback proxy fixtures | Disabled; loopback only | Explicitly enabled |
+
+Copyable profile examples are under [`docs/examples/operator-run-profiles`](docs/examples/operator-run-profiles). See [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) for the full run matrix.
+
+## Configuration and secure defaults
+
+Important defaults in `application.properties`:
+
+| Property | Default | Effect |
+| --- | --- | --- |
+| `loadbalancerpro.auth.mode` | `api-key` | Protected API mode |
+| `loadbalancerpro.proxy.enabled` | `false` | No forwarding until explicitly enabled |
+| `loadbalancerpro.lase.shadow.enabled` | `false` | No shadow evaluation by default |
+| `loadbalancerpro.api.max-request-bytes` | `16384` | Bounded API request bodies |
+| `loadbalancerpro.proxy.max-request-bytes` | `65536` | Bounded proxied request bodies |
+| `loadbalancerpro.proxy.request-timeout` | `2s` | Bounded upstream request |
+| `loadbalancerpro.proxy.health-check.enabled` | `false` | Opt-in active checks |
+| `loadbalancerpro.proxy.retry.enabled` | `false` | Opt-in retries |
+| `loadbalancerpro.proxy.retry.retry-non-idempotent` | `false` | No default non-idempotent retry |
+| `loadbalancerpro.proxy.cooldown.enabled` | `false` | Opt-in backend cooldown |
+| `management.prometheus.metrics.export.enabled` | `false` | No default Prometheus export |
+| `management.otlp.metrics.export.enabled` | `false` | No default OTLP export |
+| `management.endpoints.web.exposure.include` | `health,info` | Minimal Actuator exposure |
+
+In API-key mode, `GET /api/health` and unauthenticated `OPTIONS` are the public API exceptions. Other `/api/**` routes, `/proxy/**`, OpenAPI, and Swagger require the configured key. Use:
 
 ```bash
-curl -X POST http://localhost:8080/api/allocate/capacity-aware \
-  -H "Content-Type: application/json" \
-  -d '{
-    "requestedLoad": 75.0,
-    "servers": [
-      {
-        "id": "api-1",
-        "cpuUsage": 90.0,
-        "memoryUsage": 90.0,
-        "diskUsage": 90.0,
-        "capacity": 100.0,
-        "weight": 1.0,
-        "healthy": true
-      }
-    ]
-  }'
+export LOADBALANCERPRO_API_KEY='supply-from-a-secret-manager'
+java -jar "$(bash scripts/resolve-executable-jar.sh)" --spring.profiles.active=prod
 ```
 
-The allocation APIs are calculation-only. Scaling recommendations are simulations and do not call `CloudManager` or AWS.
+Do not commit API keys, OAuth tokens, AWS credentials, telemetry headers, private keys, or production targets. Terminate TLS at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh before shared-network exposure.
 
-`/api/evidence-training/**` exposes a read-only onboarding surface for packaged evidence policy templates, examples, scorecards, answer JSON templates, and local Postman workflows. `POST /api/evidence-training/scorecards/grade` grades submitted answers in memory and returns deterministic JSON; it does not write runtime reports, construct `CloudManager`, or mutate cloud state. Open `http://localhost:8080/evidence-training-demo.html` for the no-dependency browser cockpit with a run-all demo sequence, stop/reset controls, a step checklist, status summary counters, copyable curl snippets, copyable responses, copy/export sample answer payloads, a client-side-only summary preview, and PASS/WARN/FAIL grading summaries. Import `postman/LoadBalancerPro.postman_collection.json` and run the `Evidence Training Demo Walkthrough` folder for Postman parity, or use the `Evidence Training Onboarding` folder for focused API practice. The offline CLI remains available and does not require starting the API server. See [`OPERATOR_DEMO_WALKTHROUGH.md`](docs/OPERATOR_DEMO_WALKTHROUGH.md) for the end-to-end health, onboarding, browser, Postman, and grading path.
-
-`POST /api/routing/compare` compares supported routing strategies against caller-provided candidate telemetry. Supported strategy IDs are `ROUND_ROBIN`, `TAIL_LATENCY_POWER_OF_TWO`, `WEIGHTED_LEAST_LOAD`, `WEIGHTED_LEAST_CONNECTIONS`, and `WEIGHTED_ROUND_ROBIN`. Requests are capped at 32 candidates and five explicit strategies before comparison construction; `loadbalancerpro.api.max-candidates` and `loadbalancerpro.api.max-strategies` can lower those hard ceilings. `POST /api/routing/decision-explorer` shares those input bounds and applies a bounded counting-serialization ceiling configured by `loadbalancerpro.api.max-decision-explorer-response-bytes` (16 MiB by default) before returning output. Over-cap list or Explorer-output requests fail with structured HTTP 400. These are local abuse-resistance bounds, not load/stress or throughput evidence. The comparison route is read-only and recommendation-only: it returns strategy results, Decision Vector evidence, Dominant Factor Analysis, and Decision Delta Analysis. The Decision Explorer returns the compact `RoutingExplanation` v2 projection of those primary values; the former replay and parallel diagnostics/confidence/tradeoff/shadow restatement chains are retired. Neither route calls `CloudManager` or AWS, mutates cloud resources or `LoadBalancer` allocation state, executes replay, performs what-if mutation, persists evidence or audit logs, adds upload/share/download/export/PDF/ZIP behavior, or alters the capacity-aware or predictive allocation endpoints.
-
-Optional lightweight reverse proxy mode is available at `/proxy/**` when `loadbalancerpro.proxy.enabled=true`. It forwards real HTTP requests to configured local or simulated upstreams, removes the `/proxy` prefix, preserves the method, path suffix, query string, request body, safe headers, upstream status, and upstream body, and adds `X-LoadBalancerPro-Upstream` plus `X-LoadBalancerPro-Strategy` response headers. The first operator-configured proxy foundation supports named `loadbalancerpro.proxy.routes.<routeName>` entries with path prefixes, per-route strategy selection, and route-specific backend targets without editing Java code; the legacy global upstream list remains supported for existing demos. It reuses the request-level routing strategy registry and skips upstreams configured with `healthy=false`. Optional active health checks can dynamically skip failing local upstreams, optional bounded retries can select another eligible upstream for configured idempotent methods, optional process-local cooldown can temporarily skip repeatedly failing upstreams, and `GET /api/proxy/status` exposes read-only process-local forwarding/failure/retry/cooldown/status-class counters plus effective health state. Open `http://localhost:8080/proxy-status.html` for a no-dependency read-only browser view of that status JSON, upstream table, counters, retry/cooldown state, and local demo curl commands. In any API-key profile, `/proxy/**` and `GET /api/proxy/status` require `X-API-Key`; in OAuth2 mode they require the configured allocation role, which defaults to `operator`. The checked-in loopback proxy-demo profiles explicitly select `auth.mode=none` and emit the open-mode warning, so keep them loopback-bound or behind trusted private controls unless deployment-level access control and TLS termination are in place. Strategy-specific local recipes now cover `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover selected-upstream evidence with loopback backends only; [`PROXY_DEMO_STACK.md`](docs/PROXY_DEMO_STACK.md) is the single quick-start path for Windows PowerShell, Unix shell, checked-in demo profiles, the Java `ProxyDemoFixtureLauncher`, startup commands, curl verification, status-page review, cleanup, and troubleshooting. [`OPERATOR_PACKAGING.md`](docs/OPERATOR_PACKAGING.md) adds a one-command Maven exec fixture launcher recipe, packaged-jar proxy startup examples, and copy/adapt real-backend property examples under `docs/examples/proxy`. [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md) adds release-free smoke checks for packaged jar startup, Maven exec launcher readiness, proxy profiles, real-backend examples, and packaged static resources. [`LOCAL_ARTIFACT_VERIFICATION.md`](docs/LOCAL_ARTIFACT_VERIFICATION.md) adds release-free local and CI SHA-256, `jar tf`, manifest/resource, static page, demo profile, and launcher-class verification commands, including the `packaged-artifact-smoke` workflow artifact. [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md) shows how to consume JaCoCo, packaged artifact smoke, and SBOM workflow artifacts without creating release assets. [`RELEASE_CANDIDATE_DRY_RUN.md`](docs/RELEASE_CANDIDATE_DRY_RUN.md) turns those checks into one release-free go/no-go packet. The mode is disabled by default, retries and cooldown are disabled by default, non-idempotent retries require explicit opt-in, it does not construct `CloudManager`, does not mutate cloud state, does not persist metrics or cooldown state, and is not a production gateway, benchmark, certification, legal compliance proof, identity proof, TLS terminator, or WebSocket proxy. See [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](docs/REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](docs/REVERSE_PROXY_RESILIENCE.md), [`PROXY_OPERATOR_STATUS_UI.md`](docs/PROXY_OPERATOR_STATUS_UI.md), [`PROXY_STRATEGY_DEMO_LAB.md`](docs/PROXY_STRATEGY_DEMO_LAB.md), [`PROXY_DEMO_STACK.md`](docs/PROXY_DEMO_STACK.md), [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](docs/PROXY_DEMO_FIXTURE_LAUNCHER.md), [`OPERATOR_PACKAGING.md`](docs/OPERATOR_PACKAGING.md), [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md), [`LOCAL_ARTIFACT_VERIFICATION.md`](docs/LOCAL_ARTIFACT_VERIFICATION.md), [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md), and [`RELEASE_CANDIDATE_DRY_RUN.md`](docs/RELEASE_CANDIDATE_DRY_RUN.md).
-
-Open `http://localhost:8080/routing-demo.html` for the Enterprise Lab routing cockpit legacy route. It calls `/api/health`, Actuator readiness, and the existing `/api/routing/compare` endpoint; loads a deterministic controlled lab routing scenario; displays the selected server and reason per strategy; preserves raw JSON; and provides copyable curl, request payload, normalized response-summary blocks, and reviewer/operator proof notes. Import `postman/LoadBalancerPro.postman_collection.json` and run the legacy `Routing Decision Demo` folder for Postman parity. The routing cockpit is local/operator lab review only, not certification, not benchmark proof, not legal compliance proof, and not identity proof.
-
-Open `http://localhost:8080/load-balancing-cockpit.html` for the unified no-dependency load-balancing cockpit. It calls `/api/health`, Actuator readiness, `POST /api/allocate/capacity-aware`, `POST /api/allocate/evaluate`, and `POST /api/routing/compare` with deterministic synthetic inputs. The operator API-key control is memory-only: protected cockpit `/api/**` calls include `X-API-Key` only after the operator configures it, the key clears on refresh/navigation, it is not written to `localStorage` or `sessionStorage`, it is not logged or placed in URLs, and copyable curl snippets use `<API_KEY>` instead of the entered value. The page shows allocation output, routing decisions, overload/load-shedding signals, advisory remediation-plan hints, raw JSON, copyable curl snippets, copyable payloads, and a side-by-side summary. The `Cockpit Navigation & Readiness` panel adds a section index, current-panel orientation, in-memory readiness badges, and a deterministic readiness summary without adding API behavior. The `Scenario Gallery` lets reviewers load normal load, overload pressure, all-unhealthy degradation, and recovery/capacity-restored scenarios, run the same real endpoints, compare what changed, and copy scenario summaries. The `Operator Comparison Matrix` runs all packaged scenarios in deterministic order and summarizes routing selections, allocation pressure, overload/load-shedding action, remediation hints, rationale, and deltas in one copyable table without score or benchmark claims. The `Operator Replay Mode` lets reviewers pick baseline/comparison scenario pairs, replay them in order, highlight before/after routing, allocation, overload, remediation, rationale, and error-state differences, and copy a deterministic reviewer note without backend writes or browser storage. The `Operator Review Packet` assembles selected scenario, matrix, replay, explanation, API contract trace, endpoint, payload, raw JSON reference, and safety sections into one copyable and printable client-side handoff without generated runtime files. The `API Contract Trace` maps visible cockpit panels to endpoint paths, request payload sources, raw response sources, displayed raw fields, derived client labels, unavailable fields, and mutation/safety notes. The `Explanation Drill-Down` area adds routing strategy explanation, allocation capacity math, overload reason breakdowns, remediation rationale, scenario delta explanation, and copyable operator rationale; any supporting math is labeled as derived from visible request/response fields when exact internal scores or thresholds are not exposed. Import `postman/LoadBalancerPro.postman_collection.json` and run the `Unified Load-Balancing Cockpit`, `Operator Scenario Gallery`, or `Operator Explanation Drill-Down` folder for matching Postman requests. Unsupported sections are shown as unavailable instead of being fabricated. The cockpit is local/operator review only, not certification, not benchmark proof, not legal compliance proof, and not identity proof.
-
-OpenAPI note: `POST /api/routing/compare` is available through the SpringDoc-generated OpenAPI output, but the current OpenAPI schema is inferred from controller and DTO types rather than curated controller annotations. Treat this README section as the curated source of truth for valid request-level strategy IDs, request and response examples, structured error cases, and safety boundaries:
-
-- `ROUND_ROBIN`
-- `TAIL_LATENCY_POWER_OF_TWO`
-- `WEIGHTED_LEAST_LOAD`
-- `WEIGHTED_LEAST_CONNECTIONS`
-- `WEIGHTED_ROUND_ROBIN`
-
-The comparison endpoint is read-only, recommendation-only, and shadow-style: it does not mutate AWS or `CloudManager` state, and it does not mutate legacy `LoadBalancer` allocation state. Request-level weighted strategies, including `WEIGHTED_LEAST_CONNECTIONS` and `WEIGHTED_ROUND_ROBIN`, are separate from legacy batch `weightedDistribution(double)`; they choose one healthy candidate for request-level comparison output, while legacy weighted distribution splits a batch load across servers.
-
-`WEIGHTED_LEAST_LOAD` evaluates all healthy candidates and normalizes in-flight request count, queue depth, latency, tail latency, and error rate by effective capacity, then applies optional server `weight`. Missing or zero routing weight defaults to `1.0`; very small positive weight is clamped safely during scoring; negative or non-finite weight is rejected.
-
-`WEIGHTED_LEAST_CONNECTIONS` is request-level and chooses one healthy, positive-weight candidate by scoring active in-flight requests divided by routing weight. Weight `0` drains a candidate from selection, every positive finite weight is used without a minimum clamp, negative or non-finite weight is rejected, lower weighted connection score wins, and ties break deterministically by server ID. The endpoint remains read-only/shadow-style rather than legacy batch routing.
-
-`WEIGHTED_ROUND_ROBIN` uses smooth weighted round-robin across healthy, positive-weight request-level candidates. Missing weight defaults to `1.0`; weight `0` drains a candidate from selection; every positive finite weight is used without a minimum clamp; and negative or non-finite weight is rejected before strategy execution.
-
-`ROUND_ROBIN` rotates across healthy request-level candidates in request order, skips unhealthy candidates, and returns an explanation with no score map because the strategy does not score candidates.
-
-Routing comparison request:
-
-```bash
-curl -X POST http://localhost:8080/api/routing/compare \
-  -H "Content-Type: application/json" \
-  -d '{
-    "strategies": ["TAIL_LATENCY_POWER_OF_TWO", "WEIGHTED_LEAST_LOAD", "WEIGHTED_LEAST_CONNECTIONS", "WEIGHTED_ROUND_ROBIN", "ROUND_ROBIN"],
-    "servers": [
-      {
-        "serverId": "green",
-        "healthy": true,
-        "inFlightRequestCount": 5,
-        "configuredCapacity": 100.0,
-        "estimatedConcurrencyLimit": 100.0,
-        "weight": 2.0,
-        "averageLatencyMillis": 20.0,
-        "p95LatencyMillis": 40.0,
-        "p99LatencyMillis": 80.0,
-        "recentErrorRate": 0.01,
-        "queueDepth": 1,
-        "networkAwareness": {
-          "timeoutRate": 0.0,
-          "retryRate": 0.0,
-          "connectionFailureRate": 0.0,
-          "latencyJitterMillis": 4.0,
-          "recentErrorBurst": false,
-          "requestTimeoutCount": 0,
-          "sampleSize": 120
-        }
-      },
-      {
-        "serverId": "blue",
-        "healthy": true,
-        "inFlightRequestCount": 75,
-        "configuredCapacity": 100.0,
-        "estimatedConcurrencyLimit": 100.0,
-        "weight": 1.0,
-        "averageLatencyMillis": 35.0,
-        "p95LatencyMillis": 120.0,
-        "p99LatencyMillis": 220.0,
-        "recentErrorRate": 0.15,
-        "queueDepth": 10
-      }
-    ]
-  }'
-```
-
-Routing comparison response:
-
-```json
-{
-  "requestedStrategies": ["TAIL_LATENCY_POWER_OF_TWO", "WEIGHTED_LEAST_LOAD", "WEIGHTED_LEAST_CONNECTIONS", "WEIGHTED_ROUND_ROBIN", "ROUND_ROBIN"],
-  "candidateCount": 2,
-  "timestamp": "2026-05-03T00:00:00Z",
-  "results": [
-    {
-      "strategyId": "TAIL_LATENCY_POWER_OF_TWO",
-      "status": "SUCCESS",
-      "chosenServerId": "green",
-      "reason": "Chose green based on lower tail-latency and pressure signals.",
-      "candidateServersConsidered": ["green", "blue"],
-      "scores": {
-        "green": 66.00,
-        "blue": 369.50
-      }
-    },
-    {
-      "strategyId": "WEIGHTED_LEAST_LOAD",
-      "status": "SUCCESS",
-      "chosenServerId": "green",
-      "reason": "Chose green because its weighted least-load score 0.075 was the lowest across 2 healthy candidates.",
-      "candidateServersConsidered": ["blue", "green"],
-      "scores": {
-        "blue": 0.471,
-        "green": 0.075
-      }
-    },
-    {
-      "strategyId": "WEIGHTED_LEAST_CONNECTIONS",
-      "status": "SUCCESS",
-      "chosenServerId": "green",
-      "reason": "Chose green because its weighted least-connections score 2.500 was the lowest across 2 healthy candidates.",
-      "candidateServersConsidered": ["blue", "green"],
-      "scores": {
-        "blue": 75.0,
-        "green": 2.5
-      }
-    },
-    {
-      "strategyId": "WEIGHTED_ROUND_ROBIN",
-      "status": "SUCCESS",
-      "chosenServerId": "green",
-      "reason": "Chose green using smooth weighted round-robin with effective routing weight 2.000 of total 3.000 across 2 healthy candidates.",
-      "candidateServersConsidered": ["green", "blue"],
-      "scores": {
-        "green": 2.0,
-        "blue": 1.0
-      }
-    },
-    {
-      "strategyId": "ROUND_ROBIN",
-      "status": "SUCCESS",
-      "chosenServerId": "green",
-      "reason": "Chose green using round-robin position 1 of 2 healthy candidates.",
-      "candidateServersConsidered": ["green", "blue"],
-      "scores": {}
-    }
-  ]
-}
-```
-
-If `strategies` is omitted, the endpoint defaults to the registered routing strategy set, currently `TAIL_LATENCY_POWER_OF_TWO`, followed by `WEIGHTED_LEAST_LOAD`, followed by `WEIGHTED_LEAST_CONNECTIONS`, followed by `WEIGHTED_ROUND_ROBIN`, followed by `ROUND_ROBIN`. Invalid request bodies, unsupported strategies, duplicate server IDs, invalid routing weight, unsupported media types, and wrong HTTP methods return structured JSON errors.
-
-`GET /api/lase/shadow` returns the bounded in-memory LASE Shadow Advisor observability snapshot: aggregate shadow-evaluation counts, fail-safe counts, recommendation counts, agreement rate, and recent events. The endpoint is shadow-only: it reports what the internal LASE advisor observed or recommended after normal allocation decisions, and it does not change routing, allocation, CloudManager, AWS, or cloud-scaling behavior. Agreement rate currently means the LASE recommended server matched the top server selected by the normal allocation result when both values are comparable.
-
-The shadow snapshot also includes application-layer network-awareness signals for LASE evaluation: `timeoutRate`, `retryRate`, `connectionFailureRate`, `latencyJitterMillis`, `recentErrorBurst`, `requestTimeoutCount`, `sampleSize`, and `networkRiskScore`. These are shadow/evaluation signals only. They do not use Wireshark, PCAP parsing, sockets, packet capture, or external network collectors, and they do not change live routing or cloud behavior.
-
-`GET /api/lab/policy` reports the controlled active LASE policy gate: configured/effective mode, active-experiment enablement, allowed modes, retained audit event count, latest guardrail reason, and the safety note that active-experiment is lab evidence only. `GET /api/lab/audit-events` returns bounded process-local decision events with mode, baseline, recommendation, final decision, changed flag, guardrail reasons, rollback reason, and explanation summary. Prod/cloud-sandbox API-key and OAuth2 boundaries apply through `/api/lab/**`.
-
-In the explicit `local` profile, `POST /api/routing/compare`, evidence-training onboarding routes, and Swagger/OpenAPI work without a key because that profile deliberately selects `loadbalancerpro.auth.mode=none` and logs a warning. The unqualified default remains `api-key` and refuses startup without a configured key. In every profile using API-key mode, `/api/**` is deny-by-default and requires `X-API-Key`, except `GET /api/health` and unauthenticated `OPTIONS`. In OAuth2 mode, every current API prefix is explicitly classified: operator role is required for allocation, routing mutations, proxy, Enterprise Lab, evidence-training, remediation, and scenario replay; observer/operator can read LASE shadow; viewer/read roles can read lab scenarios and routing scenarios; admin is required for durable retention/compaction; and unclassified `/api/**` routes are denied. `/proxy/**`, `/v3/api-docs`, and Swagger UI retain their mode-specific gates.
-
-Invalid request bodies return HTTP 400 with a structured validation response. In the local/demo profile, browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. In the `prod` profile, configure allowed origins explicitly with `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
-
-In explicit local `auth.mode=none`, OpenAPI UI is available at:
-
-```text
-GET /swagger-ui.html
-```
-
-In prod/cloud-sandbox API-key mode, generated OpenAPI and Swagger UI are gated by default:
-
-```text
-GET /v3/api-docs
-GET /swagger-ui.html
-GET /swagger-ui/**
-```
-
-Supply `X-API-Key` for API-key review, or use the explicit loopback-only `local` profile for unauthenticated generated-client inspection.
-
-## Actuator And Metrics
-
-The local/demo profile exposes these Actuator endpoints:
-
-```text
-GET /actuator/health
-GET /actuator/metrics
-GET /actuator/prometheus
-```
-
-Additional configured endpoints include:
-
-```text
-GET /actuator/info
-GET /actuator/health/readiness
-```
-
-Prometheus scraping target:
-
-```text
-http://localhost:8080/actuator/prometheus
-```
-
-Domain metrics include allocation counters/gauges, parsing failures, and cloud scale decisions with source and reason tags.
-
-OpenTelemetry-compatible OTLP metrics export is available through Micrometer and is disabled by default. This branch adds metrics export only; it does not enable tracing export, log export, or a collector container. To opt in for a trusted collector:
+OTLP metrics are opt-in. When enabled, the endpoint validator rejects blank or malformed URLs, embedded credentials, query strings, fragments, disallowed localhost, and obvious public hosts when private endpoints are required:
 
 ```properties
 management.otlp.metrics.export.enabled=true
 management.otlp.metrics.export.url=http://localhost:4318/v1/metrics
-```
-
-For production-like runs, provide the endpoint through `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and keep it pointed at a trusted private collector. The app includes lab-grade startup guardrails:
-
-```properties
 loadbalancerpro.telemetry.otlp.require-private-endpoint=true
-loadbalancerpro.telemetry.otlp.allow-insecure-localhost=true
-loadbalancerpro.telemetry.startup-summary.enabled=true
 ```
 
-When OTLP metrics export is enabled, startup fails if the endpoint is blank, malformed, contains credentials/query strings/fragments, uses disallowed localhost, or points at an obviously public hostname while private endpoints are required. The guardrail accepts local development endpoints, RFC1918 private IPv4 ranges, and internal hostnames ending in `.local`, `.internal`, or `.lan`. This is a configuration safety check only: it does not contact the collector, validate TLS, prove collector security, or replace production network, IAM, firewall, or egress-policy enforcement.
+## Proxy operation
 
-Metrics include stable `application` and `environment` tags plus OpenTelemetry resource attributes for `service.name`, `service.version`, and `deployment.environment`. Startup logs include a sanitized telemetry summary with the OTLP host only, never query strings, credentials, headers, or request bodies.
+Proxy mode requires explicit routes or upstreams. Start with the loopback smoke instead of adapting production targets directly:
 
-Telemetry can expose service names, route names, error rates, latency, host/runtime details, and operational patterns. Send OTLP only to a trusted collector; production collectors should be reachable only on private networks or equivalent trusted infrastructure. Do not expose Prometheus scrape endpoints or collector endpoints publicly, and do not commit telemetry credentials, bearer tokens, API keys, auth headers, or request-body samples. If a collector requires authentication, configure it through deployment secret management rather than README examples or source-controlled properties.
+```powershell
+pwsh ./scripts/smoke/operator-run-profiles-smoke.ps1 -Package
+```
 
-The `prod` and `cloud-sandbox` profiles expose only `/actuator/health` and `/actuator/info` by default, leave Prometheus endpoint exposure disabled, and leave OTLP metrics export disabled unless explicitly enabled. Keep metrics and Prometheus behind deployment-specific network and authentication controls before enabling them outside a demo environment.
+The proxy exposes forwarding under `/proxy/**`, read-only state at `GET /api/proxy/status`, and guarded configuration reload at `POST /api/proxy/reload`. Operator configuration examples are under [`docs/examples/proxy`](docs/examples/proxy).
 
-## Offline CLI
+Before enabling private-network validation, review:
 
-The supported CLI surface is the local evidence/report tool documented in
-[`REMEDIATION_REPORT_CLI.md`](docs/REMEDIATION_REPORT_CLI.md). The packaged JAR dispatches those commands directly
-without starting the API:
+- [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md)
+- [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md)
+- [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](docs/PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md)
+- [`API_SECURITY.md`](docs/API_SECURITY.md)
+
+## API and operator surfaces
+
+| Surface | Purpose |
+| --- | --- |
+| `GET /api/health` | Lightweight application health |
+| `POST /api/allocate/capacity-aware` | Capacity-aware calculation |
+| `POST /api/allocate/predictive` | Predictive calculation |
+| `POST /api/allocate/evaluate` | Allocation evaluation with optional LASE summaries |
+| `POST /api/routing/compare` | Read-only strategy comparison |
+| `POST /api/routing/decision-explorer` | Compact routing explanation |
+| `/api/lab/**` | Controlled lab scenarios, decisions, runs, policy, metrics, and experiments |
+| `/api/enterprise-lab/**` | Reviewer summaries and evidence views |
+| `/proxy/**` | Optional HTTP forwarding |
+| `GET /api/proxy/status` | Proxy configuration and runtime status |
+| `POST /api/proxy/reload` | Guarded proxy configuration reload |
+| `/actuator/health` | Spring Boot health and readiness |
+
+Request and response contracts live in [`API_CONTRACTS.md`](docs/API_CONTRACTS.md). Generated OpenAPI is available at `/v3/api-docs` when permitted by the selected auth mode.
+
+## Build and verification
+
+Run the full test suite:
 
 ```bash
-java -jar "$(bash scripts/resolve-executable-jar.sh)" \
-  --remediation-report \
-  --input saved-evaluation.json \
-  --output incident-report.md
+mvn -B test
 ```
 
-Existing output files are preserved unless the command includes `--force`; symbolic-link targets, non-file targets,
-and output/source-input aliases remain rejected even with `--force`. The checksum-chained `--audit-log` is append-only
-and is not an overwrite target.
+Build the executable artifact:
 
-The old synthetic interactive menu, its `--cloud-enabled` path, blocking prompts, idle-timeout behavior, and
-Java-serialization undo history are retired. Calling the historical
-`com.richmond423.loadbalancerpro.cli.LoadBalancerCLI` main class without a documented offline evidence/report command
-fails closed and does not construct `CloudManager`, start a monitor, read interactive input, or create undo state.
-This retirement does not change the separately guarded `CloudManager` APIs or enable cloud mutation.
+```bash
+mvn -B package
+```
 
-## Dependency Lifecycle Notes
+Run verification and generate JaCoCo reports:
 
-LoadBalancerPro uses AWS SDK for Java 2.x modules for the guarded CloudManager integration. AWS announced that SDK v1 entered maintenance mode on July 31, 2024 and reached end-of-support on December 31, 2025; the project has migrated away from SDK v1 dependencies while preserving dry-run behavior, cloud mutation guardrails, and mocked default test coverage.
+```bash
+mvn -B verify
+```
 
-Reference: https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-aws-sdk-for-java-v1-x-on-december-31-2025/
+Generate CycloneDX JSON and XML SBOMs:
 
-## Test Notes
+```bash
+mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom \
+  -DoutputFormat=all \
+  -DoutputDirectory=target \
+  -DoutputName=bom \
+  -DincludeProvidedScope=false \
+  -Dcyclonedx.skipAttach=true
+```
 
-The default Maven test suite uses mocked cloud clients for CloudManager and ServerMonitor cloud-path coverage. It does not create, modify, or delete real AWS resources. CI verifies zero skipped tests from Surefire XML and uploads JaCoCo coverage output as the `jacoco-coverage-report` artifact; inspect `target/site/jacoco/index.html`, `jacoco.xml`, or `jacoco.csv` from that artifact for exact coverage numbers. Reverse proxy tests use in-process loopback upstream fixtures to prove real local HTTP forwarding, strategy-specific selected-upstream headers, active health checks, dynamic unhealthy skipping, bounded retry defaults, cooldown skip/recovery behavior, local metrics/status output, classpath resource availability for packaged static pages/demo profiles, and static safety checks for checked-in demo profiles/scripts/docs without cloud services. Live AWS validation is intentionally outside the default Maven lifecycle; run it only in a controlled AWS sandbox with explicit cloud guardrails, operator intent, and disposable resources.
+Inspect the packaged artifact:
 
-## Cloud Safety Modes
+```bash
+bash scripts/local-artifact-verify.sh --build
+bash scripts/operator-distribution-smoke.sh --package --run-jar-smoke
+```
 
-Dry-run is the default because `cloud.liveMode=false` unless set otherwise. In dry-run mode, CloudManager logs decisions and does not perform live AWS mutation.
+PowerShell equivalents:
 
-The configured ASG identity is stable across restarts and is derived from the validated
-`cloud.resourceNamePrefix` and `cloud.environment`. After all live-mutation guardrails pass, startup performs a
-read-only ASG inventory reconciliation: one exact stable-name group with
-`LoadBalancerPro=<auto-scaling-group-name>` is adopted, no match is eligible for guarded creation, and missing,
-conflicting, duplicated, or unavailable ownership evidence for that stable identity fails closed without automatic
-cleanup.
+```powershell
+pwsh ./scripts/local-artifact-verify.ps1 -Build
+pwsh ./scripts/operator-distribution-smoke.ps1 -Package -RunJarSmoke
+```
 
-Live ASG scale/update requires all of the following:
+Build and smoke the protected container:
 
-- `cloud.liveMode=true`
-- `cloud.allowLiveMutation=true`
-- `cloud.operatorIntent=LOADBALANCERPRO_LIVE_MUTATION`
-- `cloud.maxDesiredCapacity` set high enough for the requested desired capacity
-- `cloud.maxScaleStep` set high enough for the requested scale step
-- `cloud.environment` set to a validated environment name using letters, numbers, and hyphens
-- `cloud.allowedAwsAccountIds` containing `cloud.currentAwsAccountId`
-- `cloud.allowedRegions` either empty or containing `aws.region`
-- `cloud.launchTemplateId` and `cloud.subnetId` when live mode is requested through the CLI
+```bash
+docker build -t loadbalancerpro:local .
+docker run --rm --name loadbalancerpro-local \
+  -p 127.0.0.1:8080:8080 \
+  -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY \
+  loadbalancerpro:local
+curl -fsS http://127.0.0.1:8080/api/health
+```
 
-Autonomous scale-up from background sources is denied by default. Set `cloud.allowAutonomousScaleUp=true` only when predictive, preemptive, or unknown-source live scale-up is intended.
+The Docker image runs as a non-root user and defaults to the `prod` profile. Keep the host port loopback-bound for local checks. See [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for networking and TLS boundaries.
 
-Live deletion has additional gates:
+## Operator workflow
 
-- `cloud.liveMode=true`
-- `cloud.allowResourceDeletion=true`
-- `cloud.confirmResourceOwnership=true`
-- the ASG can be described successfully
-- the ASG has the ownership tag `LoadBalancerPro=<auto-scaling-group-name>`
+1. Choose a profile and review its effective properties.
+2. Supply secrets through deployment secret management.
+3. Keep proxy, cloud mutation, telemetry export, and expanded Actuator exposure disabled unless required.
+4. Build and verify the exact artifact.
+5. Start on loopback, verify `/api/health` and `/actuator/health`, then test protected routes.
+6. If proxying is enabled, validate route targets, health behavior, retries, cooldown, status, and reload before widening access.
+7. Review logs and metrics for sanitized configuration summaries and failures.
+8. Apply deployment-specific TLS, network policy, authentication, rate limits, resource limits, monitoring, backup, and rollback controls.
 
-If any deletion gate or ownership validation fails, deletion is skipped.
+For the packaged-application proof path use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md). For controlled lab tooling use [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md).
 
-## Deployment Checklist
+## Troubleshooting
 
-- Run `mvn test`.
-- Run `mvn package`.
-- Start the JAR with the intended Spring profile and verify `/actuator/health`.
-- Verify `/actuator/metrics` and `/actuator/prometheus` are reachable only where intended.
-- Confirm no credentials are stored in Git, Docker images, shell history, or committed config files.
-- Confirm cloud mode is dry-run unless a live change is scheduled.
-- For live scale/update, confirm operator intent, capacity caps, account ID, environment, and region allow-list.
-- For autonomous scale-up, confirm `cloud.allowAutonomousScaleUp=true` is intentional.
-- For deletion, confirm the ASG ownership tag and both deletion gates.
-- Review cloud audit logs and metrics after any live operation.
+- **Startup says the API key is missing:** set `LOADBALANCERPRO_API_KEY` for `prod`/default API-key mode, or explicitly use `local` only on loopback.
+- **The executable JAR cannot be found:** run `mvn -B package`, then use the resolver script; do not hard-code an artifact filename.
+- **A protected route returns 401:** include `X-API-Key` or configure the intended OAuth2 issuer, JWK source, and roles.
+- **Proxy status says disabled:** enable proxy mode only through a reviewed profile and provide valid routes/upstreams.
+- **An upstream is skipped:** inspect health, retry, cooldown, timeout, and route status in `/api/proxy/status` and application logs.
+- **OTLP startup validation fails:** use a trusted private/internal collector URL without credentials, query parameters, or fragments.
+- **Docker cannot reach a host backend:** `127.0.0.1` inside a container is the container; use an explicit Docker network or platform host gateway.
+- **A port is already in use:** select another `server.port` and keep the bind address explicit.
+- **Local Maven trust errors occur:** repair the workstation/JDK trust store; do not disable TLS verification.
+
+## Architecture and security references
+
+- [`LOADBALANCERPRO_NEXT_LEVEL_ARCHITECTURE.md`](docs/architecture/LOADBALANCERPRO_NEXT_LEVEL_ARCHITECTURE.md)
+- [`ENTERPRISE_LAB_DURABLE_EVIDENCE.md`](docs/architecture/ENTERPRISE_LAB_DURABLE_EVIDENCE.md)
+- [`ENTERPRISE_LAB_INDEPENDENT_ALLOCATION_SUPERVISOR.md`](docs/architecture/ENTERPRISE_LAB_INDEPENDENT_ALLOCATION_SUPERVISOR.md)
+- [`SECURITY.md`](SECURITY.md)
+- [`API_SECURITY.md`](docs/API_SECURITY.md)
+- [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md)
+- [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md)
+- [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md)
+
+Repository contribution and agent rules are in [`CONTRIBUTING.md`](CONTRIBUTING.md), [`AGENTS.md`](AGENTS.md), and [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md).

@@ -11,8 +11,8 @@ The scope audit keeps a campaign slice small enough to review and safe enough to
 - confirm the PR started from clean main;
 - confirm the current branch and head SHA are recorded;
 - confirm the changed files match the active PR contract;
-- confirm SESSION_MANAGER.md names the current checkpoint, checks run, blocker state, and next action;
-- confirm FAILURE_LOG.md records any local, remote, tooling, or scope-audit failure;
+- confirm SESSION_MANAGER.md contains only concise current state;
+- confirm FAILURE_LOG.md contains only material blockers and reusable lessons;
 - confirm unsupported claims and unsafe behavior did not appear;
 - confirm the campaign must pause instead of improvising when scope becomes unclear or unsafe.
 
@@ -24,8 +24,8 @@ For a docs/test-only campaign slice, the changed files must remain limited to:
 
 - Markdown documentation;
 - documentation guard tests under `src/test/java`;
-- SESSION_MANAGER.md checkpoint updates;
-- FAILURE_LOG.md entries for actual failures.
+- SESSION_MANAGER.md current-state replacement when needed;
+- FAILURE_LOG.md entries only for material failures.
 
 Stop and use CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md if any unexpected file appears.
 
@@ -83,15 +83,14 @@ Use these questions at each scope checkpoint:
 
 - Does the diff still match the active BUILD_CONTRACT.md and PR contract?
 - Are README.md, AGENTS.md, BUILD_CONTRACT.md, reviewer trust docs, and not-proven boundaries preserved?
-- Are all changed docs linked from the relevant campaign control docs?
-- Do the guard tests only read tracked files?
-- Did any guard test start servers, run Docker, run Compose, run tools, call network endpoints, execute processes, write files, or depend on environment?
+- Are operator-facing docs changed only when a user-facing capability, configuration contract, command, security default, or major verified limitation changed?
+- Do tests enforce executable, configuration, API, artifact, or security behavior instead of exact prose?
 - Did any production code, build config, CI, Docker, Compose, runtime, endpoint, script, secret, external target, or automation change appear unexpectedly?
 - Did any production readiness, certification, live-cloud, real-tenant, runtime enforcement, performance, replay, evidence, report, storage, export, or broader automation claim appear?
 
 ## Stop Conditions
 
-Pause the campaign, update SESSION_MANAGER.md, and log the issue in FAILURE_LOG.md when:
+Pause the campaign and replace SESSION_MANAGER.md with the blocker when:
 
 - the changed-file audit finds an unexpected path;
 - the diff expands beyond the active PR contract;
@@ -101,7 +100,9 @@ Pause the campaign, update SESSION_MANAGER.md, and log the issue in FAILURE_LOG.
 - local verification fails and the fix is not obvious and inside scope;
 - remote checks are failed, cancelled, stale, queued, in-progress, pending, skipped-only, or duplicate-only at a merge decision;
 - main CI/CodeQL is red;
-- a human decision is needed.
+- a material decision or new authority is needed.
+
+Add FAILURE_LOG.md only when the stop condition meets the materiality rule.
 
 ## Not-Proven Boundaries
 

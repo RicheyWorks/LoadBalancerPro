@@ -76,13 +76,6 @@ class ContainerSigningDecisionDocumentationTest {
         }
     }
 
-    @Test
-    void containerDecisionRecordIsLinkedFromReviewerDocs() throws Exception {
-        for (Path path : List.of(CONTAINER_GUIDE, HARDENING, TRUST_MAP, SUPPLY_CHAIN, PRODUCTION_GATE, README)) {
-            assertTrue(read(path).contains("CONTAINER_SIGNING_DECISION_RECORD.md"),
-                    path + " should link the container signing decision record");
-        }
-    }
 
     @Test
     void workflowsStillDoNotPublishContainerImages() throws Exception {

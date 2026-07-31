@@ -158,23 +158,6 @@ class ExternalSignalPortDesignContractDocumentationTest {
         }
     }
 
-    @Test
-    void reviewerEntryPointsLinkExternalSignalContractAsDocsOnlyReference() throws Exception {
-        for (Path path : List.of(README, TRUST_MAP, AUDIT, THREE_TIER)) {
-            assertTrue(read(path).contains("EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md"),
-                    path + " should link the external signal port design contract");
-        }
-
-        String readme = read(README);
-        String trustMap = read(TRUST_MAP);
-        String threeTier = read(THREE_TIER);
-
-        assertTrue(readme.contains("without adding runtime implementation"));
-        assertTrue(trustMap.contains("docs-only design contract"));
-        assertTrue(trustMap.contains("not a runtime interface, adapter, HTTP client, signal ingestion path"));
-        assertTrue(threeTier.contains("That contract is documentation-only"));
-        assertTrue(threeTier.contains("does not implement Java interfaces, adapters, clients, signal ingestion"));
-    }
 
     @Test
     void sprintDoesNotIntroduceRuntimeExternalSignalTypes() throws Exception {

@@ -195,22 +195,6 @@ class LaseBoundaryEnforcementInventoryDocumentationTest {
     }
 
     @Test
-    void reviewerEntryPointsLinkInventoryAsDocsOnlyReference() throws Exception {
-        for (Path path : List.of(README, REVIEWER_TRUST_MAP, ENTERPRISE_AUDIT, THREE_TIER, LASE_BOUNDARY)) {
-            assertTrue(read(path).contains("LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md"),
-                    path + " should link the inventory doc");
-        }
-
-        String readme = read(README);
-        String trustMap = read(REVIEWER_TRUST_MAP);
-        String laseBoundary = read(LASE_BOUNDARY);
-
-        assertTrue(readme.contains("docs/test-only migration-readiness inventory"));
-        assertTrue(trustMap.contains("docs/test-only current class mapping and migration-readiness inventory"));
-        assertTrue(laseBoundary.contains("maps current classes into future boundary buckets without moving classes"));
-    }
-
-    @Test
     void sprintDoesNotIntroduceRuntimeInventoryTypesOrArchUnitDependency() throws Exception {
         assertFalse(read(POM).toLowerCase(Locale.ROOT).contains("archunit"),
                 "this sprint must not add an ArchUnit dependency or build change");

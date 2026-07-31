@@ -160,14 +160,6 @@ class OperatorEvidenceDashboardTest {
                 "operator dashboard should fetch the same-origin local summary endpoint");
     }
 
-    @Test
-    void operatorEvidenceDashboardIsLinkedFromRootReviewerReadmeAndTrustMap() throws Exception {
-        assertTrue(read(INDEX).contains("/operator-evidence-dashboard.html"));
-        assertTrue(read(REVIEWER_DASHBOARD).contains("/operator-evidence-dashboard.html"));
-        assertTrue(read(README).contains("http://localhost:8080/operator-evidence-dashboard.html"));
-        assertTrue(read(TRUST_MAP).contains("/operator-evidence-dashboard.html"));
-        assertTrue(read(TRUST_MAP).contains("/api/enterprise-lab/operator-evidence-summary"));
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

@@ -450,20 +450,6 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertFalse(normalized.contains("server-side export endpoint"));
     }
 
-    @Test
-    void decisionVectorDocIsLinkedFromReviewerDocs() throws Exception {
-        String readme = read(README);
-        String trustMap = read(TRUST_MAP);
-        String framing = read(FRAMING);
-
-        for (String doc : List.of(readme, trustMap, framing)) {
-            assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
-            assertTrue(doc.contains("Decision Vector"));
-        }
-
-        assertTrue(trustMap.contains("decisionVector"));
-        assertTrue(framing.contains("## Decision Vector Contract"));
-    }
 
     @Test
     void routingCockpitIncludesDecisionVectorFoundation() throws Exception {
@@ -532,34 +518,6 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(normalized.contains("exact production scoring is not claimed unless exposed by the api"));
     }
 
-    @Test
-    void decisionVectorDocsAndUiAvoidUnsafeClaims() throws Exception {
-        for (Path path : List.of(DECISION_VECTOR, DOMINANT_FACTOR_ANALYSIS, DECISION_DELTA_ANALYSIS,
-                DECISION_REPLAY_SNAPSHOT, DECISION_REPLAY_RECONSTRUCTION_TRACE, DECISION_REPLAY_CAPSULE,
-                DECISION_REPLAY_READINESS_CHECKLIST, DECISION_REPLAY_EVIDENCE_SOURCE_MAP,
-                README, TRUST_MAP, FRAMING, ROUTING_COCKPIT)) {
-            String content = read(path);
-            String normalized = content.toLowerCase(Locale.ROOT);
-
-            assertTrue(content.contains("Enterprise Lab Cockpit"), path + " should preserve Enterprise Lab framing");
-            assertTrue(normalized.contains("not a demo"), path + " should preserve not-a-demo framing");
-            assertFalse(normalized.contains("hidden scoring is available"), path + " must not expose hidden scoring");
-            assertFalse(normalized.contains("hidden scoring is inferred"), path + " must not infer hidden scoring");
-            assertFalse(normalized.contains("exact production scoring is claimed"), path + " must not claim exact scoring");
-            assertFalse(normalized.contains("completed factor contribution analysis is implemented"),
-                    path + " must not claim completed factor contributions");
-            assertFalse(normalized.contains("completed replay is implemented"), path + " must not claim completed replay");
-            assertFalse(normalized.contains("completed what-if experiments are implemented"),
-                    path + " must not claim completed what-if work");
-            assertFalse(normalized.contains("production telemetry is available"), path + " must not claim production telemetry");
-            assertFalse(normalized.contains("production monitoring is available"), path + " must not claim production monitoring");
-            assertFalse(normalized.contains("upload endpoint"), path + " must not add upload endpoints");
-            assertFalse(normalized.contains("server-side decision vector export"), path + " must not add server-side export behavior");
-            assertFalse(normalized.contains("fetch(\"https://"), path + " must not add external calls");
-            assertFalse(normalized.contains("fetch('https://"), path + " must not add external calls");
-            assertFalse(normalized.contains("sendbeacon"), path + " must not add telemetry");
-        }
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

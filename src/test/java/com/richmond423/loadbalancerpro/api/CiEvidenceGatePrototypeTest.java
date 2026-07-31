@@ -125,22 +125,6 @@ class CiEvidenceGatePrototypeTest {
         }
     }
 
-    @Test
-    void ciEvidenceGatePrototypeIsLinkedFromDocsIndexAndReviewerSurfaces() throws Exception {
-        for (Path path : List.of(INDEX, README, TRUST_MAP, READINESS_AUDIT, CI_GATE_LANE, PERFORMANCE_AUTH_LANE)) {
-            String content = read(path);
-            assertTrue(content.contains("/ci-evidence-gate.html"), path + " should link the page");
-            assertTrue(content.contains("/api/enterprise-lab/ci-evidence-gate-summary"),
-                    path + " should reference the local summary API");
-        }
-
-        for (Path page : LINKED_REVIEWER_PAGES) {
-            String content = read(page);
-            assertTrue(content.contains("/ci-evidence-gate.html"), page + " should link the prototype page");
-            assertTrue(content.contains("/api/enterprise-lab/ci-evidence-gate-summary"),
-                    page + " should reference the prototype API");
-        }
-    }
 
     @Test
     void ciEvidenceGatePrototypeKeepsLocalEvidencePathsUnderIgnoredTarget() throws Exception {

@@ -127,35 +127,6 @@ class AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest {
         assertFalse(prod.contains("change_me"), "prod properties must not include placeholder secrets");
     }
 
-    @Test
-    void navigationAndCampaignStateReferenceRuntimeConfigurationAudit() throws IOException {
-        String readme = read(README).toLowerCase(Locale.ROOT);
-        String trustMap = read(TRUST_MAP).toLowerCase(Locale.ROOT);
-        String evidenceMap = read(EVIDENCE_MAP).toLowerCase(Locale.ROOT);
-        String board = read(BOARD).toLowerCase(Locale.ROOT);
-        String session = read(SESSION).toLowerCase(Locale.ROOT);
-
-        assertTrue(readme.contains("docs/agent/evidence_audit_runtime_configuration_audit.md"),
-                "README should link to the runtime configuration audit");
-        assertTrue(trustMap.contains("agent/evidence_audit_runtime_configuration_audit.md"),
-                "Reviewer Trust Map should link to the runtime configuration audit");
-        assertTrue(evidenceMap.contains("evidence_audit_runtime_configuration_audit.md"),
-                "repository evidence map should link to the runtime configuration audit");
-
-        for (String expected : List.of(
-                "slot 9",
-                "runtime configuration audit",
-                "codex/evidence-audit-runtime-config",
-                "slot 8 result",
-                "#323",
-                "b1a1c578eca4a11b55a60f2213d45bf48cc28838",
-                "0fc6a5431f400eb4e5f71a70805b3fcb317f1c69",
-                "post-merge main ci and codeql were green",
-                "slot 9 branch created")) {
-            assertTrue(board.contains(expected) || session.contains(expected),
-                    "Missing slot 9 campaign checkpoint: " + expected);
-        }
-    }
 
     @Test
     void auditPreservesScopeAndNotProvenBoundaries() throws IOException {

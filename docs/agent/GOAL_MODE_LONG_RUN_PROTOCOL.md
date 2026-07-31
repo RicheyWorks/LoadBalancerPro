@@ -11,12 +11,12 @@ README.md remains the constitutional layer and public trust surface. It is not t
 - [`../../BUILD_CONTRACT.md`](../../BUILD_CONTRACT.md) is the focused execution contract for the current task.
 - [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md) is the startup path that ties the files together for normal Codex sessions.
 - [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md) is the navigation layer for multi-PR campaign control docs, merge/counting rules, and closeout flow.
-- [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) defines how multi-PR goal campaigns run one scoped PR at a time with checkpoints, failure logging, verification, remote checks, and stop conditions.
-- [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md) defines the campaign checkpoint fields for branch, PR, head SHA, checks, blockers, and campaign count.
+- [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) defines how multi-PR goal campaigns run one scoped PR at a time with concise current state, verification, remote checks, and stop conditions.
+- [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md) defines the minimal campaign-state fields.
 - [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the campaign PR opening, merge, post-merge, scope, and stop-condition checklist.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused checks, relevant selector bundles, full checks, remote checks, post-merge checks, and merge readiness.
-- [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks checkpoints, progress, current branch, current PR, current head SHA, changed files, blockers, checks run, and next action.
-- [`FAILURE_LOG.md`](FAILURE_LOG.md) records failures, suspected causes, fixes attempted, results, recovery, and follow-up action.
+- [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks only the active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action.
+- [`FAILURE_LOG.md`](FAILURE_LOG.md) records unresolved material blockers and reusable lessons.
 
 ## When To Use Goal Mode
 
@@ -37,9 +37,9 @@ Do not use `/goal` as permission to ignore scope. Do not use `/goal` as permissi
 
 ## Long-Run Checkpoints
 
-Long sessions should update SESSION_MANAGER.md at checkpoints. A checkpoint is appropriate after branch creation, after a major edit batch, before full verification, after a local failure, after a remote failure, before merge, and after post-merge main checks.
+Keep SESSION_MANAGER.md as a concise current-state snapshot. Replace stale state when the active slot, branch/PR, completed gate set, genuine blocker, or next action changes. Do not append command history, polling, repeated test totals, or head-by-head narration.
 
-Failures should be logged in FAILURE_LOG.md. Log the failure type, failing check, suspected cause, fix attempted, result, follow-up action, and last known good state.
+Use FAILURE_LOG.md only for product/security defects, invalidated evidence, persistent-state risk, non-obvious recovery, mandatory-gate blocks, or reusable technical lessons. Ordinary syntax errors, failed searches, optional local-tool absence, and polling are not repository records.
 
 ## Verification Rules
 
@@ -65,7 +65,7 @@ Preserve README / AGENTS / BUILD_CONTRACT boundaries. Preserve not-proven bounda
 ## Goal-mode starter prompt
 
 ```text
-/goal Work through BUILD_CONTRACT.md for this branch. Follow README.md, AGENTS.md, docs/agent/VERIFICATION_PROTOCOL.md, and docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md. Keep scope bounded, update docs/agent/SESSION_MANAGER.md at checkpoints, log failures in docs/agent/FAILURE_LOG.md, use focused checks while editing, and do not claim completion until required local verification and remote checks are green.
+/goal Work through BUILD_CONTRACT.md for this branch. Follow README.md, AGENTS.md, docs/agent/VERIFICATION_PROTOCOL.md, and docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md. Keep scope bounded, keep docs/agent/SESSION_MANAGER.md concise, record only material failures in docs/agent/FAILURE_LOG.md, use focused checks while editing, and do not claim completion until required local verification and remote checks are green.
 ```
 
 ## Goal-mode status prompt
@@ -86,7 +86,7 @@ Report current checkpoint, current branch, current head SHA, changed files, chec
 /goal pause
 ```
 
-Pause because the run is blocked or scope is unsafe. Update docs/agent/SESSION_MANAGER.md and docs/agent/FAILURE_LOG.md with the blocker, last known good state, checks run, and recommended next action.
+Pause because the run is materially blocked or scope is unsafe. Put the genuine blocker and next action in docs/agent/SESSION_MANAGER.md; add docs/agent/FAILURE_LOG.md only when the failure meets its materiality rule.
 
 ## Resume Prompt
 
@@ -108,7 +108,7 @@ Clear only after the PR is merged or the goal is explicitly abandoned.
 
 Goal mode may run for many hours if the task has clear scope, checkpoints, and verification.
 
-Longer runs require smaller checkpoints, regular SESSION_MANAGER.md updates, and strict stop conditions. Human review is still required before merge. The goal should pause rather than improvise when scope, safety, or verification is unclear.
+Longer runs require concise current state and strict stop conditions. Independent human review is advisory when an active goal explicitly authorizes exact-head green automatic merge. The goal should pause rather than improvise when scope, safety, or verification is unclear.
 
 ## Stop Conditions
 

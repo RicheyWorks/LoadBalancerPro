@@ -84,4 +84,4 @@ Do not claim fully green main while remote checks are pending.
 
 For a multi-PR `/goal` campaign, each slot must verify the latest/current head SHA. Use focused checks while editing, full verification before opening a merge decision, current-head remote PR checks before merge, and post-merge main checks before counting the slot or starting the next branch.
 
-See [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) for the campaign-specific order, final-head verification rule, remote check rules, SESSION_MANAGER.md checkpoints, and FAILURE_LOG.md failure logging expectations.
+See [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) for the campaign-specific order, final-head verification rule, and remote check rules. Keep SESSION_MANAGER.md concise and record only material failures in FAILURE_LOG.md.

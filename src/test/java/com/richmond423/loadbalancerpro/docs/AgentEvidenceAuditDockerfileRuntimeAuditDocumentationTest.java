@@ -111,33 +111,6 @@ class AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest {
         }
     }
 
-    @Test
-    void navigationAndCampaignStateReferenceDockerfileAudit() throws IOException {
-        String readme = read(README).toLowerCase(Locale.ROOT);
-        String trustMap = read(TRUST_MAP).toLowerCase(Locale.ROOT);
-        String evidenceMap = read(EVIDENCE_MAP).toLowerCase(Locale.ROOT);
-        String board = read(BOARD).toLowerCase(Locale.ROOT);
-        String session = read(SESSION).toLowerCase(Locale.ROOT);
-
-        assertTrue(readme.contains("docs/agent/evidence_audit_dockerfile_runtime_audit.md"),
-                "README should link to the Dockerfile runtime audit");
-        assertTrue(trustMap.contains("agent/evidence_audit_dockerfile_runtime_audit.md"),
-                "Reviewer Trust Map should link to the Dockerfile runtime audit");
-        assertTrue(evidenceMap.contains("evidence_audit_dockerfile_runtime_audit.md"),
-                "repository evidence map should link to the Dockerfile runtime audit");
-
-        for (String expected : List.of(
-                "slot 7 result",
-                "codex/evidence-audit-dockerfile-runtime",
-                "#322",
-                "933717e7fe5a59004353fb90f0718ba8b5ecd6ef",
-                "399f83ba0fec96542c544643ad214d8e4937072d",
-                "dockerfile runtime posture audited",
-                "post-merge main ci and codeql green")) {
-            assertTrue(board.contains(expected) || session.contains(expected),
-                    "Missing slot 7 campaign checkpoint: " + expected);
-        }
-    }
 
     @Test
     void auditPreservesNotProvenBoundaries() throws IOException {

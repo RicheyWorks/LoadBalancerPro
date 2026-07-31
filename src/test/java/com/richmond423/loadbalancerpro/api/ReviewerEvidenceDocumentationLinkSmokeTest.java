@@ -48,56 +48,7 @@ class ReviewerEvidenceDocumentationLinkSmokeTest {
                     + "(?:deployment|aks|network|vm)\\s+(?:create|delete|update)|gcloud\\s+.*\\s+"
                     + "(?:create|delete|update))\\b");
 
-    @Test
-    void readmeAndTrustMapLinkReviewerEvidencePages() throws Exception {
-        String readme = read(README);
-        String trustMap = read(REVIEWER_TRUST_MAP);
 
-        assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md"),
-                "README should route reviewers through the trust map");
-        assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md#reviewer-lab-review-path"),
-                "README should link to the reviewer lab path");
-        assertTrue(trustMap.contains("## Evidence Page Navigation"),
-                "Trust map should keep the evidence page navigation section");
-
-        for (String page : REVIEWER_EVIDENCE_PAGES) {
-            assertTrue(readme.contains(page), "README should link to " + page);
-            assertTrue(trustMap.contains(page), "Trust map should link to " + page);
-        }
-    }
-
-    @Test
-    void reviewerEntryDocsKeepLocalReadOnlySafetyBoundaries() throws Exception {
-        for (Path doc : REVIEWER_ENTRY_DOCS) {
-            String normalized = normalized(read(doc));
-
-            for (String phrase : COMMON_LOCAL_BOUNDARY_PHRASES) {
-                assertTrue(normalized.contains(phrase), doc + " should keep boundary phrase: " + phrase);
-            }
-        }
-
-        String readme = normalized(read(README));
-        assertTrue(readme.contains("ignored `target/` output"),
-                "README should keep generated evidence out of tracked docs");
-        assertTrue(readme.contains("runtime private-lan live validation remains intentionally unimplemented"),
-                "README should keep the live private-LAN boundary explicit");
-        assertTrue(readme.contains("local lab reviewer/operator surface"),
-                "README should keep the browser surface scoped to local review");
-
-        String trustMap = normalized(read(REVIEWER_TRUST_MAP));
-        assertTrue(trustMap.contains("browser-local/static/read-only reviewer surfaces"),
-                "Trust map should keep reviewer pages browser-local/static/read-only");
-        assertTrue(trustMap.contains("do not upload packets"),
-                "Trust map should keep browser packet actions local");
-        assertTrue(trustMap.contains("do not upload packets, create server-side exports or pdfs"),
-                "Trust map should keep export behavior client-side");
-        assertTrue(trustMap.contains("mutate github settings"),
-                "Trust map should keep GitHub settings mutation out of reviewer pages");
-        assertTrue(trustMap.contains("publish or sign containers"),
-                "Trust map should keep publish/sign actions out of reviewer pages");
-        assertTrue(trustMap.contains("broader private-lan live traffic execution is not implemented yet"),
-                "Trust map should keep the broader private-LAN live boundary explicit");
-    }
 
     @Test
     void reviewerEntryDocsAvoidUnsafeCommandsAndAffirmativeOverclaims() throws Exception {

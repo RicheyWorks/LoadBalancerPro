@@ -51,16 +51,6 @@ class EnterpriseLabCockpitXssSafetyTest {
         assertTrue(page.contains("document.createTextNode("));
     }
 
-    @Test
-    void readmeRecordsTheBoundedSafeRenderingContract() throws Exception {
-        String readme = Files.readString(README);
-
-        assertTrue(readme.contains(
-                "server-derived scenario, policy, audit, metrics, and reviewer-path"));
-        assertTrue(readme.contains("through DOM text nodes"));
-        assertTrue(readme.contains("Hostile markup"));
-        assertTrue(readme.contains("renders inert"));
-    }
 
     private static void assertNoHtmlStringSink(String page) {
         assertFalse(page.contains("innerHTML"), "server-derived values must not enter innerHTML");

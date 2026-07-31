@@ -81,18 +81,6 @@ class OperatorInstallRunMatrixTest {
         assertTrue(checklist.contains("Do not change repository rulesets."));
     }
 
-    @Test
-    void existingOperatorDocsLinkToMatrixAndReleaseIntentChecklist() throws Exception {
-        assertLinks(README);
-        assertLinks(RUNBOOK);
-        assertLinks(DRY_RUN);
-        assertLinks(CI_ARTIFACT_GUIDE);
-        assertLinks(LOCAL_ARTIFACT_DOC);
-        assertLinks(DISTRIBUTION_SMOKE_DOC);
-        assertLinks(OPERATOR_PACKAGING_DOC);
-        assertLinks(TESTING_COVERAGE_DOC);
-        assertLinks(API_SECURITY_DOC);
-    }
 
     @Test
     void newDocsAvoidFakeEvidenceAndUnsafeClaims() throws Exception {

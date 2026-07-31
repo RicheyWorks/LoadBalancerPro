@@ -87,17 +87,6 @@ class ReleaseCandidateDryRunTest {
         assertTrue(workflow.contains("target/bom.xml"));
     }
 
-    @Test
-    void existingOperatorDocsLinkToReleaseCandidateDryRunGuide() throws Exception {
-        assertTrue(read(README).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-        assertTrue(read(RUNBOOK).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-        assertTrue(read(CI_ARTIFACT_GUIDE).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-        assertTrue(read(LOCAL_ARTIFACT_DOC).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-        assertTrue(read(DISTRIBUTION_SMOKE_DOC).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-        assertTrue(read(OPERATOR_PACKAGING_DOC).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-        assertTrue(read(TESTING_COVERAGE_DOC).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-        assertTrue(read(API_SECURITY_DOC).contains("RELEASE_CANDIDATE_DRY_RUN.md"));
-    }
 
     @Test
     void dryRunDocsAvoidReleaseCommandsAndUnsafeClaims() throws Exception {

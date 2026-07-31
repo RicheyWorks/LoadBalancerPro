@@ -219,29 +219,6 @@ class LaseBoundaryArchitectureContractDocumentationTest {
         }
     }
 
-    @Test
-    void reviewerEntryPointsAndAdjacentContractsLinkLaseBoundaryAsDocsOnlyReference() throws Exception {
-        for (Path path : List.of(README, TRUST_MAP, AUDIT, THREE_TIER, EXTERNAL_SIGNAL, WORKLOAD_PROFILE)) {
-            assertTrue(read(path).contains("LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md"),
-                    path + " should link the LASE boundary architecture contract");
-        }
-
-        String readme = read(README);
-        String trustMap = read(TRUST_MAP);
-        String threeTier = read(THREE_TIER);
-        String externalSignal = read(EXTERNAL_SIGNAL);
-        String workloadProfile = read(WORKLOAD_PROFILE);
-
-        assertTrue(readme.contains("without adding runtime enforcement or package refactors"));
-        assertTrue(trustMap.contains("docs-only boundary contract for separating live allocation"));
-        assertTrue(trustMap.contains("not runtime enforcement, a package refactor, ArchUnit enforcement"));
-        assertTrue(threeTier.contains("That contract is documentation-only"));
-        assertTrue(threeTier.contains("does not implement runtime boundary enforcement, package refactors"));
-        assertTrue(externalSignal.contains("That contract is documentation-only"));
-        assertTrue(externalSignal.contains("does not implement runtime boundary enforcement, package refactors"));
-        assertTrue(workloadProfile.contains("That contract is documentation-only"));
-        assertTrue(workloadProfile.contains("does not implement runtime boundary enforcement, package refactors"));
-    }
 
     @Test
     void sprintDoesNotIntroduceRuntimeLaseBoundaryTypesOrArchUnitDependency() throws Exception {

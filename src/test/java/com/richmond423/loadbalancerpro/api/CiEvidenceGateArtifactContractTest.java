@@ -152,42 +152,6 @@ class CiEvidenceGateArtifactContractTest {
         assertEquals(first, second, "contract metadata should stay deterministic");
     }
 
-    @Test
-    void pageDocsAndReviewerHandoffFlowExposeContractWithoutExternalCalls() throws Exception {
-        String page = read(PAGE);
-        assertTrue(page.contains("fetch(\"/api/enterprise-lab/ci-evidence-gate-summary\""),
-                "page should keep same-origin fetch only");
-        assertTrue(page.contains(CONTRACT_PATH), "page should reference the artifact contract path");
-        assertTrue(page.contains(TEMPLATE_PATH), "page should reference the template path");
-        assertTrue(page.contains("Reviewer dashboard -> CI Evidence Gate page -> artifact contract"),
-                "page should make the reviewer handoff flow discoverable");
-        assertFalse(page.contains("http://"), "page should not add external HTTP calls");
-        assertFalse(page.contains("https://"), "page should not add external HTTPS calls");
-        assertFalse(page.contains("XMLHttpRequest"), "page should not add alternate external call mechanisms");
-        assertFalse(page.contains("localStorage"), "page should not persist artifact data in browser storage");
-        assertFalse(page.contains("sessionStorage"), "page should not persist artifact data in browser storage");
-
-        for (Path doc : List.of(README, TRUST_MAP, READINESS_AUDIT, READINESS_LANE, PERFORMANCE_AUTH_LANE)) {
-            String content = read(doc);
-            assertTrue(content.contains("CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md"),
-                    doc + " should link or reference the contract");
-            assertTrue(content.contains("ci-evidence-gate-summary.template.json"),
-                    doc + " should link or reference the template");
-            assertTrue(content.contains("/ci-evidence-gate.html"),
-                    doc + " should keep the gate page discoverable");
-        }
-
-        assertTrue(read(INDEX).contains("artifact contract handoff"),
-                "index should describe the contract handoff surface");
-        assertTrue(read(REVIEWER).contains("artifact contract/template paths"),
-                "reviewer page should route reviewers toward the artifact handoff");
-        assertTrue(read(OPERATOR).contains("artifact contract metadata"),
-                "operator page should mention contract metadata");
-        assertTrue(read(TIMELINE).contains("artifact contract/template handoff"),
-                "timeline page should mention contract/template handoff");
-        assertTrue(read(EXPORT_PACKET).contains(CONTRACT_PATH), "export packet should include contract path");
-        assertTrue(read(EXPORT_PACKET).contains(TEMPLATE_PATH), "export packet should include template path");
-    }
 
     @Test
     void endpointAndContractBundleStayInsideSafetyBoundaries() throws Exception {

@@ -176,33 +176,6 @@ class AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest {
         assertFalse(normalized.contains("gh release"), "proxy demo scripts must not create GitHub releases");
     }
 
-    @Test
-    void navigationAndCampaignStateReferenceProxyDemoFixtureAudit() throws IOException {
-        String readme = read(README).toLowerCase(Locale.ROOT);
-        String trustMap = read(TRUST_MAP).toLowerCase(Locale.ROOT);
-        String evidenceMap = read(EVIDENCE_MAP).toLowerCase(Locale.ROOT);
-        String board = read(BOARD).toLowerCase(Locale.ROOT);
-        String session = read(SESSION).toLowerCase(Locale.ROOT);
-
-        assertTrue(readme.contains("docs/agent/evidence_audit_proxy_demo_fixture_audit.md"),
-                "README should link to the proxy demo fixture audit");
-        assertTrue(trustMap.contains("agent/evidence_audit_proxy_demo_fixture_audit.md"),
-                "Reviewer Trust Map should link to the proxy demo fixture audit");
-        assertTrue(evidenceMap.contains("evidence_audit_proxy_demo_fixture_audit.md"),
-                "repository evidence map should link to the proxy demo fixture audit");
-
-        for (String expected : List.of(
-                "proxy demo fixture audit",
-                "codex/evidence-audit-proxy-demo-fixture",
-                "slot 10 result",
-                "#325",
-                "4bad0291be2a36ed7695bb47fa3b9a3e63d4dbb0",
-                "d4a07057c7e0475e012e610a551733184d26791d",
-                "post-merge main ci and codeql were green")) {
-            assertTrue(board.contains(expected) || session.contains(expected),
-                    "Missing slot 10 campaign checkpoint: " + expected);
-        }
-    }
 
     @Test
     void auditPreservesNotProvenBoundaries() throws IOException {

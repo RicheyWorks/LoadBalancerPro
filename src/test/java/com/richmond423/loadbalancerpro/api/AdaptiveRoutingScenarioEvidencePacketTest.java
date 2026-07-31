@@ -168,32 +168,6 @@ class AdaptiveRoutingScenarioEvidencePacketTest {
         assertNoExternalBrowserCalls(page);
     }
 
-    @Test
-    void docsAndReviewerSurfacesLinkThePacketAsLocalPrototypeOnly() throws Exception {
-        for (Path path : List.of(
-                README,
-                TRUST_MAP,
-                READINESS,
-                CONTRACT,
-                READINESS_AUDIT,
-                PERFORMANCE_AUTH_LANE,
-                CI_GATE_PAGE,
-                INDEX,
-                REVIEWER,
-                OPERATOR,
-                TIMELINE,
-                EXPORT_PACKET)) {
-            String content = read(path);
-            assertTrue(content.contains("/adaptive-routing-scenarios.html"),
-                    path + " should link the scenario runner page");
-            assertTrue(content.contains(SUMMARY_ENDPOINT),
-                    path + " should reference the summary API");
-            assertTrue(content.contains(DETAIL_ENDPOINT),
-                    path + " should reference the detail API");
-            assertTrue(content.contains(PACKET_ENDPOINT),
-                    path + " should reference the evidence packet API");
-        }
-    }
 
     @Test
     void packetEndpointCodeAvoidsSideEffectsAndUnsafeClaims() throws Exception {

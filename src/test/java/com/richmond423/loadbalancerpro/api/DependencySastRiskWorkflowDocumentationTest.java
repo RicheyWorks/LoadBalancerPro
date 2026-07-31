@@ -104,14 +104,6 @@ class DependencySastRiskWorkflowDocumentationTest {
         assertFalse(normalized.contains("git tag -"));
     }
 
-    @Test
-    void workflowIsLinkedFromReviewerAndEvidenceDocs() throws Exception {
-        for (Path path : List.of(SUPPLY_CHAIN, SECURITY_POSTURE, RESIDUAL_RISKS, HARDENING_GUIDE, TRUST_MAP,
-                RUNBOOK, README, PRODUCTION_GATE)) {
-            assertTrue(read(path).contains("DEPENDENCY_SAST_RISK_WORKFLOW.md"),
-                    path + " should link the dependency/SAST risk workflow");
-        }
-    }
 
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");

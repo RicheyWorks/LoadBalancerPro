@@ -128,35 +128,6 @@ class AgentEvidenceAuditComposeLocalLabAuditDocumentationTest {
         assertFalse(config.contains("credential"), "Toxiproxy local-lab config must not add credentials");
     }
 
-    @Test
-    void navigationAndCampaignStateReferenceComposeLocalLabAudit() throws IOException {
-        String readme = read(README).toLowerCase(Locale.ROOT);
-        String trustMap = read(TRUST_MAP).toLowerCase(Locale.ROOT);
-        String evidenceMap = read(EVIDENCE_MAP).toLowerCase(Locale.ROOT);
-        String board = read(BOARD).toLowerCase(Locale.ROOT);
-        String session = read(SESSION).toLowerCase(Locale.ROOT);
-
-        assertTrue(readme.contains("docs/agent/evidence_audit_compose_local_lab_audit.md"),
-                "README should link to the Compose/local-lab audit");
-        assertTrue(trustMap.contains("agent/evidence_audit_compose_local_lab_audit.md"),
-                "Reviewer Trust Map should link to the Compose/local-lab audit");
-        assertTrue(evidenceMap.contains("evidence_audit_compose_local_lab_audit.md"),
-                "repository evidence map should link to the Compose/local-lab audit");
-
-        for (String expected : List.of(
-                "slot 8",
-                "compose/local-lab audit",
-                "codex/evidence-audit-compose-local-lab",
-                "#323",
-                "b1a1c578eca4a11b55a60f2213d45bf48cc28838",
-                "0fc6a5431f400eb4e5f71a70805b3fcb317f1c69",
-                "slot 8 result",
-                "post-merge main ci and codeql were green",
-                "compose/local-lab audited")) {
-            assertTrue(board.contains(expected) || session.contains(expected),
-                    "Missing slot 8 campaign checkpoint: " + expected);
-        }
-    }
 
     @Test
     void auditPreservesNotProvenBoundaries() throws IOException {

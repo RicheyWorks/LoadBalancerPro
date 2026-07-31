@@ -15,8 +15,8 @@ A campaign is a bounded sequence of separately scoped PRs that share one durable
 - BUILD_CONTRACT.md: per-PR task contract, deliverables, stop conditions, and final report format.
 - GOAL_MODE_LONG_RUN_PROTOCOL.md: `/goal`, `/plan`, `/goal pause`, `/goal resume`, and `/goal clear` behavior.
 - VERIFICATION_PROTOCOL.md: focused checks, full checks, remote PR checks, and post-merge main checks.
-- SESSION_MANAGER.md: checkpoint ledger for current branch, PR, head SHA, checks run, blockers, and next action.
-- FAILURE_LOG.md: factual record for local failures, remote failures, suspected causes, fixes attempted, results, and follow-up action.
+- SESSION_MANAGER.md: concise current state for active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action.
+- FAILURE_LOG.md: unresolved material blockers and reusable technical lessons.
 - CAMPAIGN_SYSTEM_INDEX.md: navigation layer for the campaign control docs, execution loop, verification path, scope audit, and closeout flow.
 - CAMPAIGN_CHECKPOINT_LEDGER.md: required checkpoint fields and counting rules for multi-PR goal campaigns.
 - CAMPAIGN_PR_READINESS_CHECKLIST.md: per-PR opening, merge, post-merge, scope, and stop-condition checklist.
@@ -34,7 +34,7 @@ Repeat this loop for each campaign PR:
 1. Start from clean main and confirm current main CI/CodeQL is green for the main head.
 2. Choose one small scoped slice and write the per-PR contract in the PR body or task notes.
 3. Create a new `codex/` branch.
-4. Update SESSION_MANAGER.md at branch creation, after edits, before full verification, after PR creation, after remote checks, and after merge.
+4. Replace SESSION_MANAGER.md state when the active slot, branch/PR, completed gate set, blocker, or next action materially changes.
 5. Keep changes inside the scoped slice.
 6. Run focused verification while editing.
 7. Run full local verification before merge.
@@ -42,22 +42,11 @@ Repeat this loop for each campaign PR:
 9. Use CAMPAIGN_REMOTE_CHECK_AUDIT.md and CAMPAIGN_MERGE_GATE.md, then merge only after current-head remote required checks are complete and successful.
 10. Return to main, fast-forward, run post-merge checks, confirm main remote checks for the merge commit, and then start the next PR.
 
-## Required Checkpoints
+## Current-State And Failure Records
 
-Update SESSION_MANAGER.md at these minimum checkpoints:
+SESSION_MANAGER.md is a replacement snapshot, not an append-only ledger. Do not store commands, polling, repeated test totals, agent reasoning, or transient CI history.
 
-- campaign start;
-- branch created;
-- edit batch completed;
-- focused checks completed;
-- full local verification completed;
-- PR opened;
-- remote PR checks completed;
-- PR merged;
-- post-merge main checks completed;
-- campaign pause or closeout.
-
-If any check fails or scope becomes unsafe, use CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md and update FAILURE_LOG.md before pausing.
+Add FAILURE_LOG.md content only when a product/security defect, invalid evidence, persistent-state risk, non-obvious recovery, mandatory-gate block, or reusable lesson exists.
 
 ## Merge Gate
 
@@ -86,7 +75,7 @@ Pause the campaign instead of improvising when:
 
 ## Reporting Rules
 
-Every campaign PR report must include branch, PR URL, head SHA, changed files, what changed, local verification, remote checks, scope/safety audit, remaining not-proven boundaries, and next recommended action.
+Every campaign PR handoff must identify branch, PR, head, changed files, verification, remote checks, scope/safety audit, remaining evidence boundaries, and next action. Keep that transient detail in the PR/task report, not permanent repository prose.
 
 Use CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md for pauses, resumes, and checkpoint handoffs. Use CAMPAIGN_CLOSEOUT_PROTOCOL.md for the final count, merge commits, verification summary, failures or pauses, and any remaining work.
 

@@ -27,20 +27,6 @@ class ContainerRegistrySigningRolloutDocumentationTest {
     private static final Pattern EXECUTABLE_CONTAINER_PUBLISH =
             Pattern.compile("(?im)^\\s*(docker\\s+push|cosign\\s+sign|oras\\s+push|helm\\s+push)\\b");
 
-    @Test
-    void rolloutAndDecisionSummaryExistAndAreLinked() throws Exception {
-        assertTrue(Files.exists(ROLLOUT), "container registry/signing rollout doc should exist");
-        assertTrue(Files.exists(DECISION_SUMMARY), "release readiness decision summary should exist");
-
-        for (Path doc : List.of(SIGNING_RECORD, CONTAINER_GUIDE, HARDENING, SUMMARY, TRUST_MAP, README)) {
-            assertTrue(read(doc).contains("CONTAINER_REGISTRY_SIGNING_ROLLOUT.md"),
-                    doc + " should link the container rollout plan");
-        }
-        for (Path doc : List.of(SUMMARY, TRUST_MAP, README, RELEASE_INTENT, ROLLOUT)) {
-            assertTrue(read(doc).contains("RELEASE_READINESS_DECISION_SUMMARY.md"),
-                    doc + " should link the final release readiness decision summary");
-        }
-    }
 
     @Test
     void rolloutDocumentsFutureGatedNoPublicationStatus() throws Exception {

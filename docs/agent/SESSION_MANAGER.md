@@ -6,6 +6,28 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 21 PR-Created Checkpoint
+
+Timestamp: 2026-07-30T22:46:05-07:00
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519);
+exact green-main base `c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; pushed local-green head
+`6db976efc630fd08bfe34b427785be9e63e228f3`; product commit
+`747805eaa515d01119dc15760da71851c30c9f97`; status `PR_OPEN`.
+
+PR state at creation: ready for review, mergeable, and blocked only by queued/in-progress required checks. Initial push
+CI `30607684579`, PR CI `30607698046`, CodeQL `30607698051`, and PR dependency review started for pushed head
+`6db976ef`; those results become stale when this required PR-created campaign checkpoint is pushed. Independent human
+review remains advisory and unavailable; the complete 26-path diff has a clean self-review.
+
+Verified local evidence remains the 164-test focused selector, 3,077-test full clean package, skip-test verify,
+138-component SBOM, artifact/package inspection, offline shipped-JAR overwrite proofs, LASE 0/0/2 smoke, loopback
+profile matrix, and seven packaged evidence lanes. Local Docker/Trivy remain unavailable and are not claimed.
+
+Blocker: none. Next: commit and push this checkpoint, then require all CI, dependency-review, CodeQL, Docker/runtime,
+container-evidence, SBOM/artifact, and blocking Trivy results to name the resulting unchanged exact PR head before
+automatic merge.
+
 ## Combined Build Plan Slot 21 Local-Green Checkpoint
 
 Timestamp: 2026-07-30T22:44:09-07:00

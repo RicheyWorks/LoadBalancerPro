@@ -9824,3 +9824,18 @@ The L-4.2 local Docker preflight cannot connect because the Docker Desktop Linux
 workstation. No image or container was created, so no local Docker build/runtime or Trivy result exists. Correction:
 retain Docker build, container health/runtime smoke, and blocking Trivy as required exact-head GitHub CI gates; do not
 weaken or skip them remotely, and inspect their logs/artifacts before merge.
+
+The first L-4.2 post-merge artifact-download inspection command had an unterminated PowerShell string and was rejected
+by the parser before `gh run download` or any filesystem operation executed. No main artifact result is accepted from
+that command. Correction: split download from inspection, use simple literal comparisons instead of nested inline
+regex expressions, and inspect exact merge-run artifacts before marking L-4.2 `MAIN_GREEN`.
+
+The first L-4.3 repository-wide artifact-selection search included a stale assumed `docs/audit-and-playground` path
+and treated `rg`'s resulting exit 1 as a script failure after still returning useful matches. No file or remote state
+changed. Correction: inspect the checked-in audit and build-plan paths directly, and run narrower searches only against
+verified repository paths.
+
+The follow-up L-4.3 selector inventory passed a Windows-incompatible `Dockerfile*` pathname argument to `rg`; the audit
+excerpt and earlier matches were printed, but the command exited 1. No file or remote state changed. Correction: use
+the explicit checked-in `Dockerfile` path and enumerate candidate files with `rg --files` rather than shell-style
+wildcard path arguments.

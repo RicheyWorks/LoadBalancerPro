@@ -13,23 +13,17 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 21 / 49.
-- Latest completed slot: `L-4.1` in merged [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519);
-  final head `da0779b7feb48bfdcebb4a588e3da84a128a97a9`, merge
-  `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`, exact-main CI `30625619790` and CodeQL `30625619540` green.
-- Active implementation slot: `L-4.2`; delete or repair the JavaFX GUI in
-  [PR #520](https://github.com/RicheyWorks/LoadBalancerPro/pull/520) on
-  `codex/l-4-2-retire-javafx`, from exact green main
-  `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`. The deletion path removes eight desktop-only Java files, both
-  checked-in copies of the desktop message bundle, OpenJFX dependency/property, and stale packaging exclusions while
-  retaining the JavaFX-free public
-  `gui.Command` contract consumed by `CloudManager`. Skip-test compilation, 91 focused tests, source scans, and the
-  effective dependency-tree audit are green. A packaged-content check caught and removed the duplicate resource copy;
-  corrected product head `91fed46584156952520fc7dfab7347c5e65b64fc` then passed 3,076 clean full-suite tests,
-  package/verify, dependency-tree, 138-component SBOM, 1,258-entry JAR audit, packaged proof, and loopback runtime
-  smoke. Local Docker is unavailable, so exact-head CI, dependency review, CodeQL, Docker runtime, and blocking Trivy
-  remain required remote gates.
-- Next implementation slot after the active gate: `L-4.3`.
+- `MAIN_GREEN` implementation slots: 22 / 49.
+- Latest completed slot: `L-4.2` in merged [PR #520](https://github.com/RicheyWorks/LoadBalancerPro/pull/520);
+  final head `cae381085ec8057c8e2a560cbaea2ecda497f9e2`, merge
+  `e1f7afbe7da03e4366b65d896e1b445640538252`, exact-main CI `30628994500` and CodeQL `30628994559` green.
+- Active implementation slot: `L-4.3`; unify executable-JAR selection across the cross-platform operator
+  distribution smoke, local artifact verification, Docker, and CI from exact green main
+  `e1f7afbe7da03e4366b65d896e1b445640538252` on `codex/l-4-3-unify-artifact-selection`. Current-main audit confirms
+  lexical-order, modification-time, `ls -t`, and hardcoded `2.5.0` policies coexist. Scope is one deterministic,
+  version-derived selection contract and focused guards; no application, endpoint, dependency, plugin, credential,
+  external-target, or security-gate behavior is authorized.
+- Next implementation slot after the active gate: `L-4.4`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -59,8 +53,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | MAIN_GREEN |
 | 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | MAIN_GREEN |
 | 21 | L-4.1 | L-4.1 | Fix or retire CLI | L0 complete | MAIN_GREEN |
-| 22 | L-4.2 | L-4.2 | Delete or repair JavaFX | L0 complete | IN_PROGRESS |
-| 23 | L-4.3 | L-4.3 | Unify artifact selection | L0 complete | OPEN |
+| 22 | L-4.2 | L-4.2 | Delete or repair JavaFX | L0 complete | MAIN_GREEN |
+| 23 | L-4.3 | L-4.3 | Unify artifact selection | L0 complete | IN_PROGRESS |
 | 24 | L-4.4 | L-4.4 | Consolidate viewers and archive ceremony | L-1.1, L-2.4 | OPEN |
 | 25 | P-1.1 | P-1.1 | Timeout correctness | Proxy M0 complete | OPEN |
 | 26 | P-1.2 | P-1.2 | Upstream runtime stats | P-1.1 | OPEN |

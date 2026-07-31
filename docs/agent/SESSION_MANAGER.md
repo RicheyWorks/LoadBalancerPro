@@ -23,8 +23,9 @@ findings, and contains a 138-component CycloneDX 1.6 SBOM with Boot `3.5.16`, Fr
 and no OpenJFX.
 
 L-4.2 selected the source-plan deletion path. Current-tree usage analysis proved that eight desktop-only GUI source
-files and `gui/messages.properties` have no consumer outside the retired simulator. Those files, `javafx.version`,
-`org.openjfx:javafx-controls`, and their now-stale packaging exclusions are removed. The JavaFX-free public
+files and both checked-in copies of the single `gui/messages.properties` bundle have no consumer outside the retired
+simulator. Those files, `javafx.version`, `org.openjfx:javafx-controls`, and their now-stale packaging exclusions are
+removed. The JavaFX-free public
 `com.richmond423.loadbalancerpro.gui.Command` contract remains because `CloudManager` consumes it; moving that type
 would be a separate compatibility change. Current operator, security/testing, reviewer, and architecture documents
 now record retirement rather than advertising an unsupported launch path.
@@ -35,12 +36,18 @@ while still resolving Spring Boot `3.5.16`, Spring Framework `6.2.19`, and Sprin
 no JavaFX imports, only `Command.java` under the production `gui` package, and no remaining source consumer of a
 deleted desktop type.
 
-Pre-commit complete-diff self-review covers all 32 changed paths: eight Java sources and one resource are deleted;
+Pre-commit complete-diff self-review covers all 33 changed paths: eight Java sources and two copies of one desktop
+resource bundle are deleted;
 the only surviving production-Java edit is `Command` Javadoc; POM changes only remove the JavaFX declaration and
 stale excludes; the remaining changes are guards, current-state documentation, and campaign records. `git diff
 --check` is clean, there are no untracked files, and no workflow, Docker/Compose, runtime configuration, API/core
 implementation, new dependency/plugin, credential, external target, suppression, allowlist, or security-gate change
 is present.
+
+The first packaged-content audit then caught the duplicate resource copy under `src/main/resources/gui`. The
+correction removes it, extends the source-absence guard to both former locations, and passes a clean focused selector
+of 20 tests with zero failures, errors, or skips. No current production source loads `gui.messages`. Because the
+artifact gate changed the exact head, the complete full/gate ladder must be rerun before PR creation.
 
 Scope/boundaries: no API/proxy/cloud behavior, workflow, Docker/Compose, configuration default, credential,
 external/cloud/tenant target, security suppression/allowlist, or live mutation is authorized. Deletion must not

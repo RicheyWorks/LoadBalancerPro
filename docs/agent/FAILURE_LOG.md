@@ -9801,3 +9801,10 @@ The first L-4.2 deleted-file declaration summary assumed every deleted path had 
 `.Trim()` on a null match for `src/main/java/gui/messages.properties`. The symbol-usage output completed, but the
 aggregate deleted-path summary is not accepted. Correction: handle the non-Java resource explicitly and rerun the
 complete deletion inventory with a null-safe declaration formatter.
+
+The first L-4.2 packaged-content audit correctly rejected
+`BOOT-INF/classes/gui/messages.properties`. The initial source inventory found and removed the copy under
+`src/main/java/gui`, but missed the second identical desktop-only bundle under `src/main/resources/gui`; Maven
+therefore still packaged that resource. The JAR is not accepted. Correction: verify that no surviving source loads
+`gui.messages`, remove the duplicate resource, extend the absence guard to both former locations, and rerun focused,
+full, package, verify, SBOM, artifact, runtime, Docker, and security gates on the corrected exact head.

@@ -108,6 +108,7 @@ class ProductionArtifactIsolationTest {
         assertTrue(Files.exists(MAIN_JAVA.resolve(GUI).resolve("Command.java")),
                 "CloudManager compatibility contract must remain");
         assertFalse(Files.exists(Path.of("src", "main", "java", "gui", "messages.properties")));
+        assertFalse(Files.exists(Path.of("src", "main", "resources", "gui", "messages.properties")));
     }
 
     @Test

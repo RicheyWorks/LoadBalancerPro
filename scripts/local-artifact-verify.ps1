@@ -1,5 +1,5 @@
 param(
-    [string]$JarPath = "target/LoadBalancerPro-2.5.0.jar",
+    [string]$JarPath,
     [switch]$Build
 )
 
@@ -30,7 +30,11 @@ if ($Build) {
     }
 }
 
-if (-not (Test-Path $JarPath)) {
+if ([string]::IsNullOrWhiteSpace($JarPath)) {
+    $JarPath = & "$PSScriptRoot/resolve-executable-jar.ps1"
+}
+
+if (-not (Test-Path -LiteralPath $JarPath -PathType Leaf)) {
     throw "Jar not found: $JarPath. Run with -Build or run mvn -B -DskipTests package first."
 }
 

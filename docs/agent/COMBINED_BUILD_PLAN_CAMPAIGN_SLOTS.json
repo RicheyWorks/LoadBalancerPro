@@ -313,7 +313,7 @@
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "PACKAGING",
       "verificationProfile": "deployment-local",
-      "currentState": "Active on codex/l-4-3-unify-artifact-selection from exact green main e1f7afbe7da03e4366b65d896e1b445640538252. Current-main audit confirms operator-distribution-smoke.sh selects lexically, its PowerShell peer selects by mtime, CI selects with ls -t, and local-artifact-verify hardcodes 2.5.0. Reconcile all executable-JAR consumers, including Docker, to one deterministic version-derived fail-closed contract with cross-platform guards. No application behavior, endpoint, dependency, plugin, credential, external target, suppression, allowlist, or security-gate weakening is in scope."
+      "currentState": "Active on codex/l-4-3-unify-artifact-selection from exact green main e1f7afbe7da03e4366b65d896e1b445640538252. Bash and PowerShell resolvers derive target/${project.build.finalName}.jar from the effective Maven model and require that exact file. Distribution and local artifact helpers, all current smoke-script JAR consumers, Docker, three CI consumers, and README use the shared contract; explicit local artifact overrides remain. PowerShell behavior, the 2.5.0/2.10.0 decoy case, and 134 focused tests across 22 reports passed with zero failures/errors/skips. WSL has no Java, so exact-head Ubuntu CI and Docker must prove Bash runtime. No application behavior, endpoint, dependency, plugin, credential, external target, suppression, allowlist, or security-gate weakening is in scope."
     },
     {
       "ordinal": 24,

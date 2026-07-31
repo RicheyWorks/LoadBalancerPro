@@ -6,10 +6,10 @@ WORKDIR /workspace
 COPY pom.xml .
 RUN mvn -q -DskipTests dependency:go-offline
 
+COPY scripts/resolve-executable-jar.sh ./scripts/resolve-executable-jar.sh
 COPY src ./src
 RUN mvn -q -DskipTests package spring-boot:repackage \
-    && JAR="$(ls -t target/LoadBalancerPro-*.jar | grep -Ev '(-sources|-javadoc|-tests)\.jar$' | head -n 1)" \
-    && test -n "$JAR" \
+    && JAR="$(bash scripts/resolve-executable-jar.sh)" \
     && cp "$JAR" /workspace/app.jar
 
 # eclipse-temurin:17-jre-jammy

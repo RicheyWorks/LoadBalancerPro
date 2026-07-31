@@ -111,13 +111,9 @@ function Assert-NoSecretValue {
 }
 
 function Find-ExecutableJar {
-    $jar = Get-ChildItem -Path "target" -Filter "LoadBalancerPro-*.jar" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch "(-sources|-javadoc|-tests|\.original)\.jar$" } |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-
-    if ($jar) {
-        return $jar.FullName
+    $jarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
+    if (Test-Path -LiteralPath $jarPath -PathType Leaf) {
+        return (Resolve-Path -LiteralPath $jarPath).Path
     }
     return ""
 }

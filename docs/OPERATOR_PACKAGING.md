@@ -45,16 +45,21 @@ mvn -B -DskipTests package
 Run the API with the packaged jar:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
 Run the proxy demo profile with the packaged jar after the fixture launcher is running:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --spring.profiles.active=proxy-demo-round-robin
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --spring.profiles.active=proxy-demo-round-robin
 ```
 
-The executable jar main class remains `com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`. Use Maven exec or the classpath fallback for `com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`.
+The resolver uses Maven's effective `project.build.finalName`, requires that exact jar, and does not select stale
+artifacts by filename or modification time. The executable jar main class remains
+`com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`. Use Maven exec or the classpath fallback for
+`com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`.
 
 ## Real-Backend Examples
 
@@ -75,7 +80,8 @@ Use [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) for the f
 One local run pattern is:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-example.properties
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-example.properties
 ```
 
 Then verify:

@@ -24,15 +24,11 @@ function Assert-OutputUnderTarget {
 }
 
 function Find-ExecutableJar {
-    $jar = Get-ChildItem -Path "target" -Filter "LoadBalancerPro-*.jar" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch "(-sources|-javadoc|-tests|\.original)\.jar$" } |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-
-    if ($null -eq $jar) {
-        return $null
+    $jarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
+    if (Test-Path -LiteralPath $jarPath -PathType Leaf) {
+        return (Resolve-Path -LiteralPath $jarPath).Path
     }
-    return $jar.FullName
+    return $null
 }
 
 function Assert-NoSecretValues {
@@ -54,9 +50,10 @@ function Assert-NoSecretValues {
 $resolvedOutputDir = Assert-OutputUnderTarget -Path $OutputDir
 
 if ($DryRun) {
+    $expectedJarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
     Write-Host "Enterprise Lab workflow dry run."
     Write-Host "Output directory: $OutputDir"
-    Write-Host "Planned command: java -jar target/LoadBalancerPro-*.jar --enterprise-lab-workflow=$Mode --enterprise-lab-output=$OutputDir"
+    Write-Host "Planned command: java -jar $expectedJarPath --enterprise-lab-workflow=$Mode --enterprise-lab-output=$OutputDir"
     Write-Host "Safety: local deterministic CLI only; no API server, cloud mutation, external network, release, tag, asset, container, or registry action."
     exit 0
 }

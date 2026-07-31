@@ -28,6 +28,11 @@ The digest pins make the reviewed source more stable, but they do not prove futu
 The later 2026-07-16 security-maintenance refresh moved the runtime pin to a Jammy image whose installed `libssl3`
 and `openssl` packages are `3.0.2-0ubuntu1.25`; the historical slot 7 audit itself remained documentation/test-only.
 
+The later 2026-07-31 L-4.3 packaging-maintenance slot replaces modification-time JAR selection with the shared
+Maven-effective `project.build.finalName` resolver. The Docker build now requires the exact current-project executable
+JAR before copying it to `/workspace/app.jar`; it does not choose among stale versioned artifacts. The historical
+slot 7 audit scope above remains unchanged.
+
 ## Build Stage Posture
 
 The build stage currently:
@@ -37,9 +42,9 @@ The build stage currently:
 - sets `WORKDIR /workspace`;
 - copies `pom.xml`;
 - runs `mvn -q -DskipTests dependency:go-offline`;
-- copies `src`;
+- copies the shared executable-JAR resolver and `src`;
 - runs `mvn -q -DskipTests package spring-boot:repackage`;
-- selects a packaged `target/LoadBalancerPro-*.jar` while excluding source, javadoc, and tests jars;
+- resolves and requires `target/${project.build.finalName}.jar` from the effective Maven model;
 - copies the selected JAR to `/workspace/app.jar`.
 
 This build stage packages the application inside the container build. It does not publish the image, sign the image, push to a registry, create a GitHub Release, mutate CI wiring, or change Maven behavior in this slot.

@@ -19,10 +19,13 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `e1f7afbe7da03e4366b65d896e1b445640538252`, exact-main CI `30628994500` and CodeQL `30628994559` green.
 - Active implementation slot: `L-4.3`; unify executable-JAR selection across the cross-platform operator
   distribution smoke, local artifact verification, Docker, and CI from exact green main
-  `e1f7afbe7da03e4366b65d896e1b445640538252` on `codex/l-4-3-unify-artifact-selection`. Current-main audit confirms
-  lexical-order, modification-time, `ls -t`, and hardcoded `2.5.0` policies coexist. Scope is one deterministic,
-  version-derived selection contract and focused guards; no application, endpoint, dependency, plugin, credential,
-  external-target, or security-gate behavior is authorized.
+  `e1f7afbe7da03e4366b65d896e1b445640538252` on `codex/l-4-3-unify-artifact-selection`. Bash and PowerShell
+  resolvers now derive the exact executable path from Maven's effective `project.build.finalName`; distribution/local
+  artifact helpers, all current smoke-script JAR consumers, Docker, three CI consumers, and README use that contract.
+  PowerShell behavior and the original `2.5.0`/`2.10.0` decoy case passed; 134 focused tests across 22 reports passed
+  with zero failures, errors, or skips. Local Bash runtime is unavailable in WSL because no WSL Java exists, so Ubuntu
+  CI and Docker remain required. No application, endpoint, dependency, plugin, credential, external-target, or
+  security-gate behavior is authorized.
 - Next implementation slot after the active gate: `L-4.4`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

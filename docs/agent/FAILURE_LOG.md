@@ -9839,3 +9839,52 @@ The follow-up L-4.3 selector inventory passed a Windows-incompatible `Dockerfile
 excerpt and earlier matches were printed, but the command exited 1. No file or remote state changed. Correction: use
 the explicit checked-in `Dockerfile` path and enumerate candidate files with `rg --files` rather than shell-style
 wildcard path arguments.
+
+The first L-4.3 Maven final-name probe passed an unquoted `-Dstyle.color=never` through PowerShell, which Maven parsed
+as the invalid lifecycle phase `.color=never`. Later read-only file inspections in the same composite command still
+ran, so the overall shell cell returned success; no final-name value is accepted from that probe. No file or remote
+state changed. Correction: quote Maven `-D` arguments under PowerShell and require the isolated probe itself to exit
+zero before using its output.
+
+An L-4.3 follow-up selector inventory produced the intended first search results but PowerShell/`rg` misparsed the
+second search's glob token and emitted `unrecognized file type: er`; the composite cell still exited zero. No file or
+remote state changed, and the malformed portion is not accepted as a complete inventory. Correction: use `rg --files`
+to enumerate explicit PowerShell paths and search that verified list without a glob option.
+
+An L-4.3 multi-file documentation/test patch was rejected before applying because the CI audit's exact numbered-list
+wording did not match the assumed context. No partial edit was accepted and no remote state changed. Correction:
+inspect the exact CI audit boundary and apply the README, historical-audit addenda, and guard expansion in smaller
+context-accurate patches.
+
+The first L-4.3 cross-platform resolver execution passed Bash/PowerShell syntax parsing, then Git Bash's Maven launcher
+rejected the inherited Windows `JAVA_HOME` as invalid. Because Bash returned no path, the surrounding PowerShell
+verification wrapper also attempted `.Trim()` on null and stopped before the focused Maven tests. No file or remote
+state changed and no resolver parity result is accepted. Correction: inspect the host Java/Maven paths in both shells,
+make the resolver portable when Git Bash has a usable `java` on `PATH`, and make the verification wrapper validate
+native exit/output before trimming.
+
+The L-4.3 host-path diagnostic established that the available `bash` is WSL: it can see a mounted Windows Maven shell
+launcher but has neither a WSL `java` command nor a WSL-valid `JAVA_HOME`. The diagnostic intentionally invoked
+`java -version`, which failed and caused PowerShell's native-error bridge to stop the cell. No file or remote state
+changed. Correction: do not claim local Bash runtime parity on this workstation; retain local Bash syntax/source
+guards, exercise the PowerShell resolver behavior with the installed Windows JDK/Maven, and require exact-head Ubuntu
+CI plus Docker build/runtime to prove the Bash resolver.
+
+The first L-4.3 focused Maven selector stopped in test compilation because the new
+`ExecutableJarSelectionContractTest` third method declaration omitted its `void` return type. Before that compile
+failure, PowerShell exact-path resolution, the distribution helper's static mode, and the local artifact helper passed.
+No application/runtime change or remote state occurred, and no focused Maven result is accepted. Correction: add the
+missing test method return type and rerun the complete focused selector.
+
+The next L-4.3 focused selector compiled and ran 34 tests, with 32 passing and two guard failures. The new selector
+guard falsely treated `release-intent-review.ps1`'s modification-time ordering for non-JAR evidence files as JAR
+selection drift, and the distribution-doc guard expected a forward-slash spelling inside a PowerShell resolver path.
+No application behavior or remote state changed, and the 34-test run is not accepted as green. Correction: scope the
+mtime prohibition to JAR candidate expressions and make the documentation assertion separator-neutral, then rerun the
+complete focused selector.
+
+The following L-4.3 focused selector ran 34 tests with 33 passing. Its only failure was the new README consumer guard:
+the CI snippet was corrected, but other current copyable README commands still hardcoded
+`target/LoadBalancerPro-2.5.0.jar`. No application behavior or remote state changed, and the run is not accepted as
+green. Correction: use the shared resolver in current README executable-JAR commands while preserving historical
+release-asset evidence names, then rerun the complete focused selector.

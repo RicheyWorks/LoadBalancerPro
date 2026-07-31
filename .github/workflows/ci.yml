@@ -140,11 +140,7 @@ jobs:
           OUTPUT_DIR="target/artifact-smoke"
           mkdir -p "$OUTPUT_DIR"
 
-          JAR="$(ls -t target/LoadBalancerPro-*.jar | grep -Ev '(-sources|-javadoc|-tests)\.jar$' | head -n 1)"
-          if [ -z "${JAR:-}" ]; then
-            echo "No packaged LoadBalancerPro jar found."
-            exit 1
-          fi
+          JAR="$(bash scripts/resolve-executable-jar.sh)"
 
           SUMMARY="$OUTPUT_DIR/artifact-smoke-summary.txt"
           SHA_OUTPUT="$OUTPUT_DIR/artifact-sha256.txt"
@@ -264,8 +260,7 @@ jobs:
           HEALTHY_LOG="$(mktemp)"
           OVERLOADED_LOG="$(mktemp)"
           INVALID_LOG="$(mktemp)"
-          JAR="$(ls -t target/LoadBalancerPro-*.jar | grep -Ev '(-sources|-javadoc|-tests)\.jar$' | head -n 1)"
-          test -n "$JAR"
+          JAR="$(bash scripts/resolve-executable-jar.sh)"
 
           java -jar "$JAR" --lase-demo=healthy >"$HEALTHY_LOG" 2>&1
           assert_contains "$HEALTHY_LOG" "=== LoadBalancerPro LASE Synthetic Demo ==="
@@ -308,8 +303,7 @@ jobs:
         run: |
           set -euo pipefail
           APP_LOG="$(mktemp)"
-          JAR="$(ls -t target/LoadBalancerPro-*.jar | grep -Ev '(-sources|-javadoc|-tests)\.jar$' | head -n 1)"
-          test -n "$JAR"
+          JAR="$(bash scripts/resolve-executable-jar.sh)"
           java -jar "$JAR" \
             --server.address=127.0.0.1 \
             --server.port=18080 \

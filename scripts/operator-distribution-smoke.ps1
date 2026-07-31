@@ -16,15 +16,7 @@ function Assert-PathExists {
 }
 
 function Find-ExecutableJar {
-    $jar = Get-ChildItem -Path "target" -Filter "LoadBalancerPro-*.jar" -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch "(-sources|-javadoc|-tests|\\.original)\\.jar$" } |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-
-    if (-not $jar) {
-        throw "Executable jar not found under target/. Run with -Package or run mvn -B -DskipTests package first."
-    }
-    return $jar.FullName
+    return & "$PSScriptRoot/resolve-executable-jar.ps1"
 }
 
 function Invoke-UrlWithRetry {
@@ -63,12 +55,16 @@ $requiredPaths = @(
     "docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md",
     "docs/OPERATOR_PACKAGING.md",
     "docs/PROXY_DEMO_FIXTURE_LAUNCHER.md",
-    "docs/PROXY_DEMO_STACK.md"
+    "docs/PROXY_DEMO_STACK.md",
+    "scripts/resolve-executable-jar.sh",
+    "scripts/resolve-executable-jar.ps1"
 )
 
 foreach ($path in $requiredPaths) {
     Assert-PathExists -Path $path
 }
+
+$expectedJarPath = & "$PSScriptRoot/resolve-executable-jar.ps1" -ExpectedOnly
 
 Write-Host ""
 Write-Host "Package command:"
@@ -78,7 +74,7 @@ Write-Host "Maven exec fixture launcher:"
 Write-Host "  mvn -q -DskipTests compile exec:java `"-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`" `"-Dexec.args=--mode round-robin`""
 Write-Host ""
 Write-Host "Packaged jar startup:"
-Write-Host "  java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=$Port --spring.profiles.active=local"
+Write-Host "  java -jar $expectedJarPath --server.address=127.0.0.1 --server.port=$Port --spring.profiles.active=local"
 Write-Host ""
 Write-Host "Proxy status checks:"
 Write-Host "  curl -fsS http://127.0.0.1:$Port/api/health"

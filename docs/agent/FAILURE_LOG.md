@@ -6,6 +6,50 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T21:44:40-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a parallel read-only CLI inventory returned exit 1 because at least one bounded `rg` query had no
+matches, and its combined test output was too broad and truncated. It changed no state and revealed no product
+failure. Subsequent inspection uses one source at a time with exact line ranges and treats a no-match inventory result
+as data rather than a failed batch.
+
+## Entry
+
+Date/time: 2026-07-30T21:44:18-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a read-only `rg` inventory used Bash brace expansion in a PowerShell command, which PowerShell
+parsed as an invalid argument list; the parallel read batch stopped without changing repository or remote state. The
+inventory is being rerun with the CLI directory plus explicit `--glob` filters, which is portable in this shell.
+
+## Entry
+
+Date/time: 2026-07-30T21:43:51-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a read-only PowerShell status command used a `foreach` statement directly before a pipeline and
+failed at parse time with `An empty pipe element is not allowed`; it did not reach process or report inspection and
+changed no state. The status audit is being rerun by accumulating rows before formatting them. The focused Maven
+process remains bounded and independently observable through its exit marker and Surefire XML.
+
+## Entry
+
+Date/time: 2026-07-30T21:40:49-07:00
+
+Branch/PR: `main` after L-2.5 merge / #518
+
+Failure/resolution: a read-only L-4.1 inventory command repeated the already-known Windows `rg` invocation mistake:
+it named the nonexistent historical `docs/audit-and-playground` path and passed PowerShell wildcard strings as literal
+paths, so that parallel read batch returned exit 1 before displaying its other two successful results. No repository,
+workflow, PR, or remote state was changed. The inventory is being rerun against the actual build-plan/audit files and
+with `rg --files`-resolved paths; the exact-main focused test process and GitHub checks continued independently.
+
+## Entry
+
 Date/time: 2026-07-30T19:06:27-07:00
 
 Branch/PR: `main`, then `codex/l-2-5-durability-honesty` / no L-2.5 PR yet

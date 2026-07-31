@@ -6,6 +6,45 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 20 Main-Green / Slot 21 Start
+
+Timestamp: 2026-07-30T21:47:38-07:00
+
+Completed: `L-2.5`; `codex/l-2-5-durability-honesty`;
+[#518](https://github.com/RicheyWorks/LoadBalancerPro/pull/518); final head
+`cdb42b57097c06749ce79f53e4d325a939d3aed2`; merge
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`.
+
+Verified: the final head retained its exact 30-path durability/logging/mutex scope and passed the 149-test focused
+selector, six-test campaign guard, 3,079-test clean package, verify, all packaged proof/runtime gates, complete-diff
+self-review, push CI `30604251278`, PR CI/dependency review `30604253531`, and CodeQL `30604253537`. Its remote
+container evidence names the exact final head, Docker runtime passed, and blocking Trivy reports zero Ubuntu and zero
+JAR HIGH/CRITICAL findings. The PR was `CLEAN` and `MERGEABLE` immediately before automatic merge.
+
+The merge has exact parents `11b23f530156cc01e4f4016a48f4051f70593697` and
+`cdb42b57097c06749ce79f53e4d325a939d3aed2`; its tree equals the reviewed PR tree. Exact-main focused verification
+passed 149 tests across 10 reports with zero failures, errors, or skips. Main CI `30604704044` and CodeQL
+`30604704028` passed. Exact-main container evidence names the merge SHA, Docker runtime passed, and Trivy reports zero
+Ubuntu and zero JAR findings. The main 138-component CycloneDX SBOM retains Boot `3.5.16`, Framework `6.2.19`, and
+Security `6.5.11`; packaged-artifact smoke retains all required resources and excludes proof-tool,
+direct-JavaFX-application, and OpenJFX entries. Unsupported providers, drive firmware, universal power-loss survival,
+remote-filesystem semantics, multi-host/distributed durability, production readiness, throughput, and latency remain
+not proven.
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; exact green-main base
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; status `IN_PROGRESS`. Current-main inventory confirms the Spring Boot
+entry point does not dispatch `RemediationReportCli`; its evidence-output paths do not share a fail-closed overwrite
+contract; and the separate synthetic interactive `LoadBalancerCLI` retains dead undo/deserialization and blocking-menu
+concerns. Preserve the offline evidence/report tooling and its no-network/no-cloud-mutation boundary. Decide and prove
+the smallest complete repair-or-retirement of the interactive menu, make shipped-JAR report commands work, and apply
+one explicit `--force` policy to intentional output replacement. Do not broaden into L-4.2 JavaFX implementation,
+L-4.3 artifact selection, cloud mutation, API behavior, dependencies, workflows, external targets, or production
+claims.
+
+Tooling-only PowerShell/`rg` inventory failures after the merge are recorded in `FAILURE_LOG.md`; none changed product
+or remote state. Blocker: none. Next: finish the exact current-main CLI caller/output/documentation/test inventory,
+choose the bounded keep/delete contract, then run focused tests before any broader verification.
+
 ## Combined Build Plan Slot 20 PR-Creation Checkpoint
 
 Timestamp: 2026-07-30T21:27:46-07:00

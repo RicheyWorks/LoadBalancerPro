@@ -6,6 +6,19 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-31T03:16:11-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)
+
+Failure/resolution: the first final-cycle run-list command interpolated the exact head into an incorrectly escaped
+`gh --jq` expression, so that optional list subcommand rejected its filter. The subsequent direct PR query in the
+same read-only command succeeded and identified push CI `30622938084`, PR CI `30622941198`, CodeQL `30622940815`,
+and dependency review for `2dd8b2370fe2de7ffb044eef8dcc0b7e91398b89`. No remote or product state changed. This
+failure is being checkpointed, and future snapshots use `gh run view` with explicit run IDs rather than interpolated
+JQ.
+
+## Entry
+
 Date/time: 2026-07-31T03:13:23-07:00
 
 Branch/PR: `codex/l-4-1-operator-cli-surface` / [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)

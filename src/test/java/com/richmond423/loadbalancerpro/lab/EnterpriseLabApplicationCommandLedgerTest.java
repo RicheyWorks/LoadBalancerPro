@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -92,6 +93,9 @@ class EnterpriseLabApplicationCommandLedgerTest {
             assertEquals(request.requestId(), intent.correlationId());
             assertEquals(EnterpriseLabApplicationCommandLedger.SyncPolicy.FORCE_DATA_AND_METADATA,
                     dispatch.syncPolicy());
+            assertEquals(
+                    expectedDirectorySyncStatus(temporaryDirectory),
+                    dispatch.directorySyncStatus());
             assertTrue(intent.exactReadBackVerified());
             assertTrue(dispatch.exactReadBackVerified());
             assertEquals(List.of(
@@ -494,6 +498,9 @@ class EnterpriseLabApplicationCommandLedgerTest {
                 plan.status());
         assertFalse(plan.applied());
         assertTrue(plan.tailBytes() > 0L);
+        assertEquals(
+                EnterpriseLabDirectorySyncStatus.NOT_REQUIRED_EXISTING_ENTRY,
+                plan.directorySyncStatus());
         assertArrayEquals(original, Files.readAllBytes(ledgerFile));
 
         var applied = repairs.execute(
@@ -505,6 +512,9 @@ class EnterpriseLabApplicationCommandLedgerTest {
                 applied.status());
         assertTrue(applied.applied());
         assertTrue(applied.exactPostRepairVerified());
+        assertEquals(
+                expectedDirectorySyncStatus(temporaryDirectory),
+                applied.directorySyncStatus());
         Path quarantine = ledgerFile.getParent()
                 .resolve(ChainedJsonlStore.REPAIR_QUARANTINE_DIRECTORY_NAME)
                 .resolve(applied.quarantineFileName());
@@ -1258,6 +1268,16 @@ class EnterpriseLabApplicationCommandLedgerTest {
     private DispatchEvidence evidence() {
         return new DispatchEvidence(
                 INSTALLED, 7L, Map.of("boundary", "application-ledger"));
+    }
+
+    private static EnterpriseLabDirectorySyncStatus expectedDirectorySyncStatus(
+            Path directory) {
+        return Files.getFileAttributeView(
+                directory,
+                PosixFileAttributeView.class) == null
+                ? EnterpriseLabDirectorySyncStatus
+                        .UNSUPPORTED_ON_LOCAL_FILESYSTEM
+                : EnterpriseLabDirectorySyncStatus.SYNCHRONIZED;
     }
 
     private static final class MutableClock extends Clock {

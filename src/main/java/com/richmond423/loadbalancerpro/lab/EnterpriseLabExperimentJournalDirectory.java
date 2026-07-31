@@ -34,15 +34,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates journals only beneath a pre-existing, explicit, trusted local data root.
  * Experiment identifiers are hashed and never used as path components.
  */
 public final class EnterpriseLabExperimentJournalDirectory {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabExperimentJournalDirectory.class);
     public static final long HARD_MAX_JOURNAL_BYTES = 16L * 1024L * 1024L;
     public static final int HARD_MAX_JOURNAL_ENTRIES = 4_096;
     public static final int HARD_MAX_DISCOVERED_JOURNALS = 256;
@@ -78,6 +83,10 @@ public final class EnterpriseLabExperimentJournalDirectory {
     private final long maxJournalBytes;
     private final int maxJournalEntries;
     private final EnterpriseLabEvidenceMutationAuthority mutationAuthority;
+    private final AtomicReference<EnterpriseLabDirectorySyncStatus>
+            directorySyncStatus = new AtomicReference<>(
+                    EnterpriseLabDirectorySyncStatus
+                            .NOT_REQUIRED_EXISTING_ENTRY);
 
     private EnterpriseLabExperimentJournalDirectory(Path trustedRoot) {
         this(trustedRoot, HARD_MAX_JOURNAL_BYTES, HARD_MAX_JOURNAL_ENTRIES,
@@ -239,6 +248,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                     existing,
                     authorization,
                     safeInjector,
+                    directorySyncStatus.get(),
                     () -> ACTIVE_WRITERS.remove(journalPath, owner));
             handedOff = true;
             return journal;
@@ -253,6 +263,9 @@ public final class EnterpriseLabExperimentJournalDirectory {
             throw failure(Failure.IO_FAILURE, "journal writer could not be opened", exception);
         } finally {
             if (!handedOff) {
+                if (jsonlStore != null) {
+                    jsonlStore.close();
+                }
                 ACTIVE_WRITERS.remove(journalPath, owner);
             }
         }
@@ -387,6 +400,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             requireSameMutationAuthorization(authorization);
             try {
                 Files.delete(source);
+                recordDirectorySync(journalsDirectory);
             } catch (IOException exception) {
                 throw failure(Failure.IO_FAILURE,
                         "verified terminal manifest was installed but source cleanup failed safely", exception);
@@ -508,6 +522,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                 restrictPermissions(source, FILE_PERMISSIONS);
                 requireSameMutationAuthorization(authorization);
                 Files.move(source, destination, StandardCopyOption.ATOMIC_MOVE);
+                recordDirectoryMove(source, destination);
             } catch (IOException exception) {
                 throw failure(Failure.QUARANTINE_FAILED,
                         "journal could not be atomically preserved in quarantine", exception);
@@ -560,9 +575,9 @@ public final class EnterpriseLabExperimentJournalDirectory {
     }
 
     private Optional<EnterpriseLabExperimentJournalEvent> readCanonicalFirstFrame(Path path) {
-        try {
-            byte[] bytes = new ChainedJsonlStore(path, maxJournalBytes)
-                    .readBoundedBytes();
+        try (ChainedJsonlStore store =
+                     new ChainedJsonlStore(path, maxJournalBytes)) {
+            byte[] bytes = store.readBoundedBytes();
             int end = -1;
             for (int index = 0;
                  index < bytes.length
@@ -609,10 +624,10 @@ public final class EnterpriseLabExperimentJournalDirectory {
             return new ReadResult(journalId, false, List.of(), TailStatus.COMPLETE, 0, 0, 0);
         }
         validateJournalFile(journalPath);
-        try {
+        try (ChainedJsonlStore store =
+                     new ChainedJsonlStore(journalPath, maxJournalBytes)) {
             ChainedJsonlStore.ChainReplay<EnterpriseLabExperimentJournalEvent> replay =
-                    new ChainedJsonlStore(journalPath, maxJournalBytes)
-                            .replayChain(
+                    store.replayChain(
                                     new ChainedJsonlStore.FrameCodec<>() {
                                         @Override
                                         public EnterpriseLabExperimentJournalEvent decode(
@@ -713,7 +728,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
         }
     }
 
-    private static Path controlledDirectory(Path parent, String name) {
+    private Path controlledDirectory(Path parent, String name) {
         Path directory = parent.resolve(name).normalize();
         if (!directory.startsWith(parent)) {
             throw failure(Failure.UNSAFE_PATH, "journal namespace escaped its trusted root");
@@ -733,6 +748,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                         "journal namespace must be a non-symbolic-link directory");
             }
             restrictPermissions(directory, DIRECTORY_PERMISSIONS);
+            recordDirectorySync(parent);
             return directory;
         } catch (EnterpriseLabExperimentJournalStorageException exception) {
             throw exception;
@@ -776,6 +792,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             }
             validateJournalFile(journalPath);
             restrictPermissions(journalPath, FILE_PERMISSIONS);
+            recordDirectorySync(journalsDirectory);
         } catch (EnterpriseLabExperimentJournalStorageException exception) {
             throw exception;
         } catch (IOException exception) {
@@ -860,6 +877,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             requireSameMutationAuthorization(authorization);
             Files.move(temporary, destination, StandardCopyOption.ATOMIC_MOVE);
             restrictPermissions(destination, FILE_PERMISSIONS);
+            recordDirectoryMove(temporary, destination);
             return true;
         } catch (FileAlreadyExistsException exception) {
             return false;
@@ -904,6 +922,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                 validateJournalFile(path);
                 requireSameMutationAuthorization(authorization);
                 Files.delete(path);
+                recordDirectorySync(compactedDirectory);
             }
         } catch (EnterpriseLabExperimentJournalStorageException exception) {
             throw exception;
@@ -1035,6 +1054,28 @@ public final class EnterpriseLabExperimentJournalDirectory {
         }
     }
 
+    private void recordDirectorySync(Path directory) throws IOException {
+        EnterpriseLabDirectorySyncStatus observed =
+                EnterpriseLabStorageDurability.synchronizeDirectory(
+                        directory,
+                        EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
+        directorySyncStatus.updateAndGet(
+                current -> EnterpriseLabDirectorySyncStatus.combine(
+                        current, observed));
+    }
+
+    private void recordDirectoryMove(Path source, Path destination)
+            throws IOException {
+        EnterpriseLabDirectorySyncStatus observed =
+                EnterpriseLabStorageDurability.synchronizeMove(
+                        source,
+                        destination,
+                        EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER);
+        directorySyncStatus.updateAndGet(
+                current -> EnterpriseLabDirectorySyncStatus.combine(
+                        current, observed));
+    }
+
     private static void closeQuietly(FileChannel channel) {
         if (channel != null) {
             try {
@@ -1046,6 +1087,10 @@ public final class EnterpriseLabExperimentJournalDirectory {
     }
 
     static EnterpriseLabExperimentJournalStorageException failure(Failure failure, String message) {
+        LOGGER.warn(
+                "Enterprise Lab journal storage failure [{}]: {}",
+                failure,
+                message);
         return new EnterpriseLabExperimentJournalStorageException(failure, message);
     }
 
@@ -1053,6 +1098,16 @@ public final class EnterpriseLabExperimentJournalDirectory {
             Failure failure,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab journal storage failure [{}]: {}; cause={}: {}",
+                failure,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab journal storage failure stack [{}]",
+                failure,
+                cause);
         return new EnterpriseLabExperimentJournalStorageException(failure, message, cause);
     }
 

@@ -6,6 +6,118 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 20 Complete-Diff Local-Green Candidate
+
+Timestamp: 2026-07-30T21:24:37-07:00
+
+Current slot/branch/PR: `L-2.5`; `codex/l-2-5-durability-honesty`; no PR yet; exact green-main base
+`11b23f530156cc01e4f4016a48f4051f70593697`; pre-product checkpoint
+`e1bfaca96749a21bb6266ba360f7a092462ab806`; status `LOCAL_GREEN`.
+
+Candidate: controlled local create, rename, and delete boundaries synchronize affected parent directories when the
+provider exposes POSIX directory channels. Receipts distinguish synchronized, unsupported-local-filesystem, and
+no-entry-change evidence. An injected failure immediately after archive installation emits no receipt, preserves the
+current bytes, and recovers the pending truncate on reopen. Storage failures emit classified diagnostics without record
+contents. Shared per-path mutex leases are reference counted and evicted at last close, with deterministic constructor-
+failure cleanup, closed production owners, and cleaner fallback. The final self-review also made the journal-directory
+status accumulator race-free and synchronized atomically published supervisor metadata.
+
+Verification: the final product-focused selector passed 149 tests across 10 reports and the campaign guard passed six
+tests, all with zero failures, errors, or skips. The frozen `mvn -q clean package` passed 3,079 tests across 415 fresh
+reports with zero failures, errors, or skips; skip-test `verify` passed. The four test-scope proof reports passed.
+Packaged workflow, allocation, durable-recovery, experiment, ownership, and independent-supervisor proofs passed:
+10 workflow scenarios, 10 controlled drift classifications, 124 recovery requests, 13 scenarios and 837 loopback
+requests, immediate pre-expiry takeover, 22 application JVMs, 24 supervisor JVMs, eight crash windows, and 18 IPC
+checks. The final packaged local/API-key/proxy-loopback matrix passed on verified-free alternate loopback ports and left
+zero listeners or repository Java children.
+
+Artifact evidence: `LoadBalancerPro-2.5.0.jar` is 85,648,965 bytes with 1,276 entries and SHA-256
+`86117ef2db35376530586f9db1b3d88f459d7508c22f9991fcbc322274c1eb92`. Every CI-required runtime resource is present;
+proof-tool, direct-JavaFX-application, and OpenJFX-library entries are absent. CycloneDX JSON/XML schema 1.6 contains 138
+components, zero OpenJFX, Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`.
+
+Complete-diff self-review: no remaining findings. The exact 30 paths are four concise campaign records, one durable-
+evidence claim contract, 20 local lab storage/lifecycle sources including two new shared durability types, and five
+focused tests. No dependency, Maven, workflow, Docker/Compose, script, endpoint, resource/configuration-default,
+credential, secret-like assignment, external URL/target, cloud/tenant, suppression, allowlist, security-gate, or
+unrelated application-behavior change is present. There are no conflict markers or whitespace errors, and the branch
+still descends exactly from current `origin/main`.
+
+Local Docker remains unavailable because the Docker Desktop Linux named pipe is absent; no local image, container, or
+Trivy result is claimed. Exact-head remote CI, dependency review, CodeQL, Docker build/runtime, artifact/SBOM evidence,
+and blocking HIGH/CRITICAL Trivy remain mandatory. Unsupported providers, drive firmware, universal power-loss
+survival, remote-filesystem semantics, multi-host/distributed durability, production readiness, throughput, and
+latency remain not proven.
+
+Blocker: none. Next: rerun the campaign documentation guard on this checkpoint, stage only the 30 intentional paths,
+commit and push, create the PR checkpoint, and require every exact-head remote gate before automatic merge.
+
+## Combined Build Plan Slot 20 Full-Local-Green Checkpoint
+
+Timestamp: 2026-07-30T20:25:40-07:00
+
+Active: `L-2.5`; `codex/l-2-5-durability-honesty`; base
+`11b23f530156cc01e4f4016a48f4051f70593697`; pre-product checkpoint
+`e1bfaca96749a21bb6266ba360f7a092462ab806`; status `IN_PROGRESS`.
+
+Verified: the final current-head focused selector passed 149 tests across 10 reports with zero failures, errors, or
+skips. Both `mvn -q clean package` and `mvn -B package` passed 3,079 tests across 415 fresh reports with zero failures,
+errors, or skips; `mvn -q -DskipTests verify` passed. The four test-scope proof reports passed. The packaged workflow,
+allocation, durable-recovery, experiment, ownership, and independent-supervisor scripts passed, covering 10 controlled
+allocation drift cases, 124 recovery requests, 837 experiment loopback requests, immediate pre-expiry takeover, 22
+application JVMs, 24 supervisor JVMs, eight crash windows, and 18 IPC checks. The packaged local/API-key/proxy-loopback
+runtime matrix passed on verified-free alternate loopback ports and left zero listeners or repository Java children.
+
+Artifact evidence: the final JAR is 85,647,831 bytes with 1,276 entries and SHA-256
+`c67abacb29361585ecba6707c017416d1b979d00e68ac2f958cc4cbb718f63fb`. It contains every required runtime resource and
+zero proof-tool, direct-JavaFX-application, or OpenJFX entries. CycloneDX JSON/XML schema 1.6 contains 138 components,
+zero OpenJFX, Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`.
+
+Local Docker remains unavailable because the Docker Desktop Linux named pipe is absent; no local image, container, or
+Trivy result is claimed. Exact-head remote Docker build/runtime, SBOM/artifact evidence, blocking Trivy, CI, dependency
+review, and CodeQL remain mandatory.
+
+Scope/boundaries: 30 files limited to the authorized local-storage implementation, tests, durable-evidence claim
+contract, and concise campaign records. No dependency, Maven, workflow, Docker/Compose, endpoint, configuration-default,
+credential, external-target, cloud/tenant, suppression, allowlist, or security-gate change. Unsupported providers,
+drive firmware, universal power-loss survival, remote-filesystem semantics, multi-host/distributed durability,
+production readiness, throughput, and latency remain not proven.
+
+Blocker: none. Next: run the final campaign documentation guard and exact-tree scope/secret/conflict audits, perform the
+complete-diff self-review, commit the intentional files, push, open the PR, and require every current-head remote gate
+before automatic merge.
+
+## Combined Build Plan Slot 20 Focused-Green Checkpoint
+
+Timestamp: 2026-07-30T19:47:06-07:00
+
+Active: `L-2.5`; `codex/l-2-5-durability-honesty`; base
+`11b23f530156cc01e4f4016a48f4051f70593697`; pre-product checkpoint
+`e1bfaca96749a21bb6266ba360f7a092462ab806`; status `IN_PROGRESS`.
+
+Implemented: the shared JSONL engine and its journal, command-ledger, allocation-store, repair, ownership, and
+supervisor-state callers force affected parent directories for controlled create/rename/delete mutations when the local
+provider supports directory channels. Receipts report synchronized, unsupported-local-filesystem, or no-entry-change
+status instead of inheriting a directory-durability claim from `FileChannel.force(true)`. A post-rename injected fsync
+failure emits no rotation receipt, preserves current bytes, and leaves a recoverable pending truncate. Storage failures
+emit classified diagnostics without record contents. Shared per-path mutexes are reference counted and evicted after the
+last store closes; production lifecycle owners now close their stores and transient inspections use try-with-resources.
+
+Focused verification: the final expanded selector passed 149 tests across 10 current Surefire reports with zero
+failures, errors, or skips. It covers the shared JSONL fault window and mutex eviction; application/supervisor/allocation
+receipt status; journal lifecycle; explicit repair; supervisor service/server close paths; and ownership path/record
+storage. `mvn -q -DskipTests test-compile` and `git diff --check` passed at their respective current source heads.
+
+Scope/boundaries: 30 current files, limited to local Enterprise Lab storage mechanics, tests, the durable-evidence claim
+contract, and campaign records. No dependency, Maven, workflow, Docker/Compose, endpoint, configuration-default,
+credential, external-target, cloud/tenant, suppression, allowlist, or security-gate change. Unsupported providers,
+drive firmware, universal power-loss survival, remote-filesystem semantics, multi-host/distributed durability,
+production readiness, throughput, and latency remain not proven.
+
+Blocker: none. Next: run the current-head campaign/documentation guards, one clean complete suite, package/verify,
+SBOM/artifact and packaged-proof gates, Docker preflight, cross-process proofs, and complete-diff self-review before the
+PR-creation checkpoint.
+
 ## Combined Build Plan Slot 19 Main-Green / Slot 20 Start
 
 Timestamp: 2026-07-30T19:06:27-07:00

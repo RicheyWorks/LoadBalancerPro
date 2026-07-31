@@ -126,7 +126,9 @@ public final class EnterpriseLabApplicationCommandDispatcher {
                     first.currentFingerprint(),
                     ledger.replay().totalBytes(),
                     EnterpriseLabApplicationCommandLedger.SyncPolicy.FORCE_DATA_AND_METADATA,
-                    true);
+                    true,
+                    EnterpriseLabDirectorySyncStatus
+                            .NOT_REQUIRED_EXISTING_ENTRY);
             ledger.append(
                     safeRequest,
                     ApplicationEventDraft.retry(

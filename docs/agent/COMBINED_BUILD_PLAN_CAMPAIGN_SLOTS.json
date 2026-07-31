@@ -273,11 +273,11 @@
       "sourceIds": ["L-2.5"],
       "track": "lab",
       "title": "Make durability receipts honest and storage failures diagnosable",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": ["L-2.4"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Started from exact green main 11b23f530156cc01e4f4016a48f4051f70593697 on codex/l-2-5-durability-honesty. Directory fsync behavior, fault-injection acceptance, failure-path logging, and mutex eviction remain unproven pending current-state inventory and implementation."
+      "currentState": "Started from exact green main 11b23f530156cc01e4f4016a48f4051f70593697 on codex/l-2-5-durability-honesty. The bounded implementation reports supported versus unsupported directory synchronization, aborts receipt emission at an injected post-rename fsync failure while preserving recoverable bytes, logs classified storage failures, and evicts last-user process mutexes. The 149-test product selector, six-test campaign guard, final 3,079-test clean package, verify/SBOM/artifact checks, packaged local proofs/runtime, and complete-diff self-review are green; commit/PR creation and exact-head remote gates remain pending."
     },
     {
       "ordinal": 21,

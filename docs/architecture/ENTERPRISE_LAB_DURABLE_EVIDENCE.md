@@ -48,9 +48,21 @@ The default writer opens with `FORCE_DATA_AND_METADATA`. Each complete canonical
 the current writer-owned chain, and synchronized with `FileChannel.force(true)` before the operator action returns.
 Append and read-side scan use the same `ChainedJsonlStore` mechanics as the command ledgers and allocation transaction
 store: one complete frame buffer, a per-path process mutex, cooperating operating-system file locks, exact prior-size
-checks, and pinned file-key plus creation-time identity. The implementation therefore proves that the Java append and
-force calls succeeded on the exercised local filesystem. It does not prove parent-directory fsync, drive firmware
-behavior, power-loss survival on every filesystem, remote-filesystem semantics, or a full operating-system crash matrix.
+checks, and pinned file-key plus creation-time identity. Controlled create, rename, and delete mutations also force the
+affected parent directories when the local filesystem exposes the required directory-channel capability. Mutation
+receipts distinguish `SYNCHRONIZED`, `UNSUPPORTED_ON_LOCAL_FILESYSTEM`, and
+`NOT_REQUIRED_EXISTING_ENTRY`; an unsupported provider never inherits a stronger claim from a successful file force.
+An injected directory-sync failure after archive or quarantine installation aborts before destructive truncation and
+before any success receipt, leaving restart recovery to complete the already-installed entry safely. The implementation
+therefore proves only that the exercised Java file and supported-directory force calls succeeded on the exercised local
+filesystem. It does not prove parent-directory fsync on an unsupported provider, drive firmware behavior, power-loss
+survival on every filesystem, remote-filesystem semantics, or a full operating-system crash matrix.
+
+Every controlled storage-exception factory emits a classified diagnostic message. Cause-bearing failures include the
+cause type and message at error level and retain the stack at debug level; journal or record contents are not included.
+This is local operational diagnosis, not a signed audit trail or centralized logging guarantee. Process-local per-path
+mutex entries are reference counted and removed after the last owning store closes, with a cleaner only as a fallback;
+this bounds the registry during normal lifecycle use without changing the separate OS-lock or cross-process boundary.
 
 If an append, entry bound, journal bound, or synchronization check fails, the recovery gate becomes failed. An active
 process-local candidate allocation is returned through the existing baseline restoration and rollback path before the

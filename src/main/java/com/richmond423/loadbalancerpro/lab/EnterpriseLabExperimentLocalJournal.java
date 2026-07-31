@@ -27,6 +27,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
     private final EnterpriseLabExperimentJournalCodec codec;
     private final MutationAuthorization mutationAuthorization;
     private final FailureInjector failureInjector;
+    private final EnterpriseLabDirectorySyncStatus directorySyncStatus;
     private final Runnable releaseOwnership;
 
     private long nextSequence;
@@ -49,6 +50,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             ReadResult existing,
             MutationAuthorization mutationAuthorization,
             FailureInjector failureInjector,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus,
             Runnable releaseOwnership) {
         this.directory = Objects.requireNonNull(directory, "directory cannot be null");
         this.journalId = Objects.requireNonNull(journalId, "journalId cannot be null");
@@ -60,6 +62,9 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
         this.mutationAuthorization = Objects.requireNonNull(
                 mutationAuthorization, "mutationAuthorization cannot be null");
         this.failureInjector = Objects.requireNonNull(failureInjector, "failureInjector cannot be null");
+        this.directorySyncStatus = Objects.requireNonNull(
+                directorySyncStatus,
+                "directorySyncStatus cannot be null");
         this.releaseOwnership = Objects.requireNonNull(releaseOwnership, "releaseOwnership cannot be null");
         this.entryCount = existing.events().size();
         this.lastEvent = entryCount == 0 ? null : existing.events().get(entryCount - 1);
@@ -120,7 +125,8 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
                     stage,
                     false,
                     true,
-                    forceCompleted);
+                    forceCompleted,
+                    directorySyncStatus);
         } catch (EnterpriseLabExperimentJournalStorageException exception) {
             failAndClose();
             throw exception;
@@ -166,7 +172,11 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             return;
         }
         closed = true;
-        releaseOwnershipOnce();
+        try {
+            jsonlStore.close();
+        } finally {
+            releaseOwnershipOnce();
+        }
     }
 
     private void appendFrame(byte[] encoded) {
@@ -241,10 +251,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
 
     private void failAndClose() {
         failed = true;
-        if (!closed) {
-            closed = true;
-            releaseOwnershipOnce();
-        }
+        close();
     }
 
     private void releaseOwnershipOnce() {

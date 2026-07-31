@@ -37,6 +37,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Ownership-fenced application-side command evidence. One fixed current file
  * plus bounded immutable segments retain the canonical chain across rotation.
@@ -44,6 +47,8 @@ import java.util.function.Function;
  * and an uncertain write fails the writer until a fresh replay.
  */
 public final class EnterpriseLabApplicationCommandLedger implements AutoCloseable {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabApplicationCommandLedger.class);
     public static final long HARD_MAX_LEDGER_BYTES = 8L * 1024L * 1024L;
     public static final int HARD_MAX_EVENTS = 4_096;
     public static final long HARD_MAX_HISTORY_BYTES =
@@ -93,6 +98,8 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
     private int currentSegmentEvents;
     private ReadResult cachedReplay;
     private ChainedJsonlStore.StorageVersion cachedVersion;
+    private EnterpriseLabDirectorySyncStatus directorySyncStatus =
+            EnterpriseLabDirectorySyncStatus.NOT_REQUIRED_EXISTING_ENTRY;
     private boolean writerClaimReleased;
     private boolean failed;
     private boolean closed;
@@ -144,14 +151,15 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
         this.rotationEnabled = maxLedgerBytes == HARD_MAX_LEDGER_BYTES
                 && maxEvents == HARD_MAX_EVENTS;
 
-        if (prepareForMutation) {
-            Object existing = ACTIVE_WRITERS.putIfAbsent(ledgerFile, writerClaim);
-            if (existing != null) {
-                throw failure(Failure.WRITER_ALREADY_ACTIVE,
-                        "one process-local application ledger writer is already active");
-            }
-            boolean ready = false;
-            try {
+        boolean initialized = false;
+        try {
+            if (prepareForMutation) {
+                Object existing = ACTIVE_WRITERS.putIfAbsent(
+                        ledgerFile, writerClaim);
+                if (existing != null) {
+                    throw failure(Failure.WRITER_ALREADY_ACTIVE,
+                            "one process-local application ledger writer is already active");
+                }
                 synchronized (processMutex) {
                     requireSameMutationAuthorization(authorization);
                     if (rotationEnabled) {
@@ -164,11 +172,12 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                     }
                     replayLocked();
                 }
-                ready = true;
-            } finally {
-                if (!ready) {
-                    releaseWriterClaim();
-                }
+            }
+            initialized = true;
+        } finally {
+            if (!initialized) {
+                releaseWriterClaim();
+                jsonlStore.close();
             }
         }
     }
@@ -335,7 +344,11 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             return;
         }
         closed = true;
-        releaseWriterClaim();
+        try {
+            releaseWriterClaim();
+        } finally {
+            jsonlStore.close();
+        }
     }
 
     Path controlledLedgerFile() {
@@ -445,7 +458,8 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                         event.currentFingerprint(),
                         after.totalBytes(),
                         SyncPolicy.FORCE_DATA_AND_METADATA,
-                        true);
+                        true,
+                        directorySyncStatus);
             } catch (IOException exception) {
                 if (writeStarted) {
                     failWriter();
@@ -762,16 +776,16 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 ledgerDirectory, namespace, "application ledger directory");
         if (Files.exists(ledgerFile, LinkOption.NOFOLLOW_LINKS)) {
             validateLedgerFile();
-            return;
+        } else {
+            try (FileChannel ignored = openFileForCreation(ledgerFile)) {
+                // Creation only; the first event appends after validating the empty file.
+            } catch (FileAlreadyExistsException ignored) {
+                // A repository-controlled initializer won the process-local race.
+            }
+            restrictPermissions(ledgerFile, FILE_PERMISSIONS);
+            validateLedgerFile();
         }
-        try (FileChannel ignored = openFileForCreation(ledgerFile)) {
-            // Creation only; the first event appends after validating the empty file.
-        } catch (FileAlreadyExistsException ignored) {
-            // A repository-controlled initializer won the process-local race.
-        }
-        restrictPermissions(ledgerFile, FILE_PERMISSIONS);
-        validateLedgerFile();
-        forceDirectoryMetadataIfSupported(ledgerDirectory);
+        recordDirectorySync(ledgerDirectory);
     }
 
     private void appendFrame(
@@ -975,7 +989,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
         }
     }
 
-    private static Path prepareControlledDirectory(Path parent, String name) {
+    private Path prepareControlledDirectory(Path parent, String name) {
         Path directory = controlledPath(parent, name);
         try {
             if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
@@ -990,6 +1004,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             restrictPermissions(directory, DIRECTORY_PERMISSIONS);
             validateControlledDirectory(
                     directory, parent, "application ledger storage directory");
+            recordDirectorySync(parent);
             return directory;
         } catch (StoreException exception) {
             throw exception;
@@ -1068,25 +1083,12 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
         }
     }
 
-    private static void forceDirectoryMetadataIfSupported(Path directory) {
-        if (Files.getFileAttributeView(
-                directory,
-                java.nio.file.attribute.PosixFileAttributeView.class,
-                LinkOption.NOFOLLOW_LINKS) == null) {
-            return;
-        }
-        try (FileChannel channel = FileChannel.open(
-                directory, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
-            channel.force(true);
-        } catch (AccessDeniedException exception) {
-            throw failure(Failure.PERMISSION_DENIED,
-                    "application ledger directory metadata could not be synchronized",
-                    exception);
-        } catch (IOException | UnsupportedOperationException exception) {
-            throw failure(Failure.STORAGE_UNAVAILABLE,
-                    "application ledger directory metadata synchronization is unavailable",
-                    exception);
-        }
+    private void recordDirectorySync(Path directory) throws IOException {
+        directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                directorySyncStatus,
+                EnterpriseLabStorageDurability.synchronizeDirectory(
+                        directory,
+                        EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER));
     }
 
     private static FileAttribute<Set<PosixFilePermission>> directoryAttribute() {
@@ -1098,6 +1100,10 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
     }
 
     private static StoreException failure(Failure classification, String message) {
+        LOGGER.warn(
+                "Enterprise Lab application-ledger storage failure [{}]: {}",
+                classification,
+                message);
         return new StoreException(classification, message);
     }
 
@@ -1105,6 +1111,16 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             Failure classification,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab application-ledger storage failure [{}]: {}; cause={}: {}",
+                classification,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab application-ledger storage failure stack [{}]",
+                classification,
+                cause);
         return new StoreException(classification, message, cause);
     }
 
@@ -1391,7 +1407,8 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             String eventFingerprint,
             long totalBytes,
             SyncPolicy syncPolicy,
-            boolean exactReadBackVerified) {
+            boolean exactReadBackVerified,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
 
         public AppendReceipt {
             if (sequence < 1L
@@ -1404,6 +1421,9 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             Objects.requireNonNull(correlationId, "correlationId cannot be null");
             Objects.requireNonNull(eventFingerprint, "eventFingerprint cannot be null");
             syncPolicy = Objects.requireNonNull(syncPolicy, "syncPolicy cannot be null");
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
             if (!exactReadBackVerified) {
                 throw new IllegalArgumentException(
                         "application append receipt requires exact durable read-back");

@@ -1,7 +1,10 @@
 package com.richmond423.loadbalancerpro.lab;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -9,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -16,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -138,6 +143,9 @@ class ChainedJsonlStoreTest {
         assertTrue(rotation.rotated());
         assertEquals(1, rotation.archiveIndex());
         assertEquals(2L, rotation.archivedBytes());
+        assertEquals(
+                expectedDirectorySyncStatus(root),
+                rotation.directorySyncStatus());
         assertEquals(0L, Files.size(file));
 
         append(store, "2", 0L);
@@ -224,6 +232,102 @@ class ChainedJsonlStoreTest {
                 exception.failure());
     }
 
+    @Test
+    void directorySyncFailureReturnsNoRotationReceiptAndPreservesCurrentBytes()
+            throws Exception {
+        Path file = Files.createFile(root.resolve("sync-failure.jsonl"));
+        try (ChainedJsonlStore setup =
+                     new ChainedJsonlStore(file, 1_024L)) {
+            setup.prepareRotationDirectory();
+            append(setup, "1", 0L);
+        }
+        AtomicInteger attempts = new AtomicInteger();
+        EnterpriseLabStorageDurability.DirectorySyncer failingSync =
+                directory -> {
+                    if (attempts.incrementAndGet() == 2) {
+                        throw new IOException("injected directory fsync failure");
+                    }
+                    return EnterpriseLabDirectorySyncStatus.SYNCHRONIZED;
+                };
+
+        try (ChainedJsonlStore store =
+                     new ChainedJsonlStore(file, 1_024L, failingSync)) {
+            ChainedJsonlStore.StoreIOException failure = assertThrows(
+                    ChainedJsonlStore.StoreIOException.class,
+                    () -> store.rotateCurrentSegment(() -> { }));
+
+            assertEquals(ChainedJsonlStore.Failure.IO_FAILURE, failure.failure());
+            assertEquals(2, attempts.get());
+            assertArrayEquals(
+                    "1\n".getBytes(StandardCharsets.UTF_8),
+                    Files.readAllBytes(file));
+            assertTrue(Files.exists(
+                    store.segmentsDirectory()
+                            .resolve("segment-v1-00000001.jsonl")));
+        }
+
+        try (ChainedJsonlStore recovered =
+                     new ChainedJsonlStore(file, 1_024L)) {
+            ChainedJsonlStore.RotationRecovery recovery =
+                    recovered.recoverRotationArtifacts(() -> { });
+            assertTrue(recovery.completedPendingTruncate());
+            assertEquals(0L, Files.size(file));
+            assertEquals(List.of("1"), replay(recovered).entries());
+        }
+    }
+
+    @Test
+    void processMutexEntryIsEvictedAfterTheLastStoreCloses()
+            throws Exception {
+        int baseline = ChainedJsonlStore.processMutexCountForTesting();
+        Path file = Files.createFile(root.resolve("mutex-eviction.jsonl"));
+        ChainedJsonlStore first = new ChainedJsonlStore(file, 1_024L);
+        ChainedJsonlStore second = new ChainedJsonlStore(file, 1_024L);
+        try {
+            assertEquals(
+                    baseline + 1,
+                    ChainedJsonlStore.processMutexCountForTesting());
+            first.close();
+            assertEquals(
+                    baseline + 1,
+                    ChainedJsonlStore.processMutexCountForTesting());
+        } finally {
+            first.close();
+            second.close();
+        }
+        assertEquals(
+                baseline,
+                ChainedJsonlStore.processMutexCountForTesting());
+    }
+
+    @Test
+    void classifiedStorageFailureEmitsActionableDiagnosticLog()
+            throws Exception {
+        ListAppender<ILoggingEvent> appender = attachStoreAppender();
+        Path file = Files.createFile(root.resolve("logged-failure.jsonl"));
+        try (ChainedJsonlStore store =
+                     new ChainedJsonlStore(file, 1_024L)) {
+            store.prepareRotationDirectory();
+            Files.writeString(
+                    store.segmentsDirectory()
+                            .resolve("segment-v1-00000002.jsonl"),
+                    "1\n",
+                    StandardCharsets.UTF_8);
+
+            assertThrows(
+                    ChainedJsonlStore.StoreIOException.class,
+                    () -> replay(store));
+            assertTrue(appender.list.stream()
+                    .map(ILoggingEvent::getFormattedMessage)
+                    .anyMatch(message ->
+                            message.contains("CONCURRENT_CHANGE")
+                                    && message.contains(
+                                    "archive sequence is not contiguous")));
+        } finally {
+            detachStoreAppender(appender);
+        }
+    }
+
     private static void append(
             ChainedJsonlStore store,
             String value,
@@ -269,5 +373,34 @@ class ChainedJsonlStoreTest {
             Thread.currentThread().interrupt();
             throw new IOException("test latch was interrupted", exception);
         }
+    }
+
+    private static EnterpriseLabDirectorySyncStatus
+    expectedDirectorySyncStatus(Path directory) {
+        return Files.getFileAttributeView(
+                directory,
+                PosixFileAttributeView.class) == null
+                ? EnterpriseLabDirectorySyncStatus
+                        .UNSUPPORTED_ON_LOCAL_FILESYSTEM
+                : EnterpriseLabDirectorySyncStatus.SYNCHRONIZED;
+    }
+
+    private static ListAppender<ILoggingEvent> attachStoreAppender() {
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                        ChainedJsonlStore.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        return appender;
+    }
+
+    private static void detachStoreAppender(
+            ListAppender<ILoggingEvent> appender) {
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                        ChainedJsonlStore.class);
+        logger.detachAppender(appender);
+        appender.stop();
     }
 }

@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -86,6 +87,9 @@ class EnterpriseLabSupervisorCommandLedgerTest {
             assertEquals(
                     EnterpriseLabSupervisorCommandLedger.SyncPolicy.FORCE_DATA_AND_METADATA,
                     receipt.syncPolicy());
+            assertEquals(
+                    expectedDirectorySyncStatus(root),
+                    receipt.directorySyncStatus());
             assertTrue(receipt.exactReadBackVerified());
             assertEquals(EventType.SUPERVISOR_RECEIPT_PERSISTED,
                     ledger.replay().head().orElseThrow().eventType());
@@ -1011,5 +1015,15 @@ class EnterpriseLabSupervisorCommandLedgerTest {
     }
 
     private static final class SimulatedFailure extends RuntimeException {
+    }
+
+    private static EnterpriseLabDirectorySyncStatus expectedDirectorySyncStatus(
+            Path directory) {
+        return Files.getFileAttributeView(
+                directory,
+                PosixFileAttributeView.class) == null
+                ? EnterpriseLabDirectorySyncStatus
+                        .UNSUPPORTED_ON_LOCAL_FILESYSTEM
+                : EnterpriseLabDirectorySyncStatus.SYNCHRONIZED;
     }
 }

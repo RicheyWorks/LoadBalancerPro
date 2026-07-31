@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -67,6 +68,9 @@ class EnterpriseLabAllocationStateStoreTest {
             assertEquals(baseline.currentRecordFingerprint(), receipt.recordFingerprint());
             assertEquals(EnterpriseLabAllocationStateStore.SyncPolicy.FORCE_DATA_AND_METADATA,
                     receipt.syncPolicy());
+            assertEquals(
+                    expectedDirectorySyncStatus(temporaryDirectory),
+                    receipt.directorySyncStatus());
             assertTrue(receipt.exactReadBackVerified());
             assertEquals(List.of(baseline), store.replay().records());
         }
@@ -612,5 +616,15 @@ class EnterpriseLabAllocationStateStoreTest {
         targets.add(new EnterpriseLabLoopbackTarget(
                 SCENARIO, "orange", URI.create("http://[::1]:18083/health")));
         return new EnterpriseLabExperimentTargetCatalog(targets);
+    }
+
+    private static EnterpriseLabDirectorySyncStatus expectedDirectorySyncStatus(
+            Path directory) {
+        return Files.getFileAttributeView(
+                directory,
+                PosixFileAttributeView.class) == null
+                ? EnterpriseLabDirectorySyncStatus
+                        .UNSUPPORTED_ON_LOCAL_FILESYSTEM
+                : EnterpriseLabDirectorySyncStatus.SYNCHRONIZED;
     }
 }

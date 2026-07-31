@@ -24,8 +24,13 @@ import java.util.Optional;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /** Live, non-detachable ownership resource that retains the OS lock and channel. */
 public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabEvidenceOwnershipLease.class);
     private final EnterpriseLabEvidenceOwnershipPaths paths;
     private final EnterpriseLabEvidenceOwnershipRecordStore recordStore;
     private final FileChannel lockChannel;
@@ -608,6 +613,10 @@ public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable 
     private static EnterpriseLabEvidenceOwnershipException failure(
             FailureClassification classification,
             String message) {
+        LOGGER.warn(
+                "Enterprise Lab ownership-lease storage failure [{}]: {}",
+                classification,
+                message);
         return new EnterpriseLabEvidenceOwnershipException(classification, message);
     }
 
@@ -615,6 +624,16 @@ public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable 
             FailureClassification classification,
             String message,
             Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab ownership-lease storage failure [{}]: {}; cause={}: {}",
+                classification,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab ownership-lease storage failure stack [{}]",
+                classification,
+                cause);
         return new EnterpriseLabEvidenceOwnershipException(classification, message, cause);
     }
 

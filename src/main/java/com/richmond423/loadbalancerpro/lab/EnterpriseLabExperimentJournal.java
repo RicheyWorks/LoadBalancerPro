@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Narrow append-only contract for one local Enterprise Lab experiment journal.
@@ -44,7 +45,13 @@ public interface EnterpriseLabExperimentJournal extends AutoCloseable {
             PersistenceStage persistenceStage,
             boolean userSpaceBufferRetained,
             boolean operatingSystemWriteCompleted,
-            boolean forceCompleted) {
+            boolean forceCompleted,
+            EnterpriseLabDirectorySyncStatus directorySyncStatus) {
+        public AppendReceipt {
+            directorySyncStatus = Objects.requireNonNull(
+                    directorySyncStatus,
+                    "directorySyncStatus cannot be null");
+        }
     }
 
     record ReadResult(

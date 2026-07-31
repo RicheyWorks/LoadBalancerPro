@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * is intent-first, atomically published, independently read back, and then
  * committed. Startup restores the immutable baseline from any incomplete phase.
  */
-public final class EnterpriseLabSupervisorService {
+public final class EnterpriseLabSupervisorService implements AutoCloseable {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final FailureInjector NO_FAILURE = point -> { };
 
@@ -115,8 +115,16 @@ public final class EnterpriseLabSupervisorService {
                 clock,
                 applicationOwnershipVerifier,
                 failureInjector);
-        service.initializeOrRecover(targetCatalog);
-        return service;
+        boolean initialized = false;
+        try {
+            service.initializeOrRecover(targetCatalog);
+            initialized = true;
+            return service;
+        } finally {
+            if (!initialized) {
+                service.close();
+            }
+        }
     }
 
     private EnterpriseLabSupervisorService(
@@ -148,6 +156,15 @@ public final class EnterpriseLabSupervisorService {
 
     public boolean shutdownRequested() {
         return shutdownRequested.get();
+    }
+
+    @Override
+    public void close() {
+        commandLedger.close();
+        if (applicationOwnershipVerifier
+                instanceof DurableApplicationOwnershipVerifier durable) {
+            durable.close();
+        }
     }
 
     public synchronized Response dispatch(Request request) {
@@ -969,7 +986,7 @@ public final class EnterpriseLabSupervisorService {
     }
 
     private static final class DurableApplicationOwnershipVerifier
-            implements ApplicationOwnershipVerifier {
+            implements ApplicationOwnershipVerifier, AutoCloseable {
         private final EnterpriseLabEvidenceOwnershipRecordStore recordStore;
         private final EnterpriseLabApplicationCommandLedger applicationCommandLedger;
         private final Clock clock;
@@ -1029,6 +1046,11 @@ public final class EnterpriseLabSupervisorService {
                         "APPLICATION_OWNERSHIP_UNREADABLE",
                         "Application ownership evidence could not be verified safely");
             }
+        }
+
+        @Override
+        public void close() {
+            applicationCommandLedger.close();
         }
     }
 }

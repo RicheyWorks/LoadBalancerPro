@@ -14,12 +14,17 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Fixed-path atomic supervisor state publication. A completed current file is
  * authoritative; an interrupted temporary write is preserved once for bounded
  * recovery evidence and is never interpreted as a committed allocation.
  */
 public final class EnterpriseLabSupervisorStateStore {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EnterpriseLabSupervisorStateStore.class);
     public static final long HARD_MAX_TOTAL_STORAGE_BYTES = 768L * 1024L;
 
     static final String STATE_FILE_NAME = "supervisor-state-v1.json";
@@ -32,6 +37,8 @@ public final class EnterpriseLabSupervisorStateStore {
     private final Path stateFile;
     private final Path temporaryFile;
     private final Path interruptedFile;
+    private EnterpriseLabDirectorySyncStatus directorySyncStatus =
+            EnterpriseLabDirectorySyncStatus.NOT_REQUIRED_EXISTING_ENTRY;
 
     public EnterpriseLabSupervisorStateStore(
             EnterpriseLabSupervisorOwnership ownership,
@@ -258,14 +265,12 @@ public final class EnterpriseLabSupervisorStateStore {
         }
     }
 
-    private void forceDirectoryMetadata() {
-        try (FileChannel channel = FileChannel.open(directory, StandardOpenOption.READ)) {
-            channel.force(true);
-        } catch (UnsupportedOperationException ignored) {
-            // The state file itself is forced; some Windows providers cannot open directories.
-        } catch (IOException ignored) {
-            // Same portability boundary as the existing controlled stores.
-        }
+    private void forceDirectoryMetadata() throws IOException {
+        directorySyncStatus = EnterpriseLabDirectorySyncStatus.combine(
+                directorySyncStatus,
+                EnterpriseLabStorageDurability.synchronizeDirectory(
+                        directory,
+                        EnterpriseLabStorageDurability.SYSTEM_DIRECTORY_SYNCER));
     }
 
     private static boolean sameRecord(
@@ -280,11 +285,25 @@ public final class EnterpriseLabSupervisorStateStore {
     }
 
     private static StoreException failure(Failure failure, String message) {
+        LOGGER.warn(
+                "Enterprise Lab supervisor-state storage failure [{}]: {}",
+                failure,
+                message);
         return new StoreException(failure, message);
     }
 
     private static StoreException failure(
             Failure failure, String message, Throwable cause) {
+        LOGGER.error(
+                "Enterprise Lab supervisor-state storage failure [{}]: {}; cause={}: {}",
+                failure,
+                message,
+                cause.getClass().getSimpleName(),
+                cause.getMessage());
+        LOGGER.debug(
+                "Enterprise Lab supervisor-state storage failure stack [{}]",
+                failure,
+                cause);
         return new StoreException(failure, message, cause);
     }
 

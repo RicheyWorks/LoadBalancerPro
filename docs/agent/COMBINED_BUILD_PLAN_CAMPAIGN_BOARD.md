@@ -25,8 +25,10 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   replaceable file outputs require explicit `--force`, which never permits an output/source-input alias. The final
   164-test focused selector, 3,077-test clean package, skip-test verify, SBOM/artifact inspection, packaged CLI/LASE,
   loopback profile matrix, and seven packaged evidence lanes are green at product head
-  `747805eaa515d01119dc15760da71851c30c9f97`; the PR checkpoint is being recorded and its resulting exact-head
-  remote gates remain pending.
+  `747805eaa515d01119dc15760da71851c30c9f97`. PR head `3989782acb5c2d22634cf97860ec4da7cde50754`
+  passed push CI `30607750831`, PR CI `30607753578`, dependency review, CodeQL `30607753573`, Docker/runtime,
+  SBOM/artifact evidence, and zero-finding blocking Trivy. The final remote-audit checkpoint and its resulting
+  exact-head rerun remain pending.
 - Next implementation slot after the active gate: `L-4.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

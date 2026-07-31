@@ -6,6 +6,44 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T22:43:47-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the local Docker CLI is installed, but its read-only server-version preflight cannot connect
+because the Docker Desktop Linux named pipe does not exist; local Trivy is also absent. No image build or local scan
+claim is made. Exact-head GitHub CI remains the mandatory Docker build/runtime, controlled-container evidence, SBOM,
+and blocking HIGH/CRITICAL Trivy lane before merge.
+
+## Entry
+
+Date/time: 2026-07-30T22:35:23-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: six of seven sequential packaged evidence smokes passed, but the independent-supervisor proof's
+child missed its bounded report deadline after the preceding long-running proof sequence; the lease then failed
+closed with `RENEWAL_DEADLINE_EXCEEDED`. Its output remained under ignored `target/`, and no external target or product
+state was touched. A follow-up process inventory printed the timestamp but returned exit 1 because no Java process
+remained to match `Get-Process`; that check was read-only and confirms there is no stale Java helper to terminate.
+The independent proof was rerun alone on a fresh target-only directory and passed all 22 application-process, 24
+supervisor-process, 8 crash-window, and 18 IPC-boundary checks, so the first miss is bounded as transient host
+scheduling rather than a reproduced product regression.
+
+## Entry
+
+Date/time: 2026-07-30T22:21:43-07:00
+
+Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet
+
+Failure/resolution: the first local operator-profile runtime matrix stopped during its read-only port preflight
+because default loopback backend port `18182` was already owned by Windows system PID 4. No application or helper
+process had started, and no product output was changed. The matrix is being rerun with an isolated alternate
+loopback-only port set. The retry passed local, prod API-key, and two-backend proxy profiles on ports
+`19080`-`19182`, and all helpers stopped cleanly.
+
+## Entry
+
 Date/time: 2026-07-30T22:11:50-07:00
 
 Branch/PR: `codex/l-4-1-operator-cli-surface` / no PR yet

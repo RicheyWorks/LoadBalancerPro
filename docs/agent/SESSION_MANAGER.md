@@ -6,6 +6,49 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 21 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T22:44:09-07:00
+
+Active: `L-4.1`; `codex/l-4-1-operator-cli-surface`; exact green-main base
+`c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`; executable product head
+`747805eaa515d01119dc15760da71851c30c9f97`; status `IN_PROGRESS`.
+
+Local verification: the final focused selector passed 164 tests across 14 reports with zero failures, errors, or
+skips, and the campaign guard passed 6 tests. `mvn -q clean package` passed 3,077 tests across 414 reports with zero
+failures, errors, or skips; `mvn -q -DskipTests verify` also passed. The executable JAR SHA-256 is
+`D395338D59C1AD16472B795DBCD528318E4CFD89DD03873F47975E7F7E9955FC`. Local artifact verification found every
+required resource; retained `LoadBalancerCLI` and `RemediationReportCli` classes are packaged, while the retired
+interactive helpers, direct-JavaFX application classes, Enterprise Lab proof classes, and OpenJFX libraries are
+absent.
+
+The generated CycloneDX 1.6 JSON/XML SBOM has 138 components, no OpenJFX component, and resolves Spring Boot
+`3.5.16`, Spring Framework `6.2.19`, and Spring Security `6.5.11`. Its JSON SHA-256 is
+`D5C373FB7E6CBCFC3515A1A7AA1ABE6731354F2B156698E9B27B0A617A8517EC`; its XML SHA-256 is
+`A124C1CC36713C614550235BB2A805A4BD53853DBCE95159B3215FA8240860DA`.
+
+Packaged/runtime verification: shipped-JAR report plus manifest generation passed; a second write without `--force`
+exited 2 without changing the report; explicit force replacement and policy-template listing passed; all stayed
+offline with no Spring/Tomcat startup. Packaged LASE demo exits were 0/0/2. The local, prod API-key, and two-backend
+proxy profile matrix passed on isolated literal-loopback ports. Enterprise Lab workflow, adaptive experiment,
+allocation, durable recovery, experiment, ownership, and independent-supervisor proof lanes passed with ignored
+target-only evidence. The independent proof's first post-sequence child deadline miss failed closed and its isolated
+retry passed all checks. Docker Desktop's Linux engine is unavailable locally and local Trivy is absent, so no local
+image or scan claim is made; exact-head remote Docker/runtime/evidence and blocking Trivy remain mandatory.
+
+Complete-diff/scope audit: product commit `747805ea` contains exactly 26 intentional paths, 711 insertions, and 1,886
+deletions. It changes only CLI dispatch/output mechanics, deletes five interactive-only helpers and one obsolete
+prompt test, and updates focused tests, six operator/current-state documents, and campaign records. There is no
+`pom.xml`, dependency, workflow, Docker/Compose, endpoint-contract, configuration-default, credential,
+external/cloud/tenant target, security suppression/allowlist, or live-mutation change. The shared API and retained
+evidence commands remain covered, and no independent reviewer is available; the complete-diff self-review found no
+unresolved defect or scope expansion. Checksums remain integrity evidence, not signatures or identity proof, and no
+production readiness, live-cloud validation, performance, or broader automation is claimed.
+
+Blocker: none. Next: commit this local-green checkpoint, publish the branch, open the L-4.1 PR, record its exact
+checkpoint head, and require exact-head push/PR CI, dependency review, CodeQL, Docker build/runtime, container
+evidence, SBOM/artifact proofs, and blocking Trivy before automatic merge.
+
 ## Combined Build Plan Slot 21 Focused-Green Checkpoint
 
 Timestamp: 2026-07-30T22:06:01-07:00

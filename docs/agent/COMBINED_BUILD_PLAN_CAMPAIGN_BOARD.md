@@ -22,8 +22,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3`. The synthetic interactive menu is retired while a small compatibility
   launcher retains offline evidence/report commands; the shipped JAR dispatches those commands directly, and all
   replaceable file outputs require explicit `--force`, which never permits an output/source-input alias. The final
-  164-test focused selector is green; full local,
-  packaged-JAR, and remote gates remain pending.
+  164-test focused selector, 3,077-test clean package, skip-test verify, SBOM/artifact inspection, packaged CLI/LASE,
+  loopback profile matrix, and seven packaged evidence lanes are green at product head
+  `747805eaa515d01119dc15760da71851c30c9f97`; exact-head remote gates remain pending.
 - Next implementation slot after the active gate: `L-4.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

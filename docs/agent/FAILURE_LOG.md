@@ -6,6 +6,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T19:06:27-07:00
+
+Branch/PR: `main`, then `codex/l-2-5-durability-honesty` / no L-2.5 PR yet
+
+Failure/resolution: three read-only post-merge audit commands had bounded tooling issues. A Windows-quoted `gh --jq`
+expression lost the quotes around the merge SHA and failed before filtering; the same response was verified with
+PowerShell JSON filtering. Two compact `gh run watch` calls reached their 14-second and 64-second local timeboxes
+while healthy exact-main jobs remained in progress; bounded JSON status polling subsequently observed both jobs
+complete successfully. An `rg` inventory included the nonexistent historical path `docs/audit-and-playground`, so it
+returned exit 1 after still reporting repository matches; the audit was rerun against the actual
+`docs/BUILD_PLAN_LAB_SHADOW.md` and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` paths. No repository, workflow, PR, or remote
+state was changed by any failed command.
+
+## Entry
+
 Date/time: 2026-07-30T16:12:00-07:00
 
 Branch/PR: `codex/l-2-2-rotation-recovery` / no PR yet

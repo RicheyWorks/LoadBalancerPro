@@ -6,6 +6,35 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 19 Main-Green / Slot 20 Start
+
+Timestamp: 2026-07-30T19:06:27-07:00
+
+Completed: `L-2.4`; `codex/l-2-4-proof-tools-artifact`;
+[#517](https://github.com/RicheyWorks/LoadBalancerPro/pull/517); final head
+`a4464693d577e1860f43cb6075286319315867c8`; merge
+`11b23f530156cc01e4f4016a48f4051f70593697`.
+
+Verified: all final-head local gates, push CI `30597187479`, PR CI/dependency review `30597189362`, CodeQL
+`30597189345`, Docker/runtime, SBOM/artifact/evidence, blocking Trivy, and complete-diff self-review passed. The
+merge parents are exact prior main plus final PR head and its tree matches the PR tree. Exact-main focused
+verification passed; main CI `30597718467` and CodeQL `30597718455` passed. Main container evidence names the exact
+merge SHA, Docker runtime passed, and Trivy reports zero Ubuntu and zero JAR findings. The main 138-component
+CycloneDX SBOM contains no OpenJFX and retains Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`; the packaged
+JAR contains zero proof-tool, direct-JavaFX-application, or OpenJFX entries.
+
+Active: `L-2.5`; `codex/l-2-5-durability-honesty`; base
+`11b23f530156cc01e4f4016a48f4051f70593697`; status `IN_PROGRESS`. Dependency `L-2.4` is `MAIN_GREEN`.
+Contract: make durable receipts contingent on required parent-directory synchronization across create, rename, and
+delete boundaries; add actionable storage failure-path logging; evict unused shared process-mutex entries; and prove
+the behavior with bounded fault injection and cross-process verification. Do not broaden into L-4.1 CLI behavior,
+external/cloud/tenant targets, configuration-default or endpoint changes, unrelated dependencies/build automation,
+or production-readiness and universal power-loss claims.
+
+Blocker: none. Next: inventory the shared store's create/rotate/repair/delete durability boundaries, filesystem
+capability seams, all failure exits, process-mutex lifetime and callers, logging conventions, and current
+cross-process proofs before selecting the smallest complete L-2.5 implementation.
+
 ## Combined Build Plan Slot 19 PR-Creation Checkpoint
 
 Timestamp: 2026-07-30T18:44:41-07:00

@@ -20,7 +20,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Active implementation slot: `L-2.4`; move proof tooling and JavaFX classes out of the production artifact on
   `codex/l-2-4-proof-tools-artifact` from exact green main
   `03eca16a4f7114270567e99045400581559b3aea`. Local verification is green: all five test-scope proofs, the 3,076-test
-  clean package, verify, JAR/SBOM isolation, and packaged runtime profiles passed; exact-head remote gates remain.
+  clean package, verify, JAR/SBOM isolation, and packaged runtime profiles passed. Product head
+  `15c5c883eb0535f388cadcf32f8c753b82a52e57` is open as [PR #517](https://github.com/RicheyWorks/LoadBalancerPro/pull/517);
+  exact-final-head remote gates remain.
 - Next implementation slot after the active gate: `L-2.5`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

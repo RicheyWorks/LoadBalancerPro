@@ -285,11 +285,11 @@
       "sourceIds": ["L-4.1"],
       "track": "lab",
       "title": "Fix or retire the operator CLI",
-      "status": "IN_PROGRESS",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "OPERATOR",
       "verificationProfile": "java-full",
-      "currentState": "PR #519 is open from codex/l-4-1-operator-cli-surface against exact green main c2dfe2f3ee6f659bd6f4423a289ce7a6c9c8e0e3. Product head 747805eaa515d01119dc15760da71851c30c9f97 retires the synthetic interactive menu and its cloud/config/prompt/undo helpers, retains a fail-closed compatibility launcher for offline evidence/report commands, dispatches those commands from the shipped Spring Boot JAR, and requires explicit --force plus regular non-symlink targets for file replacement while rejecting output/source-input aliases. The 164-test focused selector, 3,077-test clean package, skip-test verify, 138-component SBOM/artifact inspection, packaged CLI/LASE, loopback profile matrix, and seven packaged evidence lanes are green. PR head 3989782acb5c2d22634cf97860ec4da7cde50754 passed push CI 30607750831, PR CI 30607753578, dependency review, CodeQL 30607753573, Docker/runtime, SBOM/artifact evidence, and zero-finding blocking Trivy; the final remote-audit checkpoint and its resulting exact-head rerun remain pending. No cloud, API, workflow, dependency, external-target, or production behavior expansion is authorized."
+      "currentState": "PR #519 final head da0779b7feb48bfdcebb4a588e3da84a128a97a9 passed push CI 30625130126, PR CI 30625132290, dependency review, CodeQL 30625132265, Docker/runtime, SBOM/artifact evidence, and zero-finding blocking Trivy, then merged as 952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555. Exact-main 170-test focused verification, CI 30625619790, CodeQL 30625619540, Docker/runtime, SBOM/artifact evidence, and zero-finding Trivy passed. The synthetic interactive menu is retired; shipped-JAR offline evidence/report commands remain fail-closed and output replacement requires explicit --force without permitting source aliases. No cloud, API, workflow, dependency, external-target, or production behavior expansion was introduced."
     },
     {
       "ordinal": 22,
@@ -297,11 +297,11 @@
       "sourceIds": ["L-4.2"],
       "track": "lab",
       "title": "Delete or repair the JavaFX GUI",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "The source plan recommends deletion, but current-main usage and full deletion acceptance remain unproven."
+      "currentState": "Active on codex/l-4-2-retire-javafx from exact green main 952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555. Initial inventory confirms the JavaFX simulator source, messages resource, and javafx-controls declaration remain even though direct-JavaFX classes and OpenJFX libraries are already excluded from the production JAR. Current-main usage, non-JavaFX gui-package consumers, dependency/test guard updates, and the exact safe deletion set are being audited before product edits."
     },
     {
       "ordinal": 23,

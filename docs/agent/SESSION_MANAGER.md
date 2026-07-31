@@ -6,6 +6,38 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 22 Start Checkpoint
+
+Timestamp: 2026-07-31T04:10:32-07:00
+
+Active: `L-4.2`; `codex/l-4-2-retire-javafx`; exact green-main base
+`952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`; status `IN_PROGRESS`.
+
+Prior slot closure: L-4.1 final head `da0779b7feb48bfdcebb4a588e3da84a128a97a9` passed push CI
+`30625130126`, PR CI `30625132290`, dependency review, CodeQL `30625132265`, Docker/runtime, SBOM/artifact evidence,
+and zero-finding blocking Trivy, then merged in [PR #519](https://github.com/RicheyWorks/LoadBalancerPro/pull/519)
+as `952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`. The merge parents and tree were exact. Exact-main local verification
+passed 170 tests across 15 reports with zero failures, errors, or skips; CI `30625619790` and CodeQL `30625619540`
+passed. Downloaded main evidence names the merge SHA, records Docker runtime passed, reports zero Ubuntu and zero JAR
+findings, and contains a 138-component CycloneDX 1.6 SBOM with Boot `3.5.16`, Framework `6.2.19`, Security `6.5.11`,
+and no OpenJFX.
+
+L-4.2 contract: delete or repair the remaining JavaFX GUI, with the source plan recommending deletion because the
+desktop simulator is runtime-broken and the maintained HTML cockpit surfaces cover the operator UI need. Initial
+inventory finds ten `com.richmond423.loadbalancerpro.gui` source files plus `gui/messages.properties`, a
+`javafx-controls` declaration, artifact excludes, JavaFX/current-state documentation, and dependency/artifact guard
+tests. The production JAR already excludes the two direct-JavaFX classes and OpenJFX libraries. The exact deletion
+boundary and all non-JavaFX consumers must be proven before editing.
+
+Scope/boundaries: no API/proxy/cloud behavior, workflow, Docker/Compose, configuration default, credential,
+external/cloud/tenant target, security suppression/allowlist, or live mutation is authorized. Deletion must not
+remove shared core behavior still used outside the retired simulator. Existing HTML cockpit pages remain bounded
+local reviewer/operator surfaces and do not prove production readiness or live-cloud validation.
+
+Blocker: none. Next: audit all GUI-package consumers and tests, distinguish JavaFX-only helpers from any shared
+command contract, choose the minimal safe deletion set, and run focused compile/guard verification before the product
+commit.
+
 ## Combined Build Plan Slot 21 Remote-Green Audit Checkpoint
 
 Timestamp: 2026-07-31T03:14:25-07:00

@@ -70,6 +70,7 @@ public class ReverseProxyStatusController {
                         0,
                         false,
                         0,
+                        Math.max(0, upstream.getMaxInFlight()),
                         new ReverseProxyStatusResponse.UpstreamRuntimeStatus(
                                 0,
                                 0,
@@ -90,6 +91,8 @@ public class ReverseProxyStatusController {
                 healthCheckStatus(),
                 retryStatus(),
                 cooldownStatus(),
+                limitsStatus(),
+                sheddingStatus(),
                 routes,
                 upstreams,
                 metricsSnapshot,
@@ -140,6 +143,8 @@ public class ReverseProxyStatusController {
                 response.healthCheck(),
                 response.retry(),
                 response.cooldown(),
+                response.limits(),
+                response.shedding(),
                 response.routes(),
                 response.upstreams(),
                 response.metrics(),
@@ -148,6 +153,27 @@ public class ReverseProxyStatusController {
                 ReverseProxyStatusSummaries.securityBoundary(environment, configuredApiKey),
                 response.privateNetworkLiveValidation(),
                 response.reload());
+    }
+
+    private ReverseProxyStatusResponse.LimitsStatus limitsStatus() {
+        int configured = Math.max(0, properties.getLimits().getMaxInFlight());
+        return new ReverseProxyStatusResponse.LimitsStatus(
+                configured, configured, 0, properties.getLimits().isAdaptive(), null, null, null);
+    }
+
+    private ReverseProxyStatusResponse.LoadSheddingStatus sheddingStatus() {
+        ReverseProxyProperties.Shedding shedding = properties.getShedding();
+        return new ReverseProxyStatusResponse.LoadSheddingStatus(
+                shedding.isEnabled(),
+                shedding.getSoftUtilizationThreshold(),
+                shedding.getHardUtilizationThreshold(),
+                shedding.getMaxQueueDepth(),
+                shedding.getMaxP95LatencyMillis(),
+                shedding.getMaxErrorRate(),
+                shedding.isCriticalBypassEnabled(),
+                shedding.isShedUserOnHardPressure(),
+                shedding.getPriorityHeader() == null ? "" : shedding.getPriorityHeader().trim(),
+                ProxyAdmissionControl.retryAfterSeconds(shedding.getRetryAfter()));
     }
 
     private ReverseProxyStatusResponse.HealthCheckStatus healthCheckStatus() {

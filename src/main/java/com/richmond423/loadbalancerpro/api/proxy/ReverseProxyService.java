@@ -74,6 +74,7 @@ public class ReverseProxyService {
     private final AtomicLong nextGeneration = new AtomicLong(1);
     private final ConcurrentMap<String, ResilienceState> resilienceStates = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, UpstreamRuntimeStats> upstreamRuntimeStats = new ConcurrentHashMap<>();
+    private final UpstreamRuntimeStats globalRuntimeStats;
     private final UpstreamHealthProber healthProber;
 
     @Autowired
@@ -92,6 +93,7 @@ public class ReverseProxyService {
         this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
+        this.globalRuntimeStats = new UpstreamRuntimeStats(clock);
         ActiveProxyConfig startupConfig = buildActiveConfig(
                 properties, nextGeneration.getAndIncrement(), List.of());
         this.activeConfig = new AtomicReference<>(startupConfig);
@@ -136,64 +138,116 @@ public class ReverseProxyService {
                     "No configured proxy route matches path " + proxyPathSuffix);
         }
         ReverseProxyRoutePlanner.ConfiguredRoute route = selectedRoute.get();
+        ProxyAdmissionControl.Admission admission =
+                config.admissionPolicy().tryAcquire(request, globalRuntimeStats);
+        if (!admission.acquired()) {
+            logger.warn("proxy.forward.rejected reason={} priority={} detail={}",
+                    admission.errorCode(), admission.priority(), admission.reason());
+            metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
+            return overloadResponse(
+                    admission.errorCode(), admission.message(), admission.retryAfterSeconds());
+        }
+        long startedAtNanos = System.nanoTime();
+        ReverseProxyResponse response = null;
+        try {
+            response = forwardAdmitted(
+                    config, route, request, body, proxyPathSuffix, admission.retryAfterSeconds());
+            return response;
+        } finally {
+            long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
+            globalRuntimeStats.requestCompleted(
+                    Duration.ofNanos(elapsedNanos), response != null && response.statusCode() < 500);
+            config.admissionPolicy().requestCompleted(globalRuntimeStats);
+        }
+    }
+
+    private ReverseProxyResponse forwardAdmitted(
+            ActiveProxyConfig config,
+            ReverseProxyRoutePlanner.ConfiguredRoute route,
+            HttpServletRequest request,
+            byte[] body,
+            String proxyPathSuffix,
+            int retryAfterSeconds) {
+        ReverseProxyProperties properties = config.properties();
         int maxAttempts = maxAttemptsFor(request.getMethod(), properties);
         Set<String> attemptedUpstreamIds = new LinkedHashSet<>();
         ReverseProxyResponse lastResponse = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            List<UpstreamCandidate> upstreams = configuredUpstreams(config, route, attemptedUpstreamIds);
-            if (upstreams.isEmpty()) {
-                if (lastResponse != null) {
-                    return lastResponse;
+            Set<String> capacityExcludedIds = new LinkedHashSet<>();
+            while (true) {
+                Set<String> excludedIds = new LinkedHashSet<>(attemptedUpstreamIds);
+                excludedIds.addAll(capacityExcludedIds);
+                List<UpstreamCandidate> upstreams = configuredUpstreams(config, route, excludedIds);
+                if (upstreams.isEmpty()) {
+                    if (lastResponse != null) {
+                        return lastResponse;
+                    }
+                    if (!capacityExcludedIds.isEmpty()) {
+                        logger.warn("proxy.forward.rejected reason=upstream_concurrency_limit route={} targets={}",
+                                route.name(), capacityExcludedIds);
+                        metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
+                        return overloadResponse(
+                                "proxy_upstream_concurrency_limit",
+                                "All eligible proxy upstreams are at their in-flight limits.",
+                                retryAfterSeconds);
+                    }
+                    logger.warn("proxy.forward.failure reason=no_configured_upstreams route={} attempt={}",
+                            route.name(), attempt);
+                    metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
+                    return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
+                            "No proxy upstreams are configured for route " + route.name() + ".");
                 }
-                logger.warn("proxy.forward.failure reason=no_configured_upstreams route={} attempt={}",
-                        route.name(), attempt);
-                metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
-                return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
-                        "No proxy upstreams are configured for route " + route.name() + ".");
-            }
 
-            RoutingDecision decision = route.strategy().choose(upstreams.stream()
-                    .map(UpstreamCandidate::state)
-                    .toList());
-            Optional<String> selectedServerId = decision.explanation().chosenServerId();
-            if (selectedServerId.isEmpty()) {
-                if (lastResponse != null) {
-                    return lastResponse;
+                RoutingDecision decision = route.strategy().choose(upstreams.stream()
+                        .map(UpstreamCandidate::state)
+                        .toList());
+                Optional<String> selectedServerId = decision.explanation().chosenServerId();
+                if (selectedServerId.isEmpty()) {
+                    if (lastResponse != null) {
+                        return lastResponse;
+                    }
+                    logger.warn("proxy.forward.failure reason=no_healthy_upstreams route={} attempt={}",
+                            route.name(), attempt);
+                    metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
+                    return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
+                            "No healthy proxy upstreams are available.");
                 }
-                logger.warn("proxy.forward.failure reason=no_healthy_upstreams route={} attempt={}",
-                        route.name(), attempt);
-                metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
-                return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
-                        "No healthy proxy upstreams are available.");
-            }
 
-            Map<String, UpstreamCandidate> upstreamById = upstreams.stream()
-                    .collect(Collectors.toMap(candidate -> candidate.state().serverId(), Function.identity()));
-            UpstreamCandidate upstream = upstreamById.get(selectedServerId.get());
-            if (upstream == null) {
-                if (lastResponse != null) {
-                    return lastResponse;
+                Map<String, UpstreamCandidate> upstreamById = upstreams.stream()
+                        .collect(Collectors.toMap(candidate -> candidate.state().serverId(), Function.identity()));
+                UpstreamCandidate upstream = upstreamById.get(selectedServerId.get());
+                if (upstream == null) {
+                    if (lastResponse != null) {
+                        return lastResponse;
+                    }
+                    logger.warn("proxy.forward.failure reason=selected_upstream_not_configured route={} upstreamId={}",
+                            route.name(), selectedServerId.get());
+                    metrics.recordFailure(selectedServerId.get(), HttpStatus.SERVICE_UNAVAILABLE.value());
+                    return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
+                            "Selected proxy upstream is not configured: " + selectedServerId.get());
                 }
-                logger.warn("proxy.forward.failure reason=selected_upstream_not_configured route={} upstreamId={}",
-                        route.name(), selectedServerId.get());
-                metrics.recordFailure(selectedServerId.get(), HttpStatus.SERVICE_UNAVAILABLE.value());
-                return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
-                        "Selected proxy upstream is not configured: " + selectedServerId.get());
-            }
 
-            String upstreamId = upstream.state().serverId();
-            attemptedUpstreamIds.add(upstreamId);
-            if (attempt > 1) {
-                logger.info("proxy.forward.retry route={} attempt={} upstreamId={}",
-                        route.name(), attempt, upstreamId);
-                metrics.recordRetryAttempt(upstreamId);
-            }
-            ForwardAttemptResult attemptResult =
-                    forwardOnce(properties, config.forwardedPolicy(), route.headerRewrites(), request, body,
-                            upstream, route.strategyId().externalName(), route.requestTimeout(), proxyPathSuffix);
-            lastResponse = attemptResult.response();
-            if (!attemptResult.retriable() || attempt == maxAttempts) {
-                return attemptResult.response();
+                String upstreamId = upstream.state().serverId();
+                UpstreamRuntimeStats runtimeStats = runtimeStatsFor(upstreamId);
+                if (!runtimeStats.tryRequestStarted(upstream.maxInFlight(), ignored -> true)) {
+                    capacityExcludedIds.add(upstreamId);
+                    continue;
+                }
+                attemptedUpstreamIds.add(upstreamId);
+                if (attempt > 1) {
+                    logger.info("proxy.forward.retry route={} attempt={} upstreamId={}",
+                            route.name(), attempt, upstreamId);
+                    metrics.recordRetryAttempt(upstreamId);
+                }
+                ForwardAttemptResult attemptResult =
+                        forwardOnce(properties, config.forwardedPolicy(), route.headerRewrites(), request, body,
+                                upstream, runtimeStats, route.strategyId().externalName(),
+                                route.requestTimeout(), proxyPathSuffix);
+                lastResponse = attemptResult.response();
+                if (!attemptResult.retriable() || attempt == maxAttempts) {
+                    return attemptResult.response();
+                }
+                break;
             }
         }
         return lastResponse == null
@@ -214,6 +268,7 @@ public class ReverseProxyService {
         ReverseProxyProperties.HealthCheck healthCheck = properties.getHealthCheck();
         ReverseProxyProperties.Retry retry = properties.getRetry();
         ReverseProxyProperties.Cooldown cooldown = properties.getCooldown();
+        ProxyAdmissionControl.Status admissionStatus = config.admissionPolicy().status(globalRuntimeStats);
         List<ReverseProxyStatusResponse.RouteStatus> routeStatuses = routes.stream()
                 .map(route -> new ReverseProxyStatusResponse.RouteStatus(
                         route.name(),
@@ -245,6 +300,25 @@ public class ReverseProxyService {
                         Math.max(1, cooldown.getConsecutiveFailureThreshold()),
                         Math.max(0, cooldown.getDuration().toMillis()),
                         cooldown.isRecoverOnSuccessfulHealthCheck()),
+                new ReverseProxyStatusResponse.LimitsStatus(
+                        admissionStatus.configuredMaxInFlight(),
+                        admissionStatus.effectiveMaxInFlight(),
+                        admissionStatus.currentInFlight(),
+                        admissionStatus.adaptiveEnabled(),
+                        admissionStatus.lastAdaptiveAction(),
+                        admissionStatus.lastAdaptiveReason(),
+                        isoInstant(admissionStatus.lastAdaptiveUpdate())),
+                new ReverseProxyStatusResponse.LoadSheddingStatus(
+                        admissionStatus.sheddingEnabled(),
+                        admissionStatus.sheddingConfig().softUtilizationThreshold(),
+                        admissionStatus.sheddingConfig().hardUtilizationThreshold(),
+                        admissionStatus.sheddingConfig().maxQueueDepth(),
+                        admissionStatus.sheddingConfig().maxP95LatencyMillis(),
+                        admissionStatus.sheddingConfig().maxErrorRate(),
+                        admissionStatus.sheddingConfig().criticalBypassEnabled(),
+                        admissionStatus.sheddingConfig().shedUserOnHardPressure(),
+                        admissionStatus.priorityHeader(),
+                        admissionStatus.retryAfterSeconds()),
                 routeStatuses,
                 upstreamStatuses,
                 metricsSnapshot,
@@ -316,7 +390,9 @@ public class ReverseProxyService {
         validateRuntimeFields(safeProperties, configuredRoutes);
         ProxyRequestHeaders.ForwardedPolicy forwardedPolicy =
                 ProxyRequestHeaders.compileForwarded(safeProperties.getForwarded());
-        return new ActiveProxyConfig(safeProperties, configuredRoutes, forwardedPolicy, generation);
+        ProxyAdmissionControl.Policy admissionPolicy = ProxyAdmissionControl.compile(safeProperties, clock);
+        return new ActiveProxyConfig(
+                safeProperties, configuredRoutes, forwardedPolicy, admissionPolicy, generation);
     }
 
     private void validateRuntimeFields(ReverseProxyProperties properties,
@@ -356,6 +432,7 @@ public class ReverseProxyService {
         nonNegative(upstream.getP99LatencyMillis(), "p99LatencyMillis");
         rate(upstream.getRecentErrorRate(), "recentErrorRate");
         optionalNonNegativeInt(upstream.getQueueDepth(), "queueDepth");
+        nonNegative(upstream.getMaxInFlight(), "maxInFlight");
     }
 
     private ReverseProxyStatusResponse.ReloadStatus reloadStatusSnapshot(ActiveProxyConfig config) {
@@ -429,21 +506,16 @@ public class ReverseProxyService {
                                              HttpServletRequest request,
                                              byte[] body,
                                              UpstreamCandidate upstream,
+                                             UpstreamRuntimeStats runtimeStats,
                                              String strategyName,
                                              Duration requestTimeout,
                                              String proxyPathSuffix) {
         String upstreamId = upstream.state().serverId();
-        UpstreamRuntimeStats runtimeStats = null;
-        long startedAtNanos = 0;
-        boolean runtimeTrackingStarted = false;
+        long startedAtNanos = System.nanoTime();
         boolean runtimeSuccessful = false;
         try {
             HttpRequest outbound = buildOutboundRequest(
                     request, body, upstream, requestTimeout, proxyPathSuffix, forwardedPolicy, headerRewrites);
-            runtimeStats = runtimeStatsFor(upstreamId);
-            runtimeStats.requestStarted();
-            startedAtNanos = System.nanoTime();
-            runtimeTrackingStarted = true;
             HttpResponse<byte[]> response = httpClient.send(outbound, HttpResponse.BodyHandlers.ofByteArray());
             runtimeSuccessful = response.statusCode() < 500;
             metrics.recordForwarded(upstreamId, response.statusCode());
@@ -479,10 +551,8 @@ public class ReverseProxyService {
                             "Proxy could not reach upstream " + upstreamId),
                     true);
         } finally {
-            if (runtimeTrackingStarted) {
-                long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
-                runtimeStats.requestCompleted(Duration.ofNanos(elapsedNanos), runtimeSuccessful);
-            }
+            long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
+            runtimeStats.requestCompleted(Duration.ofNanos(elapsedNanos), runtimeSuccessful);
         }
     }
 
@@ -599,7 +669,7 @@ public class ReverseProxyService {
                 hasRuntimeActivity ? OptionalInt.of(runtime.inFlightRequestCount()) : configuredQueueDepth,
                 NetworkAwarenessSignal.neutral(id, timestamp),
                 timestamp);
-        return new UpstreamCandidate(baseUri, state);
+        return new UpstreamCandidate(baseUri, state, effectiveUpstreamMaxInFlight(config, id));
     }
 
     private List<ReverseProxyStatusResponse.UpstreamStatus> configuredUpstreamStatuses(
@@ -629,6 +699,7 @@ public class ReverseProxyService {
                                     resilienceState == null ? 0 : resilienceState.consecutiveFailures(now),
                                     resilienceState != null && resilienceState.cooldownActive(now),
                                     resilienceState == null ? 0 : resilienceState.cooldownRemainingMillis(now),
+                                    effectiveUpstreamMaxInFlight(config, id),
                                     new ReverseProxyStatusResponse.UpstreamRuntimeStatus(
                                             runtime.inFlightRequestCount(),
                                             runtime.completedRequestCount(),
@@ -643,6 +714,16 @@ public class ReverseProxyService {
                                             isoInstant(runtime.lastUpdatedAt())));
                         }))
                 .toList();
+    }
+
+    private static int effectiveUpstreamMaxInFlight(ActiveProxyConfig config, String upstreamId) {
+        return config.routes().stream()
+                .flatMap(route -> route.targets().stream())
+                .filter(target -> target.getId() != null && upstreamId.equals(target.getId().trim()))
+                .mapToInt(ReverseProxyProperties.Upstream::getMaxInFlight)
+                .filter(limit -> limit > 0)
+                .min()
+                .orElse(0);
     }
 
     private UpstreamRuntimeStats runtimeStatsFor(String upstreamId) {
@@ -846,6 +927,17 @@ public class ReverseProxyService {
         return new ReverseProxyResponse(status.value(), headers, body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
+    private static ReverseProxyResponse overloadResponse(String error, String message, int retryAfterSeconds) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.RETRY_AFTER, Integer.toString(Math.max(1, retryAfterSeconds)));
+        String body = "{\"error\":\"" + jsonEscape(error) + "\",\"message\":\"" + jsonEscape(message) + "\"}";
+        return new ReverseProxyResponse(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                headers,
+                body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
     private static String jsonEscape(String value) {
         return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
@@ -1023,6 +1115,8 @@ public class ReverseProxyService {
         copy.setRetry(copyRetry(source.getRetry()));
         copy.setCooldown(copyCooldown(source.getCooldown()));
         copy.setForwarded(copyForwarded(source.getForwarded()));
+        copy.setLimits(copyLimits(source.getLimits()));
+        copy.setShedding(copyShedding(source.getShedding()));
         copy.setUpstreams(source.getUpstreams().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
@@ -1079,12 +1173,41 @@ public class ReverseProxyService {
         copy.setInFlightRequestCount(source.getInFlightRequestCount());
         copy.setConfiguredCapacity(source.getConfiguredCapacity());
         copy.setEstimatedConcurrencyLimit(source.getEstimatedConcurrencyLimit());
+        copy.setMaxInFlight(source.getMaxInFlight());
         copy.setWeight(source.getWeight());
         copy.setAverageLatencyMillis(source.getAverageLatencyMillis());
         copy.setP95LatencyMillis(source.getP95LatencyMillis());
         copy.setP99LatencyMillis(source.getP99LatencyMillis());
         copy.setRecentErrorRate(source.getRecentErrorRate());
         copy.setQueueDepth(source.getQueueDepth());
+        return copy;
+    }
+
+    private static ReverseProxyProperties.Limits copyLimits(ReverseProxyProperties.Limits source) {
+        ReverseProxyProperties.Limits copy = new ReverseProxyProperties.Limits();
+        if (source == null) {
+            return copy;
+        }
+        copy.setMaxInFlight(source.getMaxInFlight());
+        copy.setAdaptive(source.isAdaptive());
+        return copy;
+    }
+
+    private static ReverseProxyProperties.Shedding copyShedding(ReverseProxyProperties.Shedding source) {
+        ReverseProxyProperties.Shedding copy = new ReverseProxyProperties.Shedding();
+        if (source == null) {
+            return copy;
+        }
+        copy.setEnabled(source.isEnabled());
+        copy.setSoftUtilizationThreshold(source.getSoftUtilizationThreshold());
+        copy.setHardUtilizationThreshold(source.getHardUtilizationThreshold());
+        copy.setMaxQueueDepth(source.getMaxQueueDepth());
+        copy.setMaxP95LatencyMillis(source.getMaxP95LatencyMillis());
+        copy.setMaxErrorRate(source.getMaxErrorRate());
+        copy.setCriticalBypassEnabled(source.isCriticalBypassEnabled());
+        copy.setShedUserOnHardPressure(source.isShedUserOnHardPressure());
+        copy.setPriorityHeader(source.getPriorityHeader());
+        copy.setRetryAfter(source.getRetryAfter());
         return copy;
     }
 
@@ -1154,6 +1277,7 @@ public class ReverseProxyService {
             ReverseProxyProperties properties,
             List<ReverseProxyRoutePlanner.ConfiguredRoute> routes,
             ProxyRequestHeaders.ForwardedPolicy forwardedPolicy,
+            ProxyAdmissionControl.Policy admissionPolicy,
             long generation) {
         int routeCount() {
             return routes.size();
@@ -1186,7 +1310,7 @@ public class ReverseProxyService {
         }
     }
 
-    private record UpstreamCandidate(URI baseUri, ServerStateVector state) {
+    private record UpstreamCandidate(URI baseUri, ServerStateVector state, int maxInFlight) {
     }
 
     private record EffectiveHealth(

@@ -18,6 +18,8 @@ API-key mode protects `/api/**` with `X-API-Key` regardless of active profile, i
 
 Deployments that expose the service beyond a private test network should place it behind a trusted ingress, API gateway, reverse proxy, or zero-trust access layer.
 
+Proxy concurrency limits, adaptive limiting, and priority-aware load shedding are process-local overload controls, not authentication, authorization, a distributed quota, or a cross-replica global cap. Priority mapping is disabled unless `loadbalancerpro.proxy.shedding.priority-header` is configured. If enabled, the deployment must remove caller-supplied copies and set the header at a trusted authenticated ingress; allowing untrusted callers to claim `CRITICAL` priority defeats priority ordering, although the strict concurrency cap still applies. Keep edge admission controls in place for shared or public deployments.
+
 ## CSRF Disposition
 
 LoadBalancerPro keeps protected API/proxy paths stateless. Spring Security is configured with stateless sessions, form login disabled, HTTP Basic disabled, and logout disabled. API clients authenticate with explicit request headers in protected modes: `X-API-Key` for API-key mode or `Authorization: Bearer ...` for OAuth2 mode.

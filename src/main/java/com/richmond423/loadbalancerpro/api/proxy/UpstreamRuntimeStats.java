@@ -5,7 +5,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntPredicate;
 
 /**
  * Bounded process-local measurements for one configured upstream id.
@@ -18,7 +19,7 @@ final class UpstreamRuntimeStats {
             new Snapshot(0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0, null);
 
     private final Clock clock;
-    private final LongAdder inFlight = new LongAdder();
+    private final AtomicInteger inFlight = new AtomicInteger();
     private final Object windowLock = new Object();
     private final long[] latencyNanos = new long[LATENCY_WINDOW_SIZE];
     private final long[] bucketEpochSeconds = new long[ERROR_WINDOW_SECONDS];
@@ -37,7 +38,32 @@ final class UpstreamRuntimeStats {
     }
 
     void requestStarted() {
-        inFlight.increment();
+        if (!tryRequestStarted(0, ignored -> true)) {
+            throw new IllegalStateException("in-flight request counter is saturated");
+        }
+    }
+
+    boolean tryRequestStarted(int maxInFlight, IntPredicate admissionForProspectiveCount) {
+        if (maxInFlight < 0) {
+            throw new IllegalArgumentException("maxInFlight must be non-negative");
+        }
+        Objects.requireNonNull(admissionForProspectiveCount, "admissionForProspectiveCount cannot be null");
+        while (true) {
+            int current = inFlight.get();
+            if (current == Integer.MAX_VALUE) {
+                return false;
+            }
+            int prospective = current + 1;
+            if (maxInFlight > 0 && prospective > maxInFlight) {
+                return false;
+            }
+            if (!admissionForProspectiveCount.test(prospective)) {
+                return false;
+            }
+            if (inFlight.compareAndSet(current, prospective)) {
+                return true;
+            }
+        }
     }
 
     void requestCompleted(Duration latency, boolean successful) {
@@ -70,7 +96,7 @@ final class UpstreamRuntimeStats {
                 lastUpdatedAt = completedAt;
             }
         } finally {
-            inFlight.decrement();
+            inFlight.updateAndGet(current -> Math.max(0, current - 1));
         }
     }
 
@@ -95,7 +121,7 @@ final class UpstreamRuntimeStats {
                     : (double) recentFailures / recentRequests;
 
             return new Snapshot(
-                    saturatedInt(inFlight.sum()),
+                    inFlight.get(),
                     completedRequestCount,
                     latencySampleCount,
                     ewmaLatencyMillis,
@@ -106,6 +132,12 @@ final class UpstreamRuntimeStats {
                     recentFailures,
                     recentErrorRate,
                     lastUpdatedAt);
+        }
+    }
+
+    long completedRequestCount() {
+        synchronized (windowLock) {
+            return completedRequestCount;
         }
     }
 
@@ -134,10 +166,6 @@ final class UpstreamRuntimeStats {
 
     private static double nanosToMillis(long nanos) {
         return nanos / 1_000_000.0;
-    }
-
-    private static int saturatedInt(long value) {
-        return value >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) Math.max(0, value);
     }
 
     record Snapshot(

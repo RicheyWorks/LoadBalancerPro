@@ -33,6 +33,15 @@ loadbalancerpro.proxy.connect-timeout=1s
 loadbalancerpro.proxy.request-timeout=2s
 loadbalancerpro.proxy.max-request-bytes=65536
 loadbalancerpro.proxy.forwarded.mode=strip-and-set
+loadbalancerpro.proxy.limits.max-in-flight=0
+loadbalancerpro.proxy.limits.adaptive=false
+loadbalancerpro.proxy.shedding.enabled=false
+loadbalancerpro.proxy.shedding.soft-utilization-threshold=0.75
+loadbalancerpro.proxy.shedding.hard-utilization-threshold=0.90
+loadbalancerpro.proxy.shedding.max-p95-latency-millis=250
+loadbalancerpro.proxy.shedding.max-error-rate=0.10
+loadbalancerpro.proxy.shedding.priority-header=
+loadbalancerpro.proxy.shedding.retry-after=1s
 loadbalancerpro.proxy.health-check.enabled=false
 loadbalancerpro.proxy.health-check.path=/health
 loadbalancerpro.proxy.health-check.timeout=1s
@@ -81,6 +90,10 @@ Forwarding metadata defaults to `loadbalancerpro.proxy.forwarded.mode=strip-and-
 Named routes can apply static header rules through `headers.remove.<name>=true`, `headers.set.<name>=<value>`, and `headers.add.<name>=<value>`. The proxy removes configured headers first, replaces `set` headers second, and appends `add` headers last, after forwarding metadata is constructed. Header names and values are startup/reload validated, and hop-by-hop headers such as `Host`, `Connection`, `Content-Length`, and `Transfer-Encoding` cannot be added or set. Because route rules are trusted operator configuration, they may deliberately replace forwarding metadata after the anti-spoofing policy.
 
 When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Forwarding mode, trusted literal CIDRs, and route header rules are validated before activation. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN` and `WEIGHTED_LEAST_CONNECTIONS`, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
+
+Global and per-upstream concurrency controls are opt-in. Set `loadbalancerpro.proxy.limits.max-in-flight` to a positive value for the process-local global cap and `upstreams[n].max-in-flight` or `routes.<name>.targets[n].max-in-flight` for process-local upstream caps; `0` means unlimited. A request holds one global permit across all of its retry attempts, while each actual upstream attempt holds that upstream's permit. If a selected upstream is full, the proxy tries another eligible target without consuming a retry; when the global cap or all eligible upstream caps are reached, it returns a fast HTTP 503 with `Retry-After` and `proxy_concurrency_limit` or `proxy_upstream_concurrency_limit`. Upstream ids share runtime state across routes, so the strictest positive cap configured for the same id is enforced.
+
+Set `loadbalancerpro.proxy.shedding.enabled=true` only with a positive global cap. The configured soft/hard utilization, p95-latency, and recent-error thresholds map to the existing load-shedding policy; the proxy has no internal request queue, so its queue-depth signal is always zero even though `max-queue-depth` remains part of the shared policy configuration. Requests are `USER` by default. To map `CRITICAL`, `USER`, `BACKGROUND`, or `PREFETCH`, configure `loadbalancerpro.proxy.shedding.priority-header`; unknown values fail safe to `USER`. That header is trusted admission metadata and must be stripped and set by a trusted ingress rather than accepted directly from untrusted clients. `CRITICAL` requests bypass shedding when configured but never bypass the strict concurrency cap. Optional `loadbalancerpro.proxy.limits.adaptive=true` evaluates bounded process-local latency/error samples every 20 completions and adjusts the effective global cap between 1 and the configured maximum; reload starts a new adaptive policy at the configured cap.
 
 ## Operator Config Reload
 
@@ -184,7 +197,7 @@ Inspect the read-only proxy status endpoint:
 curl -s http://127.0.0.1:8080/api/proxy/status
 ```
 
-The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
+The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured/effective/current global concurrency, adaptive decision state, load-shedding configuration, per-upstream caps, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
 
 Each upstream also reports process-local runtime statistics: current in-flight attempts; completed-attempt count; latency EWMA and p50/p95/p99 from the newest 256 completions; successes, failures, and error rate from the trailing 30 seconds; and the last completion timestamp. Statistics remain attached when a successful reload keeps the same upstream id. Weighted least-connections and tail-latency-aware proxy routes consume the applicable live measurements as described above.
 
@@ -263,6 +276,7 @@ The examples target loopback placeholders `http://localhost:9001` and `http://lo
 - No generated runtime reports.
 - No persistent proxy health or metrics state.
 - No persistent retry or cooldown state.
+- No distributed/global-across-replicas concurrency enforcement or persistent adaptive state.
 - No external or distributed config backend.
 - No hot-reload production-readiness claim.
 - No TLS termination, WebSocket support, WAF, distributed rate limiting, credential rotation, or production gateway guarantee.

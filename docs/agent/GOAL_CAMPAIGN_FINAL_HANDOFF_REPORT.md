@@ -98,4 +98,4 @@ The 10-PR goal campaign does not prove:
 
 ## Recommended Next Goal
 
-The next goal should be chosen from a fresh BUILD_CONTRACT.md with a narrow scope. The follow-on [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md) starts a new 20-PR evidence audit and closeout repair campaign rather than extending this completed 10-PR trial.
+The next goal should be chosen from a fresh BUILD_CONTRACT.md with a narrow scope. The follow-on [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](../archive/agent-history/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md) starts a new 20-PR evidence audit and closeout repair campaign rather than extending this completed 10-PR trial.

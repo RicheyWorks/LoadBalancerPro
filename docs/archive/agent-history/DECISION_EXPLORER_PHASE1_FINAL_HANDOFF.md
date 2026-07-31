@@ -12,9 +12,9 @@ Related Phase 1 scope: [`DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md`](DECISI
 
 Related reviewer examples: [`DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md).
 
-Related API contracts: [`../API_CONTRACTS.md`](../API_CONTRACTS.md).
+Related API contracts: [`../API_CONTRACTS.md`](../../API_CONTRACTS.md).
 
-Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md).
+Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../../REVIEWER_TRUST_MAP.md).
 
 Related local page: `/decision-explorer.html`.
 

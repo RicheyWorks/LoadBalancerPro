@@ -162,7 +162,7 @@ Related docs:
 - [`../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md) maps architecture report phases to current docs and future-only boundaries.
 - [`../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md) defines the future LASE/live allocation boundary contract.
 - [`../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) maps current classes into future boundary buckets.
-- [`../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) stages future package-boundary enforcement.
+- [`../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](../archive/project-history/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) stages future package-boundary enforcement.
 - [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md) provides reviewer navigation and evidence boundaries.
 - [`../ENTERPRISE_READINESS_AUDIT.md`](../ENTERPRISE_READINESS_AUDIT.md) records readiness posture and not-proven boundaries.
 

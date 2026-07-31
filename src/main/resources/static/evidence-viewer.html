@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>LoadBalancerPro Evidence Viewer</title>
+  <link rel="stylesheet" href="/evidence-viewer.css">
+  <script src="/evidence-viewer-lib.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#viewer-content">Skip to evidence</a>
+
+  <header class="site-header">
+    <div>
+      <a class="brand" href="/">LoadBalancerPro</a>
+      <span class="product-label">Controlled evidence viewer</span>
+    </div>
+    <nav id="viewer-navigation" aria-label="Evidence views"></nav>
+  </header>
+
+  <main id="viewer-content">
+    <section class="hero" aria-labelledby="view-title">
+      <p class="eyebrow" id="view-eyebrow">Local reviewer evidence</p>
+      <h1 id="view-title">Evidence Viewer</h1>
+      <p class="lede" id="view-description">
+        Loading the selected same-origin evidence contract.
+      </p>
+      <div class="boundary-banner">
+        <strong>Evidence boundary</strong>
+        <span id="view-boundary">
+          This surface summarizes local and CI evidence. It does not certify production operation.
+        </span>
+      </div>
+    </section>
+
+    <section class="toolbar" aria-label="Evidence actions">
+      <div class="source">
+        <span>Source</span>
+        <code id="view-endpoint">pending</code>
+      </div>
+      <div class="actions">
+        <button type="button" id="refresh-view">Refresh</button>
+        <button type="button" id="copy-json">Copy JSON</button>
+        <button type="button" id="download-json">Download JSON</button>
+        <button type="button" id="copy-markdown">Copy Markdown</button>
+        <button type="button" id="download-markdown">Download Markdown</button>
+        <button type="button" id="print-view">Print / Save as PDF</button>
+      </div>
+      <p id="action-status" class="action-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="status-panel" aria-labelledby="load-status-title">
+      <div>
+        <p class="eyebrow" id="load-status-title">Viewer status</p>
+        <p id="load-status" class="load-status">Waiting to load.</p>
+      </div>
+      <span id="load-state" class="state-chip state-pending">PENDING</span>
+    </section>
+
+    <section aria-labelledby="summary-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">At a glance</p>
+          <h2 id="summary-title">Summary</h2>
+        </div>
+        <p>Scalar contract fields from the selected API.</p>
+      </div>
+      <div id="summary-grid" class="summary-grid"></div>
+    </section>
+
+    <section aria-labelledby="details-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Structured evidence</p>
+          <h2 id="details-title">Details</h2>
+        </div>
+        <p>Nested objects and lists rendered without interpreting server values as markup.</p>
+      </div>
+      <div id="detail-sections" class="detail-sections"></div>
+    </section>
+
+    <details class="raw-panel">
+      <summary>Raw JSON response</summary>
+      <pre id="raw-output">No response loaded.</pre>
+    </details>
+
+    <section class="operator-note" aria-labelledby="operator-note-title">
+      <div>
+        <p class="eyebrow">Operator note</p>
+        <h2 id="operator-note-title">Browser-local handoff only</h2>
+      </div>
+      <p>
+        Copy, download, and print actions run in this browser. The server does not create,
+        upload, publish, sign, or share evidence files. Review generated content for secrets
+        before handing it to another person.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Same-origin, read-only evidence surface.</span>
+    <a href="/enterprise-lab.html">Enterprise Lab</a>
+    <a href="/load-balancing-cockpit.html">Load-balancing cockpit</a>
+  </footer>
+</body>
+</html>

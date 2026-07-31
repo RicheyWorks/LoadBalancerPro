@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Test;
 class EnterpriseLabCockpitXssSafetyTest {
     private static final Path ENTERPRISE_LAB =
             Path.of("src/main/resources/static/enterprise-lab.html");
-    private static final Path REVIEWER =
-            Path.of("src/main/resources/static/enterprise-lab-reviewer.html");
-    private static final Path README = Path.of("README.md");
+    private static final Path EVIDENCE_VIEWER_LIBRARY =
+            Path.of("src/main/resources/static/evidence-viewer-lib.js");
 
     @Test
     void enterpriseLabRendersEveryServerFieldThroughTextDomNodes() throws Exception {
@@ -37,18 +36,15 @@ class EnterpriseLabCockpitXssSafetyTest {
     }
 
     @Test
-    void reviewerRendersEverySummaryPathThroughTextDomNodes() throws Exception {
-        String page = Files.readString(REVIEWER);
+    void evidenceViewerRendersApiValuesThroughTextDomNodes() throws Exception {
+        String page = Files.readString(EVIDENCE_VIEWER_LIBRARY);
 
         assertNoHtmlStringSink(page);
-        assertTrue(page.contains("function appendSummaryValue("));
-        assertTrue(page.contains("element.replaceChildren("));
-        assertTrue(page.contains("artifact.evidenceDirectory"));
-        assertTrue(page.contains("evidence.readinessAuditPath"));
-        assertTrue(page.contains("evidence.reviewerTrustMapPath"));
-        assertTrue(page.contains("evidence.securityPosturePath"));
-        assertTrue(page.contains("evidence.governanceHardeningPath"));
-        assertTrue(page.contains("document.createTextNode("));
+        assertTrue(page.contains("function createElement("));
+        assertTrue(page.contains("element.textContent = text"));
+        assertTrue(page.contains("container.textContent = scalarText(value)"));
+        assertTrue(page.contains("document.getElementById(\"raw-output\").textContent"));
+        assertTrue(page.contains("Object.entries(payload)"));
     }
 
 

@@ -12,9 +12,9 @@ Related Phase 1 handoff: [`DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md`](DECISION_
 
 Related Phase 1 scope: [`DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md).
 
-Related API contracts: [`../API_CONTRACTS.md`](../API_CONTRACTS.md).
+Related API contracts: [`../API_CONTRACTS.md`](../../API_CONTRACTS.md).
 
-Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md).
+Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../../REVIEWER_TRUST_MAP.md).
 
 Related local reviewer page: `/decision-explorer.html`.
 

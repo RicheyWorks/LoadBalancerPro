@@ -54,7 +54,7 @@ The plan remains a plan. This inventory remains an inventory. Neither document e
 
 ## Relationship To LASE Boundary Enforcement Inventory
 
-[`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) maps current classes into future architecture buckets: live allocation, LASE shadow/evaluation, replay/evidence, reviewer metadata, domain model candidates, infrastructure/cloud/future integration, API/view, and configuration.
+[`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](../../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) maps current classes into future architecture buckets: live allocation, LASE shadow/evaluation, replay/evidence, reviewer metadata, domain model candidates, infrastructure/cloud/future integration, API/view, and configuration.
 
 This naming inventory reuses those buckets but focuses on names rather than package ownership. A name can be acceptable while still requiring future package-boundary review. A name can be risky without proving unsafe runtime behavior.
 

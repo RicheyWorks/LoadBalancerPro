@@ -12,8 +12,8 @@ README.md remains the constitutional layer and public trust surface. It is not t
 - [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md) is the startup path that ties the files together for normal Codex sessions.
 - [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md) is the navigation layer for multi-PR campaign control docs, merge/counting rules, and closeout flow.
 - [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) defines how multi-PR goal campaigns run one scoped PR at a time with concise current state, verification, remote checks, and stop conditions.
-- [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md) defines the minimal campaign-state fields.
-- [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the campaign PR opening, merge, post-merge, scope, and stop-condition checklist.
+- [`CAMPAIGN_CHECKPOINT_LEDGER.md`](../archive/agent-history/CAMPAIGN_CHECKPOINT_LEDGER.md) defines the minimal campaign-state fields.
+- [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](../archive/agent-history/CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the campaign PR opening, merge, post-merge, scope, and stop-condition checklist.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused checks, relevant selector bundles, full checks, remote checks, post-merge checks, and merge readiness.
 - [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks only the active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action.
 - [`FAILURE_LOG.md`](FAILURE_LOG.md) records unresolved material blockers and reusable lessons.

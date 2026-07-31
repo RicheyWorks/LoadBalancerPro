@@ -10,7 +10,7 @@ Related Phase 2 board: [`DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md`](DECISION_E
 
 Related Phase 2 scope: [`DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md).
 
-Related API contracts: [`../API_CONTRACTS.md`](../API_CONTRACTS.md).
+Related API contracts: [`../API_CONTRACTS.md`](../../API_CONTRACTS.md).
 
 Related local page: `/decision-explorer.html`.
 
@@ -188,7 +188,7 @@ runtime enforcement, storage, replay, export, or evidence-packet behavior.
 5. Run the Decision Explorer request from the page.
 6. Inspect reviewer badges, selected candidate, candidate set, candidate comparison rows, factor contributions, factor
    drill-down rows, warnings, unknowns, not-proven boundaries, and raw JSON payload.
-7. Cross-check [`../API_CONTRACTS.md`](../API_CONTRACTS.md) before treating the output as contract evidence.
+7. Cross-check [`../API_CONTRACTS.md`](../../API_CONTRACTS.md) before treating the output as contract evidence.
 
 The page keeps the optional API key in browser memory only. It uses same-origin app routes only and does not use
 external services, cloud targets, tenant targets, persistent browser storage, server-side storage, export handles,

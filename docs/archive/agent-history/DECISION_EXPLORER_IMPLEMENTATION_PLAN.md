@@ -8,7 +8,7 @@ Campaign slot: DX-G08.
 
 Related Phase 0 gate: [`DECISION_EXPLORER_PHASE0_VERIFICATION_GATE.md`](DECISION_EXPLORER_PHASE0_VERIFICATION_GATE.md).
 
-Related architecture record: [`../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md`](../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md).
+Related architecture record: [`../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md`](../../adr/ADR-0010-Interactive-Decision-Explorer-Architecture.md).
 
 Related data contract: [`DECISION_EXPLORER_DATA_CONTRACT.md`](DECISION_EXPLORER_DATA_CONTRACT.md).
 

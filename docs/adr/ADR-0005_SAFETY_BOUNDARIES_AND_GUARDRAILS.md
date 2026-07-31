@@ -559,8 +559,8 @@ Related docs:
 - [`../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) defines future WorkloadProfile signal metadata.
 - [`../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) defines the future read-only ExternalSignalPort contract.
 - [`../THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](../THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) frames current Tier 1 routing focus and future Tier 2/Tier 3 signal concepts.
-- [`../SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](../SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md) documents future source-name guard rule categories.
-- [`../SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](../SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md) documents future allowlist lifecycle planning.
+- [`../SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](../archive/project-history/SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md) documents future source-name guard rule categories.
+- [`../SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](../archive/project-history/SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md) documents future allowlist lifecycle planning.
 
 This ADR does not supersede those docs. It provides a proposed decision frame for future safety boundaries and guardrail work.
 

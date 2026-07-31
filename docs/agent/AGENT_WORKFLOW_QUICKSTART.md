@@ -12,14 +12,14 @@ In short: README.md is the operator-facing public trust surface, AGENTS.md is th
 - [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) explains how `/goal` uses README.md, AGENTS.md, BUILD_CONTRACT.md, and docs/agent files together for multi-hour Codex sessions.
 - [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md) is the navigation layer for multi-PR campaign control docs and closeout flow.
 - [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) explains how a multi-PR goal campaign runs one scoped PR at a time with current-state checkpoints, full verification, remote checks, and stop conditions.
-- [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md) defines the minimal current-state fields.
-- [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the per-PR opening, merge, post-merge, scope, and stop-condition gate for campaign slices.
-- [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md) defines changed-file, forbidden-scope, claim, guard-test, and stop-condition auditing for campaign slices.
-- [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md) defines the factual handoff format for a material pause, resume, or closeout.
-- [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](CAMPAIGN_CLOSEOUT_PROTOCOL.md) defines the final count, verification, reporting, and pause rules before a campaign may be called complete.
-- [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md) defines remote PR check and main merge-commit check auditing before a campaign PR can merge or count.
-- [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md) defines the final current-head, local verification, remote check, scope, merge method, and post-merge main gate.
-- [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) defines how to log, recover from, pause, and resume after local, remote, scope, or tooling failures.
+- [`CAMPAIGN_CHECKPOINT_LEDGER.md`](../archive/agent-history/CAMPAIGN_CHECKPOINT_LEDGER.md) defines the minimal current-state fields.
+- [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](../archive/agent-history/CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the per-PR opening, merge, post-merge, scope, and stop-condition gate for campaign slices.
+- [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](../archive/agent-history/CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md) defines changed-file, forbidden-scope, claim, guard-test, and stop-condition auditing for campaign slices.
+- [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](../archive/agent-history/CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md) defines the factual handoff format for a material pause, resume, or closeout.
+- [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](../archive/agent-history/CAMPAIGN_CLOSEOUT_PROTOCOL.md) defines the final count, verification, reporting, and pause rules before a campaign may be called complete.
+- [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](../archive/agent-history/CAMPAIGN_REMOTE_CHECK_AUDIT.md) defines remote PR check and main merge-commit check auditing before a campaign PR can merge or count.
+- [`CAMPAIGN_MERGE_GATE.md`](../archive/agent-history/CAMPAIGN_MERGE_GATE.md) defines the final current-head, local verification, remote check, scope, merge method, and post-merge main gate.
+- [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](../archive/agent-history/CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) defines how to log, recover from, pause, and resume after local, remote, scope, or tooling failures.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused-vs-full verification. Use focused checks while editing and full checks before merge.
 - [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks only the active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action.
 - [`FAILURE_LOG.md`](FAILURE_LOG.md) tracks unresolved material blockers and reusable technical lessons, not routine command or polling history.

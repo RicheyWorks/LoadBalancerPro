@@ -6,7 +6,7 @@ This is a naming plan only, not enforcement. It is docs/test only. No ArchUnit o
 
 ## Executive Summary
 
-PR #220 added [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), which defines the desired future boundary between live allocation and LASE shadow/evidence paths. PR #221 added [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), which maps the current tree into future boundary buckets. PR #222 added [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md), which stages future package-boundary enforcement.
+PR #220 added [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](../../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), which defines the desired future boundary between live allocation and LASE shadow/evidence paths. PR #221 added [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](../../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), which maps the current tree into future boundary buckets. PR #222 added [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md), which stages future package-boundary enforcement.
 
 This naming guard plan is the next preparation layer. It defines naming categories, candidate naming rules, allowed examples, risky examples to avoid, and future documentation/test-only guard ideas. The plan is intentionally weaker than package-boundary enforcement and does not claim runtime protection.
 

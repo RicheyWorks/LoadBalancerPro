@@ -15,7 +15,7 @@ Implementation status: not implemented.
 ## Context
 
 The Decision Explorer Architecture Bootstrap Campaign is tracked in
-[`../agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](../agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md).
+[`../agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](../archive/agent-history/DECISION_EXPLORER_CAMPAIGN_BOARD.md).
 DX-G03 records the proposed architecture decision for the future Interactive Decision Explorer before any
 data contract, schema, evidence lane, UI, endpoint, storage, or implementation plan is added.
 

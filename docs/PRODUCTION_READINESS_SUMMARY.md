@@ -6,7 +6,7 @@ Current label: production-candidate for controlled enterprise lab/reviewer usage
 
 ## Product Identity
 
-LoadBalancerPro's next identity is **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. The lab track owns controlled scenario running, deterministic replay, LASE shadow/recommend/active-experiment comparison, policy gates, scorecards, process-local lab metrics, measured local performance evidence, mocked auth proof, evidence export, and SRE walkthroughs. The gateway-candidate track owns optional future proxy/runtime hardening, config reload, production-grade metrics, rate limiting, canary/shadow mode, rollback, signed container distribution later, and deployment guides later. See [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), and [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md).
+LoadBalancerPro's next identity is **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. The lab track owns controlled scenario running, deterministic replay, LASE shadow/recommend/active-experiment comparison, policy gates, scorecards, process-local lab metrics, measured local performance evidence, mocked auth proof, evidence export, and SRE walkthroughs. The gateway-candidate track owns optional future proxy/runtime hardening, config reload, production-grade metrics, rate limiting, canary/shadow mode, rollback, signed container distribution later, and deployment guides later. See [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), and [`NEXT_GOAL_PROMPTS.md`](archive/project-history/NEXT_GOAL_PROMPTS.md).
 
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo. The explicit cockpit framing is recorded in [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](ENTERPRISE_LAB_COCKPIT_FRAMING.md).
 
@@ -81,7 +81,7 @@ The `v2.5.0` JAR/docs-first release evidence is produced and verified for the ex
 - Manual GitHub governance hardening: [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](MANUAL_GITHUB_GOVERNANCE_HARDENING.md)
 - Product charter: [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md)
 - Product roadmap: [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md)
-- Next goal prompts: [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md)
+- Next goal prompts: [`NEXT_GOAL_PROMPTS.md`](archive/project-history/NEXT_GOAL_PROMPTS.md)
 - SRE demo highlights: [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md)
 - Adaptive-routing experiment evidence: run `scripts/smoke/adaptive-routing-experiment.ps1 -Package` and inspect ignored output under `target/adaptive-routing-experiments/`; it compares baseline vs shadow vs active-experiment while keeping default behavior unchanged.
 - Enterprise Lab workflow evidence: run `scripts/smoke/enterprise-lab-workflow.ps1 -Package` and inspect ignored output under `target/enterprise-lab-runs/`; it lists lab scenarios, runs deterministic comparisons, renders scorecards, and keeps storage process-local/bounded.

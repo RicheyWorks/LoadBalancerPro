@@ -8,9 +8,9 @@ Historical campaign slot: DX-G09.
 
 Normalization campaign slot: LASE-P6-PR5.
 
-Related current API contract: [`../API_CONTRACTS.md`](../API_CONTRACTS.md).
+Related current API contract: [`../API_CONTRACTS.md`](../../API_CONTRACTS.md).
 
-Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md).
+Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../../REVIEWER_TRUST_MAP.md).
 
 Related Phase 6 naming anchor:
 [`LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md`](LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md).
@@ -40,7 +40,7 @@ automation.
 Before using this walkthrough, confirm:
 
 - the application under review is a local instance built from the intended revision;
-- `/decision-explorer.html` and the two same-origin API paths above match [`../API_CONTRACTS.md`](../API_CONTRACTS.md);
+- `/decision-explorer.html` and the two same-origin API paths above match [`../API_CONTRACTS.md`](../../API_CONTRACTS.md);
 - `readOnly`, `simulationOnly`, warnings, unknowns, and `notProvenBoundaries` remain visible in returned evidence;
 - any optional API key remains in browser memory only and is not persisted by the page;
 - the active change, if any, has current local and remote verification; and

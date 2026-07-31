@@ -143,9 +143,9 @@ ADR-0008 complements existing boundary plans:
 
 - [`../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md) defines the future LASE/live allocation boundary.
 - [`../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) maps the current tree into future boundary buckets.
-- [`../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) stages future package-boundary enforcement.
-- [`../LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](../LASE_BOUNDARY_NAMING_GUARD_PLAN.md) records future naming preparation.
-- [`../LASE_NAMING_GUARD_INVENTORY.md`](../LASE_NAMING_GUARD_INVENTORY.md) inventories current naming.
+- [`../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](../archive/project-history/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) stages future package-boundary enforcement.
+- [`../LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](../archive/project-history/LASE_BOUNDARY_NAMING_GUARD_PLAN.md) records future naming preparation.
+- [`../LASE_NAMING_GUARD_INVENTORY.md`](../archive/project-history/LASE_NAMING_GUARD_INVENTORY.md) inventories current naming.
 - [`../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) defines future read-only external signal context.
 - [`../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) defines future workload metadata.
 
@@ -280,7 +280,7 @@ Related docs:
 - [`../ENTERPRISE_READINESS_AUDIT.md`](../ENTERPRISE_READINESS_AUDIT.md) records readiness posture and not-proven boundaries.
 - [`../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md) defines the future LASE/live allocation boundary contract.
 - [`../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) maps current classes into future boundary buckets.
-- [`../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) stages future package-boundary enforcement.
+- [`../LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](../archive/project-history/LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) stages future package-boundary enforcement.
 - [`../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) defines the future read-only ExternalSignalPort contract.
 - [`../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) defines future WorkloadProfile signal metadata.
 

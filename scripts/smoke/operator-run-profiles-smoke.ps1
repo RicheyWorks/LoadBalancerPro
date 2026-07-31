@@ -143,9 +143,25 @@ function Stop-SmokeResources {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         }
     }
-    foreach ($job in $script:SmokeJobs) {
-        Stop-Job -Job $job -ErrorAction SilentlyContinue
-        Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+    foreach ($resource in $script:SmokeJobs) {
+        $job = $resource.Job
+        if ($job -and $job.State -eq "Running") {
+            $shutdownError = $null
+            try {
+                Invoke-WebRequest -UseBasicParsing `
+                    -Uri "http://127.0.0.1:$($resource.Port)/__shutdown" `
+                    -TimeoutSec 2 | Out-Null
+            } catch {
+                $shutdownError = $_.Exception.Message
+            }
+            $completed = Wait-Job -Job $job -Timeout 5
+            if (-not $completed) {
+                Write-SmokeWarn "loopback backend did not stop on port $($resource.Port): $shutdownError"
+            }
+        }
+        if ($job) {
+            Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
@@ -306,7 +322,10 @@ function Start-LoopbackBackend {
             while ($listener.IsListening) {
                 $context = $listener.GetContext()
                 $pathAndQuery = $context.Request.Url.PathAndQuery
-                if ($context.Request.Url.AbsolutePath -eq "/health") {
+                $shouldStop = $context.Request.Url.AbsolutePath -eq "/__shutdown"
+                if ($shouldStop) {
+                    $body = "$Name shutdown"
+                } elseif ($context.Request.Url.AbsolutePath -eq "/health") {
                     $body = "$Name health ok"
                 } else {
                     $body = "$Name handled $($context.Request.HttpMethod) $pathAndQuery"
@@ -317,13 +336,19 @@ function Start-LoopbackBackend {
                 $context.Response.Headers.Set("X-Smoke-Backend", $Name)
                 $context.Response.OutputStream.Write($bytes, 0, $bytes.Length)
                 $context.Response.Close()
+                if ($shouldStop) {
+                    break
+                }
             }
         } finally {
             $listener.Close()
         }
     }
 
-    $script:SmokeJobs += $job
+    $script:SmokeJobs += [pscustomobject]@{
+        Job = $job
+        Port = $Port
+    }
     return $job
 }
 

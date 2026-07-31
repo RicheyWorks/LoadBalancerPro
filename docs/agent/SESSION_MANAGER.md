@@ -6,6 +6,33 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 18 Main-Green / Slot 19 Start
+
+Timestamp: 2026-07-30T17:42:13-07:00
+
+Completed: `L-2.3`; `codex/l-2-3-os-lock-aware-takeover`;
+[#516](https://github.com/RicheyWorks/LoadBalancerPro/pull/516); final head
+`8eadb65fcb80d0e68501a51904f087ad9b8f96fc`; merge
+`03eca16a4f7114270567e99045400581559b3aea`.
+
+Verified: all final-head local gates, exact-head push CI `30593447353`, PR CI/dependency review `30593449477`,
+CodeQL `30593449480`, Docker/runtime, SBOM/artifact/evidence, blocking Trivy, and complete-diff self-review passed.
+The merge parents are exact prior main plus final PR head and its tree matches the PR tree. Exact-main focused
+verification passed 90 tests with zero failures, errors, or skips; main CI `30593875252` and CodeQL `30593875244`
+passed. Main container evidence names the exact merge SHA, Docker runtime passed, Trivy reports zero OS and zero JAR
+findings, and the 144-component SBOM retains Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`.
+
+Active: `L-2.4`; `codex/l-2-4-proof-tools-artifact`; base
+`03eca16a4f7114270567e99045400581559b3aea`; status `IN_PROGRESS`. Dependency `L-2.3` is `MAIN_GREEN`.
+Contract: remove the five proof runners/reports/exporters and JavaFX classes from the production server JAR while
+retaining executable proof coverage in CI from a test/tool-only home, and remove production CLI early-exit dispatch or
+isolate it to a tools artifact. Do not broaden into L-2.5 durability/logging/mutex work, L-4.2 GUI behavior repair,
+external targets, dependency upgrades unrelated to JavaFX packaging, or production-readiness claims.
+
+Blocker: none. Next: inventory the exact five proof families, shared production dependencies, CLI/startup dispatch,
+CI invocation paths, JavaFX source/dependency packaging, and existing artifact guards before selecting the smallest
+deletion-complete build layout.
+
 ## Combined Build Plan Slot 18 PR-Creation Checkpoint
 
 Timestamp: 2026-07-30T17:23:17-07:00

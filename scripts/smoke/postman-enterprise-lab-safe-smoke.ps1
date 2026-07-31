@@ -34,25 +34,13 @@ function Assert-RequiredFile {
 }
 
 function Find-ExecutableJar {
-    $jar = Get-ChildItem -Path "target" -Filter "*.jar" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch "sources|javadoc|original" } |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-
-    if ($null -eq $jar) {
+    $expectedJarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
+    if (-not (Test-Path -LiteralPath $expectedJarPath -PathType Leaf)) {
         Write-Host "No packaged jar found; running mvn package."
         & mvn -q -DskipTests package
-        $jar = Get-ChildItem -Path "target" -Filter "*.jar" -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -notmatch "sources|javadoc|original" } |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
     }
 
-    if ($null -eq $jar) {
-        throw "No packaged Spring Boot jar was found under target."
-    }
-
-    return $jar.FullName
+    return & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1")
 }
 
 function Invoke-SmokeRequest {

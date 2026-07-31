@@ -20,10 +20,15 @@ For full CI-equivalent verification, use:
 mvn -B verify
 ```
 
-The expected local artifact name from `pom.xml` is:
+Resolve the expected local artifact from Maven's effective `project.build.finalName` rather than copying a version
+literal:
 
-```text
-target/LoadBalancerPro-2.5.0.jar
+```powershell
+$jarPath = .\scripts\resolve-executable-jar.ps1 -ExpectedOnly
+```
+
+```bash
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh --expected-only)"
 ```
 
 If Maven dependency resolution fails on a workstation because the local Java trust store cannot validate Maven Central certificates, use GitHub CI as the source of truth for build and package validation.
@@ -33,19 +38,22 @@ If Maven dependency resolution fails on a workstation because the local Java tru
 Windows PowerShell:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\target\LoadBalancerPro-2.5.0.jar
+$jarPath = .\scripts\resolve-executable-jar.ps1
+Get-FileHash -Algorithm SHA256 $jarPath
 ```
 
 Unix with `sha256sum`:
 
 ```bash
-sha256sum target/LoadBalancerPro-2.5.0.jar
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+sha256sum "$JAR_PATH"
 ```
 
 Unix/macOS with `shasum`:
 
 ```bash
-shasum -a 256 target/LoadBalancerPro-2.5.0.jar
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+shasum -a 256 "$JAR_PATH"
 ```
 
 These commands produce local integrity evidence for the file on disk. Do not commit the checksum as canonical release evidence unless a separate release process explicitly asks for it.
@@ -55,7 +63,8 @@ These commands produce local integrity evidence for the file on disk. Do not com
 List jar entries:
 
 ```bash
-jar tf target/LoadBalancerPro-2.5.0.jar
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+jar tf "$JAR_PATH"
 ```
 
 Verify the manifest and Spring Boot layout:
@@ -63,15 +72,17 @@ Verify the manifest and Spring Boot layout:
 Windows PowerShell:
 
 ```powershell
-jar tf .\target\LoadBalancerPro-2.5.0.jar | Select-String "META-INF/MANIFEST.MF"
-jar tf .\target\LoadBalancerPro-2.5.0.jar | Select-String "BOOT-INF/classes/"
+$jarPath = .\scripts\resolve-executable-jar.ps1
+jar tf $jarPath | Select-String "META-INF/MANIFEST.MF"
+jar tf $jarPath | Select-String "BOOT-INF/classes/"
 ```
 
 Unix shell:
 
 ```bash
-jar tf target/LoadBalancerPro-2.5.0.jar | grep 'META-INF/MANIFEST.MF'
-jar tf target/LoadBalancerPro-2.5.0.jar | grep 'BOOT-INF/classes/'
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+jar tf "$JAR_PATH" | grep 'META-INF/MANIFEST.MF'
+jar tf "$JAR_PATH" | grep 'BOOT-INF/classes/'
 ```
 
 Verify packaged static pages:
@@ -104,7 +115,7 @@ Windows PowerShell:
 ```powershell
 .\scripts\local-artifact-verify.ps1
 .\scripts\local-artifact-verify.ps1 -Build
-.\scripts\local-artifact-verify.ps1 -JarPath .\target\LoadBalancerPro-2.5.0.jar
+.\scripts\local-artifact-verify.ps1 -JarPath PATH
 ```
 
 Unix shell:
@@ -112,10 +123,14 @@ Unix shell:
 ```bash
 bash scripts/local-artifact-verify.sh
 bash scripts/local-artifact-verify.sh --build
-bash scripts/local-artifact-verify.sh --jar target/LoadBalancerPro-2.5.0.jar
+bash scripts/local-artifact-verify.sh --jar PATH
 ```
 
-The helpers optionally run `mvn -B -DskipTests package`, compute a SHA-256 checksum for the local jar, inspect required jar entries, and print local run commands. They do not start long-running servers unless the operator runs the printed commands separately.
+Without an explicit override, both helpers resolve exactly `target/${project.build.finalName}.jar` from the effective
+Maven model and fail when that file is absent. They do not choose another version by lexical order or modification
+time. The helpers optionally run `mvn -B -DskipTests package`, compute a SHA-256 checksum for the selected local jar,
+inspect required jar entries, and print local run commands. They do not start long-running servers unless the operator
+runs the printed commands separately.
 
 ## CI Packaged Artifact Smoke
 
@@ -157,7 +172,8 @@ For a release-free go/no-go packet that records local verification alongside CI 
 Start the packaged API jar on loopback:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
 Then verify:
@@ -193,7 +209,7 @@ The packaged Spring Boot executable jar starts `com.richmond423.loadbalancerpro.
 
 ## Troubleshooting
 
-- If `target/LoadBalancerPro-2.5.0.jar` is missing, run `mvn -B -DskipTests package`.
+- If the version-derived executable jar is missing, run `mvn -B -DskipTests package`, then rerun the resolver.
 - If `jar` is unavailable, confirm the JDK `bin` directory is on `PATH`.
 - If `proxy-status.html` or `load-balancing-cockpit.html` is missing from `jar tf`, rebuild and confirm the source files exist under `src/main/resources/static`.
 - If `/api/proxy/status` reports proxy disabled during local startup, that is expected for default local runs.

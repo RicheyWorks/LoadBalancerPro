@@ -63,6 +63,11 @@ The primary CI lane currently performs the following source-visible steps:
 19. Scans the CI Docker image with Trivy for HIGH and CRITICAL OS/library vulnerabilities, using `.trivyignore`, `ignore-unfixed: true`, and `exit-code: '1'`.
 20. Uploads `container-dry-run-evidence-no-publish-no-sign` when evidence files exist.
 
+The later 2026-07-31 L-4.3 packaging-maintenance slot makes the packaged-artifact, LASE, and HTTP smoke steps use the
+same Maven-effective `project.build.finalName` resolver as the local cross-platform helpers and Docker build. CI now
+requires that exact current-project JAR instead of selecting whichever matching artifact has the newest timestamp.
+This does not weaken or remove any test, artifact, Docker/runtime, dependency-review, CodeQL, or Trivy gate.
+
 ## Artifact And Evidence Boundary
 
 CI uploads workflow artifacts for reviewer inspection:

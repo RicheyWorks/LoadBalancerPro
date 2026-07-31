@@ -297,11 +297,11 @@
       "sourceIds": ["L-4.2"],
       "track": "lab",
       "title": "Delete or repair the JavaFX GUI",
-      "status": "IN_PROGRESS",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "PR #520 is active on codex/l-4-2-retire-javafx from exact green main 952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555. The deletion path removes eight desktop-only Java files, both checked-in copies of the desktop message bundle, javafx.version, org.openjfx:javafx-controls, and stale packaging exclusions while retaining the JavaFX-free public gui.Command contract consumed by CloudManager. Corrected product head 91fed46584156952520fc7dfab7347c5e65b64fc passed 3,076 clean full-suite tests with zero failures/errors/skips, package/verify, a 166-line JavaFX-free dependency tree, 138-component JavaFX-free CycloneDX SBOM, 1,258-entry JAR audit, packaged proof, and loopback runtime smoke. Local Docker is unavailable; exact-head remote Docker/runtime, Trivy, CI, dependency review, and CodeQL remain pending."
+      "currentState": "PR #520 final head cae381085ec8057c8e2a560cbaea2ecda497f9e2 passed 3,076 clean full-suite tests, package/verify, dependency-tree and JavaFX-absence audits, CycloneDX SBOM, packaged proof, loopback runtime, push CI 30628439049, PR CI and dependency review 30628440326, CodeQL 30628440311, Docker/runtime, and zero-finding blocking Trivy. It merged as e1f7afbe7da03e4366b65d896e1b445640538252 with exact parents/tree. Exact-main CI 30628994500, CodeQL 30628994559, Docker/runtime, SBOM/artifact evidence, and zero-finding Trivy passed. Eight desktop-only Java sources, both desktop message bundles, OpenJFX, and stale packaging exclusions are retired while the JavaFX-free public gui.Command contract remains for CloudManager; no API, proxy, cloud, workflow, Docker, configuration-default, external-target, or security-gate behavior changed."
     },
     {
       "ordinal": 23,
@@ -309,11 +309,11 @@
       "sourceIds": ["L-4.3"],
       "track": "lab",
       "title": "Unify artifact selection across smoke, Docker, and CI",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "PACKAGING",
       "verificationProfile": "deployment-local",
-      "currentState": "Cross-platform artifact-selection parity and version de-hardcoding are unproven."
+      "currentState": "Active on codex/l-4-3-unify-artifact-selection from exact green main e1f7afbe7da03e4366b65d896e1b445640538252. Bash and PowerShell resolvers derive target/${project.build.finalName}.jar from the effective Maven model and require that exact file. Distribution and local artifact helpers, all current smoke-script JAR consumers, Docker, three CI consumers, and README use the shared contract; explicit local artifact overrides remain. PowerShell behavior, the 2.5.0/2.10.0 decoy case, and 134 focused tests across 22 reports passed with zero failures/errors/skips. WSL has no Java, so exact-head Ubuntu CI and Docker must prove Bash runtime. No application behavior, endpoint, dependency, plugin, credential, external target, suppression, allowlist, or security-gate weakening is in scope."
     },
     {
       "ordinal": 24,

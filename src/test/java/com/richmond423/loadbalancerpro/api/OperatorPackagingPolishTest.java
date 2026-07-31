@@ -58,7 +58,9 @@ class OperatorPackagingPolishTest {
         assertTrue(operatorPackaging.contains("-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher"));
         assertTrue(operatorPackaging.contains("-Dexec.args=--mode round-robin"));
         assertTrue(operatorPackaging.contains("java -cp target/classes"));
-        assertTrue(operatorPackaging.contains("target/LoadBalancerPro-2.5.0.jar"));
+        assertTrue(operatorPackaging.contains("scripts/resolve-executable-jar.sh"));
+        assertTrue(operatorPackaging.contains("java -jar \"$JAR_PATH\""));
+        assertFalse(operatorPackaging.contains("LoadBalancerPro-2.5.0.jar"));
         assertTrue(launcherDoc.contains("compile exec:java"));
         assertTrue(launcherDoc.contains("ProxyDemoFixtureLauncher"));
         assertTrue(demoStack.contains("compile exec:java"));

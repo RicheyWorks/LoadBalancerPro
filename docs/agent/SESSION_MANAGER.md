@@ -6,6 +6,82 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 23 Focused-Green Checkpoint
+
+Timestamp: 2026-07-31T05:25:00-07:00
+
+Active: `L-4.3`; `codex/l-4-3-unify-artifact-selection`; exact green-main base
+`e1f7afbe7da03e4366b65d896e1b445640538252`; pre-product checkpoint
+`ea4caa56`; status `IN_PROGRESS`.
+
+Implementation: new Bash and PowerShell resolvers query Maven's effective `project.build.finalName`, validate it as a
+single safe filename, and either report or require exactly `target/${project.build.finalName}.jar`. They never choose
+by lexical order, modification time, or an embedded project version. Explicit `--jar`/`-JarPath` overrides remain for
+intentional local artifact inspection. The cross-platform distribution helpers, local artifact helpers, ten other
+current PowerShell smoke consumers, Docker build, all three CI JAR consumers, README, and directly coupled operator
+docs now use the same contract. The release workflow's exact-release-version-first and exactly-one fallback remains
+unchanged; modification-time selection for non-JAR release-review evidence is not part of this contract.
+
+Focused verification: Bash syntax checks and PowerShell parser checks passed. Windows PowerShell resolved
+`target/LoadBalancerPro-2.5.0.jar`, the static distribution helper passed, and local artifact verification passed.
+With an ignored `target/LoadBalancerPro-2.10.0.jar` decoy present, the resolver still selected and verified the Maven
+current `2.5.0` artifact; the decoy was removed immediately. The expanded 22-class focused selector passed 134 tests
+across 22 reports with zero failures, errors, or skips. Source inventory finds no hardcoded `2.5.0` executable path in
+scripts/workflows, no current smoke JAR mtime/lexical selector, and only the intentionally separate release-workflow
+fallback plus a non-JAR evidence timestamp sort.
+
+Local boundary: the workstation's `bash` is WSL and has no WSL Java, while Windows PowerShell has the installed
+JDK/Maven. Local Bash runtime parity is therefore not claimed; exact-head Ubuntu CI, Docker build/runtime, and artifact
+proof remain required. No Java production source, application behavior, endpoint, dependency/plugin, configuration
+default, credential, external/cloud/tenant target, release publication, suppression/allowlist, or security-gate
+weakening is present. The change does not prove production readiness, live-cloud validation, performance, artifact
+provenance, or future vulnerability absence.
+
+Recorded inventory, patch-context, environment, compile, and guard failures are tooling/test-development failures only
+and are corrected or bounded in `FAILURE_LOG.md`. Blocker: none. Next: commit the focused-green product/checkpoint
+scope, then run the campaign guard, clean full suite, package/verify, artifact/SBOM, packaged proof, loopback runtime,
+and available Docker gates before PR creation.
+
+## Combined Build Plan Slot 22 Main-Green / Slot 23 Start
+
+Timestamp: 2026-07-31T05:11:00-07:00
+
+Completed: `L-4.2`; `codex/l-4-2-retire-javafx`;
+[#520](https://github.com/RicheyWorks/LoadBalancerPro/pull/520); final head
+`cae381085ec8057c8e2a560cbaea2ecda497f9e2`; merge
+`e1f7afbe7da03e4366b65d896e1b445640538252`.
+
+Verified: final product head passed 3,076 clean full-suite tests with zero failures, errors, or skips, package/verify,
+effective dependency-tree and JavaFX-absence audits, 138-component JavaFX-free CycloneDX 1.6 SBOM inspection,
+1,258-entry local JAR inspection, packaged proof, and loopback API runtime smoke. Final PR head passed push CI
+`30628439049`, PR CI and dependency review `30628440326`, CodeQL `30628440311`, Docker/runtime, remote artifact/SBOM
+inspection, and blocking Trivy with zero Ubuntu and zero packaged-JAR HIGH/CRITICAL findings. Complete local/GitHub
+diff parity and self-review covered all 33 paths.
+
+The merge parents are the prior exact green main and the exact final PR head; its tree equals the reviewed PR tree.
+Exact-main CI `30628994500` and CodeQL `30628994559` passed. Downloaded main evidence names the exact merge SHA,
+records Docker runtime passed, contains the expected 138-component SBOM with Boot `3.5.16`, Framework `6.2.19`,
+Security `6.5.11`, and zero OpenJFX, retains the JavaFX-free public `gui.Command` used by `CloudManager`, excludes all
+retired desktop files, and reports zero Ubuntu and zero packaged-JAR HIGH/CRITICAL Trivy findings.
+
+Scope/boundaries: L-4.2 retired eight desktop-only Java sources, both checked-in desktop message resources, the
+OpenJFX declaration/dependency, and stale packaging exclusions. It did not change API/proxy/cloud behavior,
+workflows, Docker/Compose, runtime defaults, credentials, external targets, or security gates. It does not prove
+production readiness, live-cloud/tenant validation, performance, or future vulnerability absence.
+
+Active: `L-4.3`; `codex/l-4-3-unify-artifact-selection`; exact green-main base
+`e1f7afbe7da03e4366b65d896e1b445640538252`; status `IN_PROGRESS`. The O5/current-main audit confirms four drifting
+policies: the Bash operator distribution smoke chooses lexically, PowerShell chooses by mtime, CI chooses by
+`ls -t`, and local artifact verification hardcodes `2.5.0`; Docker must be reconciled with the same executable-JAR
+contract. Implement one deterministic version-derived, fail-closed selector across the authorized packaging/smoke
+surfaces, remove stale version literals, and add focused cross-platform/source guards. Do not change application
+behavior, endpoints, dependencies/plugins, credentials, external targets, suppressions/allowlists, or weaken a gate.
+
+Two L-4.3 inventory-only `rg` path/Windows-wildcard failures and the final L-4.2 post-merge inspection parser failure
+are recorded in `FAILURE_LOG.md`; none changed product or remote state. Blocker: none. Next: commit this four-file
+campaign checkpoint, inventory every executable-JAR selector and its callers/tests, then implement the smallest
+shared contract and run focused verification before broader packaging/runtime gates.
+
 ## Combined Build Plan Slot 22 PR-Created Checkpoint
 
 Timestamp: 2026-07-31T04:50:00-07:00

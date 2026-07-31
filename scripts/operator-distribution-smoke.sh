@@ -58,19 +58,7 @@ assert_path_exists() {
 }
 
 find_executable_jar() {
-  local jar
-  if [[ ! -d target ]]; then
-    echo "Executable jar not found because target/ does not exist. Run with --package or run mvn -B -DskipTests package first." >&2
-    exit 1
-  fi
-  jar="$(find target -maxdepth 1 -type f -name 'LoadBalancerPro-*.jar' \
-    ! -name '*-sources.jar' ! -name '*-javadoc.jar' ! -name '*-tests.jar' ! -name '*.original.jar' \
-    | sort | tail -n 1)"
-  if [[ -z "$jar" ]]; then
-    echo "Executable jar not found under target/. Run with --package or run mvn -B -DskipTests package first." >&2
-    exit 1
-  fi
-  printf '%s\n' "$jar"
+  bash scripts/resolve-executable-jar.sh
 }
 
 wait_for_url() {
@@ -107,11 +95,15 @@ required_paths=(
   "docs/OPERATOR_PACKAGING.md"
   "docs/PROXY_DEMO_FIXTURE_LAUNCHER.md"
   "docs/PROXY_DEMO_STACK.md"
+  "scripts/resolve-executable-jar.sh"
+  "scripts/resolve-executable-jar.ps1"
 )
 
 for path in "${required_paths[@]}"; do
   assert_path_exists "$path"
 done
+
+EXPECTED_JAR_PATH="$(bash scripts/resolve-executable-jar.sh --expected-only)"
 
 cat <<COMMANDS
 
@@ -122,7 +114,7 @@ Maven exec fixture launcher:
   mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
 
 Packaged jar startup:
-  java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=$PORT --spring.profiles.active=local
+  java -jar $EXPECTED_JAR_PATH --server.address=127.0.0.1 --server.port=$PORT --spring.profiles.active=local
 
 Proxy status checks:
   curl -fsS http://127.0.0.1:$PORT/api/health

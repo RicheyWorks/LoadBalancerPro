@@ -57,11 +57,17 @@ Build the normal Spring Boot jar without a release:
 mvn -B -DskipTests package
 ```
 
-The expected executable jar path is:
+Resolve the expected executable jar path from Maven's effective `project.build.finalName`:
 
-```text
-target/LoadBalancerPro-2.5.0.jar
+```powershell
+$jarPath = .\scripts\resolve-executable-jar.ps1
 ```
+
+```bash
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+```
+
+Both resolvers require the exact current-project artifact and ignore stale jars for other versions.
 
 Windows helper:
 
@@ -80,7 +86,8 @@ bash scripts/operator-distribution-smoke.sh --package
 Start the packaged jar on a loopback-only port:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 Then check:
@@ -135,7 +142,8 @@ mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-
 Or with the packaged jar:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --spring.profiles.active=proxy-demo-round-robin
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --spring.profiles.active=proxy-demo-round-robin
 ```
 
 Then verify:
@@ -165,7 +173,8 @@ docs/examples/proxy/application-proxy-real-backend-failover-example.properties
 Example import command:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-example.properties
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-example.properties
 ```
 
 The example upstreams are loopback placeholders:
@@ -184,15 +193,17 @@ After packaging, verify static resources are inside the jar:
 Windows PowerShell:
 
 ```powershell
-jar tf target\LoadBalancerPro-2.5.0.jar | Select-String "BOOT-INF/classes/static/proxy-status.html"
-jar tf target\LoadBalancerPro-2.5.0.jar | Select-String "BOOT-INF/classes/static/load-balancing-cockpit.html"
+$jarPath = .\scripts\resolve-executable-jar.ps1
+jar tf $jarPath | Select-String "BOOT-INF/classes/static/proxy-status.html"
+jar tf $jarPath | Select-String "BOOT-INF/classes/static/load-balancing-cockpit.html"
 ```
 
 Unix shell:
 
 ```bash
-jar tf target/LoadBalancerPro-2.5.0.jar | grep 'BOOT-INF/classes/static/proxy-status.html'
-jar tf target/LoadBalancerPro-2.5.0.jar | grep 'BOOT-INF/classes/static/load-balancing-cockpit.html'
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+jar tf "$JAR_PATH" | grep 'BOOT-INF/classes/static/proxy-status.html'
+jar tf "$JAR_PATH" | grep 'BOOT-INF/classes/static/load-balancing-cockpit.html'
 ```
 
 The proxy operator status page uses `GET /api/proxy/status` as its status source.

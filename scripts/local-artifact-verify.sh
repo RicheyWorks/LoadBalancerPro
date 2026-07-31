@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-JAR_PATH="target/LoadBalancerPro-2.5.0.jar"
+JAR_PATH=""
 BUILD="false"
 
 usage() {
@@ -11,11 +11,11 @@ LoadBalancerPro local artifact verification
 Usage:
   scripts/local-artifact-verify.sh
   scripts/local-artifact-verify.sh --build
-  scripts/local-artifact-verify.sh --jar target/LoadBalancerPro-2.5.0.jar
+  scripts/local-artifact-verify.sh --jar PATH
 
 Options:
   --build       Run mvn -B -DskipTests package before verification.
-  --jar PATH    Jar path to inspect. Default: target/LoadBalancerPro-2.5.0.jar.
+  --jar PATH    Inspect an explicit jar instead of the current Maven project artifact.
   -h, --help    Show this help.
 USAGE
 }
@@ -41,11 +41,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-if [[ -z "$JAR_PATH" ]]; then
-  echo "--jar requires a path." >&2
-  exit 1
-fi
 
 checksum() {
   local path="$1"
@@ -77,6 +72,10 @@ echo
 if [[ "$BUILD" == "true" ]]; then
   echo "Running local package build:"
   mvn -B -DskipTests package
+fi
+
+if [[ -z "$JAR_PATH" ]]; then
+  JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
 fi
 
 if [[ ! -f "$JAR_PATH" ]]; then

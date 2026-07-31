@@ -59,6 +59,7 @@ public class ReverseProxyService {
             "keep-alive",
             "proxy-authenticate",
             "proxy-authorization",
+            "proxy-connection",
             "te",
             "trailer",
             "transfer-encoding",
@@ -188,8 +189,8 @@ public class ReverseProxyService {
                 metrics.recordRetryAttempt(upstreamId);
             }
             ForwardAttemptResult attemptResult =
-                    forwardOnce(properties, request, body, upstream, route.strategyId().externalName(),
-                            route.requestTimeout(), proxyPathSuffix);
+                    forwardOnce(properties, config.forwardedPolicy(), route.headerRewrites(), request, body,
+                            upstream, route.strategyId().externalName(), route.requestTimeout(), proxyPathSuffix);
             lastResponse = attemptResult.response();
             if (!attemptResult.retriable() || attempt == maxAttempts) {
                 return attemptResult.response();
@@ -313,7 +314,9 @@ public class ReverseProxyService {
         List<ReverseProxyRoutePlanner.ConfiguredRoute> configuredRoutes =
                 ReverseProxyRoutePlanner.buildEnabledRoutes(safeProperties, registry, previousRoutes);
         validateRuntimeFields(safeProperties, configuredRoutes);
-        return new ActiveProxyConfig(safeProperties, configuredRoutes, generation);
+        ProxyRequestHeaders.ForwardedPolicy forwardedPolicy =
+                ProxyRequestHeaders.compileForwarded(safeProperties.getForwarded());
+        return new ActiveProxyConfig(safeProperties, configuredRoutes, forwardedPolicy, generation);
     }
 
     private void validateRuntimeFields(ReverseProxyProperties properties,
@@ -397,15 +400,23 @@ public class ReverseProxyService {
                                              byte[] body,
                                              UpstreamCandidate upstream,
                                              Duration requestTimeout,
-                                             String proxyPathSuffix) {
+                                             String proxyPathSuffix,
+                                             ProxyRequestHeaders.ForwardedPolicy forwardedPolicy,
+                                             ProxyRequestHeaders.HeaderRewrites headerRewrites) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(targetUri(request, upstream, proxyPathSuffix))
                 .timeout(requestTimeout);
+        Set<String> connectionHeaders = connectionHeaderTokens(request);
         Collections.list(request.getHeaderNames()).forEach(headerName -> {
-            if (isForwardableHeader(headerName)) {
+            if (isForwardableHeader(headerName)
+                    && !connectionHeaders.contains(headerName.toLowerCase(Locale.ROOT))
+                    && !ProxyRequestHeaders.isSpoofable(headerName)
+                    && !headerRewrites.removes(headerName)) {
                 Collections.list(request.getHeaders(headerName))
                         .forEach(headerValue -> builder.header(headerName, headerValue));
             }
         });
+        forwardedPolicy.apply(builder, request, headerRewrites);
+        headerRewrites.apply(builder);
         HttpRequest.BodyPublisher publisher = body.length == 0
                 ? HttpRequest.BodyPublishers.noBody()
                 : HttpRequest.BodyPublishers.ofByteArray(body);
@@ -413,6 +424,8 @@ public class ReverseProxyService {
     }
 
     private ForwardAttemptResult forwardOnce(ReverseProxyProperties properties,
+                                             ProxyRequestHeaders.ForwardedPolicy forwardedPolicy,
+                                             ProxyRequestHeaders.HeaderRewrites headerRewrites,
                                              HttpServletRequest request,
                                              byte[] body,
                                              UpstreamCandidate upstream,
@@ -426,7 +439,7 @@ public class ReverseProxyService {
         boolean runtimeSuccessful = false;
         try {
             HttpRequest outbound = buildOutboundRequest(
-                    request, body, upstream, requestTimeout, proxyPathSuffix);
+                    request, body, upstream, requestTimeout, proxyPathSuffix, forwardedPolicy, headerRewrites);
             runtimeStats = runtimeStatsFor(upstreamId);
             runtimeStats.requestStarted();
             startedAtNanos = System.nanoTime();
@@ -801,8 +814,29 @@ public class ReverseProxyService {
         return headers;
     }
 
+    static boolean isHopByHopHeader(String headerName) {
+        return headerName != null && HOP_BY_HOP_HEADERS.contains(headerName.toLowerCase(Locale.ROOT));
+    }
+
     private static boolean isForwardableHeader(String headerName) {
-        return headerName != null && !HOP_BY_HOP_HEADERS.contains(headerName.toLowerCase(Locale.ROOT));
+        return headerName != null && !isHopByHopHeader(headerName);
+    }
+
+    private static Set<String> connectionHeaderTokens(HttpServletRequest request) {
+        Set<String> tokens = new LinkedHashSet<>();
+        java.util.Enumeration<String> connectionValues = request.getHeaders("Connection");
+        if (connectionValues == null) {
+            return Set.of();
+        }
+        Collections.list(connectionValues).forEach(value -> {
+            for (String token : value.split(",")) {
+                String normalized = token.trim().toLowerCase(Locale.ROOT);
+                if (!normalized.isEmpty()) {
+                    tokens.add(normalized);
+                }
+            }
+        });
+        return Set.copyOf(tokens);
     }
 
     private static ReverseProxyResponse proxyError(HttpStatus status, String error, String message) {
@@ -988,6 +1022,7 @@ public class ReverseProxyService {
         copy.setHealthCheck(copyHealthCheck(source.getHealthCheck()));
         copy.setRetry(copyRetry(source.getRetry()));
         copy.setCooldown(copyCooldown(source.getCooldown()));
+        copy.setForwarded(copyForwarded(source.getForwarded()));
         copy.setUpstreams(source.getUpstreams().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
@@ -1005,9 +1040,31 @@ public class ReverseProxyService {
         copy.setPathPrefix(source.getPathPrefix());
         copy.setStrategy(source.getStrategy());
         copy.setRequestTimeout(source.getRequestTimeout());
+        copy.setHeaders(copyHeaders(source.getHeaders()));
         copy.setTargets(source.getTargets().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
+        return copy;
+    }
+
+    private static ReverseProxyProperties.Forwarded copyForwarded(ReverseProxyProperties.Forwarded source) {
+        ReverseProxyProperties.Forwarded copy = new ReverseProxyProperties.Forwarded();
+        if (source == null) {
+            return copy;
+        }
+        copy.setMode(source.getMode());
+        copy.setTrustedProxies(source.getTrustedProxies());
+        return copy;
+    }
+
+    private static ReverseProxyProperties.Headers copyHeaders(ReverseProxyProperties.Headers source) {
+        ReverseProxyProperties.Headers copy = new ReverseProxyProperties.Headers();
+        if (source == null) {
+            return copy;
+        }
+        copy.setAdd(source.getAdd());
+        copy.setSet(source.getSet());
+        copy.setRemove(source.getRemove());
         return copy;
     }
 
@@ -1096,6 +1153,7 @@ public class ReverseProxyService {
     private record ActiveProxyConfig(
             ReverseProxyProperties properties,
             List<ReverseProxyRoutePlanner.ConfiguredRoute> routes,
+            ProxyRequestHeaders.ForwardedPolicy forwardedPolicy,
             long generation) {
         int routeCount() {
             return routes.size();

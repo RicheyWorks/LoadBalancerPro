@@ -70,8 +70,11 @@ final class ReverseProxyRoutePlanner {
                 RoutingStrategy strategy = routeStrategy(
                         registry, strategyId, routeName, targets, previousRoutesByName);
                 requireRouteOwnedStrategy(routeName, strategy, routes);
+                ProxyRequestHeaders.HeaderRewrites headerRewrites = ProxyRequestHeaders.compileRewrites(
+                        route.getHeaders(), "loadbalancerpro.proxy.routes." + routeName + ".headers");
                 routes.add(new ConfiguredRoute(
-                        routeName, pathPrefix, strategyId, strategy, requestTimeout, List.copyOf(targets)));
+                        routeName, pathPrefix, strategyId, strategy, requestTimeout,
+                        headerRewrites, List.copyOf(targets)));
             }
             return List.copyOf(routes);
         }
@@ -87,6 +90,8 @@ final class ReverseProxyRoutePlanner {
                 registry, strategyId, LEGACY_ROUTE_NAME, upstreams, previousRoutesByName);
         return List.of(new ConfiguredRoute(
                 LEGACY_ROUTE_NAME, "/", strategyId, strategy, properties.getRequestTimeout(),
+                ProxyRequestHeaders.compileRewrites(
+                        new ReverseProxyProperties.Headers(), "loadbalancerpro.proxy.routes.legacy.headers"),
                 List.copyOf(upstreams)));
     }
 
@@ -239,6 +244,7 @@ final class ReverseProxyRoutePlanner {
             RoutingStrategyId strategyId,
             RoutingStrategy strategy,
             Duration requestTimeout,
+            ProxyRequestHeaders.HeaderRewrites headerRewrites,
             List<ReverseProxyProperties.Upstream> targets) {
     }
 }

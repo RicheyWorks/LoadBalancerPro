@@ -32,6 +32,7 @@ loadbalancerpro.proxy.strategy=ROUND_ROBIN
 loadbalancerpro.proxy.connect-timeout=1s
 loadbalancerpro.proxy.request-timeout=2s
 loadbalancerpro.proxy.max-request-bytes=65536
+loadbalancerpro.proxy.forwarded.mode=strip-and-set
 loadbalancerpro.proxy.health-check.enabled=false
 loadbalancerpro.proxy.health-check.path=/health
 loadbalancerpro.proxy.health-check.timeout=1s
@@ -62,6 +63,9 @@ loadbalancerpro.proxy.enabled=true
 loadbalancerpro.proxy.routes.api.path-prefix=/api
 loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN
 loadbalancerpro.proxy.routes.api.request-timeout=750ms
+loadbalancerpro.proxy.routes.api.headers.remove.x-internal-only=true
+loadbalancerpro.proxy.routes.api.headers.set.x-route-name=api
+loadbalancerpro.proxy.routes.api.headers.add.x-proxy-hop=loadbalancerpro
 loadbalancerpro.proxy.routes.api.targets[0].id=local-a
 loadbalancerpro.proxy.routes.api.targets[0].url=http://127.0.0.1:18081
 loadbalancerpro.proxy.routes.api.targets[0].weight=1
@@ -72,7 +76,11 @@ loadbalancerpro.proxy.routes.api.targets[1].weight=1
 
 When `routes` are configured, the proxy selects the longest matching `path-prefix` after removing `/proxy`. A request to `/proxy/api/widgets` matches the `api` route above and forwards `/api/widgets` to one configured target. A route-level `request-timeout` overrides the global request timeout for that route; routes without it inherit the global value. The separate connection timeout applies when the shared HTTP client establishes an upstream connection and requires an application restart to change. If `routes` are absent, the legacy global upstream list acts as a single `/` route so existing demos keep working.
 
-When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN` and `WEIGHTED_LEAST_CONNECTIONS`, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
+Forwarding metadata defaults to `loadbalancerpro.proxy.forwarded.mode=strip-and-set`: inbound `Forwarded`, `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` values are removed and replaced with values derived from the immediate caller. `append` preserves and appends to those headers only when the immediate peer's literal address matches `loadbalancerpro.proxy.forwarded.trusted-proxies`; entries are IPv4 or IPv6 literal CIDRs such as `10.0.0.0/8`, `127.0.0.1/32`, or `2001:db8::/32`, and hostnames are rejected. An untrusted peer in `append` mode still gets strip-and-set behavior. `off` strips the four forwarding headers and emits no replacements. Configure trusted CIDRs narrowly; this trust is about the immediate peer, not every address claimed inside an inbound chain.
+
+Named routes can apply static header rules through `headers.remove.<name>=true`, `headers.set.<name>=<value>`, and `headers.add.<name>=<value>`. The proxy removes configured headers first, replaces `set` headers second, and appends `add` headers last, after forwarding metadata is constructed. Header names and values are startup/reload validated, and hop-by-hop headers such as `Host`, `Connection`, `Content-Length`, and `Transfer-Encoding` cannot be added or set. Because route rules are trusted operator configuration, they may deliberately replace forwarding metadata after the anti-spoofing policy.
+
+When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Forwarding mode, trusted literal CIDRs, and route header rules are validated before activation. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN` and `WEIGHTED_LEAST_CONNECTIONS`, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
 
 ## Operator Config Reload
 

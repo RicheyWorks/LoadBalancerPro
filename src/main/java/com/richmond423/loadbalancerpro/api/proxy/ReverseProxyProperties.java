@@ -22,6 +22,7 @@ public class ReverseProxyProperties {
     private HealthCheck healthCheck = new HealthCheck();
     private Retry retry = new Retry();
     private Cooldown cooldown = new Cooldown();
+    private Forwarded forwarded = new Forwarded();
     private List<Upstream> upstreams = new ArrayList<>();
     private Map<String, Route> routes = new LinkedHashMap<>();
 
@@ -109,6 +110,14 @@ public class ReverseProxyProperties {
         this.cooldown = cooldown == null ? new Cooldown() : cooldown;
     }
 
+    public Forwarded getForwarded() {
+        return forwarded;
+    }
+
+    public void setForwarded(Forwarded forwarded) {
+        this.forwarded = forwarded == null ? new Forwarded() : forwarded;
+    }
+
     public List<Upstream> getUpstreams() {
         return upstreams;
     }
@@ -129,6 +138,7 @@ public class ReverseProxyProperties {
         private String pathPrefix = "/";
         private String strategy;
         private Duration requestTimeout;
+        private Headers headers = new Headers();
         private List<Upstream> targets = new ArrayList<>();
 
         public String getPathPrefix() {
@@ -155,12 +165,71 @@ public class ReverseProxyProperties {
             this.requestTimeout = requestTimeout;
         }
 
+        public Headers getHeaders() {
+            return headers;
+        }
+
+        public void setHeaders(Headers headers) {
+            this.headers = headers == null ? new Headers() : headers;
+        }
+
         public List<Upstream> getTargets() {
             return targets;
         }
 
         public void setTargets(List<Upstream> targets) {
             this.targets = targets == null ? new ArrayList<>() : new ArrayList<>(targets);
+        }
+    }
+
+    public static final class Forwarded {
+        private String mode = "strip-and-set";
+        private List<String> trustedProxies = new ArrayList<>();
+
+        public String getMode() {
+            return mode;
+        }
+
+        public void setMode(String mode) {
+            this.mode = mode;
+        }
+
+        public List<String> getTrustedProxies() {
+            return trustedProxies;
+        }
+
+        public void setTrustedProxies(List<String> trustedProxies) {
+            this.trustedProxies = trustedProxies == null ? new ArrayList<>() : new ArrayList<>(trustedProxies);
+        }
+    }
+
+    public static final class Headers {
+        private Map<String, String> add = new LinkedHashMap<>();
+        private Map<String, String> set = new LinkedHashMap<>();
+        private Map<String, Boolean> remove = new LinkedHashMap<>();
+
+        public Map<String, String> getAdd() {
+            return add;
+        }
+
+        public void setAdd(Map<String, String> add) {
+            this.add = add == null ? new LinkedHashMap<>() : new LinkedHashMap<>(add);
+        }
+
+        public Map<String, String> getSet() {
+            return set;
+        }
+
+        public void setSet(Map<String, String> set) {
+            this.set = set == null ? new LinkedHashMap<>() : new LinkedHashMap<>(set);
+        }
+
+        public Map<String, Boolean> getRemove() {
+            return remove;
+        }
+
+        public void setRemove(Map<String, Boolean> remove) {
+            this.remove = remove == null ? new LinkedHashMap<>() : new LinkedHashMap<>(remove);
         }
     }
 

@@ -40,6 +40,8 @@ Rejected requests must not construct or mutate `CloudManager`. Read-only evaluat
 
 Request-size limits are enforced for `/api/**` POST, PUT, and PATCH requests. The default limit is 16 KiB and can be changed with `loadbalancerpro.api.max-request-bytes`. Optional proxy mode has a separate request-body ceiling, `loadbalancerpro.proxy.max-request-bytes`, defaulting to 64 KiB.
 
+Reverse-proxy forwarding metadata fails closed by default: caller-supplied `Forwarded` and `X-Forwarded-*` values are stripped and replaced from the immediate connection. Append mode honors an inbound chain only when the immediate peer matches an explicitly configured IPv4 or IPv6 literal CIDR; hostnames are not resolved for trust decisions. Per-route static header rewrites are validated operator configuration applied after this policy, so access to proxy configuration or reload must remain an operator boundary.
+
 Routing comparison and Decision Explorer requests also have an absolute 32-candidate and five-strategy ceiling.
 `loadbalancerpro.api.max-candidates` and `loadbalancerpro.api.max-strategies` can lower those limits, and
 `loadbalancerpro.api.max-decision-explorer-response-bytes` bounds the counting-serialization pass for Explorer output

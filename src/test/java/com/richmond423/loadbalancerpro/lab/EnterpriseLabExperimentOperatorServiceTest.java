@@ -1,12 +1,17 @@
 package com.richmond423.loadbalancerpro.lab;
 
+import com.richmond423.loadbalancerpro.core.CloudManager;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.ArmRequest;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.GatedActuationCommand;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.GatedActuationGate;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.GatedActuationReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.OperatorStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.RequestBatchRequest;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationSnapshot.Kind;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -398,6 +403,182 @@ class EnterpriseLabExperimentOperatorServiceTest {
         }
     }
 
+    @Test
+    void gatedActuationRequiresAuthenticationEveryFlagAndAuthoritativeBindings() throws Exception {
+        try (Fixture fixture = Fixture.start()) {
+            var armed = fixture.service.arm(
+                    arm("arm-gated", "experiment-gated", 10, 2, 1), true);
+            EnterpriseLabExperimentOperatorRecord record = armed.experimentRecord().orElseThrow();
+
+            GatedActuationReceipt unauthenticated = fixture.service.actuate(
+                    actuation("actuation-unauthenticated", record),
+                    new GatedActuationGate(false, true, true));
+            assertEquals(OperatorStatus.DENIED, unauthenticated.status());
+            assertEquals("AUTHENTICATED_OPERATOR_REQUIRED", unauthenticated.reasonCode());
+
+            GatedActuationReceipt modeDisabled = fixture.service.actuate(
+                    actuation("actuation-mode-disabled", record),
+                    new GatedActuationGate(true, false, true));
+            assertEquals("GATED_ACTUATION_DISABLED", modeDisabled.reasonCode());
+
+            GatedActuationReceipt flagDisabled = fixture.service.actuate(
+                    actuation("actuation-flag-disabled", record),
+                    new GatedActuationGate(true, true, false));
+            assertEquals("GATED_ACTUATION_DISABLED", flagDisabled.reasonCode());
+
+            GatedActuationReceipt unsupported = fixture.service.actuate(
+                    new GatedActuationCommand(
+                            "actuation-unsupported",
+                            record.experimentId(),
+                            "replace-routing-table",
+                            record.configuration().candidateDecisionId(),
+                            "ARMED",
+                            record.contentFingerprint()),
+                    enabledGatedActuation());
+            assertEquals(OperatorStatus.REJECTED, unsupported.status());
+            assertEquals("UNSUPPORTED_ACTION", unsupported.reasonCode());
+
+            GatedActuationReceipt unknownDecision = fixture.service.actuate(
+                    new GatedActuationCommand(
+                            "actuation-unknown-decision",
+                            record.experimentId(),
+                            "install-candidate-allocation",
+                            "lab-decision:unknown:active-experiment",
+                            "ARMED",
+                            record.contentFingerprint()),
+                    enabledGatedActuation());
+            assertEquals("UNKNOWN_DECISION", unknownDecision.reasonCode());
+
+            assertThrows(IllegalArgumentException.class, () -> new GatedActuationCommand(
+                    "actuation-malformed",
+                    record.experimentId(),
+                    "https://example.test/run",
+                    record.configuration().candidateDecisionId(),
+                    "ARMED",
+                    record.contentFingerprint()));
+
+            GatedActuationReceipt applied = fixture.service.actuate(
+                    actuation("actuation-applied", record), enabledGatedActuation());
+            assertEquals(OperatorStatus.APPLIED, applied.status());
+            assertTrue(applied.trafficActionPerformed());
+            assertEquals(EnterpriseLabExperimentState.RUNNING,
+                    applied.stateAfter().orElseThrow());
+            assertEquals(Kind.CANDIDATE,
+                    applied.experimentRecord().orElseThrow().currentAllocation().kind());
+
+            GatedActuationReceipt conflict = fixture.service.actuate(
+                    actuation("actuation-conflict", record), enabledGatedActuation());
+            assertEquals(OperatorStatus.CONFLICT, conflict.status());
+            assertEquals("STALE_EXPECTED_STATE", conflict.reasonCode());
+            assertFalse(conflict.trafficActionPerformed());
+        }
+    }
+
+    @Test
+    void gatedActuationRejectsStaleExpiredAndCompletedStateWithoutMutation() throws Exception {
+        try (Fixture fixture = Fixture.start()) {
+            EnterpriseLabExperimentOperatorRecord armed = fixture.service.arm(
+                    arm("arm-stale", "experiment-stale", 10, 2, 1), true)
+                    .experimentRecord().orElseThrow();
+            var baseline = fixture.service.executeRequests(
+                    armed.experimentId(),
+                    new RequestBatchRequest("baseline-stale", 1, Duration.ofSeconds(1)),
+                    true);
+            EnterpriseLabExperimentOperatorRecord current = baseline.experimentRecord().orElseThrow();
+
+            GatedActuationReceipt stale = fixture.service.actuate(
+                    actuation("actuation-stale", armed), enabledGatedActuation());
+            assertEquals(OperatorStatus.CONFLICT, stale.status());
+            assertEquals("STALE_EXPECTED_VERSION", stale.reasonCode());
+            assertFalse(stale.trafficActionPerformed());
+            assertEquals(Kind.BASELINE,
+                    stale.experimentRecord().orElseThrow().currentAllocation().kind());
+
+            GatedActuationReceipt applied = fixture.service.actuate(
+                    actuation("actuation-current", current), enabledGatedActuation());
+            assertEquals(OperatorStatus.APPLIED, applied.status());
+            var cancelled = fixture.service.cancel(
+                    armed.experimentId(), "cancel-current", "bounded rollback verification");
+            EnterpriseLabExperimentOperatorRecord terminal = cancelled.experimentRecord().orElseThrow();
+            assertEquals(Kind.RESTORED_BASELINE, terminal.currentAllocation().kind());
+
+            GatedActuationReceipt completed = fixture.service.actuate(
+                    new GatedActuationCommand(
+                            "actuation-completed",
+                            terminal.experimentId(),
+                            "install-candidate-allocation",
+                            terminal.configuration().candidateDecisionId(),
+                            "ARMED",
+                            terminal.contentFingerprint()),
+                    enabledGatedActuation());
+            assertEquals("EXPERIMENT_ALREADY_COMPLETED", completed.reasonCode());
+            assertFalse(completed.trafficActionPerformed());
+            assertEquals(Kind.RESTORED_BASELINE,
+                    completed.experimentRecord().orElseThrow().currentAllocation().kind());
+        }
+
+        try (Fixture fixture = Fixture.start()) {
+            EnterpriseLabExperimentOperatorRecord armed = fixture.service.arm(
+                    arm("arm-expired-gated", "experiment-expired-gated", 10, 2, 1), true)
+                    .experimentRecord().orElseThrow();
+            fixture.clock.advance(Duration.ofSeconds(61));
+            GatedActuationReceipt expired = fixture.service.actuate(
+                    actuation("actuation-expired", armed), enabledGatedActuation());
+            assertEquals("DECISION_EXPIRED", expired.reasonCode());
+            assertFalse(expired.trafficActionPerformed());
+            assertEquals(Kind.BASELINE,
+                    expired.experimentRecord().orElseThrow().currentAllocation().kind());
+        }
+    }
+
+    @Test
+    void concurrentIdenticalGatedActuationMutatesExactlyOnceWithoutDecisionRerun() throws Exception {
+        try (var cloudManagers = Mockito.mockConstruction(CloudManager.class);
+                Fixture fixture = Fixture.start()) {
+            EnterpriseLabExperimentOperatorRecord armed = fixture.service.arm(
+                    arm("arm-idempotent", "experiment-idempotent", 10, 2, 1), true)
+                    .experimentRecord().orElseThrow();
+            GatedActuationCommand command = actuation("actuation-idempotent", armed);
+            String decisionFingerprint = armed.configuration().candidateDecision().contentFingerprint();
+
+            ExecutorService executor = Executors.newFixedThreadPool(8);
+            try {
+                List<Future<GatedActuationReceipt>> futures = new ArrayList<>();
+                for (int index = 0; index < 8; index++) {
+                    futures.add(executor.submit(() ->
+                            fixture.service.actuate(command, enabledGatedActuation())));
+                }
+                List<GatedActuationReceipt> receipts = new ArrayList<>();
+                for (Future<GatedActuationReceipt> future : futures) {
+                    receipts.add(future.get(5, TimeUnit.SECONDS));
+                }
+
+                assertEquals(1, receipts.stream()
+                        .filter(value -> value.status() == OperatorStatus.APPLIED).count());
+                assertEquals(7, receipts.stream()
+                        .filter(value -> value.status() == OperatorStatus.IDEMPOTENT).count());
+                assertEquals(1, receipts.stream()
+                        .filter(GatedActuationReceipt::trafficActionPerformed).count());
+            } finally {
+                executor.shutdownNow();
+            }
+
+            EnterpriseLabExperimentOperatorRecord after = fixture.service
+                    .findRecord(armed.experimentId()).orElseThrow();
+            assertEquals(1, after.currentAllocation().revision());
+            assertEquals(2, after.operatorActions().size());
+            assertEquals(decisionFingerprint,
+                    after.configuration().candidateDecision().contentFingerprint());
+            Mockito.verify(fixture.decisionService, Mockito.times(1)).decide(
+                    SCENARIO, "active-experiment", true, false, false);
+            assertEquals(0, fixture.backends.stream()
+                    .mapToInt(value -> value.requestCount.get()).sum(),
+                    "actuation must not execute or rerun routing requests");
+            assertTrue(cloudManagers.constructed().isEmpty(),
+                    "gated actuation must not construct CloudManager");
+        }
+    }
+
     private static ArmRequest arm(
             String requestId,
             String experimentId,
@@ -415,17 +596,36 @@ class EnterpriseLabExperimentOperatorServiceTest {
                 Duration.ofSeconds(60));
     }
 
+    private static GatedActuationCommand actuation(
+            String requestId,
+            EnterpriseLabExperimentOperatorRecord record) {
+        return new GatedActuationCommand(
+                requestId,
+                record.experimentId(),
+                "install-candidate-allocation",
+                record.configuration().candidateDecisionId(),
+                "ARMED",
+                record.contentFingerprint());
+    }
+
+    private static GatedActuationGate enabledGatedActuation() {
+        return new GatedActuationGate(true, true, true);
+    }
+
     private static final class Fixture implements AutoCloseable {
         private final List<LoopbackBackend> backends;
         private final MutableClock clock;
+        private final EnterpriseLabAdaptiveDecisionService decisionService;
         private final EnterpriseLabExperimentOperatorService service;
 
         private Fixture(
                 List<LoopbackBackend> backends,
                 MutableClock clock,
+                EnterpriseLabAdaptiveDecisionService decisionService,
                 EnterpriseLabExperimentOperatorService service) {
             this.backends = backends;
             this.clock = clock;
+            this.decisionService = decisionService;
             this.service = service;
         }
 
@@ -446,14 +646,16 @@ class EnterpriseLabExperimentOperatorServiceTest {
                                 .toList());
                 MutableClock clock = new MutableClock(NOW);
                 AtomicLong nanos = new AtomicLong();
+                EnterpriseLabAdaptiveDecisionService decisionService = Mockito.spy(
+                        new EnterpriseLabAdaptiveDecisionService());
                 EnterpriseLabExperimentOperatorService service = new EnterpriseLabExperimentOperatorService(
                         targets,
                         new EnterpriseLabScenarioCatalogService(),
-                        new EnterpriseLabAdaptiveDecisionService(),
+                        decisionService,
                         clock,
                         () -> nanos.addAndGet(1_000_000L),
                         8);
-                return new Fixture(List.copyOf(backends), clock, service);
+                return new Fixture(List.copyOf(backends), clock, decisionService, service);
             } catch (RuntimeException | IOException exception) {
                 backends.forEach(LoopbackBackend::close);
                 throw exception;

@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AdaptiveRoutingPolicyProperties {
     private String mode = AdaptiveRoutingPolicyMode.OFF.wireValue();
     private boolean activeExperimentEnabled = false;
+    private boolean gatedActuationEnabled = false;
     private int maxAuditEvents = 100;
 
     public String getMode() {
@@ -23,6 +24,14 @@ public class AdaptiveRoutingPolicyProperties {
 
     public void setActiveExperimentEnabled(boolean activeExperimentEnabled) {
         this.activeExperimentEnabled = activeExperimentEnabled;
+    }
+
+    public boolean isGatedActuationEnabled() {
+        return gatedActuationEnabled;
+    }
+
+    public void setGatedActuationEnabled(boolean gatedActuationEnabled) {
+        this.gatedActuationEnabled = gatedActuationEnabled;
     }
 
     public int getMaxAuditEvents() {

@@ -122,6 +122,27 @@ class EnterpriseLabProdApiKeyProtectionTest {
                 .andExpect(jsonPath("$.count", is(0)))
                 .andExpect(jsonPath("$.activeExperimentEnabled", is(false)));
 
+        String actuation = """
+                {
+                  "operatorRequestId":"prod-actuation-auth",
+                  "action":"install-candidate-allocation",
+                  "decisionId":"lab-decision:missing:active-experiment",
+                  "expectedState":"ARMED",
+                  "expectedStateVersion":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                }
+                """;
+        mockMvc.perform(post("/api/lab/experiments/missing/start")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(actuation))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/lab/experiments/missing/start")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(actuation))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("NOT_FOUND")))
+                .andExpect(jsonPath("$.reasonCode", is("UNKNOWN_EXPERIMENT")));
+
         mockMvc.perform(get("/api/lab/experiments/durable"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.path", is("/api/lab/experiments/durable")));

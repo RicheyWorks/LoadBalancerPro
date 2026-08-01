@@ -64,6 +64,7 @@ Useful dashboard signals include:
 - Routing comparison request counts.
 - LASE shadow fail-safe counts.
 - LASE live-shadow queue depth and dropped-evaluation count from `GET /api/lase/shadow`.
+- Recent proxy decision retention/drop counters and retained-decision explanation 404s; an explanation disappears when its process-local record is evicted or the process restarts.
 - Cloud mutation denial and failure counts.
 
 Prometheus and OTLP outputs can expose service names, routes, error rates, latency, JVM/runtime details, and operational patterns. Route them only to trusted collectors or monitoring planes. Do not make Prometheus scrape endpoints or OTLP collectors public.

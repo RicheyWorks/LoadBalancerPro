@@ -5,8 +5,10 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 
 /** Synchronized bounded ring for process-local live routing decision evidence. */
@@ -40,6 +42,7 @@ final class LiveRoutingDecisionStore {
             String selectionSource,
             String chosenUpstreamId,
             List<ServerStateVector> candidateStates,
+            RoutingDecisionExplanation selectionExplanation,
             int responseStatus,
             double latencyMillis,
             boolean retriable,
@@ -48,6 +51,13 @@ final class LiveRoutingDecisionStore {
                         candidateStates, "candidateStates cannot be null").stream()
                 .map(LiveRoutingDecisionRecord.CandidateState::from)
                 .toList();
+        LiveRoutingDecisionRecord.SelectionEvidence selectionEvidence =
+                LiveRoutingDecisionRecord.SelectionEvidence.capture(
+                        strategy,
+                        selectionSource,
+                        chosenUpstreamId,
+                        candidates,
+                        selectionExplanation);
         LiveRoutingDecisionRecord record = new LiveRoutingDecisionRecord(
                 "proxy-decision-%08d".formatted(sequence.incrementAndGet()),
                 clock.instant(),
@@ -58,6 +68,7 @@ final class LiveRoutingDecisionStore {
                 selectionSource,
                 chosenUpstreamId,
                 candidates,
+                selectionEvidence,
                 responseStatus,
                 latencyMillis,
                 retriable,
@@ -69,6 +80,16 @@ final class LiveRoutingDecisionStore {
             totalDropped++;
         }
         return record;
+    }
+
+    synchronized Optional<LiveRoutingDecisionRecord> find(String decisionId) {
+        if (decisionId == null || decisionId.isBlank()) {
+            return Optional.empty();
+        }
+        String expected = decisionId.trim();
+        return decisions.stream()
+                .filter(decision -> decision.decisionId().equals(expected))
+                .findFirst();
     }
 
     synchronized RecentProxyDecisionsResponse snapshot(boolean proxyEnabled) {

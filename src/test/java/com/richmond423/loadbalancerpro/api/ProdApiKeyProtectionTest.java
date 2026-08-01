@@ -254,6 +254,17 @@ class ProdApiKeyProtectionTest {
                 .andExpect(jsonPath("$.proxyEnabled", is(false)))
                 .andExpect(jsonPath("$.retentionScope", is("process-local")))
                 .andExpect(jsonPath("$.decisions").isEmpty());
+
+        String explainPath = "/api/proxy/decisions/proxy-decision-00000001/explain";
+        mockMvc.perform(get(explainPath))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is(explainPath)));
+
+        mockMvc.perform(get(explainPath).header("X-API-Key", API_KEY))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(jsonPath("$.error", is("not_found")))
+                .andExpect(jsonPath("$.path", is(explainPath)));
     }
 
     @Test

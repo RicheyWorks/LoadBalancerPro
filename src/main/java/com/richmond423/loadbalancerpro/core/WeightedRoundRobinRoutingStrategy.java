@@ -47,6 +47,8 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
 
         retainOnly(eligible);
         Map<String, Double> effectiveWeights = effectiveWeights(eligible);
+        Map<String, Double> carriedWeights = new LinkedHashMap<>();
+        Map<String, Double> selectionScores = new LinkedHashMap<>();
         double totalWeight = effectiveWeights.values().stream()
                 .mapToDouble(Double::doubleValue)
                 .sum();
@@ -55,8 +57,11 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
         double highestCurrentWeight = Double.NEGATIVE_INFINITY;
         for (ServerStateVector candidate : eligible) {
             String serverId = candidate.serverId();
-            double currentWeight = currentWeights.getOrDefault(serverId, 0.0)
+            double carriedWeight = currentWeights.getOrDefault(serverId, 0.0);
+            double currentWeight = carriedWeight
                     + effectiveWeights.get(serverId);
+            carriedWeights.put(serverId, carriedWeight);
+            selectionScores.put(serverId, currentWeight);
             currentWeights.put(serverId, currentWeight);
             if (chosen == null || currentWeight > highestCurrentWeight) {
                 chosen = candidate;
@@ -70,9 +75,9 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
                 STRATEGY_NAME,
                 eligible.stream().map(ServerStateVector::serverId).toList(),
                 Optional.of(chosen.serverId()),
-                effectiveWeights,
-                factorContributions(eligible, effectiveWeights),
-                reasonForChoice(chosen, eligible.size(), effectiveWeights, totalWeight),
+                selectionScores,
+                factorContributions(eligible, effectiveWeights, carriedWeights),
+                reasonForChoice(chosen, eligible.size(), effectiveWeights, selectionScores, totalWeight),
                 Instant.now(clock));
         return new RoutingDecision(Optional.of(chosen), explanation);
     }
@@ -103,11 +108,31 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
     }
 
     private Map<String, List<ScoreFactorContribution>> factorContributions(
-            List<ServerStateVector> candidates, Map<String, Double> effectiveWeights) {
+            List<ServerStateVector> candidates,
+            Map<String, Double> effectiveWeights,
+            Map<String, Double> carriedWeights) {
         Map<String, List<ScoreFactorContribution>> contributions = new LinkedHashMap<>();
         for (ServerStateVector candidate : candidates) {
             double effectiveRoutingWeight = effectiveWeights.get(candidate.serverId());
-            ScoreFactorContribution contribution = new ScoreFactorContribution(
+            double carriedWeight = carriedWeights.get(candidate.serverId());
+            List<ScoreFactorContribution> candidateContributions = new java.util.ArrayList<>();
+            if (carriedWeight != 0.0d) {
+                candidateContributions.add(new ScoreFactorContribution(
+                        "smoothWeightCarry",
+                        "accumulatedWeightBeforeThisCycle=" + formatWeight(carriedWeight),
+                        "state carried from prior smooth weighted round-robin cycles",
+                        carriedWeight > 0.0d
+                                ? ScoreFactorDirection.SUPPORTS_SELECTION
+                                : ScoreFactorDirection.WEAKENS_SELECTION,
+                        "contribution = accumulatedWeightBeforeThisCycle = "
+                                + formatWeight(carriedWeight),
+                        OptionalDouble.of(carriedWeight),
+                        ScoreFactorExactness.EXACT_FROM_STRATEGY_MODEL,
+                        "This is the route-owned smooth weighted round-robin carry used by this selection cycle.",
+                        "Exact for this in-process route strategy instance and cycle only; it resets on route "
+                                + "replacement or process restart and is not distributed state."));
+            }
+            candidateContributions.add(new ScoreFactorContribution(
                     "effectiveRoutingWeight",
                     "configuredRoutingWeight=" + formatWeight(candidate.weight()),
                     "smooth weighted round-robin adds the effective routing weight each selection cycle",
@@ -116,12 +141,10 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
                             + formatWeight(effectiveRoutingWeight),
                     OptionalDouble.of(effectiveRoutingWeight),
                     ScoreFactorExactness.EXACT_FROM_STRATEGY_MODEL,
-                    "On a fresh comparison strategy instance, the candidate with the highest accumulated "
-                            + "effective routing weight is selected; this contribution reconciles with the "
-                            + "returned effective-weight score.",
-                    "Exact for the fresh read-only comparison instance only; it does not expose or mutate "
-                            + "live route-cycle state.");
-            contributions.put(candidate.serverId(), List.of(contribution));
+                    "The effective routing weight is added to prior carry; the candidate with the highest resulting "
+                            + "selection score wins this cycle.",
+                    "Exact for this selection cycle; the live route carry is process-local and is not distributed."));
+            contributions.put(candidate.serverId(), List.copyOf(candidateContributions));
         }
         return contributions;
     }
@@ -129,14 +152,17 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
     private String reasonForChoice(ServerStateVector chosen,
                                    int candidateCount,
                                    Map<String, Double> effectiveWeights,
+                                   Map<String, Double> selectionScores,
                                    double totalWeight) {
         double chosenWeight = effectiveWeights.get(chosen.serverId());
+        double chosenScore = selectionScores.get(chosen.serverId());
         if (candidateCount == 1) {
             return "Chose " + chosen.serverId() + " because it was the only healthy candidate with effective "
                     + "routing weight " + formatWeight(chosenWeight) + ".";
         }
         return "Chose " + chosen.serverId() + " using smooth weighted round-robin with effective routing weight "
-                + formatWeight(chosenWeight) + " of total " + formatWeight(totalWeight) + " across "
+                + formatWeight(chosenWeight) + ", accumulated selection score " + formatWeight(chosenScore)
+                + ", and total effective weight " + formatWeight(totalWeight) + " across "
                 + candidateCount + " healthy candidates.";
     }
 

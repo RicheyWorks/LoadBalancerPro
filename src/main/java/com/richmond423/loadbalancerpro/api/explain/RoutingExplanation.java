@@ -26,7 +26,6 @@ public record RoutingExplanation(
 
     public RoutingExplanation {
         readOnly = true;
-        simulationOnly = true;
         contractVersion = CONTRACT_VERSION;
         candidates = List.copyOf(candidates);
         counterfactualWeightScenarios = List.copyOf(counterfactualWeightScenarios);

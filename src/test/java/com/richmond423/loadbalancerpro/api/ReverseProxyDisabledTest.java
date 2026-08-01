@@ -81,6 +81,10 @@ class ReverseProxyDisabledTest {
                 .andExpect(jsonPath("$.totalCaptured").value(0))
                 .andExpect(jsonPath("$.totalDropped").value(0))
                 .andExpect(jsonPath("$.decisions").isEmpty());
+
+        mockMvc.perform(get("/api/proxy/decisions/proxy-decision-00000001/explain"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("not_found"));
     }
 
     @Test

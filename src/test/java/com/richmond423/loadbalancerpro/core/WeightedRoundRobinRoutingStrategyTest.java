@@ -74,6 +74,33 @@ class WeightedRoundRobinRoutingStrategyTest {
     }
 
     @Test
+    void laterCycleExplanationScoresAndFactorsReconcileWithTheActualStatefulSelection() {
+        List<ServerStateVector> candidates = List.of(
+                state("primary", true, 3.0),
+                state("secondary", true, 1.0));
+
+        strategy.choose(candidates);
+        strategy.choose(candidates);
+        RoutingDecision third = strategy.choose(candidates);
+
+        assertEquals("secondary", third.chosenServer().orElseThrow().serverId());
+        assertEquals("secondary", third.explanation().scores().entrySet().stream()
+                .max(java.util.Map.Entry.comparingByValue())
+                .orElseThrow()
+                .getKey());
+        third.explanation().scores().forEach((candidateId, score) -> assertEquals(
+                score,
+                third.explanation().factorContributions().get(candidateId).stream()
+                        .map(ScoreFactorContribution::contributionValue)
+                        .filter(OptionalDouble::isPresent)
+                        .mapToDouble(OptionalDouble::getAsDouble)
+                        .sum(),
+                0.000000001d));
+        assertTrue(third.explanation().factorContributions().get("secondary").stream()
+                .anyMatch(factor -> factor.factorName().equals("smoothWeightCarry")));
+    }
+
+    @Test
     void zeroWeightIsDrainedWhileMissingWeightKeepsItsDefault() {
         ServerStateVector zeroWeight = state("zero", true, 0.0);
         ServerStateVector missingWeight = stateWithoutWeight("missing", true);

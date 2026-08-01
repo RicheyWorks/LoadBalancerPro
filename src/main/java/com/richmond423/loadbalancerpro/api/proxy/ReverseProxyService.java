@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -125,13 +126,21 @@ public class ReverseProxyService {
     }
 
     @SuppressWarnings("java/ssrf")
+    ReverseProxyResponse forward(HttpServletRequest request) {
+        return forward(request, ProxyRequestBody.streaming(request));
+    }
+
+    @SuppressWarnings("java/ssrf")
     ReverseProxyResponse forward(HttpServletRequest request, byte[] requestBody) {
+        return forward(request, ProxyRequestBody.repeatable(requestBody));
+    }
+
+    private ReverseProxyResponse forward(HttpServletRequest request, ProxyRequestBody requestBody) {
         ActiveProxyConfig config = activeConfig.get();
         ReverseProxyProperties properties = config.properties();
-        byte[] body = requestBody == null ? new byte[0] : requestBody.clone();
-        if (body.length > properties.getMaxRequestBytes()) {
+        if (requestBody.declaredLength() > properties.getMaxRequestBytes()) {
             logger.warn("proxy.forward.failure reason=payload_too_large requestBytes={} maxRequestBytes={}",
-                    body.length, properties.getMaxRequestBytes());
+                    requestBody.declaredLength(), properties.getMaxRequestBytes());
             metrics.recordFailure(null, HttpStatus.PAYLOAD_TOO_LARGE.value());
             return proxyError(HttpStatus.PAYLOAD_TOO_LARGE, "proxy_payload_too_large",
                     "Proxy request body exceeds maximum size of " + properties.getMaxRequestBytes() + " bytes");
@@ -172,7 +181,7 @@ public class ReverseProxyService {
         ReverseProxyResponse response = null;
         try {
             response = forwardAdmitted(
-                    config, route, request, body, proxyPathSuffix, admission.retryAfterSeconds());
+                    config, route, request, requestBody, proxyPathSuffix, admission.retryAfterSeconds());
             return response;
         } finally {
             long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
@@ -186,11 +195,13 @@ public class ReverseProxyService {
             ActiveProxyConfig config,
             ReverseProxyRoutePlanner.ConfiguredRoute route,
             HttpServletRequest request,
-            byte[] body,
+            ProxyRequestBody requestBody,
             String proxyPathSuffix,
             int retryAfterSeconds) {
         ReverseProxyProperties properties = config.properties();
-        int maxAttempts = maxAttemptsFor(request.getMethod(), properties);
+        int maxAttempts = requestBody.repeatable()
+                ? maxAttemptsFor(request.getMethod(), properties)
+                : 1;
         config.retryPolicy().recordPrimaryRequest();
         String routingKey = route.selectionPolicy().routingKey(request);
         Set<String> attemptedUpstreamIds = new LinkedHashSet<>();
@@ -272,7 +283,7 @@ public class ReverseProxyService {
                 }
                 long attemptStartedAtNanos = System.nanoTime();
                 ForwardAttemptResult attemptResult =
-                        forwardOnce(properties, config.forwardedPolicy(), route.headerRewrites(), request, body,
+                        forwardOnce(properties, config.forwardedPolicy(), route.headerRewrites(), request, requestBody,
                                 upstream, runtimeStats, route.strategyId().externalName(),
                                 route.requestTimeout(), proxyPathSuffix);
                 double attemptLatencyMillis = Math.max(0, System.nanoTime() - attemptStartedAtNanos)
@@ -578,12 +589,13 @@ public class ReverseProxyService {
 
     @SuppressWarnings("java/ssrf")
     private HttpRequest buildOutboundRequest(HttpServletRequest request,
-                                             byte[] body,
+                                             ProxyRequestBody requestBody,
+                                             long maxRequestBytes,
                                              UpstreamCandidate upstream,
                                              Duration requestTimeout,
                                              String proxyPathSuffix,
                                              ProxyRequestHeaders.ForwardedPolicy forwardedPolicy,
-                                             ProxyRequestHeaders.HeaderRewrites headerRewrites) {
+                                             ProxyRequestHeaders.HeaderRewrites headerRewrites) throws IOException {
         HttpRequest.Builder builder = HttpRequest.newBuilder(targetUri(request, upstream, proxyPathSuffix))
                 .timeout(requestTimeout);
         Set<String> connectionHeaders = connectionHeaderTokens(request);
@@ -598,9 +610,7 @@ public class ReverseProxyService {
         });
         forwardedPolicy.apply(builder, request, headerRewrites);
         headerRewrites.apply(builder);
-        HttpRequest.BodyPublisher publisher = body.length == 0
-                ? HttpRequest.BodyPublishers.noBody()
-                : HttpRequest.BodyPublishers.ofByteArray(body);
+        HttpRequest.BodyPublisher publisher = requestBody.publisher(maxRequestBytes);
         return builder.method(request.getMethod().toUpperCase(Locale.ROOT), publisher).build();
     }
 
@@ -608,7 +618,7 @@ public class ReverseProxyService {
                                              ProxyRequestHeaders.ForwardedPolicy forwardedPolicy,
                                              ProxyRequestHeaders.HeaderRewrites headerRewrites,
                                              HttpServletRequest request,
-                                             byte[] body,
+                                             ProxyRequestBody requestBody,
                                              UpstreamCandidate upstream,
                                              UpstreamRuntimeStats runtimeStats,
                                              String strategyName,
@@ -619,7 +629,8 @@ public class ReverseProxyService {
         boolean runtimeSuccessful = false;
         try {
             HttpRequest outbound = buildOutboundRequest(
-                    request, body, upstream, requestTimeout, proxyPathSuffix, forwardedPolicy, headerRewrites);
+                    request, requestBody, properties.getMaxRequestBytes(), upstream,
+                    requestTimeout, proxyPathSuffix, forwardedPolicy, headerRewrites);
             HttpResponse<byte[]> response = httpClient.send(outbound, HttpResponse.BodyHandlers.ofByteArray());
             runtimeSuccessful = response.statusCode() < 500;
             metrics.recordForwarded(upstreamId, response.statusCode());
@@ -647,7 +658,20 @@ public class ReverseProxyService {
                     false,
                     false,
                     "interrupted");
-        } catch (IOException | IllegalArgumentException exception) {
+        } catch (IOException | UncheckedIOException | IllegalArgumentException exception) {
+            if (requestBody.limitExceeded()) {
+                runtimeSuccessful = true;
+                logger.warn("proxy.forward.failure reason=payload_too_large maxRequestBytes={}",
+                        properties.getMaxRequestBytes());
+                metrics.recordFailure(null, HttpStatus.PAYLOAD_TOO_LARGE.value());
+                return new ForwardAttemptResult(
+                        proxyError(HttpStatus.PAYLOAD_TOO_LARGE, "proxy_payload_too_large",
+                                "Proxy request body exceeds maximum size of "
+                                        + properties.getMaxRequestBytes() + " bytes"),
+                        false,
+                        false,
+                        "request_body_too_large");
+            }
             logger.warn("proxy.forward.failure upstreamId={} reason=upstream_unreachable exceptionType={}",
                     upstreamId, exception.getClass().getSimpleName());
             metrics.recordFailure(upstreamId, HttpStatus.BAD_GATEWAY.value());

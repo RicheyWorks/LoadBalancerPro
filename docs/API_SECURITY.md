@@ -40,7 +40,7 @@ The API rejects malformed JSON, unsupported content types, oversized API mutatio
 
 Rejected requests must not construct or mutate `CloudManager`. Read-only evaluation requests must remain recommendation-only and keep `metricsPreview.emitted` set to `false`.
 
-Request-size limits are enforced for `/api/**` POST, PUT, and PATCH requests. The default limit is 16 KiB and can be changed with `loadbalancerpro.api.max-request-bytes`. Optional proxy mode has a separate request-body ceiling, `loadbalancerpro.proxy.max-request-bytes`, defaulting to 64 KiB.
+Request-size limits are enforced for `/api/**` POST, PUT, and PATCH requests. The default limit is 16 KiB and can be changed with `loadbalancerpro.api.max-request-bytes`. Optional proxy mode has a separate request-body ceiling, `loadbalancerpro.proxy.max-request-bytes`, defaulting to 64 KiB; declared oversize is rejected before reading, and unknown-length overflow aborts with HTTP 413 without retrying or penalizing an upstream.
 
 Reverse-proxy forwarding metadata fails closed by default: caller-supplied `Forwarded` and `X-Forwarded-*` values are stripped and replaced from the immediate connection. Append mode honors an inbound chain only when the immediate peer matches an explicitly configured IPv4 or IPv6 literal CIDR; hostnames are not resolved for trust decisions. Per-route static header rewrites are validated operator configuration applied after this policy, so access to proxy configuration or reload must remain an operator boundary.
 

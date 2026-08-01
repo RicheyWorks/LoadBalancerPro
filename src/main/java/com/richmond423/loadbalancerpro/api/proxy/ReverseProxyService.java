@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
+import com.richmond423.loadbalancerpro.core.LiveRoutingShadowObservation;
 import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
@@ -35,6 +37,7 @@ import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -77,13 +80,16 @@ public class ReverseProxyService {
     private final ConcurrentMap<String, UpstreamRuntimeStats> upstreamRuntimeStats = new ConcurrentHashMap<>();
     private final UpstreamRuntimeStats globalRuntimeStats;
     private final LiveRoutingDecisionStore liveRoutingDecisions;
+    private final LaseShadowRuntime laseShadowRuntime;
     private final UpstreamHealthProber healthProber;
 
     @Autowired
     public ReverseProxyService(ReverseProxyProperties properties,
                                HttpClient httpClient,
-                               ReverseProxyMetrics metrics) {
-        this(properties, httpClient, metrics, RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC());
+                               ReverseProxyMetrics metrics,
+                               ObjectProvider<LaseShadowRuntime> laseShadowRuntimeProvider) {
+        this(properties, httpClient, metrics, RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(),
+                laseShadowRuntimeProvider.getIfAvailable(LaseShadowRuntime::disabled));
     }
 
     ReverseProxyService(ReverseProxyProperties properties,
@@ -91,10 +97,20 @@ public class ReverseProxyService {
                         ReverseProxyMetrics metrics,
                         RoutingStrategyRegistry registry,
                         Clock clock) {
+        this(properties, httpClient, metrics, registry, clock, LaseShadowRuntime.disabled());
+    }
+
+    ReverseProxyService(ReverseProxyProperties properties,
+                        HttpClient httpClient,
+                        ReverseProxyMetrics metrics,
+                        RoutingStrategyRegistry registry,
+                        Clock clock,
+                        LaseShadowRuntime laseShadowRuntime) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient cannot be null");
         this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
+        this.laseShadowRuntime = Objects.requireNonNull(laseShadowRuntime, "laseShadowRuntime cannot be null");
         this.globalRuntimeStats = new UpstreamRuntimeStats(clock);
         this.liveRoutingDecisions = new LiveRoutingDecisionStore(clock);
         ActiveProxyConfig startupConfig = buildActiveConfig(
@@ -258,7 +274,7 @@ public class ReverseProxyService {
                                 route.requestTimeout(), proxyPathSuffix);
                 double attemptLatencyMillis = Math.max(0, System.nanoTime() - attemptStartedAtNanos)
                         / 1_000_000.0;
-                liveRoutingDecisions.record(
+                LiveRoutingDecisionRecord liveDecision = liveRoutingDecisions.record(
                         config.generation(),
                         route.name(),
                         route.strategyId().externalName(),
@@ -270,6 +286,22 @@ public class ReverseProxyService {
                         attemptLatencyMillis,
                         attemptResult.retriable(),
                         attemptResult.outcome());
+                if (laseShadowRuntime.isLiveProxyEnabled()) {
+                    int telemetrySampleSize = upstreams.stream()
+                            .mapToInt(UpstreamCandidate::telemetrySampleSize)
+                            .reduce(0, ReverseProxyService::saturatedAdd);
+                    int initialConcurrencyLimit = liveShadowConcurrencyLimit(config, upstreams, candidateStates);
+                    laseShadowRuntime.submitLiveRouting(new LiveRoutingShadowObservation(
+                            liveDecision.decisionId(),
+                            liveDecision.capturedAt(),
+                            liveDecision.routeName(),
+                            liveDecision.strategy(),
+                            liveDecision.selectionSource(),
+                            liveDecision.chosenUpstreamId(),
+                            candidateStates,
+                            initialConcurrencyLimit,
+                            telemetrySampleSize));
+                }
                 lastResponse = route.selectionPolicy().applyAffinityResponse(
                         attemptResult.response(), request, upstreamId, attemptResult.affinityEligible());
                 if (!attemptResult.retriable() || attempt == maxAttempts) {
@@ -726,12 +758,18 @@ public class ReverseProxyService {
         double configuredWeight = nonNegative(upstream.getWeight(), "weight");
         double effectiveWeight = resilienceState(id, timestamp).effectiveWeight(
                 configuredWeight, timestamp, properties.getSlowStart().getDuration());
+        int effectiveMaxInFlight = effectiveUpstreamMaxInFlight(config, id);
+        OptionalDouble estimatedConcurrencyLimit = optionalPositive(
+                upstream.getEstimatedConcurrencyLimit(), "estimatedConcurrencyLimit");
+        if (estimatedConcurrencyLimit.isEmpty() && effectiveMaxInFlight > 0) {
+            estimatedConcurrencyLimit = OptionalDouble.of(effectiveMaxInFlight);
+        }
         ServerStateVector state = new ServerStateVector(
                 id,
                 effectiveHealth.healthy(),
                 hasRuntimeActivity ? runtime.inFlightRequestCount() : configuredInFlight,
                 optionalNonNegative(upstream.getConfiguredCapacity(), "configuredCapacity"),
-                optionalPositive(upstream.getEstimatedConcurrencyLimit(), "estimatedConcurrencyLimit"),
+                estimatedConcurrencyLimit,
                 effectiveWeight,
                 hasLatencySamples ? runtime.ewmaLatencyMillis() : configuredAverageLatency,
                 hasLatencySamples ? runtime.p95LatencyMillis() : configuredP95Latency,
@@ -740,7 +778,32 @@ public class ReverseProxyService {
                 hasRuntimeActivity ? OptionalInt.of(runtime.inFlightRequestCount()) : configuredQueueDepth,
                 NetworkAwarenessSignal.neutral(id, timestamp),
                 timestamp);
-        return new UpstreamCandidate(baseUri, state, effectiveUpstreamMaxInFlight(config, id));
+        int telemetrySampleSize = Math.max(
+                runtime.latencySampleCount(),
+                saturatedAdd(runtime.recentSuccessCount(), runtime.recentFailureCount()));
+        return new UpstreamCandidate(
+                baseUri, state, effectiveMaxInFlight, telemetrySampleSize);
+    }
+
+    private int liveShadowConcurrencyLimit(
+            ActiveProxyConfig config,
+            List<UpstreamCandidate> upstreams,
+            List<ServerStateVector> candidateStates) {
+        int globalLimit = config.admissionPolicy().status(globalRuntimeStats).effectiveMaxInFlight();
+        if (globalLimit > 0) {
+            return globalLimit;
+        }
+        boolean everyCandidateBounded = upstreams.stream()
+                .allMatch(candidate -> candidate.maxInFlight() > 0);
+        if (everyCandidateBounded) {
+            return upstreams.stream()
+                    .mapToInt(UpstreamCandidate::maxInFlight)
+                    .reduce(0, ReverseProxyService::saturatedAdd);
+        }
+        int observedInFlight = candidateStates.stream()
+                .mapToInt(ServerStateVector::inFlightRequestCount)
+                .reduce(0, ReverseProxyService::saturatedAdd);
+        return Math.max(1, observedInFlight);
     }
 
     private List<ReverseProxyStatusResponse.UpstreamStatus> configuredUpstreamStatuses(
@@ -1451,7 +1514,19 @@ public class ReverseProxyService {
         }
     }
 
-    private record UpstreamCandidate(URI baseUri, ServerStateVector state, int maxInFlight) {
+    private static int saturatedAdd(long left, long right) {
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, left) + Math.max(0L, right));
+    }
+
+    private static int saturatedAdd(int left, int right) {
+        return saturatedAdd((long) left, right);
+    }
+
+    private record UpstreamCandidate(
+            URI baseUri,
+            ServerStateVector state,
+            int maxInFlight,
+            int telemetrySampleSize) {
     }
 
     private record EffectiveHealth(

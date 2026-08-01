@@ -10,6 +10,7 @@ public record AutoscalingSignal(
         int maxCapacity,
         int currentInFlightRequestCount,
         int queueDepth,
+        double observedUtilization,
         double observedP95LatencyMillis,
         double observedP99LatencyMillis,
         double observedErrorRate,
@@ -28,6 +29,7 @@ public record AutoscalingSignal(
         }
         requireNonNegative(currentInFlightRequestCount, "currentInFlightRequestCount");
         requireNonNegative(queueDepth, "queueDepth");
+        requireRate(observedUtilization, "observedUtilization");
         requireFiniteNonNegative(observedP95LatencyMillis, "observedP95LatencyMillis");
         requireFiniteNonNegative(observedP99LatencyMillis, "observedP99LatencyMillis");
         requireRate(observedErrorRate, "observedErrorRate");
@@ -36,7 +38,28 @@ public record AutoscalingSignal(
     }
 
     public double utilization() {
-        return currentInFlightRequestCount / (double) currentCapacity;
+        return observedUtilization;
+    }
+
+    /**
+     * Compatibility constructor for deterministic demos and tests whose in-flight count already uses
+     * the same unit as currentCapacity. Live callers should pass an observed 0..1 utilization ratio.
+     */
+    public AutoscalingSignal(
+            String targetId,
+            int currentCapacity,
+            int minCapacity,
+            int maxCapacity,
+            int currentInFlightRequestCount,
+            int queueDepth,
+            double observedP95LatencyMillis,
+            double observedP99LatencyMillis,
+            double observedErrorRate,
+            int sampleSize,
+            Instant timestamp) {
+        this(targetId, currentCapacity, minCapacity, maxCapacity, currentInFlightRequestCount, queueDepth,
+                boundedRatio(currentInFlightRequestCount, currentCapacity), observedP95LatencyMillis,
+                observedP99LatencyMillis, observedErrorRate, sampleSize, timestamp);
     }
 
     private static String requireNonBlank(String value, String fieldName) {
@@ -68,5 +91,9 @@ public record AutoscalingSignal(
         if (!Double.isFinite(value) || value < 0.0 || value > 1.0) {
             throw new IllegalArgumentException(fieldName + " must be between 0.0 and 1.0");
         }
+    }
+
+    private static double boundedRatio(int numerator, int denominator) {
+        return Math.max(0.0, Math.min(1.0, numerator / (double) denominator));
     }
 }

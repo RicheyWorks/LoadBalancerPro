@@ -17,6 +17,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -30,7 +31,10 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(properties = "loadbalancerpro.auth.mode=none")
+@SpringBootTest(properties = {
+        "loadbalancerpro.auth.mode=none",
+        "loadbalancerpro.lase.shadow.enabled=true"
+})
 @AutoConfigureMockMvc
 @DirtiesContext
 class ReverseProxyLiveDecisionCaptureTest {
@@ -38,6 +42,9 @@ class ReverseProxyLiveDecisionCaptureTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private LaseShadowRuntime laseShadowRuntime;
 
     @DynamicPropertySource
     static void proxyProperties(DynamicPropertyRegistry registry) {
@@ -94,6 +101,33 @@ class ReverseProxyLiveDecisionCaptureTest {
                 .andExpect(jsonPath("$.decisions[0].candidates[0].p99LatencyMillis", is(33.0)))
                 .andExpect(jsonPath("$.decisions[0].candidates[0].recentErrorRate", is(0.25)))
                 .andExpect(jsonPath("$.decisions[0].candidates[0].observedAt").isString());
+
+        awaitLiveShadowEvaluation();
+        mockMvc.perform(get("/api/lase/shadow"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("DO_NOT_RETAIN"))))
+                .andExpect(content().string(not(containsString(UPSTREAM.baseUrl()))))
+                .andExpect(jsonPath("$.liveProxyDispatch.enabled", is(true)))
+                .andExpect(jsonPath("$.liveProxyDispatch.queueCapacity", is(100)))
+                .andExpect(jsonPath("$.liveProxyDispatch.totalAccepted", is(1)))
+                .andExpect(jsonPath("$.liveProxyDispatch.totalCompleted", is(1)))
+                .andExpect(jsonPath("$.liveProxyDispatch.totalDropped", is(0)))
+                .andExpect(jsonPath("$.summary.totalEvaluations", is(1)))
+                .andExpect(jsonPath("$.summary.comparableEvaluations", is(1)))
+                .andExpect(jsonPath("$.recentEvents[0].evaluationId",
+                        is("lase-shadow-proxy-decision-00000001")))
+                .andExpect(jsonPath("$.recentEvents[0].strategy", is("ROUND_ROBIN")))
+                .andExpect(jsonPath("$.recentEvents[0].selectionSource", is("strategy")))
+                .andExpect(jsonPath("$.recentEvents[0].candidateServerIds[0]", is("decision-upstream")))
+                .andExpect(jsonPath("$.recentEvents[0].actualSelectedServerId", is("decision-upstream")));
+    }
+
+    private void awaitLiveShadowEvaluation() throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
+        while (laseShadowRuntime.snapshot().liveProxyDispatch().totalCompleted() < 1
+                && System.nanoTime() < deadline) {
+            Thread.sleep(10);
+        }
     }
 
     private static final class LoopbackUpstream implements AutoCloseable {

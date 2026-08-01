@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,6 @@ import com.richmond423.loadbalancerpro.core.LoadSheddingConfig;
 import com.richmond423.loadbalancerpro.core.LoadSheddingDecision;
 import com.richmond423.loadbalancerpro.core.LoadSheddingPolicy;
 import com.richmond423.loadbalancerpro.core.LoadSheddingSignal;
-import com.richmond423.loadbalancerpro.core.LaseShadowAdvisor;
-import com.richmond423.loadbalancerpro.core.LaseShadowEventLog;
 import com.richmond423.loadbalancerpro.core.LaseShadowObservabilitySnapshot;
 import com.richmond423.loadbalancerpro.core.RequestPriority;
 import com.richmond423.loadbalancerpro.core.ScalingRecommendation;
@@ -51,7 +50,7 @@ public class AllocatorService {
             DomainMetrics.ALLOCATION_SCALING_RECOMMENDED_SERVERS);
 
     private final boolean laseShadowEnabled;
-    private final LaseShadowEventLog laseShadowEventLog = new LaseShadowEventLog();
+    private final LaseShadowRuntime laseShadowRuntime;
     private final LoadDistributionEvaluator loadDistributionEvaluator = new LoadDistributionEvaluator();
     private final LoadSheddingPolicy loadSheddingPolicy = new LoadSheddingPolicy();
     private final OperatorRemediationPlanner remediationPlanner = new OperatorRemediationPlanner();
@@ -60,16 +59,25 @@ public class AllocatorService {
     private final AdaptiveRoutingPolicyEngine policyEngine = new AdaptiveRoutingPolicyEngine();
 
     public AllocatorService(Environment environment) {
-        this(environment, new AdaptiveRoutingPolicyProperties(), new AdaptiveRoutingPolicyAuditLog());
+        this(environment, new AdaptiveRoutingPolicyProperties(), new AdaptiveRoutingPolicyAuditLog(),
+                new LaseShadowRuntime(environment));
+    }
+
+    public AllocatorService(Environment environment,
+                            AdaptiveRoutingPolicyProperties policyProperties,
+                            AdaptiveRoutingPolicyAuditLog policyAuditLog) {
+        this(environment, policyProperties, policyAuditLog, new LaseShadowRuntime(environment));
     }
 
     @Autowired
     public AllocatorService(Environment environment,
                             AdaptiveRoutingPolicyProperties policyProperties,
-                            AdaptiveRoutingPolicyAuditLog policyAuditLog) {
+                            AdaptiveRoutingPolicyAuditLog policyAuditLog,
+                            LaseShadowRuntime laseShadowRuntime) {
         this.laseShadowEnabled = resolveLaseShadowEnabled(environment);
         this.policyProperties = policyProperties == null ? new AdaptiveRoutingPolicyProperties() : policyProperties;
         this.policyAuditLog = policyAuditLog == null ? new AdaptiveRoutingPolicyAuditLog() : policyAuditLog;
+        this.laseShadowRuntime = Objects.requireNonNull(laseShadowRuntime, "laseShadowRuntime cannot be null");
     }
 
     public AllocationResponse capacityAware(AllocationRequest request) {
@@ -153,7 +161,7 @@ public class AllocatorService {
     }
 
     public LaseShadowObservabilitySnapshot laseShadowObservability() {
-        return laseShadowEventLog.snapshot();
+        return laseShadowRuntime.snapshot();
     }
 
     private AllocationResponse allocate(AllocationRequest request, boolean capacityAware) {
@@ -167,6 +175,8 @@ public class AllocatorService {
             LoadDistributionResult result = capacityAware
                     ? balancer.capacityAwareWithResult(request.requestedLoad())
                     : balancer.predictiveLoadBalancingWithResult(request.requestedLoad());
+            laseShadowRuntime.observeAllocation(
+                    strategy, balancer.getServers(), request.requestedLoad(), result, laseShadowEnabled);
             ScalingRecommendation recommendation = balancer.recommendScaling(
                     result.unallocatedLoad(), averageHealthyCapacity(request.servers()));
             DomainMetrics.recordAllocationScalingRecommendation(strategy, recommendation.additionalServers());
@@ -197,7 +207,7 @@ public class AllocatorService {
     }
 
     private LoadBalancer createLoadBalancer() {
-        return new LoadBalancer(laseShadowEnabled, laseShadowEventLog);
+        return new LoadBalancer(false);
     }
 
     private LaseObservation observeLase(
@@ -207,8 +217,8 @@ public class AllocatorService {
             return LaseObservation.disabled();
         }
         try {
-            return LaseObservation.observed(new LaseShadowAdvisor(true, laseShadowEventLog)
-                    .observe(strategy, servers, requestedLoad, result));
+            return LaseObservation.observed(laseShadowRuntime.observeAllocation(
+                    strategy, servers, requestedLoad, result, true));
         } catch (RuntimeException exception) {
             return LaseObservation.failed("LASE shadow observation failed safely.");
         }

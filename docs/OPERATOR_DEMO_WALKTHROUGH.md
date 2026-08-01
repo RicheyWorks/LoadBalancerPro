@@ -87,7 +87,7 @@ Use the page from top to bottom:
 6. Copy the curl snippet, request payload, raw response, or normalized summary.
 7. Reset the demo before replaying it.
 
-The page calls the existing `POST /api/routing/compare` endpoint with synthetic server telemetry. It shows the registered request-level strategies only: `TAIL_LATENCY_POWER_OF_TWO`, `WEIGHTED_LEAST_LOAD`, `WEIGHTED_LEAST_CONNECTIONS`, `WEIGHTED_ROUND_ROBIN`, and `ROUND_ROBIN`. The explanation panel is based on real response fields: `chosenServerId`, `reason`, `candidateServersConsidered`, and `scores`.
+The page calls the existing `POST /api/routing/compare` endpoint with synthetic server telemetry. It shows the registered request-level strategies only: `TAIL_LATENCY_POWER_OF_TWO`, `WEIGHTED_LEAST_LOAD`, `WEIGHTED_LEAST_CONNECTIONS`, `WEIGHTED_ROUND_ROBIN`, `ROUND_ROBIN`, and `CONSISTENT_HASH`. The comparison path gives consistent hashing a deterministic synthetic comparison key; it does not expose a live proxy header or client address. The explanation panel is based on real response fields: `chosenServerId`, `reason`, `candidateServersConsidered`, and `scores`.
 
 The same flow is available in Postman through the `Routing Decision Demo` folder. See [`POSTMAN_ROUTING_DEMO.md`](POSTMAN_ROUTING_DEMO.md) for the sample body, expected response shape, and explanation limits.
 

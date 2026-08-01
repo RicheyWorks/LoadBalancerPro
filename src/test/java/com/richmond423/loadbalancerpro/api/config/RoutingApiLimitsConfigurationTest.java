@@ -15,7 +15,7 @@ class RoutingApiLimitsConfigurationTest {
             assertThat(context).hasNotFailed();
             RoutingApiLimitsProperties limits = context.getBean(RoutingApiLimitsProperties.class);
             assertThat(limits.getMaxCandidates()).isEqualTo(32);
-            assertThat(limits.getMaxStrategies()).isEqualTo(5);
+            assertThat(limits.getMaxStrategies()).isEqualTo(6);
             assertThat(limits.getMaxDecisionExplorerResponseBytes()).isEqualTo(16L * 1024L * 1024L);
         });
     }
@@ -49,10 +49,10 @@ class RoutingApiLimitsConfigurationTest {
     @Test
     void strategyLimitAboveHardCeilingFailsStartup() {
         contextRunner
-                .withPropertyValues("loadbalancerpro.api.max-strategies=6")
+                .withPropertyValues("loadbalancerpro.api.max-strategies=7")
                 .run(context -> {
                     assertThat(context).hasFailed();
-                    assertHardCeilingFailure(context.getStartupFailure(), "maxStrategies", "5");
+                    assertHardCeilingFailure(context.getStartupFailure(), "maxStrategies", "6");
                 });
     }
 

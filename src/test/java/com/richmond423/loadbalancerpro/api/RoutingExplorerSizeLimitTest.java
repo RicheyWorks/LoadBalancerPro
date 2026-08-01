@@ -95,16 +95,16 @@ class RoutingExplorerSizeLimitTest {
     }
 
     @Test
-    void requestContractRejectsMoreThanFiveExplicitStrategies() {
+    void requestContractRejectsMoreThanSixExplicitStrategies() {
         RoutingComparisonRequest request = new RoutingComparisonRequest(
-                List.of("one", "two", "three", "four", "five", "six"),
+                List.of("one", "two", "three", "four", "five", "six", "seven"),
                 List.of(candidateInput("candidate")));
 
         Set<ConstraintViolation<RoutingComparisonRequest>> violations = validate(request);
 
         assertTrue(violations.stream().anyMatch(violation ->
                         "strategies".equals(violation.getPropertyPath().toString())
-                                && violation.getMessage().contains("at most 5")),
+                                && violation.getMessage().contains("at most 6")),
                 "the DTO contract must cap explicit strategy fan-out before comparison work");
     }
 

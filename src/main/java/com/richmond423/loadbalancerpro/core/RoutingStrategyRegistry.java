@@ -81,6 +81,7 @@ public final class RoutingStrategyRegistry {
                 WeightedLeastConnectionsRoutingStrategy::new);
         defaults.put(RoutingStrategyId.WEIGHTED_ROUND_ROBIN, WeightedRoundRobinRoutingStrategy::new);
         defaults.put(RoutingStrategyId.ROUND_ROBIN, RoundRobinRoutingStrategy::new);
+        defaults.put(RoutingStrategyId.CONSISTENT_HASH, ConsistentHashRingStrategy::new);
         return defaults;
     }
 

@@ -903,9 +903,10 @@ class RoutingDecisionDemoTest {
         }
 
         JsonNode compare = readJson(COMPARE_FIXTURE);
-        assertEquals(5, compare.path("strategies").size());
+        assertEquals(6, compare.path("strategies").size());
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", compare.at("/strategies/0").asText());
         assertEquals("ROUND_ROBIN", compare.at("/strategies/4").asText());
+        assertEquals("CONSISTENT_HASH", compare.at("/strategies/5").asText());
         assertEquals("edge-alpha", compare.at("/servers/0/serverId").asText());
         assertEquals("edge-drain", compare.at("/servers/2/serverId").asText());
         assertFalse(compare.at("/servers/2/healthy").asBoolean());
@@ -1009,6 +1010,7 @@ class RoutingDecisionDemoTest {
         assertTrue(folder.at("/item/2/request/body/raw").asText().contains("TAIL_LATENCY_POWER_OF_TWO"));
         assertTrue(folder.at("/item/2/request/body/raw").asText().contains("WEIGHTED_ROUND_ROBIN"));
         assertTrue(folder.at("/item/2/request/body/raw").asText().contains("ROUND_ROBIN"));
+        assertTrue(folder.at("/item/2/request/body/raw").asText().contains("CONSISTENT_HASH"));
 
         String normalized = Files.readString(Path.of("postman/LoadBalancerPro.postman_collection.json"),
                 StandardCharsets.UTF_8).toLowerCase(Locale.ROOT);

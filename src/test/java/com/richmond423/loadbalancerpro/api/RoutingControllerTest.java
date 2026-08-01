@@ -183,6 +183,7 @@ class RoutingControllerTest {
                 .andExpect(jsonPath("$.requestedStrategies[2]", is("WEIGHTED_LEAST_CONNECTIONS")))
                 .andExpect(jsonPath("$.requestedStrategies[3]", is("WEIGHTED_ROUND_ROBIN")))
                 .andExpect(jsonPath("$.requestedStrategies[4]", is("ROUND_ROBIN")))
+                .andExpect(jsonPath("$.requestedStrategies[5]", is("CONSISTENT_HASH")))
                 .andExpect(jsonPath("$.results[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
                 .andExpect(jsonPath("$.results[0].chosenServerId", is("green")))
                 .andExpect(jsonPath("$.results[1].strategyId", is("WEIGHTED_LEAST_LOAD")))
@@ -192,7 +193,9 @@ class RoutingControllerTest {
                 .andExpect(jsonPath("$.results[3].strategyId", is("WEIGHTED_ROUND_ROBIN")))
                 .andExpect(jsonPath("$.results[3].chosenServerId", is("green")))
                 .andExpect(jsonPath("$.results[4].strategyId", is("ROUND_ROBIN")))
-                .andExpect(jsonPath("$.results[4].chosenServerId", is("green")));
+                .andExpect(jsonPath("$.results[4].chosenServerId", is("green")))
+                .andExpect(jsonPath("$.results[5].strategyId", is("CONSISTENT_HASH")))
+                .andExpect(jsonPath("$.results[5].chosenServerId", is("green")));
     }
 
     @Test

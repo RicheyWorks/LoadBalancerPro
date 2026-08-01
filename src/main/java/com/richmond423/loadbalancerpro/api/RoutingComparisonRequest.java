@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 
 public record RoutingComparisonRequest(
         @Size(max = RoutingApiLimitsProperties.ABSOLUTE_MAX_STRATEGIES,
-                message = "strategies must contain at most 5 strategies")
+                message = "strategies must contain at most 6 strategies")
         List<String> strategies,
 
         @Valid

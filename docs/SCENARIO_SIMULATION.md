@@ -53,7 +53,7 @@ Optional fields on allocation/evaluation/overload steps:
 
 Optional fields on route steps:
 
-- `routingStrategies`, such as `ROUND_ROBIN`, `TAIL_LATENCY_POWER_OF_TWO`, `WEIGHTED_LEAST_LOAD`, `WEIGHTED_LEAST_CONNECTIONS`, or `WEIGHTED_ROUND_ROBIN`;
+- `routingStrategies`, such as `ROUND_ROBIN`, `TAIL_LATENCY_POWER_OF_TWO`, `WEIGHTED_LEAST_LOAD`, `WEIGHTED_LEAST_CONNECTIONS`, `WEIGHTED_ROUND_ROBIN`, or `CONSISTENT_HASH`;
 - `queueDepth`, used when deriving routing candidate telemetry from the replay server state.
 
 ## Response Shape

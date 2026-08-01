@@ -92,6 +92,7 @@ WEIGHTED_LEAST_LOAD
 WEIGHTED_LEAST_CONNECTIONS
 WEIGHTED_ROUND_ROBIN
 ROUND_ROBIN
+CONSISTENT_HASH
 ```
 
 If a section cannot run, the cockpit must show `Not available in current API` rather than inventing output.

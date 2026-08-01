@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "loadbalancerpro.api")
 public class RoutingApiLimitsProperties {
     public static final int ABSOLUTE_MAX_CANDIDATES = 32;
-    public static final int ABSOLUTE_MAX_STRATEGIES = 5;
+    public static final int ABSOLUTE_MAX_STRATEGIES = 6;
     public static final long ABSOLUTE_MAX_DECISION_EXPLORER_RESPONSE_BYTES = 64L * 1024L * 1024L;
 
     @Min(1)

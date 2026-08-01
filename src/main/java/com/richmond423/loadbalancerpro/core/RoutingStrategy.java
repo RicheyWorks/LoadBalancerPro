@@ -8,6 +8,14 @@ public interface RoutingStrategy {
     RoutingDecision choose(List<ServerStateVector> servers);
 
     /**
+     * Request-key-aware entry point. Strategies that do not use affinity keys keep their
+     * existing behavior through this default implementation.
+     */
+    default RoutingDecision chooseForKey(List<ServerStateVector> servers, String key) {
+        return choose(servers);
+    }
+
+    /**
      * Comparison-only entry point. Stateful production strategies retain their normal
      * {@link #choose(List)} behavior; strategies with random comparison sampling can use the
      * canonical request-derived seed without changing their live routing behavior.

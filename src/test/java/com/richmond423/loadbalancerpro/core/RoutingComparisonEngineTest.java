@@ -47,7 +47,7 @@ class RoutingComparisonEngineTest {
     }
 
     @Test
-    void defaultRegistryReturnsTailLatencyPowerOfTwoWeightedLeastLoadWeightedLeastConnectionsWeightedRoundRobinAndRoundRobinStrategies() {
+    void defaultRegistryReturnsAllRequestLevelStrategies() {
         RoutingStrategyRegistry registry = RoutingStrategyRegistry.defaultRegistry();
 
         assertEquals(List.of(
@@ -55,12 +55,14 @@ class RoutingComparisonEngineTest {
                 RoutingStrategyId.WEIGHTED_LEAST_LOAD,
                 RoutingStrategyId.WEIGHTED_LEAST_CONNECTIONS,
                 RoutingStrategyId.WEIGHTED_ROUND_ROBIN,
-                RoutingStrategyId.ROUND_ROBIN), registry.registeredIds());
+                RoutingStrategyId.ROUND_ROBIN,
+                RoutingStrategyId.CONSISTENT_HASH), registry.registeredIds());
         assertTrue(registry.find(RoutingStrategyId.TAIL_LATENCY_POWER_OF_TWO).isPresent());
         assertTrue(registry.find(RoutingStrategyId.WEIGHTED_LEAST_LOAD).isPresent());
         assertTrue(registry.find(RoutingStrategyId.WEIGHTED_LEAST_CONNECTIONS).isPresent());
         assertTrue(registry.find(RoutingStrategyId.WEIGHTED_ROUND_ROBIN).isPresent());
         assertTrue(registry.find(RoutingStrategyId.ROUND_ROBIN).isPresent());
+        assertTrue(registry.find(RoutingStrategyId.CONSISTENT_HASH).isPresent());
         assertEquals(RoutingStrategyId.TAIL_LATENCY_POWER_OF_TWO,
                 registry.require(RoutingStrategyId.TAIL_LATENCY_POWER_OF_TWO).id());
         assertEquals(RoutingStrategyId.WEIGHTED_LEAST_LOAD,
@@ -71,6 +73,8 @@ class RoutingComparisonEngineTest {
                 registry.require(RoutingStrategyId.WEIGHTED_ROUND_ROBIN).id());
         assertEquals(RoutingStrategyId.ROUND_ROBIN,
                 registry.require(RoutingStrategyId.ROUND_ROBIN).id());
+        assertEquals(RoutingStrategyId.CONSISTENT_HASH,
+                registry.require(RoutingStrategyId.CONSISTENT_HASH).id());
     }
 
     @Test

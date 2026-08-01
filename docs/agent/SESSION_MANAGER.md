@@ -1,11 +1,11 @@
 # Session Manager
 
-- Active work: `P-1.6` live load shedding and concurrency limits
-- Branch: `codex/p-1-6-live-load-shedding`
-- PR: `#532`
-- Exact base main: `a3f0d6df64cf131c239ee90448487b4d05fd6c1c`
-- Locally verified implementation head: `97cf2ebc79412bd36214c60d2c634ebf193f2b1a`
-- Previous slot: `P-1.5` is `MAIN_GREEN` through PR `#531`
-- Current verification: focused saturation/priority/adaptive/reload tests, the broader reverse-proxy bundle, dependency tree, skipped-test package, 2,490-test full suite and full package, Maven verify with JaCoCo, Enterprise Lab package smoke, CycloneDX 1.6 JSON/XML SBOM validation, local artifact verification, and loopback operator profile/proxy smoke pass on the working tree
-- Genuine blocker: local Docker is unavailable; remote Docker build/runtime and blocking image scan remain required
+- Active work: `P-1.7` consistent-hash strategy and cookie affinity
+- Branch: `codex/p-1-7-consistent-hash-affinity`
+- PR: `#533`
+- Exact base main: `a4302c95a54138c6021136f044e739d0bd47ba75`
+- Locally verified implementation head: `2ce5d2163f31d0f872fb907fabfb3879a459d47e`
+- Previous slot: `P-1.6` is `MAIN_GREEN` through PR `#532`
+- Current verification: focused hash/affinity/status/comparison/demo bundles, dependency tree, skipped-test package, 2,499-test full package and Maven verify with JaCoCo, Enterprise Lab package smoke, CycloneDX 1.6 JSON/XML SBOM validation, local artifact verification, loopback operator-profile smoke, and diff/JSON/scope/secret audits pass on the implementation head
+- Genuine blocker: local Docker is unavailable; exact-head remote Docker runtime and blocking image scan remain required
 - Next action: commit and push the PR checkpoint, rerun final-head focused/state verification, and require exact-head remote CI/CodeQL

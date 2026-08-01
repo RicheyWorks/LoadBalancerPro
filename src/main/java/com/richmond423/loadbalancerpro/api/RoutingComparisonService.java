@@ -339,6 +339,10 @@ public class RoutingComparisonService {
             return "ROUND_ROBIN has no additive score model; factor contributions are intentionally empty, "
                     + "and the returned candidate order plus selected position are the available explanation.";
         }
+        if (strategyId == RoutingStrategyId.CONSISTENT_HASH) {
+            return "CONSISTENT_HASH has no additive score model; factor contributions are intentionally empty, "
+                    + "and the selected ring member is explained without exposing the routing key.";
+        }
         return "Factor contributions are emitted by " + strategyId.externalName()
                 + "'s own comparison selection model and reconcile with its returned candidate score. "
                 + "This is exact for the bounded read-only comparison only, not production scoring proof.";

@@ -155,7 +155,9 @@ public class ReverseProxyProperties {
     public static final class Route {
         private String pathPrefix = "/";
         private String strategy;
+        private String hashOn = "client-ip";
         private Duration requestTimeout;
+        private Affinity affinity = new Affinity();
         private Headers headers = new Headers();
         private List<Upstream> targets = new ArrayList<>();
 
@@ -175,12 +177,28 @@ public class ReverseProxyProperties {
             this.strategy = strategy;
         }
 
+        public String getHashOn() {
+            return hashOn;
+        }
+
+        public void setHashOn(String hashOn) {
+            this.hashOn = hashOn;
+        }
+
         public Duration getRequestTimeout() {
             return requestTimeout;
         }
 
         public void setRequestTimeout(Duration requestTimeout) {
             this.requestTimeout = requestTimeout;
+        }
+
+        public Affinity getAffinity() {
+            return affinity;
+        }
+
+        public void setAffinity(Affinity affinity) {
+            this.affinity = affinity == null ? new Affinity() : affinity;
         }
 
         public Headers getHeaders() {
@@ -197,6 +215,27 @@ public class ReverseProxyProperties {
 
         public void setTargets(List<Upstream> targets) {
             this.targets = targets == null ? new ArrayList<>() : new ArrayList<>(targets);
+        }
+    }
+
+    public static final class Affinity {
+        private String cookieName = "";
+        private String hmacKey = "";
+
+        public String getCookieName() {
+            return cookieName;
+        }
+
+        public void setCookieName(String cookieName) {
+            this.cookieName = cookieName;
+        }
+
+        public String getHmacKey() {
+            return hmacKey;
+        }
+
+        public void setHmacKey(String hmacKey) {
+            this.hmacKey = hmacKey;
         }
     }
 

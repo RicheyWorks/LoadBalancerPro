@@ -96,6 +96,8 @@ Important defaults in `application.properties`:
 | `loadbalancerpro.proxy.connect-timeout` | `1s` | Bounded upstream connection establishment |
 | `loadbalancerpro.proxy.request-timeout` | `2s` | Bounded upstream request |
 | `loadbalancerpro.proxy.routes.<name>.request-timeout` | inherits global | Per-route upstream request bound |
+| `loadbalancerpro.proxy.routes.<name>.hash-on` | `client-ip` | Consistent-hash key source; immediate peer address or an operator-configured header that requires a trusted ingress boundary |
+| `loadbalancerpro.proxy.routes.<name>.affinity.cookie-name` | empty | Enables route-local signed routing affinity only when paired with an operator-supplied HMAC key |
 | `loadbalancerpro.proxy.forwarded.mode` | `strip-and-set` | Replace caller-supplied forwarding metadata by default |
 | `loadbalancerpro.proxy.limits.max-in-flight` | `0` | Process-local global cap; `0` leaves it unlimited |
 | `loadbalancerpro.proxy.limits.adaptive` | `false` | Opt-in latency-feedback adjustment below the configured cap |

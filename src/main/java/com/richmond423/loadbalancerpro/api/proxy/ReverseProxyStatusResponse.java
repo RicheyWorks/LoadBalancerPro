@@ -69,6 +69,8 @@ public record ReverseProxyStatusResponse(
             String name,
             String pathPrefix,
             String strategy,
+            String hashOn,
+            boolean affinityEnabled,
             List<String> targetIds) {
     }
 

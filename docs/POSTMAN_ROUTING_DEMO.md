@@ -47,8 +47,9 @@ Supported request-level strategy IDs are:
 - `WEIGHTED_LEAST_CONNECTIONS`
 - `WEIGHTED_ROUND_ROBIN`
 - `ROUND_ROBIN`
+- `CONSISTENT_HASH`
 
-These are the strategies currently registered by the API. The lab cockpit path does not invent a separate response-time strategy or merge legacy batch allocation behavior into request-level routing.
+These are the strategies currently registered by the API. Comparison-only consistent hashing uses a deterministic synthetic key and does not expose live proxy header or client-address input. The lab cockpit path does not invent a separate response-time strategy or merge legacy batch allocation behavior into request-level routing.
 
 ## Sample Body
 
@@ -61,7 +62,8 @@ The all-strategy sample uses synthetic server names and deterministic telemetry:
     "WEIGHTED_LEAST_LOAD",
     "WEIGHTED_LEAST_CONNECTIONS",
     "WEIGHTED_ROUND_ROBIN",
-    "ROUND_ROBIN"
+    "ROUND_ROBIN",
+    "CONSISTENT_HASH"
   ],
   "servers": [
     {

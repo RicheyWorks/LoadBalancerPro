@@ -24,7 +24,8 @@ class CoreRoutingRegistryComparisonContractTest {
             RoutingStrategyId.WEIGHTED_LEAST_LOAD,
             RoutingStrategyId.WEIGHTED_LEAST_CONNECTIONS,
             RoutingStrategyId.WEIGHTED_ROUND_ROBIN,
-            RoutingStrategyId.ROUND_ROBIN);
+            RoutingStrategyId.ROUND_ROBIN,
+            RoutingStrategyId.CONSISTENT_HASH);
 
     @Test
     void defaultRegistryOrderAndStrategyTypesAreReviewerVisible() {
@@ -42,6 +43,8 @@ class CoreRoutingRegistryComparisonContractTest {
                         registry.require(RoutingStrategyId.WEIGHTED_ROUND_ROBIN)),
                 () -> assertInstanceOf(RoundRobinRoutingStrategy.class,
                         registry.require(RoutingStrategyId.ROUND_ROBIN)),
+                () -> assertInstanceOf(ConsistentHashRingStrategy.class,
+                        registry.require(RoutingStrategyId.CONSISTENT_HASH)),
                 () -> assertTrue(registry.find(null).isEmpty()));
     }
 
@@ -58,6 +61,8 @@ class CoreRoutingRegistryComparisonContractTest {
                         RoutingStrategyId.fromName("weighted-round-robin").orElseThrow()),
                 () -> assertEquals(RoutingStrategyId.ROUND_ROBIN,
                         RoutingStrategyId.fromName("round-robin").orElseThrow()),
+                () -> assertEquals(RoutingStrategyId.CONSISTENT_HASH,
+                        RoutingStrategyId.fromName("consistent-hash").orElseThrow()),
                 () -> assertTrue(RoutingStrategyId.fromName("missing-strategy").isEmpty()),
                 () -> assertTrue(RoutingStrategyId.fromName(" ").isEmpty()),
                 () -> assertTrue(RoutingStrategyId.fromName(null).isEmpty()));
@@ -163,7 +168,8 @@ class CoreRoutingRegistryComparisonContractTest {
                 new WeightedLeastLoadStrategy(FIXED_CLOCK),
                 new WeightedLeastConnectionsRoutingStrategy(FIXED_CLOCK),
                 new WeightedRoundRobinRoutingStrategy(FIXED_CLOCK),
-                new RoundRobinRoutingStrategy(FIXED_CLOCK))), FIXED_CLOCK);
+                new RoundRobinRoutingStrategy(FIXED_CLOCK),
+                new ConsistentHashRingStrategy(FIXED_CLOCK, 128, List.of()))), FIXED_CLOCK);
     }
 
     private static void assertNoHealthyCandidateReport(RoutingComparisonReport report, int candidateCount) {

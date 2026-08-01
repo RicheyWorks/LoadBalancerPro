@@ -4,7 +4,8 @@
     "WEIGHTED_LEAST_LOAD",
     "WEIGHTED_LEAST_CONNECTIONS",
     "WEIGHTED_ROUND_ROBIN",
-    "ROUND_ROBIN"
+    "ROUND_ROBIN",
+    "CONSISTENT_HASH"
   ],
   "servers": [
     {

@@ -225,6 +225,10 @@ public class ReverseProxyStatusController {
                         entry.getKey(),
                         safePathPrefix(route.getPathPrefix()),
                         ReverseProxyRoutePlanner.safeRouteStrategy(properties, route),
+                        safeHashOn(route),
+                        route.getAffinity() != null
+                                && route.getAffinity().getCookieName() != null
+                                && !route.getAffinity().getCookieName().isBlank(),
                         route.getTargets().stream()
                                 .map(ReverseProxyStatusController::safeUpstreamId)
                                 .filter(id -> !id.isEmpty())
@@ -237,12 +241,19 @@ public class ReverseProxyStatusController {
                     ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME,
                     "/",
                     properties.getStrategy(),
+                    "client-ip",
+                    false,
                     properties.getUpstreams().stream()
                             .map(ReverseProxyStatusController::safeUpstreamId)
                             .filter(id -> !id.isEmpty())
                             .toList()));
         }
         return List.of();
+    }
+
+    private static String safeHashOn(ReverseProxyProperties.Route route) {
+        String hashOn = route.getHashOn();
+        return hashOn == null || hashOn.isBlank() ? "client-ip" : hashOn.trim();
     }
 
     private static String safeUpstreamId(ReverseProxyProperties.Upstream upstream) {

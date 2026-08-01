@@ -332,6 +332,9 @@ public final class AdaptiveRoutingScenarioRunner {
             case ROUND_ROBIN ->
                     "Round-robin uses healthy candidate order and cursor position; it does not claim load, latency, "
                             + "or weight causality.";
+            case CONSISTENT_HASH ->
+                    "Consistent hash uses a deterministic synthetic comparison key and the healthy virtual-node ring; "
+                            + "it does not expose that key or claim load or latency causality.";
         });
         return signals;
     }
@@ -368,6 +371,9 @@ public final class AdaptiveRoutingScenarioRunner {
                     "Weighted round-robin output should be read as smooth distribution by routing weight.";
             case ROUND_ROBIN ->
                     "Round-robin output should be read as deterministic rotation through healthy candidates.";
+            case CONSISTENT_HASH ->
+                    "Consistent-hash output should be read as deterministic virtual-node selection for the bounded "
+                            + "synthetic comparison key.";
         });
         return notes;
     }

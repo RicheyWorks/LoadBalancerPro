@@ -1700,7 +1700,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "WEIGHTED_LEAST_LOAD",
         "WEIGHTED_LEAST_CONNECTIONS",
         "WEIGHTED_ROUND_ROBIN",
-        "ROUND_ROBIN"
+        "ROUND_ROBIN",
+        "CONSISTENT_HASH"
       ],
       servers: [
         {
@@ -2061,7 +2062,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "",
         "mode: local browser same-origin controlled lab",
         "endpoint: POST /api/routing/compare",
-        "strategies: TAIL_LATENCY_POWER_OF_TWO, WEIGHTED_LEAST_LOAD, WEIGHTED_LEAST_CONNECTIONS, WEIGHTED_ROUND_ROBIN, ROUND_ROBIN",
+        "strategies: TAIL_LATENCY_POWER_OF_TWO, WEIGHTED_LEAST_LOAD, WEIGHTED_LEAST_CONNECTIONS, WEIGHTED_ROUND_ROBIN, ROUND_ROBIN, CONSISTENT_HASH",
         "",
         "## Results"
       ];

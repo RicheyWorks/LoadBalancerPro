@@ -170,6 +170,7 @@ public class ReverseProxyService {
             int retryAfterSeconds) {
         ReverseProxyProperties properties = config.properties();
         int maxAttempts = maxAttemptsFor(request.getMethod(), properties);
+        String routingKey = route.selectionPolicy().routingKey(request);
         Set<String> attemptedUpstreamIds = new LinkedHashSet<>();
         ReverseProxyResponse lastResponse = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -198,10 +199,15 @@ public class ReverseProxyService {
                             "No proxy upstreams are configured for route " + route.name() + ".");
                 }
 
-                RoutingDecision decision = route.strategy().choose(upstreams.stream()
+                List<ServerStateVector> candidateStates = upstreams.stream()
                         .map(UpstreamCandidate::state)
-                        .toList());
-                Optional<String> selectedServerId = decision.explanation().chosenServerId();
+                        .toList();
+                Optional<String> selectedServerId = route.selectionPolicy()
+                        .affinityTarget(request, candidateStates);
+                if (selectedServerId.isEmpty()) {
+                    RoutingDecision decision = route.strategy().chooseForKey(candidateStates, routingKey);
+                    selectedServerId = decision.explanation().chosenServerId();
+                }
                 if (selectedServerId.isEmpty()) {
                     if (lastResponse != null) {
                         return lastResponse;
@@ -243,9 +249,10 @@ public class ReverseProxyService {
                         forwardOnce(properties, config.forwardedPolicy(), route.headerRewrites(), request, body,
                                 upstream, runtimeStats, route.strategyId().externalName(),
                                 route.requestTimeout(), proxyPathSuffix);
-                lastResponse = attemptResult.response();
+                lastResponse = route.selectionPolicy().applyAffinityResponse(
+                        attemptResult.response(), request, upstreamId, attemptResult.affinityEligible());
                 if (!attemptResult.retriable() || attempt == maxAttempts) {
-                    return attemptResult.response();
+                    return lastResponse;
                 }
                 break;
             }
@@ -274,6 +281,8 @@ public class ReverseProxyService {
                         route.name(),
                         route.pathPrefix(),
                         route.strategyId().externalName(),
+                        route.selectionPolicy().hashOnDescription(),
+                        route.selectionPolicy().affinityEnabled(),
                         route.targets().stream()
                                 .map(ReverseProxyProperties.Upstream::getId)
                                 .toList()))
@@ -528,10 +537,10 @@ public class ReverseProxyService {
                 logger.warn("proxy.forward.retryable_status upstreamId={} status={} reason=retry_status",
                         upstreamId, response.statusCode());
                 recordResilienceFailure(properties, upstreamId);
-                return new ForwardAttemptResult(proxyResponse, true);
+                return new ForwardAttemptResult(proxyResponse, true, false);
             }
             recordResilienceSuccess(upstreamId);
-            return new ForwardAttemptResult(proxyResponse, false);
+            return new ForwardAttemptResult(proxyResponse, false, runtimeSuccessful);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             logger.warn("proxy.forward.failure upstreamId={} reason=interrupted", upstreamId);
@@ -540,6 +549,7 @@ public class ReverseProxyService {
             return new ForwardAttemptResult(
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy forwarding was interrupted while calling upstream " + upstreamId),
+                    false,
                     false);
         } catch (IOException | IllegalArgumentException exception) {
             logger.warn("proxy.forward.failure upstreamId={} reason=upstream_unreachable exceptionType={}",
@@ -549,7 +559,8 @@ public class ReverseProxyService {
             return new ForwardAttemptResult(
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy could not reach upstream " + upstreamId),
-                    true);
+                    true,
+                    false);
         } finally {
             long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
             runtimeStats.requestCompleted(Duration.ofNanos(elapsedNanos), runtimeSuccessful);
@@ -1133,11 +1144,23 @@ public class ReverseProxyService {
         }
         copy.setPathPrefix(source.getPathPrefix());
         copy.setStrategy(source.getStrategy());
+        copy.setHashOn(source.getHashOn());
         copy.setRequestTimeout(source.getRequestTimeout());
+        copy.setAffinity(copyAffinity(source.getAffinity()));
         copy.setHeaders(copyHeaders(source.getHeaders()));
         copy.setTargets(source.getTargets().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
+        return copy;
+    }
+
+    private static ReverseProxyProperties.Affinity copyAffinity(ReverseProxyProperties.Affinity source) {
+        ReverseProxyProperties.Affinity copy = new ReverseProxyProperties.Affinity();
+        if (source == null) {
+            return copy;
+        }
+        copy.setCookieName(source.getCookieName());
+        copy.setHmacKey(source.getHmacKey());
         return copy;
     }
 
@@ -1320,7 +1343,8 @@ public class ReverseProxyService {
             String lastProbeOutcome) {
     }
 
-    private record ForwardAttemptResult(ReverseProxyResponse response, boolean retriable) {
+    private record ForwardAttemptResult(
+            ReverseProxyResponse response, boolean retriable, boolean affinityEligible) {
     }
 
     private static final class ResilienceState {

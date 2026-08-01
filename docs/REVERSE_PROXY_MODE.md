@@ -71,6 +71,7 @@ The global `upstreams` list remains supported for the packaged demo profiles and
 loadbalancerpro.proxy.enabled=true
 loadbalancerpro.proxy.routes.api.path-prefix=/api
 loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN
+loadbalancerpro.proxy.routes.api.hash-on=client-ip
 loadbalancerpro.proxy.routes.api.request-timeout=750ms
 loadbalancerpro.proxy.routes.api.headers.remove.x-internal-only=true
 loadbalancerpro.proxy.routes.api.headers.set.x-route-name=api
@@ -89,7 +90,20 @@ Forwarding metadata defaults to `loadbalancerpro.proxy.forwarded.mode=strip-and-
 
 Named routes can apply static header rules through `headers.remove.<name>=true`, `headers.set.<name>=<value>`, and `headers.add.<name>=<value>`. The proxy removes configured headers first, replaces `set` headers second, and appends `add` headers last, after forwarding metadata is constructed. Header names and values are startup/reload validated, and hop-by-hop headers such as `Host`, `Connection`, `Content-Length`, and `Transfer-Encoding` cannot be added or set. Because route rules are trusted operator configuration, they may deliberately replace forwarding metadata after the anti-spoofing policy.
 
-When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Forwarding mode, trusted literal CIDRs, and route header rules are validated before activation. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN` and `WEIGHTED_LEAST_CONNECTIONS`, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
+Named routes can select `CONSISTENT_HASH` and derive the routing key from the immediate peer address (the default `hash-on=client-ip`) or from `hash-on=header:<name>`. A blank or missing configured header falls back to the immediate peer address. The proxy does not treat `X-Forwarded-For` as the client-IP hash source, and forwarding, hop-by-hop, cookie, authorization, and API-key headers are rejected as hash sources. Any other configured hash header is still caller-controlled unless a trusted ingress removes and sets it, so header-keyed routing must be deployed only behind that boundary. The key affects selection only and is not logged, included in strategy explanations, or returned by proxy status.
+
+Cookie affinity is independent of the selected strategy and is disabled while `affinity.cookie-name` is empty. Enable it only with an operator-supplied HMAC key of at least 32 UTF-8 bytes from a secret source:
+
+```properties
+loadbalancerpro.proxy.routes.api.strategy=CONSISTENT_HASH
+loadbalancerpro.proxy.routes.api.hash-on=header:X-Tenant-ID
+loadbalancerpro.proxy.routes.api.affinity.cookie-name=LB_AFFINITY
+loadbalancerpro.proxy.routes.api.affinity.hmac-key=${LOADBALANCERPRO_PROXY_AFFINITY_HMAC_KEY}
+```
+
+The proxy verifies a route-bound HMAC-SHA-256 value before the strategy runs. A valid cookie pins only to a currently healthy, positive-weight configured target; missing, malformed, tampered, removed, unhealthy, drained, capacity-excluded, or retry-excluded targets fall back to normal strategy selection. A successful non-retryable upstream response adds or replaces the affinity cookie with `Path=/proxy`, `HttpOnly`, and `SameSite=Lax`; `Secure` is added when the inbound request is secure. Other upstream `Set-Cookie` values are preserved. Transport failures and retryable responses do not create a new pin. The affinity cookie is routing metadata, not authentication, authorization, an application session, CSRF protection, or a tenant-isolation control. Do not reuse auth/session cookie names or HMAC keys, do not commit the key, and re-evaluate browser security controls before introducing ambient-cookie authentication.
+
+When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Forwarding mode, trusted literal CIDRs, route header rules, hash sources, cookie names, and affinity-key length are validated before activation. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN`, `WEIGHTED_LEAST_CONNECTIONS`, `CONSISTENT_HASH`, and cookie-affinity selection, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
 
 Global and per-upstream concurrency controls are opt-in. Set `loadbalancerpro.proxy.limits.max-in-flight` to a positive value for the process-local global cap and `upstreams[n].max-in-flight` or `routes.<name>.targets[n].max-in-flight` for process-local upstream caps; `0` means unlimited. A request holds one global permit across all of its retry attempts, while each actual upstream attempt holds that upstream's permit. If a selected upstream is full, the proxy tries another eligible target without consuming a retry; when the global cap or all eligible upstream caps are reached, it returns a fast HTTP 503 with `Retry-After` and `proxy_concurrency_limit` or `proxy_upstream_concurrency_limit`. Upstream ids share runtime state across routes, so the strictest positive cap configured for the same id is enforced.
 
@@ -155,6 +169,9 @@ Proxy mode reuses the request-level routing strategy registry. Supported configu
 - `WEIGHTED_LEAST_LOAD`
 - `WEIGHTED_LEAST_CONNECTIONS`
 - `WEIGHTED_ROUND_ROBIN`
+- `CONSISTENT_HASH`
+
+`CONSISTENT_HASH` uses a process-local 128-virtual-node ring per configured route. The same key maps to the same healthy ring member while route membership is unchanged; when one member is removed, only keys that belonged to that member are remapped. Unhealthy, drained, retry-excluded, and capacity-excluded members are skipped clockwise without granting them traffic. Ring and affinity state are not shared across processes or replicas, and this local deterministic behavior is not multi-node consistency, distributed session storage, benchmark evidence, or production certification.
 
 Configured upstreams with `healthy=false` are skipped before forwarding because the existing routing strategies consider only healthy candidates. This manual flag remains a hard disabled signal even when active health checks are enabled.
 

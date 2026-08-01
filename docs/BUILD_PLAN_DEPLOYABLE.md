@@ -84,7 +84,7 @@ Small surgical PRs. All are pure fixes to verified defects; land before feature 
 - **Config:** `retry.budget-percent` (default 20), `retry.backoff={base,max}` (exponential, jittered); `proxy.slow-start.duration` (default 0=off) — linear weight ramp for upstreams newly added or exiting cooldown; cooldown expiry no longer resets failure memory to zero (keep half).
 - **Accept:** brownout test — retries capped at budget; recovering upstream's traffic ramps rather than steps.
 
-**Milestone 1 exit:** all five strategies honest on live traffic; health, timeouts, shedding, affinity real. This is the "credible single-node L7 LB (buffered)" checkpoint.
+**Milestone 1 exit:** all six registered request-level strategies honest on live traffic; health, timeouts, shedding, affinity real. This is the "credible single-node L7 LB (buffered)" checkpoint.
 
 ---## Milestone 2 — Deployable data path
 

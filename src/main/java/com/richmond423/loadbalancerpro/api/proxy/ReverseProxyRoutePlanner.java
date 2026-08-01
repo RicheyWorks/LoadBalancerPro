@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.richmond423.loadbalancerpro.core.ConsistentHashRingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
@@ -72,9 +73,11 @@ final class ReverseProxyRoutePlanner {
                 requireRouteOwnedStrategy(routeName, strategy, routes);
                 ProxyRequestHeaders.HeaderRewrites headerRewrites = ProxyRequestHeaders.compileRewrites(
                         route.getHeaders(), "loadbalancerpro.proxy.routes." + routeName + ".headers");
+                ProxyRouteSelectionPolicy selectionPolicy = ProxyRouteSelectionPolicy.compile(
+                        routeName, route, "loadbalancerpro.proxy.routes." + routeName);
                 routes.add(new ConfiguredRoute(
                         routeName, pathPrefix, strategyId, strategy, requestTimeout,
-                        headerRewrites, List.copyOf(targets)));
+                        headerRewrites, selectionPolicy, List.copyOf(targets)));
             }
             return List.copyOf(routes);
         }
@@ -92,6 +95,7 @@ final class ReverseProxyRoutePlanner {
                 LEGACY_ROUTE_NAME, "/", strategyId, strategy, properties.getRequestTimeout(),
                 ProxyRequestHeaders.compileRewrites(
                         new ReverseProxyProperties.Headers(), "loadbalancerpro.proxy.routes.legacy.headers"),
+                ProxyRouteSelectionPolicy.legacy(LEGACY_ROUTE_NAME),
                 List.copyOf(upstreams)));
     }
 
@@ -152,10 +156,14 @@ final class ReverseProxyRoutePlanner {
                 && upstreamIds(previousRoute.targets()).equals(upstreamIds(targets))) {
             return previousRoute.strategy();
         }
-        return registry.findFactory(strategyId)
+        RoutingStrategy strategy = registry.findFactory(strategyId)
                 .map(RoutingStrategyRegistry.RoutingStrategyFactory::create)
                 .orElseThrow(() -> new IllegalStateException(
                         "Proxy routing strategy is not registered: " + strategyId.externalName()));
+        if (strategy instanceof ConsistentHashRingStrategy consistentHash) {
+            return consistentHash.configuredFor(upstreamIds(targets));
+        }
+        return strategy;
     }
 
     private static Set<String> upstreamIds(List<ReverseProxyProperties.Upstream> targets) {
@@ -245,6 +253,7 @@ final class ReverseProxyRoutePlanner {
             RoutingStrategy strategy,
             Duration requestTimeout,
             ProxyRequestHeaders.HeaderRewrites headerRewrites,
+            ProxyRouteSelectionPolicy selectionPolicy,
             List<ReverseProxyProperties.Upstream> targets) {
     }
 }

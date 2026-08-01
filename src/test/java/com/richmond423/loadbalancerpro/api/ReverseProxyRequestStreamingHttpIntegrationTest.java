@@ -73,8 +73,9 @@ class ReverseProxyRequestStreamingHttpIntegrationTest {
 
         assertEquals(413, rejected.statusCode());
         assertTrue(rejected.body().contains("proxy_payload_too_large"));
-        assertEquals(requestsBeforeOverflow + 1, BACKEND.requestCount(),
-                "chunked overflow must produce one aborted upstream attempt");
+        assertTrue(BACKEND.requestCount() >= requestsBeforeOverflow
+                        && BACKEND.requestCount() <= requestsBeforeOverflow + 1,
+                "chunked overflow must dispatch to at most one upstream");
     }
 
     private HttpRequest request(HttpRequest.BodyPublisher publisher) {

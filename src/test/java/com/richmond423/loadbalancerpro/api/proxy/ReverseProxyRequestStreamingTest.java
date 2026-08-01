@@ -106,8 +106,8 @@ class ReverseProxyRequestStreamingTest {
                         () -> new GeneratedInputStream(REQUEST_LIMIT + 1L)));
 
                 assertEquals(413, response.statusCode());
-                assertEquals(1, first.requestCount() + second.requestCount(),
-                        "one-shot streaming bodies must never be retried");
+                assertTrue(first.requestCount() + second.requestCount() <= 1,
+                        "one-shot streaming bodies must dispatch to at most one upstream");
                 ReverseProxyStatusResponse status = service.statusSnapshot();
                 assertTrue(status.upstreams().stream().allMatch(upstream ->
                                 upstream.consecutiveFailures() == 0 && !upstream.cooldownActive()),

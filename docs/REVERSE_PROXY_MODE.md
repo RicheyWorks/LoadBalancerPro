@@ -222,6 +222,16 @@ The response reports the proxy enabled flag, selected strategy, configured route
 
 Each upstream also reports process-local runtime statistics: current in-flight attempts; completed-attempt count; latency EWMA and p50/p95/p99 from the newest 256 completions; successes, failures, and error rate from the trailing 30 seconds; and the last completion timestamp. Statistics remain attached when a successful reload keeps the same upstream id. Weighted least-connections and tail-latency-aware proxy routes consume the applicable live measurements as described above.
 
+Inspect actual recent forwarding decisions with:
+
+```bash
+curl -s http://127.0.0.1:8080/api/proxy/decisions/recent
+```
+
+The endpoint retains the newest 100 actual upstream attempts in a synchronized process-local FIFO buffer. Each retry is a separate record with a monotonic process-local decision id, capture time, active config generation, route, strategy, attempt number, strategy-or-affinity selection source, chosen upstream id, the candidate-state snapshot used for selection, response status, measured attempt latency, retryability, and outcome. Snapshot metadata reports the fixed bound, current retained count, total captured count, and total dropped count. Reads do not mutate or clear the buffer. Accepted config reloads keep prior records so their config generation remains meaningful; process restart clears records and counters.
+
+Decision records deliberately omit request paths, queries, methods, bodies, headers, cookies, routing keys, affinity-cookie values, upstream URLs, and credentials. They are bounded local diagnostic evidence only: there is no persistence, cross-replica stream, cryptographic signing, identity attribution, request replay, load/stress evidence, throughput/p95/p99 claim, or production certification.
+
 For a browser view of the same read-only status data, open:
 
 ```text
@@ -307,15 +317,15 @@ The examples target loopback placeholders `http://localhost:9001` and `http://lo
 
 Checked-in loopback proxy demos explicitly select warned `auth.mode=none` and are not a security boundary. The unqualified default API-key mode instead refuses startup without a key. Keep proxy demos bound to localhost or a trusted private network unless deployment-level access control is in place.
 
-In API-key mode, `/proxy/**` and `GET /api/proxy/status` require the configured `X-API-Key` regardless of profile. In OAuth2 mode, the same proxy surfaces require the configured allocation role, which defaults to `operator`. `/proxy-status.html` is a static same-origin page, so expose it only where callers are allowed to read the status JSON it uses.
+In API-key mode, `/proxy/**`, `GET /api/proxy/status`, and `GET /api/proxy/decisions/recent` require the configured `X-API-Key` regardless of profile. In OAuth2 mode, the same proxy surfaces require the configured allocation role, which defaults to `operator`. `/proxy-status.html` is a static same-origin page, so expose it only where callers are allowed to read the status JSON it uses.
 
 LoadBalancerPro does not terminate TLS for proxy traffic and does not provide end-to-end encryption between clients, this app, and upstreams. Terminate TLS at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh before exposing proxy mode beyond a private review environment. Configure forwarded headers only when the deployment owns that trust boundary.
 
-Do not expose `/proxy/**`, `GET /api/proxy/status`, `/proxy-status.html`, or Actuator endpoints publicly without deployment-level authentication, TLS termination, network policy, and rate limiting appropriate to the environment.
+Do not expose `/proxy/**`, `GET /api/proxy/status`, `GET /api/proxy/decisions/recent`, `/proxy-status.html`, or Actuator endpoints publicly without deployment-level authentication, TLS termination, network policy, and rate limiting appropriate to the environment.
 
 ## Test Evidence
 
-`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ReverseProxyStrategyDemoLabTest`, `ProxyDemoFixtureLauncherTest`, `ProdApiKeyProtectionTest`, `OAuth2AuthorizationTest`, and `OperatorAuthTlsBoundaryDocumentationTest` use local in-process JDK `HttpServer` fixtures, unused loopback ports, MockMvc requests, or static docs assertions. They prove:
+`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyLiveDecisionCaptureTest`, `LiveRoutingDecisionStoreTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ReverseProxyStrategyDemoLabTest`, `ProxyDemoFixtureLauncherTest`, `ProdApiKeyProtectionTest`, `OAuth2AuthorizationTest`, and `OperatorAuthTlsBoundaryDocumentationTest` use local in-process JDK `HttpServer` fixtures, unused loopback ports, MockMvc requests, or static docs assertions. They prove:
 
 - proxy mode is disabled by default
 - GET requests are forwarded to local upstreams

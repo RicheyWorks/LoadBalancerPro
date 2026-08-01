@@ -9,7 +9,7 @@ The default posture is conservative: API-key authentication is selected, proxyin
 - Capacity-aware, predictive, and evaluation-only allocation APIs.
 - Deterministic request-level comparison for round-robin, weighted round-robin, weighted least-load, weighted least-connections, and tail-latency-aware strategies.
 - Read-only Decision Explorer and browser cockpit surfaces for local review.
-- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, active health checks, retry budgets/backoff, cooldown/slow-start recovery, process-local concurrency/load-shedding controls, status, and guarded reload.
+- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry and bounded recent-decision records, active health checks, retry budgets/backoff, cooldown/slow-start recovery, process-local concurrency/load-shedding controls, status, and guarded reload.
 - Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
@@ -141,7 +141,7 @@ Proxy mode requires explicit routes or upstreams. Start with the loopback smoke 
 pwsh ./scripts/smoke/operator-run-profiles-smoke.ps1 -Package
 ```
 
-The proxy exposes forwarding under `/proxy/**`, read-only state at `GET /api/proxy/status`, and guarded configuration reload at `POST /api/proxy/reload`. Operator configuration examples are under [`docs/examples/proxy`](docs/examples/proxy).
+The proxy exposes forwarding under `/proxy/**`, read-only state at `GET /api/proxy/status`, the newest 100 process-local forwarding decisions at `GET /api/proxy/decisions/recent`, and guarded configuration reload at `POST /api/proxy/reload`. Operator configuration examples are under [`docs/examples/proxy`](docs/examples/proxy).
 
 Before enabling private-network validation, review:
 
@@ -164,6 +164,7 @@ Before enabling private-network validation, review:
 | `/api/enterprise-lab/**` | Reviewer summaries and evidence views |
 | `/proxy/**` | Optional HTTP forwarding |
 | `GET /api/proxy/status` | Proxy configuration, health, and live per-upstream runtime statistics |
+| `GET /api/proxy/decisions/recent` | Bounded process-local records of actual upstream forwarding attempts |
 | `POST /api/proxy/reload` | Guarded proxy configuration reload |
 | `/actuator/health` | Spring Boot health and readiness |
 

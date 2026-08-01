@@ -48,6 +48,19 @@ class ReverseProxyRetryBudgetSlowStartTest {
         assertEquals(20, retry.budgetGrantedRetries());
         assertEquals(80, retry.budgetRejectedRetries());
         assertEquals(20, service.statusSnapshot().metrics().totalRetryAttempts());
+
+        RecentProxyDecisionsResponse decisions = service.recentDecisionsSnapshot();
+        assertEquals(100, decisions.maxRetained());
+        assertEquals(100, decisions.retainedCount());
+        assertEquals(120, decisions.totalCaptured());
+        assertEquals(20, decisions.totalDropped());
+        assertEquals("proxy-decision-00000021", decisions.decisions().get(0).decisionId());
+        assertEquals("proxy-decision-00000120", decisions.decisions().get(99).decisionId());
+        assertTrue(decisions.decisions().stream()
+                .anyMatch(decision -> decision.attempt() == 2));
+        assertEquals(100, decisions.decisions().stream()
+                .filter(decision -> decision.responseStatus() == 503)
+                .count());
     }
 
     @Test

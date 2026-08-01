@@ -106,6 +106,14 @@ public class ReverseProxyStatusController {
                 reloadNotSupported()));
     }
 
+    @GetMapping("/decisions/recent")
+    public RecentProxyDecisionsResponse recentDecisions() {
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        return service == null
+                ? RecentProxyDecisionsResponse.empty(false, LiveRoutingDecisionStore.DEFAULT_MAX_RETAINED)
+                : service.recentDecisionsSnapshot();
+    }
+
     @PostMapping("/reload")
     public ResponseEntity<ReverseProxyReloadResponse> reload(@RequestBody ReverseProxyProperties candidate,
                                                              HttpServletRequest request) {

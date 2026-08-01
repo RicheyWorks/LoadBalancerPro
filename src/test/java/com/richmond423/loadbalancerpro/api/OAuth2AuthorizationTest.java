@@ -174,6 +174,21 @@ class OAuth2AuthorizationTest {
                 .andExpect(jsonPath("$.securityBoundary.authMode", is("oauth2")))
                 .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected", is(true)))
                 .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected", is(true)));
+
+        mockMvc.perform(get("/api/proxy/decisions/recent"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/proxy/decisions/recent")));
+
+        mockMvc.perform(get("/api/proxy/decisions/recent")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer observer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/proxy/decisions/recent")));
+
+        mockMvc.perform(get("/api/proxy/decisions/recent")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proxyEnabled", is(false)))
+                .andExpect(jsonPath("$.decisions").isEmpty());
     }
 
     @Test

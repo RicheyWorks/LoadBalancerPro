@@ -243,6 +243,20 @@ class ProdApiKeyProtectionTest {
     }
 
     @Test
+    void prodProfileProtectsRecentProxyDecisionsAndDoesNotExposeTheKey() throws Exception {
+        mockMvc.perform(get("/api/proxy/decisions/recent"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/proxy/decisions/recent")));
+
+        mockMvc.perform(get("/api/proxy/decisions/recent").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(jsonPath("$.proxyEnabled", is(false)))
+                .andExpect(jsonPath("$.retentionScope", is("process-local")))
+                .andExpect(jsonPath("$.decisions").isEmpty());
+    }
+
+    @Test
     void prodProfileProtectsPrivateNetworkLiveValidationCommandWithoutApiKey() throws Exception {
         mockMvc.perform(privateNetworkLiveValidationCommandRequest())
                 .andExpect(status().isUnauthorized())

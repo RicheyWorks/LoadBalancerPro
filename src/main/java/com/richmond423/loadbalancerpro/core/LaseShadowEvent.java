@@ -1,12 +1,15 @@
 package com.richmond423.loadbalancerpro.core;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 public record LaseShadowEvent(
         String evaluationId,
         Instant timestamp,
         String strategy,
+        String selectionSource,
+        List<String> candidateServerIds,
         double requestedLoad,
         double unallocatedLoad,
         String actualSelectedServerId,
@@ -24,6 +27,13 @@ public record LaseShadowEvent(
         evaluationId = requireNonBlank(evaluationId, "evaluationId");
         Objects.requireNonNull(timestamp, "timestamp cannot be null");
         strategy = requireNonBlank(strategy, "strategy");
+        selectionSource = selectionSource == null || selectionSource.isBlank()
+                ? "allocation"
+                : selectionSource.trim();
+        candidateServerIds = candidateServerIds == null ? List.of() : candidateServerIds.stream()
+                .map(candidate -> requireNonBlank(candidate, "candidateServerIds"))
+                .distinct()
+                .toList();
         validateNonNegativeFinite(requestedLoad, "requestedLoad");
         validateNonNegativeFinite(unallocatedLoad, "unallocatedLoad");
         actualSelectedServerId = blankToNull(actualSelectedServerId);
@@ -57,10 +67,31 @@ public record LaseShadowEvent(
                            Boolean agreedWithRouting,
                            boolean failSafe,
                            String failureReason) {
-        this(evaluationId, timestamp, strategy, requestedLoad, unallocatedLoad, actualSelectedServerId,
+        this(evaluationId, timestamp, strategy, "allocation", List.of(), requestedLoad,
+                unallocatedLoad, actualSelectedServerId,
                 recommendedServerId, recommendedAction, decisionScore,
                 NetworkAwarenessSignal.neutral(evaluationId, timestamp), 0.0, reason, agreedWithRouting,
                 failSafe, failureReason);
+    }
+
+    public LaseShadowEvent(String evaluationId,
+                           Instant timestamp,
+                           String strategy,
+                           double requestedLoad,
+                           double unallocatedLoad,
+                           String actualSelectedServerId,
+                           String recommendedServerId,
+                           String recommendedAction,
+                           Double decisionScore,
+                           NetworkAwarenessSignal networkAwarenessSignal,
+                           Double networkRiskScore,
+                           String reason,
+                           Boolean agreedWithRouting,
+                           boolean failSafe,
+                           String failureReason) {
+        this(evaluationId, timestamp, strategy, "allocation", List.of(), requestedLoad,
+                unallocatedLoad, actualSelectedServerId, recommendedServerId, recommendedAction, decisionScore,
+                networkAwarenessSignal, networkRiskScore, reason, agreedWithRouting, failSafe, failureReason);
     }
 
     private static void validateNonNegativeFinite(double value, String fieldName) {

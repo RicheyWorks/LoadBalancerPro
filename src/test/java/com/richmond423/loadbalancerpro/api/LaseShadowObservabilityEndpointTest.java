@@ -65,6 +65,12 @@ class LaseShadowObservabilityEndpointTest {
                 .andExpect(jsonPath("$.summary.agreementRate", closeTo(0.0, 0.001)))
                 .andExpect(jsonPath("$.summary.failSafeCount", is(0)))
                 .andExpect(jsonPath("$.summary.recommendationCounts").isMap())
+                .andExpect(jsonPath("$.liveProxyDispatch.enabled", is(true)))
+                .andExpect(jsonPath("$.liveProxyDispatch.queueCapacity", is(100)))
+                .andExpect(jsonPath("$.liveProxyDispatch.queuedEvaluations", is(0)))
+                .andExpect(jsonPath("$.liveProxyDispatch.totalAccepted", is(0)))
+                .andExpect(jsonPath("$.liveProxyDispatch.totalCompleted", is(0)))
+                .andExpect(jsonPath("$.liveProxyDispatch.totalDropped", is(0)))
                 .andExpect(jsonPath("$.recentEvents").isArray())
                 .andExpect(jsonPath("$.recentEvents").isEmpty());
     }

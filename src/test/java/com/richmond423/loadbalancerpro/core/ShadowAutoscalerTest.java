@@ -267,6 +267,10 @@ class ShadowAutoscalerTest {
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, 1.0, Double.POSITIVE_INFINITY, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, 1.0, 0.0, -1)),
                 () -> assertInvalid(() -> new AutoscalingSignal("checkout", 4, 2, 10, 2, 0,
+                        -0.01, 1.0, 1.0, 0.0, 100, NOW)),
+                () -> assertInvalid(() -> new AutoscalingSignal("checkout", 4, 2, 10, 2, 0,
+                        1.01, 1.0, 1.0, 0.0, 100, NOW)),
+                () -> assertInvalid(() -> new AutoscalingSignal("checkout", 4, 2, 10, 2, 0,
                         1.0, 1.0, 0.0, 100, null))
         );
     }

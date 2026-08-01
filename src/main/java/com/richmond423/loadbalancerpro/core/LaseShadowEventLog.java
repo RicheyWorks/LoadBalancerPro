@@ -61,6 +61,11 @@ public final class LaseShadowEventLog {
     }
 
     public synchronized LaseShadowObservabilitySnapshot snapshot() {
+        return snapshot(LaseShadowDispatchSnapshot.inactive(0));
+    }
+
+    public synchronized LaseShadowObservabilitySnapshot snapshot(
+            LaseShadowDispatchSnapshot liveProxyDispatch) {
         double agreementRate = comparableEvaluations == 0
                 ? 0.0
                 : agreementCount / (double) comparableEvaluations;
@@ -74,7 +79,8 @@ public final class LaseShadowEventLog {
                 latestEventTimestamp,
                 new LinkedHashMap<>(recommendationCounts),
                 networkSummary());
-        return new LaseShadowObservabilitySnapshot(summary, new ArrayList<>(recentEvents));
+        return new LaseShadowObservabilitySnapshot(
+                summary, new ArrayList<>(recentEvents), liveProxyDispatch);
     }
 
     private void recordNetworkSignal(NetworkAwarenessSignal signal) {

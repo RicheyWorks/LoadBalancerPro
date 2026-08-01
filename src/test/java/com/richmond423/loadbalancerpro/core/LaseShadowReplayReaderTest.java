@@ -39,6 +39,22 @@ class LaseShadowReplayReaderTest {
     }
 
     @Test
+    void schemaOneReplayWithoutLiveAgreementFieldsRemainsReadable() throws Exception {
+        LaseShadowReplayReader reader = new LaseShadowReplayReader();
+        Path replayFile = tempDir.resolve("legacy-shadow-events.jsonl");
+        String legacyLine = reader.toJsonLine(LaseShadowReplayRecord.fromEvent(
+                        event("eval-legacy", "S1", "S1", "HOLD", true)))
+                .replace("\"selectionSource\":\"allocation\",", "")
+                .replace("\"candidateServerIds\":[],", "");
+        Files.writeString(replayFile, legacyLine);
+
+        LaseShadowEvent restored = reader.readAll(replayFile).get(0).event();
+
+        assertEquals("allocation", restored.selectionSource());
+        assertTrue(restored.candidateServerIds().isEmpty());
+    }
+
+    @Test
     void blankLinesAndRepeatedEvaluationsPreserveReplayOrder() throws Exception {
         LaseShadowReplayReader reader = new LaseShadowReplayReader();
         Path replayFile = tempDir.resolve("ordered-replay.jsonl");

@@ -57,7 +57,7 @@ public final class AdaptiveConcurrencyLimiter {
             return new LimitProposal(desiredLimit, ConcurrencyLimitDecision.Action.DECREASE,
                     decreaseReason(feedback, latencyAboveTarget, errorAboveThreshold));
         }
-        return new LimitProposal(currentLimit + config.additiveStep(),
+        return new LimitProposal(saturatedAdd(currentLimit, config.additiveStep()),
                 ConcurrencyLimitDecision.Action.INCREASE,
                 "Increasing limit because latency and error signals are healthy.");
     }
@@ -89,6 +89,10 @@ public final class AdaptiveConcurrencyLimiter {
 
     private int clamp(int desiredLimit) {
         return Math.min(config.maxLimit(), Math.max(config.minLimit(), desiredLimit));
+    }
+
+    private int saturatedAdd(int left, int right) {
+        return (int) Math.min(Integer.MAX_VALUE, (long) left + right);
     }
 
     private String clampBoundary(int nextLimit) {

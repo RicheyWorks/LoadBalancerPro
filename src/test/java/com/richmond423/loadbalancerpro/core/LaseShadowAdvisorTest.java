@@ -373,6 +373,175 @@ class LaseShadowAdvisorTest {
         }
     }
 
+    @Test
+    void liveRoutingUsesExactRealTelemetryCandidateSetAndRatioUnits() {
+        LaseShadowEventLog eventLog = new LaseShadowEventLog(20);
+        LaseShadowAdvisor advisor = deterministicAdvisor(true, eventLog);
+        List<ServerStateVector> candidates = List.of(
+                liveState("degraded", 8, 300.0, 400.0, 500.0, 0.20, 2),
+                liveState("healthy", 1, 40.0, 60.0, 70.0, 0.0, 0));
+
+        LaseEvaluationReport report = null;
+        for (int sample = 1; sample <= 10; sample++) {
+            report = advisor.observeLiveRouting(new LiveRoutingShadowObservation(
+                    "proxy-decision-%08d".formatted(sample),
+                    NOW,
+                    "checkout",
+                    "ROUND_ROBIN",
+                    "strategy",
+                    "degraded",
+                    candidates,
+                    20,
+                    sample)).orElseThrow();
+        }
+
+        assertNotNull(report);
+        assertEquals("healthy", report.routingDecision().explanation().chosenServerId().orElseThrow());
+        assertEquals(0.45, report.autoscalingRecommendation().utilization(), 0.0001);
+        assertEquals(230.0, report.autoscalingRecommendation().observedP95LatencyMillis(), 0.0001);
+        assertEquals(0.10, report.autoscalingRecommendation().observedErrorRate(), 0.0001);
+        assertEquals(AutoscalingAction.SCALE_UP, report.autoscalingRecommendation().action());
+
+        LaseShadowEvent event = eventLog.snapshot().recentEvents().get(9);
+        assertEquals("strategy", event.selectionSource());
+        assertEquals(List.of("degraded", "healthy"), event.candidateServerIds());
+        assertEquals("degraded", event.actualSelectedServerId());
+        assertEquals("healthy", event.recommendedServerId());
+        assertEquals(Boolean.FALSE, event.agreedWithRouting());
+        assertEquals(10, eventLog.snapshot().summary().comparableEvaluations());
+    }
+
+    @Test
+    void liveRoutingPersistsAimdLimitAcrossEvaluations() {
+        LaseShadowAdvisor advisor = deterministicAdvisor(true);
+        List<ServerStateVector> candidates = List.of(
+                liveState("S1", 1, 20.0, 40.0, 60.0, 0.0, 0),
+                liveState("S2", 1, 25.0, 45.0, 65.0, 0.0, 0));
+
+        LaseEvaluationReport tenth = null;
+        for (int sample = 1; sample <= 10; sample++) {
+            tenth = advisor.observeLiveRouting(liveObservation(sample, "strategy", "S1", candidates))
+                    .orElseThrow();
+        }
+        LaseEvaluationReport eleventh = advisor.observeLiveRouting(
+                liveObservation(11, "strategy", "S1", candidates)).orElseThrow();
+
+        assertNotNull(tenth);
+        assertEquals(20, tenth.concurrencyDecision().previousLimit());
+        assertEquals(22, tenth.concurrencyDecision().nextLimit());
+        assertEquals(22, eleventh.concurrencyDecision().previousLimit());
+        assertEquals(24, eleventh.concurrencyDecision().nextLimit());
+    }
+
+    @Test
+    void liveRoutingBoundsPersistedAimdTargets() {
+        LaseShadowAdvisor advisor = deterministicAdvisor(true);
+        List<ServerStateVector> candidates = List.of(
+                liveState("S1", 1, 20.0, 40.0, 60.0, 0.0, 0));
+
+        for (int route = 1; route <= 101; route++) {
+            advisor.observeLiveRouting(new LiveRoutingShadowObservation(
+                    "proxy-decision-%08d".formatted(route),
+                    NOW,
+                    "route-" + route,
+                    "ROUND_ROBIN",
+                    "strategy",
+                    "S1",
+                    candidates,
+                    10,
+                    1)).orElseThrow();
+        }
+
+        assertEquals(100, advisor.retainedConcurrencyTargetCount());
+    }
+
+    @Test
+    void liveRoutingDoesNotClampRealConcurrencyLimitToLegacyHundred() {
+        LaseShadowAdvisor advisor = deterministicAdvisor(true);
+        ServerStateVector candidate = new ServerStateVector(
+                "large-capacity", true, 50, 250.0, 250.0,
+                20.0, 40.0, 60.0, 0.0, 0, NOW);
+        LiveRoutingShadowObservation observation = new LiveRoutingShadowObservation(
+                "proxy-decision-00000001", NOW, "large-route", "ROUND_ROBIN", "strategy",
+                "large-capacity", List.of(candidate), 250, 10);
+
+        LaseEvaluationReport report = advisor.observeLiveRouting(observation).orElseThrow();
+
+        assertEquals(250, report.concurrencyDecision().previousLimit());
+        assertEquals(252, report.concurrencyDecision().nextLimit());
+    }
+
+    @Test
+    void affinityChoicesRemainVisibleButAreExcludedFromAgreementDenominator() {
+        LaseShadowEventLog eventLog = new LaseShadowEventLog(10);
+        LaseShadowAdvisor advisor = deterministicAdvisor(true, eventLog);
+        List<ServerStateVector> candidates = List.of(
+                liveState("S1", 1, 20.0, 40.0, 60.0, 0.0, 0),
+                liveState("S2", 1, 25.0, 45.0, 65.0, 0.0, 0));
+
+        advisor.observeLiveRouting(liveObservation(1, "affinity", "S2", candidates)).orElseThrow();
+
+        LaseShadowObservabilitySnapshot snapshot = eventLog.snapshot();
+        assertEquals(1, snapshot.summary().totalEvaluations());
+        assertEquals(0, snapshot.summary().comparableEvaluations());
+        assertNull(snapshot.recentEvents().get(0).agreedWithRouting());
+        assertEquals("affinity", snapshot.recentEvents().get(0).selectionSource());
+        assertEquals(List.of("S1", "S2"), snapshot.recentEvents().get(0).candidateServerIds());
+    }
+
+    @Test
+    void allocationFixtureInputUsesBoundedRatioForAutoscaling() {
+        LaseEvaluationInput input = LaseShadowAdvisor.buildInput(
+                "CAPACITY_AWARE",
+                servers(),
+                60.0,
+                new LoadDistributionResult(Map.of("S1", 25.0, "S2", 35.0), 0.0),
+                NOW);
+
+        assertTrue(input.autoscalingSignal().utilization() >= 0.0);
+        assertTrue(input.autoscalingSignal().utilization() <= 1.0);
+        assertEquals(60, input.autoscalingSignal().sampleSize());
+    }
+
+    private static LiveRoutingShadowObservation liveObservation(
+            int sequence,
+            String selectionSource,
+            String actualServerId,
+            List<ServerStateVector> candidates) {
+        return new LiveRoutingShadowObservation(
+                "proxy-decision-%08d".formatted(sequence),
+                NOW,
+                "checkout",
+                "ROUND_ROBIN",
+                selectionSource,
+                actualServerId,
+                candidates,
+                20,
+                sequence);
+    }
+
+    private static ServerStateVector liveState(
+            String serverId,
+            int inFlight,
+            double averageLatency,
+            double p95Latency,
+            double p99Latency,
+            double errorRate,
+            int queueDepth) {
+        return new ServerStateVector(
+                serverId,
+                true,
+                inFlight,
+                10.0,
+                10.0,
+                averageLatency,
+                p95Latency,
+                p99Latency,
+                errorRate,
+                queueDepth,
+                NOW);
+    }
+
     private static LaseShadowAdvisor deterministicAdvisor(boolean enabled) {
         return deterministicAdvisor(enabled, new LaseShadowEventLog(10));
     }

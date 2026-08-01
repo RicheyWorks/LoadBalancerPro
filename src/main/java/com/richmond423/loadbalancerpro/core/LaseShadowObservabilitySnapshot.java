@@ -5,11 +5,19 @@ import java.util.Objects;
 
 public record LaseShadowObservabilitySnapshot(
         LaseShadowSummary summary,
-        List<LaseShadowEvent> recentEvents) {
+        List<LaseShadowEvent> recentEvents,
+        LaseShadowDispatchSnapshot liveProxyDispatch) {
 
     public LaseShadowObservabilitySnapshot {
         Objects.requireNonNull(summary, "summary cannot be null");
         Objects.requireNonNull(recentEvents, "recentEvents cannot be null");
         recentEvents = List.copyOf(recentEvents);
+        Objects.requireNonNull(liveProxyDispatch, "liveProxyDispatch cannot be null");
+    }
+
+    public LaseShadowObservabilitySnapshot(
+            LaseShadowSummary summary,
+            List<LaseShadowEvent> recentEvents) {
+        this(summary, recentEvents, LaseShadowDispatchSnapshot.inactive(0));
     }
 }

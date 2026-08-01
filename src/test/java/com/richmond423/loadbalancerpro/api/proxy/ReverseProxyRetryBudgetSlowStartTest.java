@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -215,10 +217,10 @@ class ReverseProxyRetryBudgetSlowStartTest {
                 org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<byte[]>>any()))
                 .thenAnswer(invocation -> {
                     calls.incrementAndGet();
-                    HttpResponse<byte[]> response = mock(HttpResponse.class);
+                    HttpResponse<InputStream> response = mock(HttpResponse.class);
                     when(response.statusCode()).thenReturn(statusCode);
                     when(response.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
-                    when(response.body()).thenReturn(new byte[0]);
+                    when(response.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
                     return response;
                 });
         return client;

@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
@@ -30,10 +32,10 @@ class ReverseProxyBackgroundHealthProberTest {
         HttpClient httpClient = mock(HttpClient.class);
         HttpResponse<Void> probeResponse = mock(HttpResponse.class);
         when(probeResponse.statusCode()).thenReturn(503);
-        HttpResponse<byte[]> forwardResponse = mock(HttpResponse.class);
+        HttpResponse<InputStream> forwardResponse = mock(HttpResponse.class);
         when(forwardResponse.statusCode()).thenReturn(200);
         when(forwardResponse.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
-        when(forwardResponse.body()).thenReturn(new byte[0]);
+        when(forwardResponse.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
         AtomicInteger probeCalls = new AtomicInteger();
         AtomicInteger forwardCalls = new AtomicInteger();
         ConcurrentLinkedQueue<String> probeThreads = new ConcurrentLinkedQueue<>();

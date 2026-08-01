@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -84,7 +85,10 @@ class EnterpriseProxyRouteIntegrationTest {
     void unmatchedOperatorRouteReturnsClearNotFound() throws Exception {
         mockMvc.perform(get("/proxy/admin/status"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(containsString("\"error\":\"proxy_route_not_found\"")));
+                .andExpect(content().string(containsString("\"error\":\"proxy_route_not_found\"")))
+                .andExpect(jsonPath("$.message").value(
+                        "No configured proxy route matches the requested path."))
+                .andExpect(content().string(not(containsString("/admin/status"))));
     }
 
     private static final class TestUpstream {

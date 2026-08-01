@@ -32,6 +32,7 @@ loadbalancerpro.proxy.strategy=ROUND_ROBIN
 loadbalancerpro.proxy.connect-timeout=1s
 loadbalancerpro.proxy.request-timeout=2s
 loadbalancerpro.proxy.max-request-bytes=65536
+loadbalancerpro.proxy.max-response-bytes=0
 loadbalancerpro.proxy.forwarded.mode=strip-and-set
 loadbalancerpro.proxy.limits.max-in-flight=0
 loadbalancerpro.proxy.limits.adaptive=false
@@ -157,7 +158,7 @@ curl -i -X POST http://127.0.0.1:8080/proxy/orders?source=demo \
 
 The proxy forwards the HTTP method, path suffix, query string, request body, and practical safe headers. Hop-by-hop headers such as `Connection`, `Host`, `Content-Length`, and `Transfer-Encoding` are not forwarded.
 
-Responses preserve the upstream status code, body, and safe response headers. LoadBalancerPro adds:
+Responses preserve the upstream status code, body bytes, and safe response headers while streaming through a fixed buffer. `loadbalancerpro.proxy.max-response-bytes=0` leaves the streamed size unlimited by policy; a positive value rejects a known oversize before downstream commitment and aborts an unknown-length overflow after commitment without appending JSON. `text/event-stream` chunks are flushed incrementally. Retries remain possible only before downstream commitment, so bytes from separate upstream attempts are never combined. LoadBalancerPro adds:
 
 ```text
 X-LoadBalancerPro-Upstream: backend-a

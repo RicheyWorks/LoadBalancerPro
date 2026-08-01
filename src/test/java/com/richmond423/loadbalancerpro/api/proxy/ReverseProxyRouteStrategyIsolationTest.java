@@ -9,6 +9,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
@@ -64,13 +66,13 @@ class ReverseProxyRouteStrategyIsolationTest {
     @Test
     void serviceForwardsInterleavedRoutesWithIndependentThreeToOneDistributions() throws Exception {
         HttpClient httpClient = mock(HttpClient.class);
-        HttpResponse<byte[]> upstreamResponse = mock(HttpResponse.class);
+        HttpResponse<InputStream> upstreamResponse = mock(HttpResponse.class);
         when(upstreamResponse.statusCode()).thenReturn(200);
         when(upstreamResponse.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
-        when(upstreamResponse.body()).thenReturn(new byte[0]);
+        when(upstreamResponse.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
         when(httpClient.send(
                 any(),
-                org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<byte[]>>any()))
+                org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<InputStream>>any()))
                 .thenReturn(upstreamResponse);
         ReverseProxyService service = new ReverseProxyService(
                 twoWeightedRoutes(),

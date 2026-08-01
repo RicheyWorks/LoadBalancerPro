@@ -47,10 +47,10 @@ The endpoint is read-only and reports:
 - `securityBoundary` summary with auth mode, active profiles, whether an API-key value is configured, and whether `/proxy/**` plus `GET /api/proxy/status` are protected in the active mode
 - `reload` summary with config reload support, active config generation, last reload attempt/success/failure timestamps, last reload status, validation errors, active route count, and active backend target count
 - health-check path, timeout, interval, healthy threshold, and unhealthy threshold
-- retry enabled flag, maximum attempts, retry methods, and retry statuses
-- cooldown enabled flag, consecutive failure threshold, duration, and health-check recovery setting
-- upstream id, sanitized URL, configured health, effective health, and last probe outcome
-- per-upstream consecutive failure count, cooldown active flag, and cooldown remaining milliseconds
+- retry enabled flag, maximum attempts, budget percentage, backoff bounds, retry methods/statuses, and budget grant/rejection counters
+- cooldown enabled flag, consecutive failure threshold, duration, health-check recovery setting, and slow-start duration
+- upstream id, sanitized URL, configured/effective weights, slow-start state, configured/effective health, and last probe outcome
+- per-upstream consecutive failure count, cooldown active flag, cooldown remaining milliseconds, and slow-start remaining milliseconds
 - total forwarded count
 - total failure count
 - total retry attempt count
@@ -90,16 +90,17 @@ Structured startup and failure markers are written to the application log when p
 
 During smoke validation, correlate the smoke script's `PASS` lines with `/api/proxy/status` and these log markers. This is a retry/cooldown/failure interpretation aid, not durable monitoring or external telemetry. No external telemetry service is required.
 
-## Retry And Cooldown Visibility
+## Retry Budget, Backoff, Cooldown, And Slow-Start Visibility
 
-Retries and cooldown are optional resilience aids for the lightweight local proxy path. They are disabled by default:
+Retries, cooldown, and slow start are optional resilience aids for the lightweight local proxy path. Their behavior switches are disabled by default:
 
 ```properties
 loadbalancerpro.proxy.retry.enabled=false
 loadbalancerpro.proxy.cooldown.enabled=false
+loadbalancerpro.proxy.slow-start.duration=0s
 ```
 
-When retries are enabled, attempts are bounded by `loadbalancerpro.proxy.retry.max-attempts` and default to idempotent methods (`GET`, `HEAD`). Non-idempotent retries remain disabled by default because they can duplicate upstream side effects. When cooldown is enabled, consecutive forwarding or probe failures can temporarily remove an upstream from routing. Cooldown state is process-local and can recover after the configured duration or after a successful active health check when `recover-on-successful-health-check=true`.
+When retries are enabled, attempts remain bounded by `loadbalancerpro.proxy.retry.max-attempts`, consume process-local percentage credits, and wait with capped full-jitter exponential backoff. They default to idempotent methods (`GET`, `HEAD`); non-idempotent retries remain disabled by default because they can duplicate upstream side effects. When cooldown is enabled, consecutive forwarding or probe failures can temporarily remove an upstream from routing. Cooldown expiry retains half of a positive failure count instead of erasing all failure memory. A positive slow-start duration linearly ramps newly added or cooldown-recovered upstream weights for weight-aware strategies. These states are process-local and can recover after the configured duration or after a successful active health check when `recover-on-successful-health-check=true`.
 
 ## Local Two-Backend Demo
 
@@ -148,6 +149,6 @@ For local/private real-backend examples, see [`REAL_BACKEND_PROXY_EXAMPLES.md`](
 
 ## Test Evidence
 
-The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, dedicated daemon probe workers, rise/fall thresholds, stale-generation rejection during reconfiguration, dynamic unhealthy skipping, side-effect-free request/status snapshot reads, forwarding counters, failure counters, retry counters, cooldown counters, status-class counters, unreachable upstream behavior, bounded retry behavior, non-idempotent no-retry defaults, cooldown recovery, strategy-specific selected-upstream evidence, and no `CloudManager` construction.
+The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, dedicated daemon probe workers, rise/fall thresholds, stale-generation rejection during reconfiguration, dynamic unhealthy skipping, side-effect-free request/status snapshot reads, forwarding counters, failure counters, retry-budget grant/rejection counters, cooldown counters, status-class counters, unreachable upstream behavior, deterministic brownout retry capping, bounded full-jitter backoff, non-idempotent no-retry defaults, cooldown failure-memory retention/recovery, new/recovered upstream slow-start weighting, strategy-specific selected-upstream evidence, and no `CloudManager` construction.
 
 JaCoCo coverage and skipped-test counts remain surfaced by the `Build, Test, Package, Smoke` workflow artifacts and logs.

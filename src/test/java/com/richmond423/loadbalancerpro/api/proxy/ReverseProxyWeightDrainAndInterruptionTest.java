@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Collections;
@@ -98,6 +99,11 @@ class ReverseProxyWeightDrainAndInterruptionTest {
         ReverseProxyProperties.Retry retry = new ReverseProxyProperties.Retry();
         retry.setEnabled(true);
         retry.setMaxAttempts(2);
+        retry.setBudgetPercent(100);
+        ReverseProxyProperties.Backoff backoff = new ReverseProxyProperties.Backoff();
+        backoff.setBase(Duration.ZERO);
+        backoff.setMax(Duration.ZERO);
+        retry.setBackoff(backoff);
         properties.setRetry(retry);
         properties.setUpstreams(List.of(
                 upstream("first", "http://127.0.0.1:18081", 1.0),

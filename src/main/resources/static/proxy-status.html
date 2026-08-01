@@ -285,7 +285,7 @@
 
     <section class="panel" aria-labelledby="upstream-title">
       <h2 id="upstream-title">Upstream table</h2>
-      <p class="muted">Configured health, effective health, cooldown, consecutive failures, and per-upstream counters.</p>
+      <p class="muted">Configured health, effective health, cooldown, slow-start weight, consecutive failures, and per-upstream counters.</p>
       <div class="table-wrap">
         <table id="upstream-table">
           <thead>
@@ -297,6 +297,10 @@
               <th>Cooldown active</th>
               <th>Cooldown remaining millis</th>
               <th>Consecutive failures</th>
+              <th>Configured weight</th>
+              <th>Effective weight</th>
+              <th>Slow-start active</th>
+              <th>Slow-start remaining millis</th>
               <th>Forwarded</th>
               <th>Failure count</th>
               <th>Retry count</th>
@@ -304,7 +308,7 @@
             </tr>
           </thead>
           <tbody id="upstream-table-body">
-            <tr><td colspan="11">Not loaded yet.</td></tr>
+            <tr><td colspan="15">Not loaded yet.</td></tr>
           </tbody>
         </table>
       </div>
@@ -540,7 +544,7 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
       const upstreams = status.upstreams || [];
       elements.upstreamTableBody.replaceChildren();
       if (upstreams.length === 0) {
-        appendRow(elements.upstreamTableBody, ["No configured upstreams reported."], 11);
+        appendRow(elements.upstreamTableBody, ["No configured upstreams reported."], 15);
         return;
       }
       upstreams.forEach(upstream => {
@@ -554,6 +558,10 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
           formatBoolean(upstream.cooldownActive),
           valueOrUnavailable(upstream.cooldownRemainingMillis),
           valueOrUnavailable(upstream.consecutiveFailures),
+          valueOrUnavailable(upstream.configuredWeight),
+          valueOrUnavailable(upstream.effectiveWeight),
+          formatBoolean(upstream.slowStartActive),
+          valueOrUnavailable(upstream.slowStartRemainingMillis),
           valueOrUnavailable(counters.forwarded),
           valueOrUnavailable(counters.failures),
           valueOrUnavailable(counters.retryAttempts),
@@ -578,6 +586,13 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
       [
         ["Retry enabled", formatBoolean(retry.enabled)],
         ["Max attempts", valueOrUnavailable(retry.maxAttempts)],
+        ["Budget percent", valueOrUnavailable(retry.budgetPercent)],
+        ["Backoff base millis", valueOrUnavailable(retry.backoffBaseMillis)],
+        ["Backoff max millis", valueOrUnavailable(retry.backoffMaxMillis)],
+        ["Budget primary requests", valueOrUnavailable(retry.budgetPrimaryRequests)],
+        ["Budget granted retries", valueOrUnavailable(retry.budgetGrantedRetries)],
+        ["Budget rejected retries", valueOrUnavailable(retry.budgetRejectedRetries)],
+        ["Budget available credits percent", valueOrUnavailable(retry.budgetAvailableCreditsPercent)],
         ["Retry methods", formatList(retry.methods)],
         ["Retry statuses", formatList(retry.retryStatuses)],
         ["Retry non-idempotent", formatBoolean(retry.retryNonIdempotent)]
@@ -590,7 +605,8 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
         ["Cooldown enabled", formatBoolean(cooldown.enabled)],
         ["Consecutive failure threshold", valueOrUnavailable(cooldown.consecutiveFailureThreshold)],
         ["Cooldown duration millis", valueOrUnavailable(cooldown.durationMillis)],
-        ["Recover on successful health check", formatBoolean(cooldown.recoverOnSuccessfulHealthCheck)]
+        ["Recover on successful health check", formatBoolean(cooldown.recoverOnSuccessfulHealthCheck)],
+        ["Slow-start duration millis", valueOrUnavailable(cooldown.slowStartDurationMillis)]
       ].forEach(row => appendRow(elements.cooldownConfigBody, row, 1));
     }
 
@@ -683,6 +699,9 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
           + ", effectiveHealthy=" + formatBoolean(upstream.effectiveHealthy)
           + ", cooldownActive=" + formatBoolean(upstream.cooldownActive)
           + ", consecutiveFailures=" + valueOrUnavailable(upstream.consecutiveFailures)
+          + ", configuredWeight=" + valueOrUnavailable(upstream.configuredWeight)
+          + ", effectiveWeight=" + valueOrUnavailable(upstream.effectiveWeight)
+          + ", slowStartActive=" + formatBoolean(upstream.slowStartActive)
           + ", forwarded=" + valueOrUnavailable(counters.forwarded)
           + ", failures=" + valueOrUnavailable(counters.failures)
           + ", retries=" + valueOrUnavailable(counters.retryAttempts)

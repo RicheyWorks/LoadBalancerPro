@@ -12,7 +12,7 @@ The page reads only:
 GET /api/proxy/status
 ```
 
-It does not write backend state, reset counters, mutate cooldown state, persist browser state, or call external services.
+It does not write backend state, reset counters, mutate retry-budget/cooldown/slow-start state, persist browser state, or call external services.
 
 ## What It Shows
 
@@ -22,13 +22,13 @@ It does not write backend state, reset counters, mutate cooldown state, persist 
 - Access boundary summary derived from the status response's `securityBoundary` fields
 - reload support, active config generation, last reload status, last reload attempt, and validation errors from the status response's `reload` fields
 - active health-check enabled state
-- retry enabled state
-- cooldown enabled state
+- retry enabled state, budget/backoff configuration, and budget grant/rejection counters
+- cooldown enabled state and slow-start duration
 - last selected upstream
 - total forwarded and failure counters
 - total retry and cooldown activation counters
 - status-class counters for `2xx`, `3xx`, `4xx`, `5xx`, and `other`
-- per-upstream configured health, effective health, cooldown active state, cooldown remaining milliseconds, and consecutive failure count
+- per-upstream configured/effective weight, slow-start state/remaining duration, configured/effective health, cooldown state/remaining duration, and consecutive failure count
 - per-upstream forwarded, failure, retry, and cooldown activation counters
 - raw JSON returned by `/api/proxy/status`
 
@@ -59,7 +59,7 @@ For packaged-jar startup, one-command Maven exec launcher usage, and real-backen
 - Reload status is displayed read-only; the page does not submit reloads.
 - No backend writes.
 - No metric reset controls.
-- No cooldown mutation controls.
+- No retry-budget, cooldown, or slow-start mutation controls.
 - No browser storage.
 - No cloud mutation.
 - No external scripts, CDNs, fonts, images, or services.

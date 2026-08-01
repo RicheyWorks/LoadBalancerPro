@@ -50,6 +50,9 @@ class ReverseProxyRetryCooldownTest {
         registry.add("loadbalancerpro.proxy.strategy", () -> "ROUND_ROBIN");
         registry.add("loadbalancerpro.proxy.retry.enabled", () -> "true");
         registry.add("loadbalancerpro.proxy.retry.max-attempts", () -> "2");
+        registry.add("loadbalancerpro.proxy.retry.budget-percent", () -> "100");
+        registry.add("loadbalancerpro.proxy.retry.backoff.base", () -> "0ms");
+        registry.add("loadbalancerpro.proxy.retry.backoff.max", () -> "0ms");
         registry.add("loadbalancerpro.proxy.retry.retry-statuses", () -> "503");
         registry.add("loadbalancerpro.proxy.cooldown.enabled", () -> "true");
         registry.add("loadbalancerpro.proxy.cooldown.consecutive-failure-threshold", () -> "1");

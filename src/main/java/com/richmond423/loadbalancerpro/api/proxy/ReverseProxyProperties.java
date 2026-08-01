@@ -22,6 +22,7 @@ public class ReverseProxyProperties {
     private HealthCheck healthCheck = new HealthCheck();
     private Retry retry = new Retry();
     private Cooldown cooldown = new Cooldown();
+    private SlowStart slowStart = new SlowStart();
     private Forwarded forwarded = new Forwarded();
     private Limits limits = new Limits();
     private Shedding shedding = new Shedding();
@@ -110,6 +111,14 @@ public class ReverseProxyProperties {
 
     public void setCooldown(Cooldown cooldown) {
         this.cooldown = cooldown == null ? new Cooldown() : cooldown;
+    }
+
+    public SlowStart getSlowStart() {
+        return slowStart;
+    }
+
+    public void setSlowStart(SlowStart slowStart) {
+        this.slowStart = slowStart == null ? new SlowStart() : slowStart;
     }
 
     public Forwarded getForwarded() {
@@ -622,6 +631,8 @@ public class ReverseProxyProperties {
     public static final class Retry {
         private boolean enabled = false;
         private int maxAttempts = 2;
+        private int budgetPercent = 20;
+        private Backoff backoff = new Backoff();
         private boolean retryNonIdempotent = false;
         private Set<String> methods = new LinkedHashSet<>(Set.of("GET", "HEAD"));
         private Set<Integer> retryStatuses = new LinkedHashSet<>(Set.of(502, 503, 504));
@@ -640,6 +651,22 @@ public class ReverseProxyProperties {
 
         public void setMaxAttempts(int maxAttempts) {
             this.maxAttempts = maxAttempts;
+        }
+
+        public int getBudgetPercent() {
+            return budgetPercent;
+        }
+
+        public void setBudgetPercent(int budgetPercent) {
+            this.budgetPercent = budgetPercent;
+        }
+
+        public Backoff getBackoff() {
+            return backoff;
+        }
+
+        public void setBackoff(Backoff backoff) {
+            this.backoff = backoff == null ? new Backoff() : backoff;
         }
 
         public boolean isRetryNonIdempotent() {
@@ -664,6 +691,27 @@ public class ReverseProxyProperties {
 
         public void setRetryStatuses(Set<Integer> retryStatuses) {
             this.retryStatuses = retryStatuses == null ? new LinkedHashSet<>() : new LinkedHashSet<>(retryStatuses);
+        }
+    }
+
+    public static final class Backoff {
+        private Duration base = Duration.ofMillis(50);
+        private Duration max = Duration.ofSeconds(1);
+
+        public Duration getBase() {
+            return base;
+        }
+
+        public void setBase(Duration base) {
+            this.base = base == null ? Duration.ofMillis(50) : base;
+        }
+
+        public Duration getMax() {
+            return max;
+        }
+
+        public void setMax(Duration max) {
+            this.max = max == null ? Duration.ofSeconds(1) : max;
         }
     }
 
@@ -703,6 +751,18 @@ public class ReverseProxyProperties {
 
         public void setRecoverOnSuccessfulHealthCheck(boolean recoverOnSuccessfulHealthCheck) {
             this.recoverOnSuccessfulHealthCheck = recoverOnSuccessfulHealthCheck;
+        }
+    }
+
+    public static final class SlowStart {
+        private Duration duration = Duration.ZERO;
+
+        public Duration getDuration() {
+            return duration;
+        }
+
+        public void setDuration(Duration duration) {
+            this.duration = duration == null ? Duration.ZERO : duration;
         }
     }
 }

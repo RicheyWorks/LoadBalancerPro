@@ -1,6 +1,8 @@
 package com.richmond423.loadbalancerpro.api;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
+import com.richmond423.loadbalancerpro.api.config.AuthProperties;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAdaptiveDecisionService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciliationGate;
@@ -15,6 +17,9 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTerminalManife
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorRecord;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.ArmRequest;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.GatedActuationCommand;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.GatedActuationGate;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.GatedActuationReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.OperatorReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.RequestBatchReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.RequestBatchRequest;
@@ -65,12 +70,15 @@ public class EnterpriseLabExperimentController {
 
     private final EnterpriseLabExperimentOperatorService operatorService;
     private final AdaptiveRoutingPolicyProperties policyProperties;
+    private final AuthProperties authProperties;
 
     public EnterpriseLabExperimentController(
             EnterpriseLabExperimentOperatorService operatorService,
-            AdaptiveRoutingPolicyProperties policyProperties) {
+            AdaptiveRoutingPolicyProperties policyProperties,
+            AuthProperties authProperties) {
         this.operatorService = operatorService;
         this.policyProperties = policyProperties;
+        this.authProperties = authProperties;
     }
 
     @PostMapping("/arm")
@@ -93,13 +101,22 @@ public class EnterpriseLabExperimentController {
     }
 
     @PostMapping("/{experimentId}/start")
-    public OperatorReceipt start(
+    public GatedActuationReceipt start(
             @PathVariable("experimentId") String experimentId,
-            @RequestBody(required = false) OperatorCommandRequest request) {
-        return operatorService.start(
-                experimentId,
-                requireBody(request).operatorRequestId(),
-                activeExperimentEnabled());
+            @RequestBody(required = false) GatedActuationRequest request) {
+        GatedActuationRequest safeRequest = requireBody(request);
+        return operatorService.actuate(
+                new GatedActuationCommand(
+                        safeRequest.operatorRequestId(),
+                        experimentId,
+                        safeRequest.action(),
+                        safeRequest.decisionId(),
+                        safeRequest.expectedState(),
+                        safeRequest.expectedStateVersion()),
+                new GatedActuationGate(
+                        !authProperties.isNoneMode(),
+                        activeExperimentEnabled(),
+                        policyProperties.isGatedActuationEnabled()));
     }
 
     @PostMapping("/{experimentId}/requests")
@@ -181,6 +198,7 @@ public class EnterpriseLabExperimentController {
                 operatorService.maxRetainedExperiments(),
                 operatorService.boundScenarioIds(),
                 activeExperimentEnabled(),
+                policyProperties.isGatedActuationEnabled(),
                 "request bodies cannot supply or reveal backend target addresses");
     }
 
@@ -349,6 +367,19 @@ public class EnterpriseLabExperimentController {
     public record OperatorCommandRequest(String operatorRequestId) {
     }
 
+    public record GatedActuationRequest(
+            String operatorRequestId,
+            String action,
+            String decisionId,
+            String expectedState,
+            String expectedStateVersion) {
+        @JsonAnySetter
+        public void rejectUnknownField(String ignoredName, Object ignoredValue) {
+            throw new IllegalArgumentException(
+                    "gated actuation request contains an unsupported field");
+        }
+    }
+
     public record RequestBatchApiRequest(String operatorRequestId, Integer count, Long timeoutMillis) {
     }
 
@@ -368,6 +399,7 @@ public class EnterpriseLabExperimentController {
             int maxRetainedExperiments,
             List<String> boundScenarioIds,
             boolean activeExperimentEnabled,
+            boolean gatedActuationEnabled,
             String targetBoundary) {
     }
 

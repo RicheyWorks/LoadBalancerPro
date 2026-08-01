@@ -709,6 +709,226 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         return cacheAndReturn(session, safeRequestId, signature, receipt);
     }
 
+    /**
+     * Exact-state command boundary for the only allowlisted Enterprise Lab
+     * allocation action. The authoritative decision and state are read from
+     * the server-side armed session; request fields can only bind that state.
+     */
+    public synchronized GatedActuationReceipt actuate(
+            GatedActuationCommand command,
+            GatedActuationGate gate) {
+        GatedActuationCommand safeCommand = Objects.requireNonNull(
+                command, "command cannot be null");
+        GatedActuationGate safeGate = Objects.requireNonNull(gate, "gate cannot be null");
+        Instant occurredAt = clock.instant();
+        Session session = sessions.get(safeCommand.experimentId());
+        if (session == null) {
+            return gatedActuationReceipt(
+                    OperatorStatus.NOT_FOUND,
+                    safeCommand,
+                    "UNKNOWN_EXPERIMENT",
+                    "experimentId is not present in the bounded operator store",
+                    occurredAt,
+                    Optional.empty(),
+                    Optional.empty(),
+                    false);
+        }
+
+        String signature = safeCommand.signature();
+        CachedResponse cached = session.commandResults.get(safeCommand.operatorRequestId());
+        if (cached != null) {
+            EnterpriseLabExperimentOperatorRecord current = record(session);
+            if (cached.signature().equals(signature)
+                    && cached.response() instanceof GatedActuationReceipt original) {
+                return gatedActuationReceipt(
+                        OperatorStatus.IDEMPOTENT,
+                        safeCommand,
+                        "IDEMPOTENT_REPLAY",
+                        "identical gated actuation caused no additional allocation mutation",
+                        original.occurredAt(),
+                        original.experimentRecord(),
+                        Optional.of(current),
+                        false);
+            }
+            return gatedActuationReceipt(
+                    OperatorStatus.CONFLICT,
+                    safeCommand,
+                    "OPERATOR_REQUEST_ID_CONFLICT",
+                    "operatorRequestId was already used for a different command",
+                    occurredAt,
+                    Optional.of(current),
+                    Optional.of(current),
+                    false);
+        }
+
+        EnterpriseLabExperimentOperatorRecord before = record(session);
+        if (!canAcceptCommand(session)) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.CAPACITY_REJECTED,
+                    safeCommand,
+                    "OPERATOR_COMMAND_CAPACITY_EXHAUSTED",
+                    "bounded operator command capacity is exhausted",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (closed) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.DENIED,
+                    safeCommand,
+                    "SERVICE_CLOSED",
+                    "experiment operator service is closed",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (!safeGate.authenticatedOperatorMode()) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.DENIED,
+                    safeCommand,
+                    "AUTHENTICATED_OPERATOR_REQUIRED",
+                    "gated actuation requires API-key or OAuth2 operator authentication mode",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (!safeGate.activeExperimentEnabled() || !safeGate.gatedActuationEnabled()) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.DENIED,
+                    safeCommand,
+                    "GATED_ACTUATION_DISABLED",
+                    "active-experiment mode and both explicit enablement properties are required",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (allocationRuntimeMode == EnterpriseLabAllocationRuntimeMode.DISABLED) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.DENIED,
+                    safeCommand,
+                    "ALLOCATION_MODE_DISABLED",
+                    "Enterprise Lab installed-allocation mutation is explicitly disabled",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (GatedActuationAction.fromWireValue(safeCommand.action()).isEmpty()) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.REJECTED,
+                    safeCommand,
+                    "UNSUPPORTED_ACTION",
+                    "action is not in the fixed Enterprise Lab actuation allowlist",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+
+        LifecycleSnapshot lifecycle = before.lifecycle();
+        if (lifecycle.terminal()) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.REJECTED,
+                    safeCommand,
+                    "EXPERIMENT_ALREADY_COMPLETED",
+                    "terminal experiments cannot accept an allocation actuation",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (!occurredAt.isBefore(session.configuration.expiresAt())) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.REJECTED,
+                    safeCommand,
+                    "DECISION_EXPIRED",
+                    "the stored server-side decision freshness window has expired",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (!session.configuration.candidateDecisionId().equals(safeCommand.decisionId())) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.REJECTED,
+                    safeCommand,
+                    "UNKNOWN_DECISION",
+                    "decisionId does not identify the stored server-side experiment decision",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+
+        Optional<EnterpriseLabExperimentState> expectedState =
+                exactExperimentState(safeCommand.expectedState());
+        if (expectedState.isEmpty()
+                || expectedState.orElseThrow() != EnterpriseLabExperimentState.ARMED) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.REJECTED,
+                    safeCommand,
+                    "MALFORMED_EXPECTED_STATE",
+                    "install-candidate-allocation requires expectedState=ARMED",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (lifecycle.state() != expectedState.orElseThrow()) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.CONFLICT,
+                    safeCommand,
+                    "STALE_EXPECTED_STATE",
+                    "expectedState does not match the authoritative server-side lifecycle state",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (!before.contentFingerprint().equals(safeCommand.expectedStateVersion())) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.CONFLICT,
+                    safeCommand,
+                    "STALE_EXPECTED_VERSION",
+                    "expectedStateVersion does not match the authoritative server-side record",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+        if (hasPendingRequestBatch(session)) {
+            return cacheGatedActuation(session, safeCommand, signature, gatedActuationReceipt(
+                    OperatorStatus.CONFLICT,
+                    safeCommand,
+                    "REQUEST_BATCH_IN_PROGRESS",
+                    "gated actuation cannot interleave with an in-progress request batch",
+                    occurredAt,
+                    Optional.of(before),
+                    Optional.of(before),
+                    false));
+        }
+
+        OperatorReceipt started = start(
+                safeCommand.experimentId(),
+                safeCommand.operatorRequestId(),
+                true);
+        EnterpriseLabExperimentOperatorRecord after = record(session);
+        GatedActuationReceipt result = gatedActuationReceipt(
+                started.status(),
+                safeCommand,
+                started.reasonCode(),
+                started.reason(),
+                occurredAt,
+                Optional.of(before),
+                Optional.of(after),
+                started.trafficActionPerformed());
+        return cacheGatedActuation(session, safeCommand, signature, result);
+    }
+
     public RequestBatchReceipt executeRequests(
             String experimentId,
             RequestBatchRequest request,
@@ -1548,6 +1768,15 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         return receipt;
     }
 
+    private GatedActuationReceipt cacheGatedActuation(
+            Session session,
+            GatedActuationCommand command,
+            String signature,
+            GatedActuationReceipt receipt) {
+        cache(session, command.operatorRequestId(), signature, receipt);
+        return receipt;
+    }
+
     private OperatorReceipt replayOrConflict(
             Session session,
             String requestId,
@@ -1821,6 +2050,36 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 trafficActionPerformed, reason, record);
     }
 
+    private static GatedActuationReceipt gatedActuationReceipt(
+            OperatorStatus status,
+            GatedActuationCommand command,
+            String reasonCode,
+            String reason,
+            Instant occurredAt,
+            Optional<EnterpriseLabExperimentOperatorRecord> before,
+            Optional<EnterpriseLabExperimentOperatorRecord> after,
+            boolean trafficActionPerformed) {
+        Optional<EnterpriseLabExperimentOperatorRecord> authoritative = after.or(() -> before);
+        return new GatedActuationReceipt(
+                GatedActuationReceipt.SCHEMA_VERSION,
+                status,
+                command.operatorRequestId(),
+                command.experimentId(),
+                command.action(),
+                authoritative.map(value -> value.configuration().candidateDecisionId()),
+                command.expectedState(),
+                command.expectedStateVersion(),
+                before.map(value -> value.lifecycle().state()),
+                before.map(EnterpriseLabExperimentOperatorRecord::contentFingerprint),
+                after.map(value -> value.lifecycle().state()),
+                after.map(EnterpriseLabExperimentOperatorRecord::contentFingerprint),
+                occurredAt,
+                trafficActionPerformed,
+                reasonCode,
+                reason,
+                authoritative);
+    }
+
     public enum OperatorStatus {
         APPLIED,
         RECORDED,
@@ -1830,6 +2089,123 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         CONFLICT,
         NOT_FOUND,
         CAPACITY_REJECTED
+    }
+
+    public enum GatedActuationAction {
+        INSTALL_CANDIDATE_ALLOCATION("install-candidate-allocation");
+
+        private final String wireValue;
+
+        GatedActuationAction(String wireValue) {
+            this.wireValue = wireValue;
+        }
+
+        public String wireValue() {
+            return wireValue;
+        }
+
+        static Optional<GatedActuationAction> fromWireValue(String value) {
+            for (GatedActuationAction action : values()) {
+                if (action.wireValue.equals(value)) {
+                    return Optional.of(action);
+                }
+            }
+            return Optional.empty();
+        }
+    }
+
+    public record GatedActuationGate(
+            boolean authenticatedOperatorMode,
+            boolean activeExperimentEnabled,
+            boolean gatedActuationEnabled) {
+    }
+
+    public record GatedActuationCommand(
+            String operatorRequestId,
+            String experimentId,
+            String action,
+            String decisionId,
+            String expectedState,
+            String expectedStateVersion) {
+        private static final int MAX_ACTION_LENGTH = 64;
+
+        public GatedActuationCommand {
+            operatorRequestId = requireCanonicalId(operatorRequestId, "operatorRequestId");
+            experimentId = requireCanonicalId(experimentId, "experimentId");
+            action = requireText(action, "action");
+            if (!action.equals(action.trim())
+                    || action.length() > MAX_ACTION_LENGTH
+                    || !action.matches("[a-z][a-z-]*")) {
+                throw new IllegalArgumentException("action must be a bounded lowercase wire identifier");
+            }
+            decisionId = requireCanonicalId(decisionId, "decisionId");
+            expectedState = requireText(expectedState, "expectedState");
+            if (!expectedState.equals(expectedState.trim())
+                    || !expectedState.matches("[A-Z][A-Z_]*")) {
+                throw new IllegalArgumentException("expectedState must be an exact lifecycle state name");
+            }
+            expectedStateVersion = requireFingerprint(
+                    expectedStateVersion, "expectedStateVersion");
+        }
+
+        private String signature() {
+            return "gated-actuation|" + experimentId + "|" + action + "|" + decisionId
+                    + "|" + expectedState + "|" + expectedStateVersion;
+        }
+    }
+
+    public record GatedActuationReceipt(
+            String schemaVersion,
+            OperatorStatus status,
+            String operatorRequestId,
+            String experimentId,
+            String action,
+            Optional<String> authoritativeDecisionId,
+            String expectedState,
+            String expectedStateVersion,
+            Optional<EnterpriseLabExperimentState> stateBefore,
+            Optional<String> stateVersionBefore,
+            Optional<EnterpriseLabExperimentState> stateAfter,
+            Optional<String> stateVersionAfter,
+            Instant occurredAt,
+            boolean trafficActionPerformed,
+            String reasonCode,
+            String reason,
+            Optional<EnterpriseLabExperimentOperatorRecord> experimentRecord) {
+        public static final String SCHEMA_VERSION = "enterprise-lab-gated-actuation-receipt/v1";
+
+        public GatedActuationReceipt {
+            if (!SCHEMA_VERSION.equals(schemaVersion)) {
+                throw new IllegalArgumentException("unsupported gated actuation receipt schemaVersion");
+            }
+            status = Objects.requireNonNull(status, "status cannot be null");
+            operatorRequestId = requireCanonicalId(operatorRequestId, "operatorRequestId");
+            experimentId = requireCanonicalId(experimentId, "experimentId");
+            action = requireText(action, "action");
+            authoritativeDecisionId = Objects.requireNonNull(
+                    authoritativeDecisionId, "authoritativeDecisionId cannot be null");
+            authoritativeDecisionId.ifPresent(value -> requireCanonicalId(
+                    value, "authoritativeDecisionId"));
+            expectedState = requireText(expectedState, "expectedState");
+            expectedStateVersion = requireFingerprint(
+                    expectedStateVersion, "expectedStateVersion");
+            stateBefore = Objects.requireNonNull(stateBefore, "stateBefore cannot be null");
+            stateVersionBefore = requireOptionalFingerprint(
+                    stateVersionBefore, "stateVersionBefore");
+            stateAfter = Objects.requireNonNull(stateAfter, "stateAfter cannot be null");
+            stateVersionAfter = requireOptionalFingerprint(
+                    stateVersionAfter, "stateVersionAfter");
+            occurredAt = Objects.requireNonNull(occurredAt, "occurredAt cannot be null");
+            reasonCode = requireCanonicalId(reasonCode, "reasonCode");
+            reason = requireReason(reason);
+            experimentRecord = Objects.requireNonNull(
+                    experimentRecord, "experimentRecord cannot be null");
+            if (experimentRecord.isPresent()
+                    && !experimentId.equals(experimentRecord.orElseThrow().experimentId())) {
+                throw new IllegalArgumentException(
+                        "experimentRecord must match the actuation experimentId");
+            }
+        }
     }
 
     public record ArmRequest(
@@ -2047,6 +2423,30 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             throw new IllegalArgumentException("reason cannot exceed 256 characters");
         }
         return reason;
+    }
+
+    private static String requireFingerprint(String value, String fieldName) {
+        String fingerprint = requireText(value, fieldName);
+        if (!fingerprint.equals(value) || !fingerprint.matches("[0-9a-f]{64}")) {
+            throw new IllegalArgumentException(fieldName + " must be a lowercase SHA-256 fingerprint");
+        }
+        return fingerprint;
+    }
+
+    private static Optional<String> requireOptionalFingerprint(
+            Optional<String> value,
+            String fieldName) {
+        Optional<String> safe = Objects.requireNonNull(value, fieldName + " cannot be null");
+        safe.ifPresent(fingerprint -> requireFingerprint(fingerprint, fieldName));
+        return safe;
+    }
+
+    private static Optional<EnterpriseLabExperimentState> exactExperimentState(String value) {
+        try {
+            return Optional.of(EnterpriseLabExperimentState.valueOf(value));
+        } catch (IllegalArgumentException exception) {
+            return Optional.empty();
+        }
     }
 
     private static String routeRequestId(String experimentId, long sequence) {

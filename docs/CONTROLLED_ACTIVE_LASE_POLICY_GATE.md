@@ -18,6 +18,7 @@ It is not production deployment certification, not distributed traffic control, 
 ```properties
 loadbalancerpro.lase.policy.mode=off
 loadbalancerpro.lase.policy.active-experiment-enabled=false
+loadbalancerpro.lase.policy.gated-actuation-enabled=false
 loadbalancerpro.lase.policy.max-audit-events=100
 ```
 
@@ -38,6 +39,14 @@ The policy engine only allows influence when all of the following are true:
 - rollback or disable state is not active.
 
 If any gate fails, the result degrades to the baseline decision and records a guardrail reason and rollback reason.
+
+## Gated Actuation
+
+The only HTTP allocation action is `POST /api/lab/experiments/{experimentId}/start` with `action=install-candidate-allocation`. It requires API-key mode or OAuth2 with the allocation role; explicit `auth.mode=none` is rejected even if every policy property is enabled. The separate `gated-actuation-enabled` property is false by default and must be enabled together with active-experiment mode and its existing enable flag.
+
+The caller supplies the server-issued decision ID, `expectedState=ARMED`, and the exact current experiment-record fingerprint as `expectedStateVersion`. Those fields bind the request but cannot authorize it: the stored server-side decision, guardrail result, fixed repository target catalog, expiration time, and current lifecycle remain authoritative. The body has no URL, command, file, process, header, credential, routing-key, affinity, explanation, factor, or opaque execution field. Unknown fields and non-allowlisted actions are rejected.
+
+Commands are synchronized and keyed by a bounded operator request ID. An identical concurrent replay cannot produce a second allocation revision; reuse with different content is a conflict. Successful commands use the existing literal-loopback allocation seam and recorded baseline. Failure, uncertainty, stale state, expiration, disablement, or an inability to prove the allocation transition fails closed without reporting success. The action does not send a request, rerun routing, change proxy/WRR selection, call cloud or tenant systems, write files, invoke a shell, or control a production gateway.
 
 ## Audit Events
 

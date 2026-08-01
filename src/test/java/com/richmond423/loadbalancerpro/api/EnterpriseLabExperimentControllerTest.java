@@ -10,6 +10,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationRuntimeMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorClient;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorConfiguration;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
+import com.richmond423.loadbalancerpro.api.config.AuthProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -63,7 +64,7 @@ class EnterpriseLabExperimentControllerTest {
             assertTrue(Files.isDirectory(
                     journalRoot.resolve("enterprise-lab-experiment-journals-v1/journals")));
             EnterpriseLabExperimentController controller = new EnterpriseLabExperimentController(
-                    service, new AdaptiveRoutingPolicyProperties());
+                    service, new AdaptiveRoutingPolicyProperties(), new AuthProperties());
             var journals = (EnterpriseLabExperimentController.DurableJournalListResponse)
                     controller.durableJournals().getBody();
             assertEquals(0, journals.count());
@@ -135,7 +136,7 @@ class EnterpriseLabExperimentControllerTest {
                              journalRoot.toString())) {
             EnterpriseLabExperimentController controller =
                     new EnterpriseLabExperimentController(
-                            restarted, new AdaptiveRoutingPolicyProperties());
+                            restarted, new AdaptiveRoutingPolicyProperties(), new AuthProperties());
             var response =
                     (EnterpriseLabExperimentController.CompactedEvidenceResponse)
                             controller.compactedEvidence().getBody();
@@ -228,6 +229,7 @@ class EnterpriseLabExperimentControllerTest {
                 .andExpect(jsonPath("$.count", is(0)))
                 .andExpect(jsonPath("$.boundScenarioIds", empty()))
                 .andExpect(jsonPath("$.activeExperimentEnabled", is(true)))
+                .andExpect(jsonPath("$.gatedActuationEnabled", is(false)))
                 .andExpect(jsonPath("$.targetBoundary",
                         is("request bodies cannot supply or reveal backend target addresses")))
                 .andExpect(content().string(not(containsString("http://"))))
@@ -280,6 +282,22 @@ class EnterpriseLabExperimentControllerTest {
                 .andExpect(jsonPath("$.message", is("Request body is required")))
                 .andExpect(jsonPath("$.path", is("/api/lab/experiments/arm")));
 
+        mockMvc.perform(post("/api/lab/experiments/missing/start")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "operatorRequestId":"api-opaque-field",
+                                  "action":"install-candidate-allocation",
+                                  "decisionId":"lab-decision:missing:active-experiment",
+                                  "expectedState":"ARMED",
+                                  "expectedStateVersion":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                                  "targetUrl":"http://127.0.0.1:9999"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("bad_request")))
+                .andExpect(content().string(not(containsString("127.0.0.1"))));
+
         String excessive = """
                 {
                   "operatorRequestId":"api-arm-excessive",
@@ -322,7 +340,15 @@ class EnterpriseLabExperimentControllerTest {
 
     @Test
     void unknownLifecycleCommandsStayStructuredAndPerformNoTrafficAction() throws Exception {
-        String command = "{\"operatorRequestId\":\"api-start-missing\"}";
+        String command = """
+                {
+                  "operatorRequestId":"api-start-missing",
+                  "action":"install-candidate-allocation",
+                  "decisionId":"lab-decision:missing:active-experiment",
+                  "expectedState":"ARMED",
+                  "expectedStateVersion":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                }
+                """;
         mockMvc.perform(post("/api/lab/experiments/missing-experiment/start")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(command))

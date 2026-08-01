@@ -1,5 +1,6 @@
 package com.richmond423.loadbalancerpro.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackTarget;
 import com.sun.net.httpserver.HttpExchange;
@@ -31,7 +32,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = {
         "loadbalancerpro.lase.policy.mode=active-experiment",
-        "loadbalancerpro.lase.policy.active-experiment-enabled=true"
+        "loadbalancerpro.lase.policy.active-experiment-enabled=true",
+        "loadbalancerpro.lase.policy.gated-actuation-enabled=true",
+        "loadbalancerpro.auth.mode=api-key",
+        "loadbalancerpro.api.key=GATED_ACTUATION_TEST_KEY"
 })
 @AutoConfigureMockMvc
 @Import(EnterpriseLabExperimentControllerLoopbackIntegrationTest.LoopbackConfiguration.class)
@@ -41,6 +45,9 @@ class EnterpriseLabExperimentControllerLoopbackIntegrationTest {
 
     @Autowired
     private LoopbackHarness harness;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void operatorApiRoutesActualLoopbackRequestThenCancelsAndReturnsFinalRecord() throws Exception {
@@ -57,6 +64,7 @@ class EnterpriseLabExperimentControllerLoopbackIntegrationTest {
                 }
                 """;
         mockMvc.perform(post("/api/lab/experiments/arm")
+                        .header("X-API-Key", "GATED_ACTUATION_TEST_KEY")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(arm))
                 .andExpect(status().isOk())
@@ -67,27 +75,54 @@ class EnterpriseLabExperimentControllerLoopbackIntegrationTest {
         String baselineRequest = """
                 {"operatorRequestId":"http-baseline-1","count":3,"timeoutMillis":1000}
                 """;
-        mockMvc.perform(post("/api/lab/experiments/http-experiment-1/requests")
+        String baselineResponse = mockMvc.perform(post("/api/lab/experiments/http-experiment-1/requests")
+                        .header("X-API-Key", "GATED_ACTUATION_TEST_KEY")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(baselineRequest))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.sentCount", is(3)))
                 .andExpect(jsonPath("$.observationsRecorded", is(3)))
                 .andExpect(jsonPath("$.candidateRequestsRecorded", is(0)))
-                .andExpect(jsonPath("$.trafficActionPerformed", is(false)));
+                .andExpect(jsonPath("$.trafficActionPerformed", is(false)))
+                .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(post("/api/lab/experiments/http-experiment-1/start")
+        var authoritativeRecord = objectMapper.readTree(baselineResponse).path("experimentRecord");
+        String decisionId = authoritativeRecord.path("configuration")
+                .path("candidateDecision").path("decision").path("decisionId").asText();
+        String expectedStateVersion = authoritativeRecord.path("contentFingerprint").asText();
+        String actuation = objectMapper.createObjectNode()
+                .put("operatorRequestId", "http-start-1")
+                .put("action", "install-candidate-allocation")
+                .put("decisionId", decisionId)
+                .put("expectedState", "ARMED")
+                .put("expectedStateVersion", expectedStateVersion)
+                .toString();
+
+        String actuationResponse = mockMvc.perform(post("/api/lab/experiments/http-experiment-1/start")
+                        .header("X-API-Key", "GATED_ACTUATION_TEST_KEY")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"operatorRequestId\":\"http-start-1\"}"))
+                        .content(actuation))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("APPLIED")))
+                .andExpect(jsonPath("$.action", is("install-candidate-allocation")))
+                .andExpect(jsonPath("$.authoritativeDecisionId", is(decisionId)))
+                .andExpect(jsonPath("$.expectedState", is("ARMED")))
+                .andExpect(jsonPath("$.occurredAt").isString())
                 .andExpect(jsonPath("$.experimentRecord.lifecycle.state", is("RUNNING")))
-                .andExpect(jsonPath("$.trafficActionPerformed", is(true)));
+                .andExpect(jsonPath("$.trafficActionPerformed", is(true)))
+                .andReturn().getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertTrue(actuationResponse.length() < 262_144,
+                "gated actuation receipt must remain bounded");
+        org.junit.jupiter.api.Assertions.assertFalse(actuationResponse.contains("http://"));
+        org.junit.jupiter.api.Assertions.assertFalse(actuationResponse.contains("X-API-Key"));
+        org.junit.jupiter.api.Assertions.assertFalse(
+                actuationResponse.contains("GATED_ACTUATION_TEST_KEY"));
 
         String candidateRequest = """
                 {"operatorRequestId":"http-candidate-1","count":1,"timeoutMillis":1000}
                 """;
         mockMvc.perform(post("/api/lab/experiments/http-experiment-1/requests")
+                        .header("X-API-Key", "GATED_ACTUATION_TEST_KEY")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(candidateRequest))
                 .andExpect(status().isOk())
@@ -98,12 +133,14 @@ class EnterpriseLabExperimentControllerLoopbackIntegrationTest {
                 .andExpect(jsonPath("$.outcomes[0].outcome", is("SUCCESS")))
                 .andExpect(jsonPath("$.outcomes[0].targetScope", is("approved Enterprise Lab loopback target")));
 
-        mockMvc.perform(get("/api/lab/experiments/http-experiment-1/record"))
+        mockMvc.perform(get("/api/lab/experiments/http-experiment-1/record")
+                        .header("X-API-Key", "GATED_ACTUATION_TEST_KEY"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.finalRecordAvailable", is(false)))
                 .andExpect(jsonPath("$.reasonCode", is("EXPERIMENT_NOT_TERMINAL")));
 
         mockMvc.perform(post("/api/lab/experiments/http-experiment-1/cancel")
+                        .header("X-API-Key", "GATED_ACTUATION_TEST_KEY")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"operatorRequestId":"http-cancel-1","reason":"operator integration cancellation"}
@@ -114,7 +151,8 @@ class EnterpriseLabExperimentControllerLoopbackIntegrationTest {
                 .andExpect(jsonPath("$.experimentRecord.currentAllocation.kind", is("RESTORED_BASELINE")))
                 .andExpect(jsonPath("$.trafficActionPerformed", is(true)));
 
-        mockMvc.perform(get("/api/lab/experiments/http-experiment-1/record"))
+        mockMvc.perform(get("/api/lab/experiments/http-experiment-1/record")
+                        .header("X-API-Key", "GATED_ACTUATION_TEST_KEY"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.finalRecordAvailable", is(true)))
                 .andExpect(jsonPath("$.reasonCode", is("FINAL_RECORD_AVAILABLE")))

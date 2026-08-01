@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ class AdaptiveRoutingPolicyPropertiesTest {
 
         assertEquals(AdaptiveRoutingPolicyMode.OFF, properties.configuredMode());
         assertEquals(AdaptiveRoutingPolicyMode.OFF, properties.resolvedMode());
+        assertFalse(properties.isGatedActuationEnabled());
 
         properties.setMode("live");
         assertEquals(AdaptiveRoutingPolicyMode.OFF, properties.configuredMode());

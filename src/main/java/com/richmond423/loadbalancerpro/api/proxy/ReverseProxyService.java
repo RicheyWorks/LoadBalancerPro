@@ -32,6 +32,7 @@ import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.LiveRoutingShadowObservation;
 import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
+import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import org.slf4j.Logger;
@@ -226,9 +227,11 @@ public class ReverseProxyService {
                 Optional<String> selectedServerId = route.selectionPolicy()
                         .affinityTarget(request, candidateStates);
                 String selectionSource = selectedServerId.isPresent() ? "affinity" : "strategy";
+                RoutingDecisionExplanation selectionExplanation = null;
                 if (selectedServerId.isEmpty()) {
                     RoutingDecision decision = route.strategy().chooseForKey(candidateStates, routingKey);
-                    selectedServerId = decision.explanation().chosenServerId();
+                    selectionExplanation = decision.explanation();
+                    selectedServerId = selectionExplanation.chosenServerId();
                 }
                 if (selectedServerId.isEmpty()) {
                     if (lastResponse != null) {
@@ -282,6 +285,7 @@ public class ReverseProxyService {
                         selectionSource,
                         upstreamId,
                         candidateStates,
+                        selectionExplanation,
                         attemptResult.response().statusCode(),
                         attemptLatencyMillis,
                         attemptResult.retriable(),
@@ -415,6 +419,10 @@ public class ReverseProxyService {
 
     RecentProxyDecisionsResponse recentDecisionsSnapshot() {
         return liveRoutingDecisions.snapshot(true);
+    }
+
+    Optional<LiveRoutingDecisionRecord> retainedDecision(String decisionId) {
+        return liveRoutingDecisions.find(decisionId);
     }
 
     PrivateNetworkLiveValidationCommandResponse privateNetworkLiveValidationCommand(

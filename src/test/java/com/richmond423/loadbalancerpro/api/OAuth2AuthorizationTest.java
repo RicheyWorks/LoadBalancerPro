@@ -189,6 +189,22 @@ class OAuth2AuthorizationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.proxyEnabled", is(false)))
                 .andExpect(jsonPath("$.decisions").isEmpty());
+
+        String explainPath = "/api/proxy/decisions/proxy-decision-00000001/explain";
+        mockMvc.perform(get(explainPath))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is(explainPath)));
+
+        mockMvc.perform(get(explainPath)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer observer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is(explainPath)));
+
+        mockMvc.perform(get(explainPath)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error", is("not_found")))
+                .andExpect(jsonPath("$.path", is(explainPath)));
     }
 
     @Test

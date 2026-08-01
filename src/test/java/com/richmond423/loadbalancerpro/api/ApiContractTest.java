@@ -110,6 +110,8 @@ class ApiContractTest {
         }
         assertTrue(docs.at("/paths/~1api~1proxy~1decisions~1recent/get").isObject(),
                 "/api/proxy/decisions/recent");
+        assertTrue(docs.at("/paths/~1api~1proxy~1decisions~1{decisionId}~1explain/get").isObject(),
+                "/api/proxy/decisions/{decisionId}/explain");
         JsonNode recentDecisions =
                 docs.at("/components/schemas/RecentProxyDecisionsResponse/properties");
         for (String field : List.of(
@@ -121,6 +123,28 @@ class ApiContractTest {
                 "totalDropped",
                 "decisions")) {
             assertTrue(recentDecisions.has(field), field);
+        }
+        assertFalse(docs.at("/components/schemas/LiveRoutingDecisionRecord/properties")
+                .has("selectionEvidence"));
+        JsonNode liveExplanation =
+                docs.at("/components/schemas/LiveRoutingDecisionExplanation/properties");
+        for (String field : List.of(
+                "readOnly",
+                "retainedLiveProxyAttempt",
+                "retentionScope",
+                "decisionId",
+                "strategyId",
+                "selectionSource",
+                "selectedCandidateId",
+                "exactCandidateIds",
+                "candidateObservations",
+                "consideredCandidateIds",
+                "selectionEvidenceStatus",
+                "scorePreference",
+                "analysis",
+                "decisionChangeThresholds",
+                "boundaryNote")) {
+            assertTrue(liveExplanation.has(field), field);
         }
         JsonNode response =
                 docs.at("/components/schemas/RoutingComparisonResponse/properties");

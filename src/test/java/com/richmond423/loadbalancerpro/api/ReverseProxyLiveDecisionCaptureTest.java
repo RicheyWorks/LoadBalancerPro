@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @DirtiesContext
 class ReverseProxyLiveDecisionCaptureTest {
     private static final LoopbackUpstream UPSTREAM = LoopbackUpstream.start();
+    private static final LoopbackUpstream DEGRADED_UPSTREAM = LoopbackUpstream.start();
 
     @Autowired
     private MockMvc mockMvc;
@@ -49,7 +50,7 @@ class ReverseProxyLiveDecisionCaptureTest {
     @DynamicPropertySource
     static void proxyProperties(DynamicPropertyRegistry registry) {
         registry.add("loadbalancerpro.proxy.enabled", () -> "true");
-        registry.add("loadbalancerpro.proxy.strategy", () -> "ROUND_ROBIN");
+        registry.add("loadbalancerpro.proxy.strategy", () -> "WEIGHTED_LEAST_LOAD");
         registry.add("loadbalancerpro.proxy.upstreams[0].id", () -> "decision-upstream");
         registry.add("loadbalancerpro.proxy.upstreams[0].url", UPSTREAM::baseUrl);
         registry.add("loadbalancerpro.proxy.upstreams[0].healthy", () -> "true");
@@ -58,11 +59,20 @@ class ReverseProxyLiveDecisionCaptureTest {
         registry.add("loadbalancerpro.proxy.upstreams[0].p95-latency-millis", () -> "22");
         registry.add("loadbalancerpro.proxy.upstreams[0].p99-latency-millis", () -> "33");
         registry.add("loadbalancerpro.proxy.upstreams[0].recent-error-rate", () -> "0.25");
+        registry.add("loadbalancerpro.proxy.upstreams[1].id", () -> "degraded-upstream");
+        registry.add("loadbalancerpro.proxy.upstreams[1].url", DEGRADED_UPSTREAM::baseUrl);
+        registry.add("loadbalancerpro.proxy.upstreams[1].healthy", () -> "true");
+        registry.add("loadbalancerpro.proxy.upstreams[1].in-flight-request-count", () -> "40");
+        registry.add("loadbalancerpro.proxy.upstreams[1].average-latency-millis", () -> "80");
+        registry.add("loadbalancerpro.proxy.upstreams[1].p95-latency-millis", () -> "160");
+        registry.add("loadbalancerpro.proxy.upstreams[1].p99-latency-millis", () -> "240");
+        registry.add("loadbalancerpro.proxy.upstreams[1].recent-error-rate", () -> "0.5");
     }
 
     @AfterAll
     static void stopUpstream() {
         UPSTREAM.close();
+        DEGRADED_UPSTREAM.close();
     }
 
     @Test
@@ -76,6 +86,7 @@ class ReverseProxyLiveDecisionCaptureTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("DO_NOT_RETAIN"))))
                 .andExpect(content().string(not(containsString(UPSTREAM.baseUrl()))))
+                .andExpect(content().string(not(containsString(DEGRADED_UPSTREAM.baseUrl()))))
                 .andExpect(jsonPath("$.proxyEnabled", is(true)))
                 .andExpect(jsonPath("$.retentionScope", is("process-local")))
                 .andExpect(jsonPath("$.maxRetained", is(100)))
@@ -85,7 +96,7 @@ class ReverseProxyLiveDecisionCaptureTest {
                 .andExpect(jsonPath("$.decisions[0].decisionId", is("proxy-decision-00000001")))
                 .andExpect(jsonPath("$.decisions[0].configurationGeneration", is(1)))
                 .andExpect(jsonPath("$.decisions[0].routeName", is("legacy-upstreams")))
-                .andExpect(jsonPath("$.decisions[0].strategy", is("ROUND_ROBIN")))
+                .andExpect(jsonPath("$.decisions[0].strategy", is("WEIGHTED_LEAST_LOAD")))
                 .andExpect(jsonPath("$.decisions[0].attempt", is(1)))
                 .andExpect(jsonPath("$.decisions[0].selectionSource", is("strategy")))
                 .andExpect(jsonPath("$.decisions[0].chosenUpstreamId", is("decision-upstream")))
@@ -100,7 +111,44 @@ class ReverseProxyLiveDecisionCaptureTest {
                 .andExpect(jsonPath("$.decisions[0].candidates[0].p95LatencyMillis", is(22.0)))
                 .andExpect(jsonPath("$.decisions[0].candidates[0].p99LatencyMillis", is(33.0)))
                 .andExpect(jsonPath("$.decisions[0].candidates[0].recentErrorRate", is(0.25)))
-                .andExpect(jsonPath("$.decisions[0].candidates[0].observedAt").isString());
+                .andExpect(jsonPath("$.decisions[0].candidates[0].observedAt").isString())
+                .andExpect(jsonPath("$.decisions[0].candidates[1].upstreamId", is("degraded-upstream")))
+                .andExpect(jsonPath("$.decisions[0].selectionEvidence").doesNotExist());
+
+        mockMvc.perform(get("/api/proxy/decisions/proxy-decision-00000001/explain"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("DO_NOT_RETAIN"))))
+                .andExpect(content().string(not(containsString(UPSTREAM.baseUrl()))))
+                .andExpect(content().string(not(containsString(DEGRADED_UPSTREAM.baseUrl()))))
+                .andExpect(jsonPath("$.readOnly", is(true)))
+                .andExpect(jsonPath("$.retainedLiveProxyAttempt", is(true)))
+                .andExpect(jsonPath("$.retentionScope", is("process-local")))
+                .andExpect(jsonPath("$.decisionId", is("proxy-decision-00000001")))
+                .andExpect(jsonPath("$.routeName", is("legacy-upstreams")))
+                .andExpect(jsonPath("$.strategyId", is("WEIGHTED_LEAST_LOAD")))
+                .andExpect(jsonPath("$.selectionSource", is("strategy")))
+                .andExpect(jsonPath("$.selectedCandidateId", is("decision-upstream")))
+                .andExpect(jsonPath("$.exactCandidateIds[0]", is("decision-upstream")))
+                .andExpect(jsonPath("$.exactCandidateIds[1]", is("degraded-upstream")))
+                .andExpect(jsonPath("$.candidateObservations[0].inFlightRequestCount", is(4)))
+                .andExpect(jsonPath("$.candidateObservations[1].p95LatencyMillis", is(160.0)))
+                .andExpect(jsonPath("$.candidateObservations[1].recentErrorRate", is(0.5)))
+                .andExpect(jsonPath("$.selectionEvidenceStatus", is("CAPTURED")))
+                .andExpect(jsonPath("$.scorePreference", is("LOWER_WINS")))
+                .andExpect(jsonPath("$.analysis.simulationOnly", is(false)))
+                .andExpect(jsonPath("$.analysis.selectedCandidateId", is("decision-upstream")))
+                .andExpect(jsonPath("$.analysis.dominantFactors.status", is("AVAILABLE")))
+                .andExpect(jsonPath("$.analysis.decisionDelta.status", is("AVAILABLE")))
+                .andExpect(jsonPath("$.analysis.decisionDelta.closestAlternativeCandidateId",
+                        is("degraded-upstream")))
+                .andExpect(jsonPath("$.analysis.counterfactualWeightScenarios").isNotEmpty())
+                .andExpect(jsonPath("$.decisionChangeThresholds").isNotEmpty());
+
+        mockMvc.perform(get("/api/proxy/decisions/proxy-decision-99999999/explain"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error", is("not_found")))
+                .andExpect(jsonPath("$.path",
+                        is("/api/proxy/decisions/proxy-decision-99999999/explain")));
 
         awaitLiveShadowEvaluation();
         mockMvc.perform(get("/api/lase/shadow"))
@@ -116,7 +164,7 @@ class ReverseProxyLiveDecisionCaptureTest {
                 .andExpect(jsonPath("$.summary.comparableEvaluations", is(1)))
                 .andExpect(jsonPath("$.recentEvents[0].evaluationId",
                         is("lase-shadow-proxy-decision-00000001")))
-                .andExpect(jsonPath("$.recentEvents[0].strategy", is("ROUND_ROBIN")))
+                .andExpect(jsonPath("$.recentEvents[0].strategy", is("WEIGHTED_LEAST_LOAD")))
                 .andExpect(jsonPath("$.recentEvents[0].selectionSource", is("strategy")))
                 .andExpect(jsonPath("$.recentEvents[0].candidateServerIds[0]", is("decision-upstream")))
                 .andExpect(jsonPath("$.recentEvents[0].actualSelectedServerId", is("decision-upstream")));

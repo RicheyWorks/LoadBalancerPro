@@ -11,17 +11,25 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import com.richmond423.loadbalancerpro.api.ApiErrorResponse;
+import com.richmond423.loadbalancerpro.api.explain.LiveRoutingDecisionExplanation;
+import com.richmond423.loadbalancerpro.api.explain.RoutingExplanationService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
@@ -32,17 +40,20 @@ public class ReverseProxyStatusController {
     private final ReverseProxyProperties properties;
     private final ReverseProxyMetrics metrics;
     private final ObjectProvider<ReverseProxyService> reverseProxyService;
+    private final RoutingExplanationService routingExplanationService;
     private final Environment environment;
     private final String configuredApiKey;
 
     public ReverseProxyStatusController(ReverseProxyProperties properties,
                                         ReverseProxyMetrics metrics,
                                         ObjectProvider<ReverseProxyService> reverseProxyService,
+                                        RoutingExplanationService routingExplanationService,
                                         Environment environment,
                                         @Value("${loadbalancerpro.api.key:}") String configuredApiKey) {
         this.properties = properties;
         this.metrics = metrics;
         this.reverseProxyService = reverseProxyService;
+        this.routingExplanationService = routingExplanationService;
         this.environment = environment;
         this.configuredApiKey = configuredApiKey;
     }
@@ -112,6 +123,28 @@ public class ReverseProxyStatusController {
         return service == null
                 ? RecentProxyDecisionsResponse.empty(false, LiveRoutingDecisionStore.DEFAULT_MAX_RETAINED)
                 : service.recentDecisionsSnapshot();
+    }
+
+    @GetMapping("/decisions/{decisionId}/explain")
+    @Operation(
+            summary = "Explain one retained live proxy decision",
+            responses = {
+                    @ApiResponse(responseCode = "200", content = @Content(
+                            schema = @Schema(implementation = LiveRoutingDecisionExplanation.class))),
+                    @ApiResponse(responseCode = "404", content = @Content(
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+            })
+    public ResponseEntity<?> explainDecision(
+            @PathVariable("decisionId") String decisionId,
+            HttpServletRequest request) {
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        if (service == null) {
+            return decisionNotFound(request);
+        }
+        return service.retainedDecision(decisionId)
+                .<ResponseEntity<?>>map(decision -> ResponseEntity.ok(
+                        routingExplanationService.explain(decision)))
+                .orElseGet(() -> decisionNotFound(request));
     }
 
     @PostMapping("/reload")
@@ -347,6 +380,12 @@ public class ReverseProxyStatusController {
 
     private static HttpStatus commandHttpStatus(PrivateNetworkLiveValidationCommandResponse response) {
         return "INVALID_REQUEST".equals(response.status()) ? HttpStatus.BAD_REQUEST : HttpStatus.OK;
+    }
+
+    private static ResponseEntity<ApiErrorResponse> decisionNotFound(HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiErrorResponse.notFound(
+                "Retained proxy decision was not found; it may never have existed or may have been evicted.",
+                request.getRequestURI()));
     }
 
     private static ReverseProxyStatusResponse.ReloadStatus reloadNotSupported() {

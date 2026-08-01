@@ -30,6 +30,13 @@ public record ReverseProxyStatusResponse(
     public record RetryStatus(
             boolean enabled,
             int maxAttempts,
+            int budgetPercent,
+            long backoffBaseMillis,
+            long backoffMaxMillis,
+            long budgetPrimaryRequests,
+            long budgetGrantedRetries,
+            long budgetRejectedRetries,
+            int budgetAvailableCreditsPercent,
             boolean retryNonIdempotent,
             List<String> methods,
             List<Integer> retryStatuses) {
@@ -39,7 +46,8 @@ public record ReverseProxyStatusResponse(
             boolean enabled,
             int consecutiveFailureThreshold,
             long durationMillis,
-            boolean recoverOnSuccessfulHealthCheck) {
+            boolean recoverOnSuccessfulHealthCheck,
+            long slowStartDurationMillis) {
     }
 
     public record LimitsStatus(
@@ -85,6 +93,10 @@ public record ReverseProxyStatusResponse(
             int consecutiveFailures,
             boolean cooldownActive,
             long cooldownRemainingMillis,
+            double configuredWeight,
+            double effectiveWeight,
+            boolean slowStartActive,
+            long slowStartRemainingMillis,
             int maxInFlight,
             UpstreamRuntimeStatus runtimeStats) {
     }

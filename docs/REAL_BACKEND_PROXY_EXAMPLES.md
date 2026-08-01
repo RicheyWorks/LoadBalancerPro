@@ -149,24 +149,28 @@ http://127.0.0.1:8080/api/proxy/status
 
 The `healthy=false` upstream setting remains a hard disable. Do not use health recovery to bypass a backend that you intentionally disabled in configuration.
 
-## Retry And Cooldown Example
+## Retry Budget, Backoff, Cooldown, And Slow-Start Example
 
-Use `application-proxy-real-backend-resilience-example.properties` when you want local retry/cooldown evidence against services you control.
+Use `application-proxy-real-backend-resilience-example.properties` when you want local retry-budget/backoff and cooldown/slow-start evidence against services you control.
 
 ```bash
 java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
 ```
 
-This example enables bounded `GET`/`HEAD` retries and process-local cooldown:
+This example uses the weight-aware strategy, enables bounded `GET`/`HEAD` retries with the default 20-percent credit budget and capped full-jitter backoff, and enables process-local cooldown with a 10-second recovery ramp:
 
 ```properties
 loadbalancerpro.proxy.retry.enabled=true
 loadbalancerpro.proxy.retry.max-attempts=2
+loadbalancerpro.proxy.retry.budget-percent=20
+loadbalancerpro.proxy.retry.backoff.base=50ms
+loadbalancerpro.proxy.retry.backoff.max=1s
 loadbalancerpro.proxy.retry.retry-non-idempotent=false
 loadbalancerpro.proxy.cooldown.enabled=true
+loadbalancerpro.proxy.slow-start.duration=10s
 ```
 
-Stop one backend or make it return a retryable failure, then send requests through `/proxy/**`. Verify retry counters, cooldown activations, consecutive failure counts, and cooldown-active state in `/proxy-status.html` or `/api/proxy/status`.
+Stop one backend or make it return a retryable failure, then send requests through `/proxy/**`. Verify retry-budget grants/rejections, retry attempts, cooldown activations, retained consecutive failure counts, and the recovering upstream's configured/effective weight and slow-start state in `/proxy-status.html` or `/api/proxy/status`. This is local functional evidence, not traffic-distribution or performance proof.
 
 ## Status And Evidence Checklist
 
@@ -175,7 +179,7 @@ For each example, capture the same evidence:
 - response status and body from `curl -i http://127.0.0.1:8080/proxy/...`;
 - `X-LoadBalancerPro-Upstream` selected-upstream header;
 - `X-LoadBalancerPro-Strategy` strategy header;
-- `/proxy-status.html` upstream table, counters, health state, retry/cooldown state, and last selected upstream;
+- `/proxy-status.html` upstream table, configured/effective weights, retry-budget counters, cooldown/slow-start state, and last selected upstream;
 - `GET /api/proxy/status` raw JSON when a text artifact is easier to attach to review notes.
 
 Tie this evidence back to release-free operator review:
@@ -191,7 +195,7 @@ Tie this evidence back to release-free operator review:
 - Proxy mode remains disabled by default.
 - These examples are not production gateway configurations.
 - These examples do not prove throughput, latency, availability, TLS termination, WebSocket support, WAF behavior, identity enforcement, legal compliance, or security posture.
-- Metrics and cooldown state are process-local.
+- Metrics, retry-budget credits, cooldown state, and slow-start state are process-local.
 - Local/default API-key mode stays demo-friendly and is not a security boundary.
 - In prod or cloud-sandbox API-key mode, `/proxy/**` and `GET /api/proxy/status` require `X-API-Key`; in OAuth2 mode they require the configured allocation role, which defaults to `operator`.
 - TLS termination, public exposure, authentication, ingress, rate limits, and service ownership checks belong to the deployment environment.

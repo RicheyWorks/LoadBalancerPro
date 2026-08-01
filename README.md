@@ -9,7 +9,7 @@ The default posture is conservative: API-key authentication is selected, proxyin
 - Capacity-aware, predictive, and evaluation-only allocation APIs.
 - Deterministic request-level comparison for round-robin, weighted round-robin, weighted least-load, weighted least-connections, and tail-latency-aware strategies.
 - Read-only Decision Explorer and browser cockpit surfaces for local review.
-- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, active health checks, retry controls, cooldown/recovery, process-local concurrency/load-shedding controls, status, and guarded reload.
+- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, active health checks, retry budgets/backoff, cooldown/slow-start recovery, process-local concurrency/load-shedding controls, status, and guarded reload.
 - Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
@@ -106,8 +106,12 @@ Important defaults in `application.properties`:
 | `loadbalancerpro.proxy.health-check.healthy-threshold` | `2` | Successful background probes required to recover |
 | `loadbalancerpro.proxy.health-check.unhealthy-threshold` | `3` | Failed background probes required to mark unhealthy |
 | `loadbalancerpro.proxy.retry.enabled` | `false` | Opt-in retries |
+| `loadbalancerpro.proxy.retry.budget-percent` | `20` | Process-local retry credits per 100 admitted primary requests |
+| `loadbalancerpro.proxy.retry.backoff.base` | `50ms` | Initial full-jitter exponential backoff ceiling |
+| `loadbalancerpro.proxy.retry.backoff.max` | `1s` | Maximum retry backoff ceiling |
 | `loadbalancerpro.proxy.retry.retry-non-idempotent` | `false` | No default non-idempotent retry |
 | `loadbalancerpro.proxy.cooldown.enabled` | `false` | Opt-in backend cooldown |
+| `loadbalancerpro.proxy.slow-start.duration` | `0s` | Opt-in linear effective-weight ramp for new/recovered upstreams |
 | `management.prometheus.metrics.export.enabled` | `false` | No default Prometheus export |
 | `management.otlp.metrics.export.enabled` | `false` | No default OTLP export |
 | `management.endpoints.web.exposure.include` | `health,info` | Minimal Actuator exposure |
@@ -230,7 +234,7 @@ The Docker image runs as a non-root user and defaults to the `prod` profile. Kee
 3. Keep proxy, cloud mutation, telemetry export, and expanded Actuator exposure disabled unless required.
 4. Build and verify the exact artifact.
 5. Start on loopback, verify `/api/health` and `/actuator/health`, then test protected routes.
-6. If proxying is enabled, validate route targets, health behavior, retries, cooldown, status, and reload before widening access.
+6. If proxying is enabled, validate route targets, health behavior, retry budget/backoff, cooldown/slow-start recovery, status, and reload before widening access.
 7. Review logs and metrics for sanitized configuration summaries and failures.
 8. Apply deployment-specific TLS, network policy, authentication, rate limits, resource limits, monitoring, backup, and rollback controls.
 
@@ -242,7 +246,7 @@ For the packaged-application proof path use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEP
 - **The executable JAR cannot be found:** run `mvn -B package`, then use the resolver script; do not hard-code an artifact filename.
 - **A protected route returns 401:** include `X-API-Key` or configure the intended OAuth2 issuer, JWK source, and roles.
 - **Proxy status says disabled:** enable proxy mode only through a reviewed profile and provide valid routes/upstreams.
-- **An upstream is skipped:** inspect health, retry, cooldown, timeout, and route status in `/api/proxy/status` and application logs.
+- **An upstream is skipped or retry is suppressed:** inspect health, retry-budget counters, cooldown, slow-start weight, timeout, and route status in `/api/proxy/status` and application logs.
 - **OTLP startup validation fails:** use a trusted private/internal collector URL without credentials, query parameters, or fragments.
 - **Docker cannot reach a host backend:** `127.0.0.1` inside a container is the container; use an explicit Docker network or platform host gateway.
 - **A port is already in use:** select another `server.port` and keep the bind address explicit.

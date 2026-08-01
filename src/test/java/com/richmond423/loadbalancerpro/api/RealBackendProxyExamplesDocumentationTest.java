@@ -56,7 +56,7 @@ class RealBackendProxyExamplesDocumentationTest {
         assertTrue(guide.contains("Operator-Configured Route Example"));
         assertTrue(guide.contains("WEIGHTED_ROUND_ROBIN Example"));
         assertTrue(guide.contains("Health-Aware Failover Example"));
-        assertTrue(guide.contains("Retry And Cooldown Example"));
+        assertTrue(guide.contains("Retry Budget, Backoff, Cooldown, And Slow-Start Example"));
         assertTrue(guide.contains("X-LoadBalancerPro-Upstream"));
         assertTrue(guide.contains("X-LoadBalancerPro-Strategy"));
         assertTrue(guide.contains("/proxy-status.html"));
@@ -118,8 +118,12 @@ class RealBackendProxyExamplesDocumentationTest {
         assertTrue(failover.contains("loadbalancerpro.proxy.health-check.enabled=true"));
         assertTrue(failover.contains("loadbalancerpro.proxy.health-check.interval=5s"));
         assertTrue(resilience.contains("loadbalancerpro.proxy.retry.enabled=true"));
+        assertTrue(resilience.contains("loadbalancerpro.proxy.retry.budget-percent=20"));
+        assertTrue(resilience.contains("loadbalancerpro.proxy.retry.backoff.base=50ms"));
+        assertTrue(resilience.contains("loadbalancerpro.proxy.retry.backoff.max=1s"));
         assertTrue(resilience.contains("loadbalancerpro.proxy.retry.retry-non-idempotent=false"));
         assertTrue(resilience.contains("loadbalancerpro.proxy.cooldown.enabled=true"));
+        assertTrue(resilience.contains("loadbalancerpro.proxy.slow-start.duration=10s"));
     }
 
     @Test

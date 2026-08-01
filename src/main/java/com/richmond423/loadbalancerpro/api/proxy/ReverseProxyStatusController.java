@@ -70,6 +70,10 @@ public class ReverseProxyStatusController {
                         0,
                         false,
                         0,
+                        upstream.getWeight(),
+                        upstream.getWeight(),
+                        false,
+                        0,
                         Math.max(0, upstream.getMaxInFlight()),
                         new ReverseProxyStatusResponse.UpstreamRuntimeStatus(
                                 0,
@@ -189,9 +193,17 @@ public class ReverseProxyStatusController {
 
     private ReverseProxyStatusResponse.RetryStatus retryStatus() {
         ReverseProxyProperties.Retry retry = properties.getRetry();
+        ReverseProxyProperties.Backoff backoff = retry.getBackoff();
         return new ReverseProxyStatusResponse.RetryStatus(
                 retry.isEnabled(),
                 Math.max(1, retry.getMaxAttempts()),
+                Math.max(0, Math.min(100, retry.getBudgetPercent())),
+                Math.max(0, backoff.getBase().toMillis()),
+                Math.max(0, backoff.getMax().toMillis()),
+                0,
+                0,
+                0,
+                0,
                 retry.isRetryNonIdempotent(),
                 retry.getMethods().stream()
                         .filter(Objects::nonNull)
@@ -212,7 +224,8 @@ public class ReverseProxyStatusController {
                 cooldown.isEnabled(),
                 Math.max(1, cooldown.getConsecutiveFailureThreshold()),
                 Math.max(0, cooldown.getDuration().toMillis()),
-                cooldown.isRecoverOnSuccessfulHealthCheck());
+                cooldown.isRecoverOnSuccessfulHealthCheck(),
+                Math.max(0, properties.getSlowStart().getDuration().toMillis()));
     }
 
     private List<ReverseProxyStatusResponse.RouteStatus> disabledRouteStatuses() {

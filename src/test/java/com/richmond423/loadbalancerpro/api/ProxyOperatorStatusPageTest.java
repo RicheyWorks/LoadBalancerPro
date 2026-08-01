@@ -82,8 +82,16 @@ class ProxyOperatorStatusPageTest {
         assertTrue(page.contains("Last selected upstream"));
         assertTrue(page.contains("Cooldown active"));
         assertTrue(page.contains("Consecutive failures"));
+        assertTrue(page.contains("Budget percent"));
+        assertTrue(page.contains("Backoff base millis"));
+        assertTrue(page.contains("Slow-start duration millis"));
+        assertTrue(page.contains("Configured weight"));
+        assertTrue(page.contains("Effective weight"));
+        assertTrue(page.contains("Slow-start active"));
         assertTrue(page.contains("cooldownRemainingMillis"));
         assertTrue(page.contains("consecutiveFailures"));
+        assertTrue(page.contains("budgetGrantedRetries"));
+        assertTrue(page.contains("slowStartRemainingMillis"));
         assertTrue(page.contains("totalRetryAttempts"));
         assertTrue(page.contains("totalCooldownActivations"));
         assertTrue(page.contains("lastSelectedUpstream"));

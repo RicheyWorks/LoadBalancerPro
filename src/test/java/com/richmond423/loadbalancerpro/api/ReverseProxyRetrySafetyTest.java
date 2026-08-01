@@ -44,6 +44,9 @@ class ReverseProxyRetrySafetyTest {
         registry.add("loadbalancerpro.proxy.strategy", () -> "ROUND_ROBIN");
         registry.add("loadbalancerpro.proxy.retry.enabled", () -> "true");
         registry.add("loadbalancerpro.proxy.retry.max-attempts", () -> "2");
+        registry.add("loadbalancerpro.proxy.retry.budget-percent", () -> "100");
+        registry.add("loadbalancerpro.proxy.retry.backoff.base", () -> "0ms");
+        registry.add("loadbalancerpro.proxy.retry.backoff.max", () -> "0ms");
         registry.add("loadbalancerpro.proxy.retry.retry-non-idempotent", () -> "false");
         registry.add("loadbalancerpro.proxy.retry.methods", () -> "GET,HEAD");
         registry.add("loadbalancerpro.proxy.retry.retry-statuses", () -> "503");

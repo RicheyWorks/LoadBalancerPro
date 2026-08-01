@@ -50,6 +50,9 @@ loadbalancerpro.proxy.health-check.healthy-threshold=2
 loadbalancerpro.proxy.health-check.unhealthy-threshold=3
 loadbalancerpro.proxy.retry.enabled=false
 loadbalancerpro.proxy.retry.max-attempts=2
+loadbalancerpro.proxy.retry.budget-percent=20
+loadbalancerpro.proxy.retry.backoff.base=50ms
+loadbalancerpro.proxy.retry.backoff.max=1s
 loadbalancerpro.proxy.retry.retry-non-idempotent=false
 loadbalancerpro.proxy.retry.methods=GET,HEAD
 loadbalancerpro.proxy.retry.retry-statuses=502,503,504
@@ -57,6 +60,7 @@ loadbalancerpro.proxy.cooldown.enabled=false
 loadbalancerpro.proxy.cooldown.consecutive-failure-threshold=2
 loadbalancerpro.proxy.cooldown.duration=30s
 loadbalancerpro.proxy.cooldown.recover-on-successful-health-check=true
+loadbalancerpro.proxy.slow-start.duration=0s
 loadbalancerpro.proxy.upstreams[0].id=backend-a
 loadbalancerpro.proxy.upstreams[0].url=http://127.0.0.1:18081
 loadbalancerpro.proxy.upstreams[0].healthy=true
@@ -103,7 +107,7 @@ loadbalancerpro.proxy.routes.api.affinity.hmac-key=${LOADBALANCERPRO_PROXY_AFFIN
 
 The proxy verifies a route-bound HMAC-SHA-256 value before the strategy runs. A valid cookie pins only to a currently healthy, positive-weight configured target; missing, malformed, tampered, removed, unhealthy, drained, capacity-excluded, or retry-excluded targets fall back to normal strategy selection. A successful non-retryable upstream response adds or replaces the affinity cookie with `Path=/proxy`, `HttpOnly`, and `SameSite=Lax`; `Secure` is added when the inbound request is secure. Other upstream `Set-Cookie` values are preserved. Transport failures and retryable responses do not create a new pin. The affinity cookie is routing metadata, not authentication, authorization, an application session, CSRF protection, or a tenant-isolation control. Do not reuse auth/session cookie names or HMAC keys, do not commit the key, and re-evaluate browser security controls before introducing ambient-cookie authentication.
 
-When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Forwarding mode, trusted literal CIDRs, route header rules, hash sources, cookie names, and affinity-key length are validated before activation. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN`, `WEIGHTED_LEAST_CONNECTIONS`, `CONSISTENT_HASH`, and cookie-affinity selection, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
+When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Connection and request timeouts must be greater than zero. Forwarding mode, trusted literal CIDRs, route header rules, hash sources, cookie names, affinity-key length, retry budget/backoff, and slow-start duration are validated before activation. Retry budget is bounded to 0–100 percent, backoff delays to 60 seconds, and slow start to 24 hours. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN`, `WEIGHTED_LEAST_CONNECTIONS`, `CONSISTENT_HASH`, and cookie-affinity selection, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
 
 Global and per-upstream concurrency controls are opt-in. Set `loadbalancerpro.proxy.limits.max-in-flight` to a positive value for the process-local global cap and `upstreams[n].max-in-flight` or `routes.<name>.targets[n].max-in-flight` for process-local upstream caps; `0` means unlimited. A request holds one global permit across all of its retry attempts, while each actual upstream attempt holds that upstream's permit. If a selected upstream is full, the proxy tries another eligible target without consuming a retry; when the global cap or all eligible upstream caps are reached, it returns a fast HTTP 503 with `Retry-After` and `proxy_concurrency_limit` or `proxy_upstream_concurrency_limit`. Upstream ids share runtime state across routes, so the strictest positive cap configured for the same id is enforced.
 
@@ -188,9 +192,9 @@ loadbalancerpro.proxy.health-check.unhealthy-threshold=3
 
 Health checks run on dedicated daemon workers with a jittered initial delay, one scheduled task per configured upstream, and process-local in-memory snapshots. Request forwarding and status inspection read the latest snapshot without performing probe I/O. Probe responses with 2xx or 3xx status count as successes; other responses or probe failures count as failures. A healthy upstream becomes unhealthy after the configured consecutive failure threshold, and an unhealthy upstream recovers after the configured consecutive success threshold. The proxy does not start service discovery, persist health state, or contact any cloud service.
 
-Optional bounded retries can be enabled with `loadbalancerpro.proxy.retry.enabled=true`. Retries are disabled by default, capped by `loadbalancerpro.proxy.retry.max-attempts`, and limited to `GET` and `HEAD` unless `loadbalancerpro.proxy.retry.retry-non-idempotent=true` is set. Be careful with non-idempotent methods: retrying `POST`, `PUT`, `PATCH`, or `DELETE` can duplicate upstream side effects.
+Optional bounded retries can be enabled with `loadbalancerpro.proxy.retry.enabled=true`. Retries are disabled by default, capped by `loadbalancerpro.proxy.retry.max-attempts`, and limited to `GET` and `HEAD` unless `loadbalancerpro.proxy.retry.retry-non-idempotent=true` is set. The process-local budget adds `budget-percent` credits for each admitted primary request, stores at most one retry's credits, and requires 100 credits before another attempt; the default `20` therefore sustains at most one retry per five primary requests without banking a later burst. `0` suppresses every retry and `100` permits at most one retry per primary request. A granted retry waits for full-jitter exponential backoff whose ceiling starts at `backoff.base`, doubles per retry, and stops at `backoff.max`. Budget and backoff state reset on accepted config reload and process restart. Be careful with non-idempotent methods: retrying `POST`, `PUT`, `PATCH`, or `DELETE` can duplicate upstream side effects.
 
-Optional cooldown can be enabled with `loadbalancerpro.proxy.cooldown.enabled=true`. When an upstream reaches the configured consecutive-failure threshold, it is process-locally cooled down and skipped until the duration expires or a successful active health check recovers it. A configured `healthy=false` upstream remains hard disabled and is not recovered by cooldown state.
+Optional cooldown can be enabled with `loadbalancerpro.proxy.cooldown.enabled=true`. When an upstream reaches the configured consecutive-failure threshold, it is process-locally cooled down and skipped until the duration expires or a successful active health check recovers it. Expiry keeps half of the prior failure memory, with at least one remembered failure when the count was positive, instead of resetting the counter. Optional `loadbalancerpro.proxy.slow-start.duration` linearly ramps the effective routing weight of newly added or cooldown-recovered upstreams from zero to the configured weight; `0s` disables the ramp. The ramp affects weight-aware strategies, remains process-local, and is not a traffic-rate or capacity guarantee. Successful reload preserves resilience/ramp state for unchanged upstream ids, starts new ids at the reload instant, and removes state for deleted ids. A configured `healthy=false` upstream remains hard disabled and is not recovered by cooldown state.
 
 If no healthy upstream is available, the proxy returns HTTP 503 with a deterministic JSON error:
 
@@ -214,7 +218,7 @@ Inspect the read-only proxy status endpoint:
 curl -s http://127.0.0.1:8080/api/proxy/status
 ```
 
-The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured/effective/current global concurrency, adaptive decision state, load-shedding configuration, per-upstream caps, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
+The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry budget/backoff and cooldown/slow-start configuration, current budget counters, configured/effective/current global concurrency, adaptive decision state, load-shedding configuration, per-upstream caps, configured and effective weights, ramp state, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
 
 Each upstream also reports process-local runtime statistics: current in-flight attempts; completed-attempt count; latency EWMA and p50/p95/p99 from the newest 256 completions; successes, failures, and error rate from the trailing 30 seconds; and the last completion timestamp. Statistics remain attached when a successful reload keeps the same upstream id. Weighted least-connections and tail-latency-aware proxy routes consume the applicable live measurements as described above.
 
@@ -224,7 +228,7 @@ For a browser view of the same read-only status data, open:
 http://localhost:8080/proxy-status.html
 ```
 
-The page uses same-origin `GET /api/proxy/status` only. It shows the upstream table, counters, retry/cooldown state, raw JSON, copyable status summary, and local demo curl commands without browser storage or backend mutation controls.
+The page uses same-origin `GET /api/proxy/status` only. It shows the upstream table, counters, retry-budget/backoff, cooldown/slow-start state, raw JSON, copyable status summary, and local demo curl commands without browser storage or backend mutation controls.
 
 Counters, runtime statistics, and active health state are local memory only. They are reset when the app process restarts. There is no persistence, reset/admin mutation endpoint, Prometheus compatibility claim, external metrics store, generated runtime report, or cloud mutation.
 
@@ -292,7 +296,7 @@ The examples target loopback placeholders `http://localhost:9001` and `http://lo
 - No backend writes beyond forwarding the caller's request to the configured upstream.
 - No generated runtime reports.
 - No persistent proxy health or metrics state.
-- No persistent retry or cooldown state.
+- No persistent or distributed retry-budget, backoff, cooldown, or slow-start state.
 - No distributed/global-across-replicas concurrency enforcement or persistent adaptive state.
 - No external or distributed config backend.
 - No hot-reload production-readiness claim.
@@ -324,10 +328,13 @@ Do not expose `/proxy/**`, `GET /api/proxy/status`, `/proxy-status.html`, or Act
 - dynamically unhealthy upstreams are skipped
 - proxy status and metrics counters are exposed read-only
 - retries are disabled by default and bounded when enabled
+- process-local retry credits cap brownout retries and exponential full-jitter backoff is bounded
 - non-idempotent methods are not retried by default
 - cooldown activates after configured consecutive failures
 - cooled-down upstreams are skipped
-- healthy active probes can recover cooldown state
+- cooldown expiry retains half of positive failure memory
+- new and cooldown-recovered upstreams ramp effective weight under slow start
+- healthy active probes can recover cooldown state and begin the recovery ramp
 - strategy-specific real HTTP demos expose selected-upstream and strategy headers for round-robin, weighted round-robin, and health-aware failover behavior
 - unreachable upstreams return controlled HTTP 502
 - prod API-key mode protects proxy forwarding/status surfaces with `X-API-Key`

@@ -17,6 +17,7 @@ public class ReverseProxyProperties {
     private Duration connectTimeout = Duration.ofSeconds(1);
     private Duration requestTimeout = Duration.ofSeconds(2);
     private long maxRequestBytes = 65_536;
+    private long maxResponseBytes = 0;
     private PrivateNetworkValidation privateNetworkValidation = new PrivateNetworkValidation();
     private PrivateNetworkLiveValidation privateNetworkLiveValidation = new PrivateNetworkLiveValidation();
     private HealthCheck healthCheck = new HealthCheck();
@@ -67,6 +68,14 @@ public class ReverseProxyProperties {
 
     public void setMaxRequestBytes(long maxRequestBytes) {
         this.maxRequestBytes = maxRequestBytes;
+    }
+
+    public long getMaxResponseBytes() {
+        return maxResponseBytes;
+    }
+
+    public void setMaxResponseBytes(long maxResponseBytes) {
+        this.maxResponseBytes = maxResponseBytes;
     }
 
     public PrivateNetworkValidation getPrivateNetworkValidation() {

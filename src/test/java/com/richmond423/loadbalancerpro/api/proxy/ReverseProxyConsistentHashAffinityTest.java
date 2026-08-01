@@ -9,6 +9,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
@@ -167,11 +169,11 @@ class ReverseProxyConsistentHashAffinityTest {
     private static ReverseProxyService service(
             ReverseProxyProperties properties, HttpHeaders upstreamHeaders, int statusCode) throws Exception {
         HttpClient client = mock(HttpClient.class);
-        HttpResponse<byte[]> response = mock(HttpResponse.class);
+        HttpResponse<InputStream> response = mock(HttpResponse.class);
         when(response.statusCode()).thenReturn(statusCode);
         when(response.headers()).thenReturn(upstreamHeaders);
-        when(response.body()).thenReturn(new byte[0]);
-        when(client.send(any(), org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<byte[]>>any()))
+        when(response.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
+        when(client.send(any(), org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<InputStream>>any()))
                 .thenReturn(response);
         return new ReverseProxyService(
                 properties,

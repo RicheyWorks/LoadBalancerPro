@@ -100,6 +100,10 @@ final class UpstreamRuntimeStats {
         }
     }
 
+    void requestAborted() {
+        inFlight.updateAndGet(current -> Math.max(0, current - 1));
+    }
+
     Snapshot snapshot() {
         synchronized (windowLock) {
             long[] samples = Arrays.copyOf(latencyNanos, latencySampleCount);

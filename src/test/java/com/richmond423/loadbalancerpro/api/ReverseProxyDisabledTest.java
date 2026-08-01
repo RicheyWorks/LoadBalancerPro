@@ -71,6 +71,19 @@ class ReverseProxyDisabledTest {
     }
 
     @Test
+    void recentDecisionsReportsAnEmptyBoundedProcessLocalSnapshotWhenProxyIsDisabled() throws Exception {
+        mockMvc.perform(get("/api/proxy/decisions/recent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proxyEnabled").value(false))
+                .andExpect(jsonPath("$.retentionScope").value("process-local"))
+                .andExpect(jsonPath("$.maxRetained").value(100))
+                .andExpect(jsonPath("$.retainedCount").value(0))
+                .andExpect(jsonPath("$.totalCaptured").value(0))
+                .andExpect(jsonPath("$.totalDropped").value(0))
+                .andExpect(jsonPath("$.decisions").isEmpty());
+    }
+
+    @Test
     void privateNetworkLiveValidationCommandReportsBlockedDefaultsWithoutExecution() throws Exception {
         mockMvc.perform(post("/api/proxy/private-network-live-validation")
                         .contentType(MediaType.APPLICATION_JSON)

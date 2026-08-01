@@ -127,10 +127,10 @@ final class ReverseProxyStatusSummaries {
 
     private static String boundaryNote(boolean oauth2Mode, boolean apiKeyBoundary) {
         if (oauth2Mode) {
-            return "OAuth2 mode protects /proxy/** and GET /api/proxy/status with the configured operator role.";
+            return "OAuth2 mode protects /proxy/** and proxy read endpoints with the configured operator role.";
         }
         if (apiKeyBoundary) {
-            return "Prod/cloud-sandbox API-key mode protects /proxy/** and GET /api/proxy/status; apiKeyConfigured reports presence only.";
+            return "Prod/cloud-sandbox API-key mode protects /proxy/** and proxy read endpoints; apiKeyConfigured reports presence only.";
         }
         return "Local/default API-key mode permits demo surfaces; use deployment-level access control and TLS termination before exposure.";
     }

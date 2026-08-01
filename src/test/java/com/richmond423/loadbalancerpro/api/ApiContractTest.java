@@ -108,6 +108,20 @@ class ApiContractTest {
                 "/api/remediation/report")) {
             assertTrue(docs.at("/paths/" + path.replace("/", "~1") + "/post").isObject(), path);
         }
+        assertTrue(docs.at("/paths/~1api~1proxy~1decisions~1recent/get").isObject(),
+                "/api/proxy/decisions/recent");
+        JsonNode recentDecisions =
+                docs.at("/components/schemas/RecentProxyDecisionsResponse/properties");
+        for (String field : List.of(
+                "proxyEnabled",
+                "retentionScope",
+                "maxRetained",
+                "retainedCount",
+                "totalCaptured",
+                "totalDropped",
+                "decisions")) {
+            assertTrue(recentDecisions.has(field), field);
+        }
         JsonNode response =
                 docs.at("/components/schemas/RoutingComparisonResponse/properties");
         JsonNode result =

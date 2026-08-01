@@ -76,6 +76,7 @@ public class ReverseProxyService {
     private final ConcurrentMap<String, ResilienceState> resilienceStates = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, UpstreamRuntimeStats> upstreamRuntimeStats = new ConcurrentHashMap<>();
     private final UpstreamRuntimeStats globalRuntimeStats;
+    private final LiveRoutingDecisionStore liveRoutingDecisions;
     private final UpstreamHealthProber healthProber;
 
     @Autowired
@@ -95,6 +96,7 @@ public class ReverseProxyService {
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.globalRuntimeStats = new UpstreamRuntimeStats(clock);
+        this.liveRoutingDecisions = new LiveRoutingDecisionStore(clock);
         ActiveProxyConfig startupConfig = buildActiveConfig(
                 properties, nextGeneration.getAndIncrement(), List.of());
         prepareResilienceStates(startupConfig, Instant.now(clock));
@@ -207,6 +209,7 @@ public class ReverseProxyService {
                         .toList();
                 Optional<String> selectedServerId = route.selectionPolicy()
                         .affinityTarget(request, candidateStates);
+                String selectionSource = selectedServerId.isPresent() ? "affinity" : "strategy";
                 if (selectedServerId.isEmpty()) {
                     RoutingDecision decision = route.strategy().chooseForKey(candidateStates, routingKey);
                     selectedServerId = decision.explanation().chosenServerId();
@@ -248,10 +251,25 @@ public class ReverseProxyService {
                             route.name(), attempt, upstreamId);
                     metrics.recordRetryAttempt(upstreamId);
                 }
+                long attemptStartedAtNanos = System.nanoTime();
                 ForwardAttemptResult attemptResult =
                         forwardOnce(properties, config.forwardedPolicy(), route.headerRewrites(), request, body,
                                 upstream, runtimeStats, route.strategyId().externalName(),
                                 route.requestTimeout(), proxyPathSuffix);
+                double attemptLatencyMillis = Math.max(0, System.nanoTime() - attemptStartedAtNanos)
+                        / 1_000_000.0;
+                liveRoutingDecisions.record(
+                        config.generation(),
+                        route.name(),
+                        route.strategyId().externalName(),
+                        attempt,
+                        selectionSource,
+                        upstreamId,
+                        candidateStates,
+                        attemptResult.response().statusCode(),
+                        attemptLatencyMillis,
+                        attemptResult.retriable(),
+                        attemptResult.outcome());
                 lastResponse = route.selectionPolicy().applyAffinityResponse(
                         attemptResult.response(), request, upstreamId, attemptResult.affinityEligible());
                 if (!attemptResult.retriable() || attempt == maxAttempts) {
@@ -361,6 +379,10 @@ public class ReverseProxyService {
                 ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary(),
                 PrivateNetworkLiveValidationStatusResponse.from(properties),
                 reloadStatusSnapshot(config));
+    }
+
+    RecentProxyDecisionsResponse recentDecisionsSnapshot() {
+        return liveRoutingDecisions.snapshot(true);
     }
 
     PrivateNetworkLiveValidationCommandResponse privateNetworkLiveValidationCommand(
@@ -570,10 +592,10 @@ public class ReverseProxyService {
                 logger.warn("proxy.forward.retryable_status upstreamId={} status={} reason=retry_status",
                         upstreamId, response.statusCode());
                 recordResilienceFailure(properties, upstreamId);
-                return new ForwardAttemptResult(proxyResponse, true, false);
+                return new ForwardAttemptResult(proxyResponse, true, false, "upstream_response");
             }
             recordResilienceSuccess(upstreamId);
-            return new ForwardAttemptResult(proxyResponse, false, runtimeSuccessful);
+            return new ForwardAttemptResult(proxyResponse, false, runtimeSuccessful, "upstream_response");
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             logger.warn("proxy.forward.failure upstreamId={} reason=interrupted", upstreamId);
@@ -583,7 +605,8 @@ public class ReverseProxyService {
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy forwarding was interrupted while calling upstream " + upstreamId),
                     false,
-                    false);
+                    false,
+                    "interrupted");
         } catch (IOException | IllegalArgumentException exception) {
             logger.warn("proxy.forward.failure upstreamId={} reason=upstream_unreachable exceptionType={}",
                     upstreamId, exception.getClass().getSimpleName());
@@ -593,7 +616,8 @@ public class ReverseProxyService {
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy could not reach upstream " + upstreamId),
                     true,
-                    false);
+                    false,
+                    "upstream_failure");
         } finally {
             long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
             runtimeStats.requestCompleted(Duration.ofNanos(elapsedNanos), runtimeSuccessful);
@@ -1438,7 +1462,7 @@ public class ReverseProxyService {
     }
 
     private record ForwardAttemptResult(
-            ReverseProxyResponse response, boolean retriable, boolean affinityEligible) {
+            ReverseProxyResponse response, boolean retriable, boolean affinityEligible, String outcome) {
     }
 
     static final class ResilienceState {

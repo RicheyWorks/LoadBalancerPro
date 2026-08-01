@@ -174,7 +174,8 @@ public class ReverseProxyService {
             logger.warn("proxy.forward.failure reason=invalid_path message={}", exception.getMessage());
             metrics.recordFailure(null, HttpStatus.BAD_REQUEST.value());
             return writeLocalResponse(request, downstream,
-                    proxyError(HttpStatus.BAD_REQUEST, "proxy_path_invalid", exception.getMessage()));
+                    proxyError(HttpStatus.BAD_REQUEST, "proxy_path_invalid",
+                            "Proxy request path is invalid."));
         }
         if (!properties.isEnabled()) {
             logger.warn("proxy.forward.failure reason=proxy_disabled");
@@ -189,7 +190,7 @@ public class ReverseProxyService {
             metrics.recordFailure(null, HttpStatus.NOT_FOUND.value());
             return writeLocalResponse(request, downstream,
                     proxyError(HttpStatus.NOT_FOUND, "proxy_route_not_found",
-                            "No configured proxy route matches path " + proxyPathSuffix));
+                            "No configured proxy route matches the requested path."));
         }
         ReverseProxyRoutePlanner.ConfiguredRoute route = selectedRoute.get();
         ProxyAdmissionControl.Admission admission =

@@ -8,4 +8,4 @@
 - Current implementation head: `cd7e6f6da52b7c24afd217c1536a3b7b5f142d80`
 - Completed gates: exact-main proof, main CI/CodeQL, canonical scope audit, focused response/request streaming and heap acceptance, proxy/auth/security, decision/LASE/WRR/supervisor/campaign regressions, full Maven suite, both package modes, Tomcat dependency proof, diff check, and packaged Enterprise Lab smoke
 - Genuine blocker: none
-- Next action: push the mechanical PR checkpoint and require exact-head remote gates
+- Next action: require exact-head remote gates and merge only when every configured check is green

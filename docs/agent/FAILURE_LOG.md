@@ -12,6 +12,7 @@ None.
 - P-1.2/P-1.3/P-1.4/P-1.5: local Docker image/runtime proof was unavailable because the installed client could not reach the absent Docker Desktop Linux engine. Remote Docker build and blocking Trivy image scan remain required.
 - P-1.2: the written campaign lifecycle includes `LOCAL_GREEN`, but the manifest guard accepts only `OPEN`, `IN_PROGRESS`, and `MAIN_GREEN`. The slot remains `IN_PROGRESS` through remote gating; this product PR does not widen campaign-infrastructure scope.
 - P-1.4: the first focused compatibility run failed because the legacy retry/cooldown test assumed a status read performed the recovery probe; the background prober could instead complete a successful probe before the fixture changed health. The test now coordinates on the initial snapshot and bounded background transitions.
+- P-2.2: aggregate CodeQL blocked the first PR head because local proxy JSON errors reflected request-derived path and exception details. Client messages are now deterministic while detailed diagnostics remain server-side, with a regression assertion that unmatched paths are not echoed.
 
 ## Reusable technical lessons
 
@@ -22,3 +23,4 @@ None.
 - Timing-sensitive tests should coordinate on observable state and bounded convergence rather than narrow wall-clock assumptions.
 - Keep external targets, credentials, and live mutation outside default tests; use loopback fixtures, mocked clients, and explicit operator gates.
 - PowerShell `HttpListener` jobs blocked in `GetContext()` can make both stop and forced removal wait indefinitely; signal a loopback shutdown route, use a bounded wait, then remove the completed job.
+- Servlet-local error responses must use fixed client-safe messages; retain request-derived paths and exception details only in bounded server-side diagnostics.

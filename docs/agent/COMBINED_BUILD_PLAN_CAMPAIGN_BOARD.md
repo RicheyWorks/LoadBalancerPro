@@ -33,8 +33,8 @@ The JSON manifest is the machine-readable source of truth. Empty values mean the
 | P-1.3 | MAIN_GREEN | 526 | `5d888d74783183365c5237a14eed2c760c03960e` | `eccd3bf1e6935c9ae278299808e38e1dd04108ad` | — |
 | P-1.4 | MAIN_GREEN | 530 | `c2a4e64197315ea90fb783b8971a6ffa9a9d69fb` | `58b107af26a4539164c3f4054a662b2d5e225f47` | — |
 | P-1.5 | MAIN_GREEN | 531 | `9bc109dedb9b4f2a9197528d7611d6a305b8982e` | `a3f0d6df64cf131c239ee90448487b4d05fd6c1c` | — |
-| P-1.6 | IN_PROGRESS | 532 | — | — | — |
-| P-1.7 | OPEN | — | — | — | — |
+| P-1.6 | MAIN_GREEN | 532 | `30036f6dcf1ce783c4c4f6f2d1895ddd0574cd36` | `a4302c95a54138c6021136f044e739d0bd47ba75` | — |
+| P-1.7 | IN_PROGRESS | 533 | — | — | — |
 | P-1.8 | OPEN | — | — | — | — |
 | L-3.1 | OPEN | — | — | — | — |
 | L-3.2 | OPEN | — | — | — | — |

@@ -160,6 +160,7 @@ public class ReverseProxyService implements SmartLifecycle {
             thread.setDaemon(true);
             return thread;
         });
+        metrics.activateConfiguration(startupConfig.routes());
         configureHealthProber(startupConfig);
         logStartupSummary();
     }
@@ -204,63 +205,110 @@ public class ReverseProxyService implements SmartLifecycle {
             ProxyRequestBody requestBody,
             ProxyDownstream downstream) throws IOException {
         ReverseProxyProperties properties = config.properties();
-        if (requestBody.declaredLength() > properties.getMaxRequestBytes()) {
-            logger.warn("proxy.forward.failure reason=payload_too_large requestBytes={} maxRequestBytes={}",
-                    requestBody.declaredLength(), properties.getMaxRequestBytes());
-            metrics.recordFailure(null, HttpStatus.PAYLOAD_TOO_LARGE.value());
-            return writeLocalResponse(request, downstream,
-                    proxyError(HttpStatus.PAYLOAD_TOO_LARGE, "proxy_payload_too_large",
-                            "Proxy request body exceeds maximum size of "
-                                    + properties.getMaxRequestBytes() + " bytes"));
-        }
+        ReverseProxyMetrics.RequestObservation observation = properties.isEnabled()
+                ? metrics.beginRequest()
+                : null;
+        ProxyDownstream observedDownstream = observation == null
+                ? downstream
+                : new CountingProxyDownstream(downstream, observation);
+        ReverseProxyResponse terminalResponse = null;
+        try {
+            if (requestBody.declaredLength() > properties.getMaxRequestBytes()) {
+                logger.warn("proxy.forward.failure reason=payload_too_large requestBytes={} maxRequestBytes={}",
+                        requestBody.declaredLength(), properties.getMaxRequestBytes());
+                metrics.recordFailure(null, HttpStatus.PAYLOAD_TOO_LARGE.value());
+                if (observation != null) {
+                    observation.terminal(
+                            HttpStatus.PAYLOAD_TOO_LARGE.value(),
+                            ReverseProxyMetrics.TerminalOutcome.REQUEST_SIZE_LIMIT);
+                }
+                terminalResponse = writeLocalResponse(request, observedDownstream,
+                        proxyError(HttpStatus.PAYLOAD_TOO_LARGE, "proxy_payload_too_large",
+                                "Proxy request body exceeds maximum size of "
+                                        + properties.getMaxRequestBytes() + " bytes"));
+                return terminalResponse;
+            }
 
-        String proxyPathSuffix;
-        try {
-            proxyPathSuffix = validatedProxyPathSuffix(request);
-        } catch (IllegalArgumentException exception) {
-            logger.warn("proxy.forward.failure reason=invalid_path message={}", exception.getMessage());
-            metrics.recordFailure(null, HttpStatus.BAD_REQUEST.value());
-            return writeLocalResponse(request, downstream,
-                    proxyError(HttpStatus.BAD_REQUEST, "proxy_path_invalid",
-                            "Proxy request path is invalid."));
-        }
-        if (!properties.isEnabled()) {
-            logger.warn("proxy.forward.failure reason=proxy_disabled");
-            metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
-            return writeLocalResponse(request, downstream,
-                    proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_disabled",
-                            "Proxy mode is disabled in the active configuration."));
-        }
-        Optional<ReverseProxyRoutePlanner.ConfiguredRoute> selectedRoute = routeFor(config.routes(), proxyPathSuffix);
-        if (selectedRoute.isEmpty()) {
-            logger.warn("proxy.forward.failure reason=route_not_found pathSuffix={}", proxyPathSuffix);
-            metrics.recordFailure(null, HttpStatus.NOT_FOUND.value());
-            return writeLocalResponse(request, downstream,
-                    proxyError(HttpStatus.NOT_FOUND, "proxy_route_not_found",
-                            "No configured proxy route matches the requested path."));
-        }
-        ReverseProxyRoutePlanner.ConfiguredRoute route = selectedRoute.get();
-        ProxyAdmissionControl.Admission admission =
-                config.admissionPolicy().tryAcquire(request, globalRuntimeStats);
-        if (!admission.acquired()) {
-            logger.warn("proxy.forward.rejected reason={} priority={} detail={}",
-                    admission.errorCode(), admission.priority(), admission.reason());
-            metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
-            return writeLocalResponse(request, downstream, overloadResponse(
-                    admission.errorCode(), admission.message(), admission.retryAfterSeconds()));
-        }
-        long startedAtNanos = System.nanoTime();
-        ReverseProxyResponse response = null;
-        try {
-            response = forwardAdmitted(
-                    config, route, request, requestBody, downstream,
-                    proxyPathSuffix, admission.retryAfterSeconds());
-            return response;
+            String proxyPathSuffix;
+            try {
+                proxyPathSuffix = validatedProxyPathSuffix(request);
+            } catch (IllegalArgumentException exception) {
+                logger.warn("proxy.forward.failure reason=invalid_path message={}", exception.getMessage());
+                metrics.recordFailure(null, HttpStatus.BAD_REQUEST.value());
+                if (observation != null) {
+                    observation.terminal(
+                            HttpStatus.BAD_REQUEST.value(),
+                            ReverseProxyMetrics.TerminalOutcome.INVALID_PATH);
+                }
+                terminalResponse = writeLocalResponse(request, observedDownstream,
+                        proxyError(HttpStatus.BAD_REQUEST, "proxy_path_invalid",
+                                "Proxy request path is invalid."));
+                return terminalResponse;
+            }
+            if (!properties.isEnabled()) {
+                logger.warn("proxy.forward.failure reason=proxy_disabled");
+                metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
+                return writeLocalResponse(request, observedDownstream,
+                        proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_disabled",
+                                "Proxy mode is disabled in the active configuration."));
+            }
+            Optional<ReverseProxyRoutePlanner.ConfiguredRoute> selectedRoute =
+                    routeFor(config.routes(), proxyPathSuffix);
+            if (selectedRoute.isEmpty()) {
+                logger.warn("proxy.forward.failure reason=route_not_found pathSuffix={}", proxyPathSuffix);
+                metrics.recordFailure(null, HttpStatus.NOT_FOUND.value());
+                observation.terminal(
+                        HttpStatus.NOT_FOUND.value(),
+                        ReverseProxyMetrics.TerminalOutcome.ROUTE_NOT_FOUND);
+                terminalResponse = writeLocalResponse(request, observedDownstream,
+                        proxyError(HttpStatus.NOT_FOUND, "proxy_route_not_found",
+                                "No configured proxy route matches the requested path."));
+                return terminalResponse;
+            }
+            ReverseProxyRoutePlanner.ConfiguredRoute route = selectedRoute.get();
+            observation.bindRoute(route.name());
+            ProxyAdmissionControl.Admission admission =
+                    config.admissionPolicy().tryAcquire(request, globalRuntimeStats);
+            if (!admission.acquired()) {
+                logger.warn("proxy.forward.rejected reason={} priority={} detail={}",
+                        admission.errorCode(), admission.priority(), admission.reason());
+                metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
+                ReverseProxyMetrics.TerminalOutcome outcome = "proxy_load_shed".equals(admission.errorCode())
+                        ? ReverseProxyMetrics.TerminalOutcome.LOAD_SHED
+                        : ReverseProxyMetrics.TerminalOutcome.GLOBAL_CONCURRENCY_LIMIT;
+                observation.terminal(HttpStatus.SERVICE_UNAVAILABLE.value(), outcome);
+                terminalResponse = writeLocalResponse(request, observedDownstream, overloadResponse(
+                        admission.errorCode(), admission.message(), admission.retryAfterSeconds()));
+                return terminalResponse;
+            }
+            long startedAtNanos = System.nanoTime();
+            ReverseProxyResponse response = null;
+            try {
+                response = forwardAdmitted(
+                        config, route, request, requestBody, observedDownstream, observation,
+                        proxyPathSuffix, admission.retryAfterSeconds());
+                terminalResponse = response;
+                observation.terminalIfUnset(
+                        response.statusCode(),
+                        ReverseProxyMetrics.TerminalOutcome.fromStatus(response.statusCode()));
+                return response;
+            } finally {
+                long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
+                globalRuntimeStats.requestCompleted(
+                        Duration.ofNanos(elapsedNanos), response != null && response.statusCode() < 500);
+                config.admissionPolicy().requestCompleted(globalRuntimeStats);
+            }
+        } catch (IOException | RuntimeException exception) {
+            if (observation != null) {
+                observation.terminalIfUnset(
+                        terminalResponse == null ? 0 : terminalResponse.statusCode(),
+                        ReverseProxyMetrics.TerminalOutcome.INTERNAL_ERROR);
+            }
+            throw exception;
         } finally {
-            long elapsedNanos = Math.max(0, System.nanoTime() - startedAtNanos);
-            globalRuntimeStats.requestCompleted(
-                    Duration.ofNanos(elapsedNanos), response != null && response.statusCode() < 500);
-            config.admissionPolicy().requestCompleted(globalRuntimeStats);
+            if (observation != null) {
+                observation.complete(requestBody.consumedBytes());
+            }
         }
     }
 
@@ -278,6 +326,7 @@ public class ReverseProxyService implements SmartLifecycle {
             HttpServletRequest request,
             ProxyRequestBody requestBody,
             ProxyDownstream downstream,
+            ReverseProxyMetrics.RequestObservation observation,
             String proxyPathSuffix,
             int retryAfterSeconds) throws IOException {
         ReverseProxyProperties properties = config.properties();
@@ -300,14 +349,15 @@ public class ReverseProxyService implements SmartLifecycle {
                             ForwardAttemptResult finalAttempt = pendingAttempt;
                             pendingAttempt = null;
                             return deliverFinalResponse(
-                                    request, downstream, route, finalAttempt);
+                                    request, downstream, route, finalAttempt, observation);
                         }
                         if (!capacityExcludedIds.isEmpty()) {
                             logger.warn(
                                     "proxy.forward.rejected reason=upstream_concurrency_limit route={} targets={}",
                                     route.name(), capacityExcludedIds);
                             metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
-                            return writeLocalResponse(request, downstream, overloadResponse(
+                            return writeTerminalLocalResponse(request, downstream, observation,
+                                    ReverseProxyMetrics.TerminalOutcome.UPSTREAM_CONCURRENCY_LIMIT, overloadResponse(
                                     "proxy_upstream_concurrency_limit",
                                     "All eligible proxy upstreams are at their in-flight limits.",
                                     retryAfterSeconds));
@@ -315,7 +365,8 @@ public class ReverseProxyService implements SmartLifecycle {
                         logger.warn("proxy.forward.failure reason=no_configured_upstreams route={} attempt={}",
                                 route.name(), attempt);
                         metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
-                        return writeLocalResponse(request, downstream,
+                        return writeTerminalLocalResponse(request, downstream, observation,
+                                ReverseProxyMetrics.TerminalOutcome.NO_UPSTREAM,
                                 proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                                         "No proxy upstreams are configured for route " + route.name() + "."));
                     }
@@ -336,12 +387,13 @@ public class ReverseProxyService implements SmartLifecycle {
                         if (pendingAttempt != null) {
                             ForwardAttemptResult finalAttempt = pendingAttempt;
                             pendingAttempt = null;
-                            return deliverFinalResponse(request, downstream, route, finalAttempt);
+                            return deliverFinalResponse(request, downstream, route, finalAttempt, observation);
                         }
                         logger.warn("proxy.forward.failure reason=no_healthy_upstreams route={} attempt={}",
                                 route.name(), attempt);
                         metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
-                        return writeLocalResponse(request, downstream,
+                        return writeTerminalLocalResponse(request, downstream, observation,
+                                ReverseProxyMetrics.TerminalOutcome.NO_UPSTREAM,
                                 proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                                         "No healthy proxy upstreams are available."));
                     }
@@ -354,13 +406,14 @@ public class ReverseProxyService implements SmartLifecycle {
                         if (pendingAttempt != null) {
                             ForwardAttemptResult finalAttempt = pendingAttempt;
                             pendingAttempt = null;
-                            return deliverFinalResponse(request, downstream, route, finalAttempt);
+                            return deliverFinalResponse(request, downstream, route, finalAttempt, observation);
                         }
                         logger.warn(
                                 "proxy.forward.failure reason=selected_upstream_not_configured route={} upstreamId={}",
                                 route.name(), selectedServerId.get());
                         metrics.recordFailure(selectedServerId.get(), HttpStatus.SERVICE_UNAVAILABLE.value());
-                        return writeLocalResponse(request, downstream,
+                        return writeTerminalLocalResponse(request, downstream, observation,
+                                ReverseProxyMetrics.TerminalOutcome.NO_UPSTREAM,
                                 proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                                         "Selected proxy upstream is not configured: " + selectedServerId.get()));
                     }
@@ -371,15 +424,18 @@ public class ReverseProxyService implements SmartLifecycle {
                         capacityExcludedIds.add(upstreamId);
                         continue;
                     }
+                    ReverseProxyMetrics.RetryReason dispatchReason = pendingAttempt == null
+                            ? ReverseProxyMetrics.RetryReason.INITIAL
+                            : pendingAttempt.retryReason();
                     if (pendingAttempt != null) {
                         pendingAttempt.discardForRetry();
                         pendingAttempt = null;
                     }
                     attemptedUpstreamIds.add(upstreamId);
+                    observation.bindUpstream(route.name(), upstreamId);
                     if (attempt > 1) {
                         logger.info("proxy.forward.retry route={} attempt={} upstreamId={}",
                                 route.name(), attempt, upstreamId);
-                        metrics.recordRetryAttempt(upstreamId);
                     }
                     long attemptStartedAtNanos = System.nanoTime();
                     ForwardAttemptResult attemptResult;
@@ -387,7 +443,8 @@ public class ReverseProxyService implements SmartLifecycle {
                         attemptResult = forwardOnce(
                                 properties, config.forwardedPolicy(), route.headerRewrites(), request, requestBody,
                                 upstream, runtimeStats, route.strategyId().externalName(),
-                                route.requestTimeout(), proxyPathSuffix);
+                                route.requestTimeout(), proxyPathSuffix, observation,
+                                attempt > 1, dispatchReason);
                     } catch (RuntimeException | Error exception) {
                         runtimeStats.requestAborted();
                         throw exception;
@@ -410,7 +467,7 @@ public class ReverseProxyService implements SmartLifecycle {
                                     route.name(), attempt + 1);
                             ForwardAttemptResult finalAttempt = pendingAttempt;
                             pendingAttempt = null;
-                            return deliverFinalResponse(request, downstream, route, finalAttempt);
+                            return deliverFinalResponse(request, downstream, route, finalAttempt, observation);
                         }
                         break;
                     }
@@ -421,7 +478,7 @@ public class ReverseProxyService implements SmartLifecycle {
                     }
                     attemptResult.prepareForDelivery(request);
                     try {
-                        return deliverFinalResponse(request, downstream, route, attemptResult);
+                        return deliverFinalResponse(request, downstream, route, attemptResult, observation);
                     } finally {
                         recordAttemptDecision(
                                 config, route, attempt, selectionSource, upstreamId, upstreams,
@@ -432,7 +489,8 @@ public class ReverseProxyService implements SmartLifecycle {
             ReverseProxyResponse unavailable = proxyError(
                     HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                     "No healthy proxy upstreams are available.");
-            return writeLocalResponse(request, downstream, unavailable);
+            return writeTerminalLocalResponse(request, downstream, observation,
+                    ReverseProxyMetrics.TerminalOutcome.NO_UPSTREAM, unavailable);
         } finally {
             if (pendingAttempt != null) {
                 pendingAttempt.abortWithoutHealthPenalty();
@@ -491,7 +549,8 @@ public class ReverseProxyService implements SmartLifecycle {
             HttpServletRequest request,
             ProxyDownstream downstream,
             ReverseProxyRoutePlanner.ConfiguredRoute route,
-            ForwardAttemptResult attemptResult) throws IOException {
+            ForwardAttemptResult attemptResult,
+            ReverseProxyMetrics.RequestObservation observation) throws IOException {
         try {
             attemptResult.prepareForDelivery(request);
             ReverseProxyResponse response = route.selectionPolicy().applyAffinityResponse(
@@ -540,7 +599,7 @@ public class ReverseProxyService implements SmartLifecycle {
                 }
                 if (exceedsResponseLimit(
                         attemptResult.properties().getMaxResponseBytes(), streamedBytes, read)) {
-                    attemptResult.responseLimitExceeded();
+                    attemptResult.responseLimitExceeded(false);
                     throw new UpstreamResponseStreamingException(
                             "Upstream response exceeded the configured streamed response limit");
                 }
@@ -566,7 +625,20 @@ public class ReverseProxyService implements SmartLifecycle {
         } catch (IOException | RuntimeException exception) {
             attemptResult.abortWithoutHealthPenalty();
             throw exception;
+        } finally {
+            observation.terminal(
+                    attemptResult.response().statusCode(), attemptResult.terminalOutcome());
         }
+    }
+
+    private static ReverseProxyResponse writeTerminalLocalResponse(
+            HttpServletRequest request,
+            ProxyDownstream downstream,
+            ReverseProxyMetrics.RequestObservation observation,
+            ReverseProxyMetrics.TerminalOutcome outcome,
+            ReverseProxyResponse response) throws IOException {
+        observation.terminal(response.statusCode(), outcome);
+        return writeLocalResponse(request, downstream, response);
     }
 
     private static ReverseProxyResponse writeLocalResponse(
@@ -718,6 +790,7 @@ public class ReverseProxyService implements SmartLifecycle {
                 prepareResilienceStates(candidateConfig, attemptedAt);
                 beginDrainingRemovedUpstreams(previousConfig, candidateConfig, attemptedAt);
                 activeConfig.set(candidateConfig);
+                metrics.activateConfiguration(candidateConfig.routes());
             }
             nextGeneration.updateAndGet(current -> Math.max(current, candidateConfig.generation() + 1));
             sweepDrainingUpstreamsSafely();
@@ -901,13 +974,20 @@ public class ReverseProxyService implements SmartLifecycle {
                                              UpstreamRuntimeStats runtimeStats,
                                              String strategyName,
                                              Duration requestTimeout,
-                                             String proxyPathSuffix) {
+                                             String proxyPathSuffix,
+                                             ReverseProxyMetrics.RequestObservation observation,
+                                             boolean retryAttempt,
+                                             ReverseProxyMetrics.RetryReason retryReason) {
         String upstreamId = upstream.state().serverId();
         long startedAtNanos = System.nanoTime();
         try {
             HttpRequest outbound = buildOutboundRequest(
                     request, requestBody, properties.getMaxRequestBytes(), upstream,
                     requestTimeout, proxyPathSuffix, forwardedPolicy, headerRewrites);
+            observation.recordDispatch(retryAttempt, retryReason);
+            if (retryAttempt) {
+                metrics.recordRetryAttempt(upstreamId);
+            }
             HttpResponse<InputStream> response = upstream.httpClient().send(
                     outbound, HttpResponse.BodyHandlers.ofInputStream());
             metrics.recordForwarded(upstreamId, response.statusCode());
@@ -1640,6 +1720,7 @@ public class ReverseProxyService implements SmartLifecycle {
                         .noneMatch(upstreamId::equals)) {
             return;
         }
+        metrics.recordHealth(upstreamId, snapshot.healthy());
         if (!successful) {
             recordResilienceFailure(properties, upstreamId);
             return;
@@ -1669,6 +1750,7 @@ public class ReverseProxyService implements SmartLifecycle {
             healthProber.stop();
             drainScheduler.shutdownNow();
             drainingUpstreams.clear();
+            metrics.activateConfiguration(List.of());
         }
     }
 
@@ -2087,6 +2169,69 @@ public class ReverseProxyService implements SmartLifecycle {
         OutputStream outputStream() throws IOException;
     }
 
+    private static final class CountingProxyDownstream implements ProxyDownstream {
+        private final ProxyDownstream delegate;
+        private final ReverseProxyMetrics.RequestObservation observation;
+        private OutputStream countingOutput;
+
+        private CountingProxyDownstream(
+                ProxyDownstream delegate, ReverseProxyMetrics.RequestObservation observation) {
+            this.delegate = Objects.requireNonNull(delegate, "delegate cannot be null");
+            this.observation = Objects.requireNonNull(observation, "observation cannot be null");
+        }
+
+        @Override
+        public void status(int statusCode) {
+            delegate.status(statusCode);
+        }
+
+        @Override
+        public void header(String name, String value) {
+            delegate.header(name, value);
+        }
+
+        @Override
+        public synchronized OutputStream outputStream() throws IOException {
+            if (countingOutput == null) {
+                countingOutput = new CountingOutputStream(delegate.outputStream(), observation);
+            }
+            return countingOutput;
+        }
+    }
+
+    private static final class CountingOutputStream extends OutputStream {
+        private final OutputStream delegate;
+        private final ReverseProxyMetrics.RequestObservation observation;
+
+        private CountingOutputStream(
+                OutputStream delegate, ReverseProxyMetrics.RequestObservation observation) {
+            this.delegate = Objects.requireNonNull(delegate, "delegate cannot be null");
+            this.observation = Objects.requireNonNull(observation, "observation cannot be null");
+        }
+
+        @Override
+        public void write(int value) throws IOException {
+            delegate.write(value);
+            observation.addResponseBytes(1);
+        }
+
+        @Override
+        public void write(byte[] bytes, int offset, int length) throws IOException {
+            delegate.write(bytes, offset, length);
+            observation.addResponseBytes(length);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            delegate.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            delegate.close();
+        }
+    }
+
     private record ServletProxyDownstream(HttpServletResponse response) implements ProxyDownstream {
         private ServletProxyDownstream {
             Objects.requireNonNull(response, "response cannot be null");
@@ -2294,7 +2439,7 @@ public class ReverseProxyService implements SmartLifecycle {
         }
 
         private void responseLimitExceededBeforeCommit() {
-            responseLimitExceeded();
+            responseLimitExceeded(true);
             upstreamResponse = false;
             response = proxyError(
                     HttpStatus.BAD_GATEWAY,
@@ -2303,7 +2448,7 @@ public class ReverseProxyService implements SmartLifecycle {
                             + properties.getMaxResponseBytes() + " bytes");
         }
 
-        private void responseLimitExceeded() {
+        private void responseLimitExceeded(boolean beforeCommitment) {
             closeBody();
             if (runtimePending) {
                 metrics.recordFailure(upstreamId, HttpStatus.BAD_GATEWAY.value());
@@ -2311,7 +2456,9 @@ public class ReverseProxyService implements SmartLifecycle {
             }
             retriable = false;
             affinityEligible = false;
-            outcome = "response_body_too_large";
+            outcome = beforeCommitment
+                    ? "response_body_too_large_before_commit"
+                    : "response_body_too_large_after_commit";
         }
 
         private void downstreamDisconnected() {
@@ -2380,6 +2527,38 @@ public class ReverseProxyService implements SmartLifecycle {
 
         private String outcome() {
             return outcome;
+        }
+
+        private ReverseProxyMetrics.RetryReason retryReason() {
+            if (retryStatus) {
+                return ReverseProxyMetrics.RetryReason.RETRYABLE_STATUS;
+            }
+            return switch (outcome) {
+                case "upstream_failure" -> ReverseProxyMetrics.RetryReason.TRANSPORT_FAILURE;
+                case "upstream_stream_failure_before_commit" ->
+                        ReverseProxyMetrics.RetryReason.PRECOMMIT_UPSTREAM_FAILURE;
+                default -> ReverseProxyMetrics.RetryReason.OTHER;
+            };
+        }
+
+        private ReverseProxyMetrics.TerminalOutcome terminalOutcome() {
+            return switch (outcome) {
+                case "upstream_response" ->
+                        ReverseProxyMetrics.TerminalOutcome.fromStatus(response.statusCode());
+                case "interrupted" -> ReverseProxyMetrics.TerminalOutcome.INTERRUPTED;
+                case "request_body_too_large" -> ReverseProxyMetrics.TerminalOutcome.REQUEST_SIZE_LIMIT;
+                case "upstream_failure" -> ReverseProxyMetrics.TerminalOutcome.UPSTREAM_TRANSPORT_FAILURE;
+                case "upstream_stream_failure_before_commit" ->
+                        ReverseProxyMetrics.TerminalOutcome.UPSTREAM_ABORT_PRECOMMIT;
+                case "upstream_stream_failure_after_commit" ->
+                        ReverseProxyMetrics.TerminalOutcome.UPSTREAM_ABORT_POSTCOMMIT;
+                case "response_body_too_large_before_commit" ->
+                        ReverseProxyMetrics.TerminalOutcome.RESPONSE_SIZE_LIMIT_PRECOMMIT;
+                case "response_body_too_large_after_commit" ->
+                        ReverseProxyMetrics.TerminalOutcome.RESPONSE_SIZE_LIMIT_POSTCOMMIT;
+                case "downstream_disconnect" -> ReverseProxyMetrics.TerminalOutcome.DOWNSTREAM_DISCONNECT;
+                default -> ReverseProxyMetrics.TerminalOutcome.OTHER;
+            };
         }
 
         private String upstreamId() {

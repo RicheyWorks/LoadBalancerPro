@@ -100,11 +100,6 @@ for attempt in $(seq 1 30); do
     fi
 done
 
-metrics_body="$work_dir/prometheus.txt"
-curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
-    --output "$metrics_body" "$base_url/actuator/prometheus"
-grep -Eq '^jvm_' "$metrics_body"
-
 proxy_bodies="$work_dir/proxy-bodies.txt"
 for request in 1 2 3 4; do
     curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
@@ -113,6 +108,36 @@ for request in 1 2 3 4; do
 done
 grep -Fq 'backend-a handled' "$proxy_bodies"
 grep -Fq 'backend-b handled' "$proxy_bodies"
+
+request_payload='streamed-proxy-request-body'
+curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
+    --data-binary "$request_payload" --output /dev/null "$base_url/proxy/upload"
+
+metrics_body="$work_dir/prometheus.txt"
+curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
+    --output "$metrics_body" "$base_url/actuator/prometheus"
+grep -Eq '^jvm_' "$metrics_body"
+for metric in \
+    lbp_proxy_requests_total \
+    lbp_proxy_latency_seconds_count \
+    lbp_proxy_inflight \
+    lbp_proxy_attempts_total \
+    lbp_proxy_retries_total \
+    lbp_proxy_request_bytes_count \
+    lbp_proxy_response_bytes_count \
+    lbp_proxy_limit_rejections_total \
+    lbp_proxy_sheds_total \
+    lbp_proxy_health \
+    lbp_proxy_cooldown_trips_total; do
+    grep -Eq "^${metric}\\{" "$metrics_body"
+done
+grep -Eq '^lbp_proxy_request_bytes_sum\{[^}]*\}[[:space:]]+27(\.0)?$' "$metrics_body"
+if grep -Fq "$api_key" "$metrics_body" \
+        || grep -Fq 'request=1' "$metrics_body" \
+        || grep -Fq 'streamed-proxy-request-body' "$metrics_body"; then
+    echo "protected proxy metrics exposed request or credential material" >&2
+    exit 1
+fi
 
 container_id="$("${compose[@]}" ps --quiet loadbalancerpro)"
 [[ -n "$container_id" ]]
@@ -171,4 +196,4 @@ signal_elapsed="$(( $(date +%s) - signal_started_at ))"
 exit_code="$(docker inspect --format '{{.State.ExitCode}}' "$container_id")"
 [[ "$exit_code" == "0" || "$exit_code" == "143" ]]
 
-echo "proxy-prod Compose smoke passed: TLS, auth, two backends, health, metrics, hardening, external materials, and SIGTERM drain"
+echo "proxy-prod Compose smoke passed: TLS, auth, two backends, health, bounded proxy metrics, hardening, external materials, and SIGTERM drain"

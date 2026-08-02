@@ -90,6 +90,8 @@ Structured startup and failure markers are written to the application log when p
 
 During smoke validation, correlate the smoke script's `PASS` lines with `/api/proxy/status` and these log markers. This is a retry/cooldown/failure interpretation aid, not durable monitoring or external telemetry. No external telemetry service is required.
 
+When a protected Prometheus Actuator endpoint is enabled, Micrometer exports fixed `lbp.proxy.requests`, `lbp.proxy.latency`, `lbp.proxy.inflight`, `lbp.proxy.attempts`, `lbp.proxy.retries`, `lbp.proxy.request.bytes`, `lbp.proxy.response.bytes`, `lbp.proxy.limit.rejections`, `lbp.proxy.sheds`, `lbp.proxy.health`, and `lbp.proxy.cooldown.trips` meters. Route and upstream tags are validated logical configuration ids with bounded configuration counts; remaining tags are closed status, outcome, attempt, reason, direction, or phase values. Timing spans the complete downstream lifecycle, retries represent actual additional dispatches, and byte summaries record consumed request bytes and successfully delivered response bytes. These process-local meters do not add persistence, distributed tracing, external telemetry, SLO evidence, or p95/p99 proof.
+
 ## Retry Budget, Backoff, Cooldown, And Slow-Start Visibility
 
 Retries, cooldown, and slow start are optional resilience aids for the lightweight local proxy path. Their behavior switches are disabled by default:

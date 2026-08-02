@@ -38,7 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
         "loadbalancerpro.auth.mode=oauth2",
         "loadbalancerpro.auth.oauth2.jwk-set-uri=https://auth.example.test/.well-known/jwks.json",
         "loadbalancerpro.api.cors.allowed-origins=https://app.example.com",
-        "loadbalancerpro.api.max-request-bytes=512"
+        "loadbalancerpro.api.max-request-bytes=512",
+        "management.endpoints.web.exposure.include=health,info,metrics,prometheus",
+        "management.prometheus.metrics.export.enabled=true"
 })
 @AutoConfigureMockMvc
 class OAuth2AuthorizationTest {
@@ -107,6 +109,23 @@ class OAuth2AuthorizationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.summary.totalEvaluations").isNumber())
                 .andExpect(jsonPath("$.recentEvents").isArray());
+    }
+
+    @Test
+    void oauth2ModeProtectsActuatorMetricsAndPrometheusWithReadRoles() throws Exception {
+        mockMvc.perform(get("/actuator/prometheus"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/actuator/prometheus")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer scp-operator-token"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/actuator/prometheus")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("lbp_proxy_inflight")));
+        mockMvc.perform(get("/actuator/metrics/lbp.proxy.inflight")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("lbp.proxy.inflight")));
     }
 
     @Test

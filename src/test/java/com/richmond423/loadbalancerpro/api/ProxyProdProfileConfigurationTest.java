@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.web.servlet.MockMvc;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 @SpringBootTest(properties = {
         "spring.profiles.active=prod,proxy-prod",
         "loadbalancerpro.api.key=TEST_PROXY_PROD_API_KEY",
@@ -30,6 +32,9 @@ class ProxyProdProfileConfigurationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     @Test
     void profileEnablesTheBoundedProxyDeploymentDefaults() {
@@ -58,10 +63,48 @@ class ProxyProdProfileConfigurationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.proxyEnabled", is(true)));
 
+        double proxyRequestsBefore = meterRegistry.find("lbp.proxy.requests").counters().stream()
+                .mapToDouble(io.micrometer.core.instrument.Counter::count)
+                .sum();
+        mockMvc.perform(get("/proxy/sensitive/path?requestId=private-request")
+                        .header("User-Agent", "private-user-agent"))
+                .andExpect(status().isUnauthorized());
+        assertEquals(proxyRequestsBefore,
+                meterRegistry.find("lbp.proxy.requests").counters().stream()
+                        .mapToDouble(io.micrometer.core.instrument.Counter::count)
+                        .sum());
+
         mockMvc.perform(get("/actuator/prometheus"))
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(get("/actuator/prometheus").header("X-API-Key", API_KEY))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("jvm_")));
+                .andExpect(content().string(containsString("jvm_")))
+                .andExpect(content().string(containsString("lbp_proxy_inflight")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        containsString("private-request"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        containsString("private-user-agent"))));
+        assertEquals(proxyRequestsBefore,
+                meterRegistry.find("lbp.proxy.requests").counters().stream()
+                        .mapToDouble(io.micrometer.core.instrument.Counter::count)
+                        .sum(),
+                "health, status, authentication failures, and actuator scrapes are not proxy traffic");
+
+        java.util.Set<String> proxyMeterNames = meterRegistry.getMeters().stream()
+                .map(meter -> meter.getId().getName())
+                .filter(name -> name.startsWith("lbp.proxy."))
+                .collect(java.util.stream.Collectors.toSet());
+        org.junit.jupiter.api.Assertions.assertTrue(proxyMeterNames.containsAll(java.util.Set.of(
+                "lbp.proxy.requests",
+                "lbp.proxy.latency",
+                "lbp.proxy.inflight",
+                "lbp.proxy.attempts",
+                "lbp.proxy.retries",
+                "lbp.proxy.request.bytes",
+                "lbp.proxy.response.bytes",
+                "lbp.proxy.limit.rejections",
+                "lbp.proxy.sheds",
+                "lbp.proxy.health",
+                "lbp.proxy.cooldown.trips")));
     }
 }

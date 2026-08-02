@@ -18,8 +18,13 @@ import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 
 final class ReverseProxyRoutePlanner {
     static final String LEGACY_ROUTE_NAME = "legacy-upstreams";
+    static final int MAX_CONFIGURED_ROUTES = 32;
+    static final int MAX_TARGETS_PER_ROUTE = 64;
+    static final int MAX_CONFIGURED_TARGETS = 256;
 
     private static final Pattern ROUTE_NAME = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,63}");
+    private static final Pattern UPSTREAM_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,63}");
+    private static final Set<String> RESERVED_METRIC_TAG_VALUES = Set.of("NONE", "OTHER", "UNMATCHED");
     private static final String PRIVATE_NETWORK_VALIDATION_FLAG =
             "loadbalancerpro.proxy.private-network-validation.enabled";
 
@@ -46,7 +51,12 @@ final class ReverseProxyRoutePlanner {
         previousRoutes.forEach(route -> previousRoutesByName.put(route.name(), route));
         boolean privateNetworkValidationEnabled = properties.getPrivateNetworkValidation().isEnabled();
         if (!properties.getRoutes().isEmpty()) {
+            if (properties.getRoutes().size() > MAX_CONFIGURED_ROUTES) {
+                throw new IllegalStateException("loadbalancerpro.proxy.routes must contain at most "
+                        + MAX_CONFIGURED_ROUTES + " routes");
+            }
             List<ConfiguredRoute> routes = new ArrayList<>();
+            int configuredTargetCount = 0;
             for (Map.Entry<String, ReverseProxyProperties.Route> entry : properties.getRoutes().entrySet()) {
                 String routeName = validateRouteName(entry.getKey());
                 ReverseProxyProperties.Route route = Objects.requireNonNullElseGet(
@@ -66,6 +76,7 @@ final class ReverseProxyRoutePlanner {
                     throw new IllegalStateException(
                             "loadbalancerpro.proxy.routes." + routeName + ".targets must contain at least one target");
                 }
+                configuredTargetCount = boundedTargetCount(configuredTargetCount, targets.size());
                 validateTargets(targets, "loadbalancerpro.proxy.routes." + routeName + ".targets",
                         privateNetworkValidationEnabled);
                 RoutingStrategy strategy = routeStrategy(
@@ -87,6 +98,7 @@ final class ReverseProxyRoutePlanner {
             throw new IllegalStateException(
                     "loadbalancerpro.proxy.enabled=true requires at least one configured route or upstream target");
         }
+        boundedTargetCount(0, upstreams.size());
         RoutingStrategyId strategyId = strategyId(properties.getStrategy(), "loadbalancerpro.proxy.strategy");
         validateTargets(upstreams, "loadbalancerpro.proxy.upstreams", privateNetworkValidationEnabled);
         RoutingStrategy strategy = routeStrategy(
@@ -133,6 +145,11 @@ final class ReverseProxyRoutePlanner {
         if (routeName == null || !ROUTE_NAME.matcher(routeName).matches()) {
             throw new IllegalStateException(
                     "loadbalancerpro.proxy.routes route names must match " + ROUTE_NAME.pattern());
+        }
+        if (RESERVED_METRIC_TAG_VALUES.contains(routeName)) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.routes route names must not use reserved metric tag values "
+                            + RESERVED_METRIC_TAG_VALUES);
         }
         return routeName;
     }
@@ -187,6 +204,10 @@ final class ReverseProxyRoutePlanner {
     private static void validateTargets(List<ReverseProxyProperties.Upstream> targets,
                                         String fieldPrefix,
                                         boolean privateNetworkValidationEnabled) {
+        if (targets.size() > MAX_TARGETS_PER_ROUTE) {
+            throw new IllegalStateException(fieldPrefix + " must contain at most "
+                    + MAX_TARGETS_PER_ROUTE + " targets");
+        }
         Set<String> ids = new LinkedHashSet<>();
         for (int index = 0; index < targets.size(); index++) {
             ReverseProxyProperties.Upstream target = targets.get(index);
@@ -195,6 +216,10 @@ final class ReverseProxyRoutePlanner {
                 throw new IllegalStateException(targetPrefix + " must not be null");
             }
             String id = requireNonBlank(target.getId(), targetPrefix + ".id");
+            if (!UPSTREAM_ID.matcher(id).matches() || RESERVED_METRIC_TAG_VALUES.contains(id)) {
+                throw new IllegalStateException(targetPrefix + ".id must match " + UPSTREAM_ID.pattern()
+                        + " and must not use reserved metric tag values " + RESERVED_METRIC_TAG_VALUES);
+            }
             if (!ids.add(id)) {
                 throw new IllegalStateException(fieldPrefix + " contains duplicate target id: " + id);
             }
@@ -203,6 +228,19 @@ final class ReverseProxyRoutePlanner {
                 throw new IllegalStateException(targetPrefix + ".weight must be finite and non-negative");
             }
         }
+    }
+
+    private static int boundedTargetCount(int current, int additional) {
+        if (additional > MAX_TARGETS_PER_ROUTE) {
+            throw new IllegalStateException("proxy target lists must contain at most "
+                    + MAX_TARGETS_PER_ROUTE + " targets");
+        }
+        long total = (long) current + additional;
+        if (total > MAX_CONFIGURED_TARGETS) {
+            throw new IllegalStateException("loadbalancerpro.proxy configuration must contain at most "
+                    + MAX_CONFIGURED_TARGETS + " route targets");
+        }
+        return (int) total;
     }
 
     private static URI validateTargetUrl(String value, String fieldName, boolean privateNetworkValidationEnabled) {

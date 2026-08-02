@@ -16,6 +16,7 @@ None.
 - P-2.5: the first remote Compose gate proved every deployment assertion but failed during teardown because the deliberately read-only TLS directory prevented the runner from deleting its ephemeral files. Teardown now restores owner write permission only after the containers are down, then removes the bounded temporary directory.
 - P-3.1: the first full suite exposed that minimal proxy configuration-test contexts do not install a `MeterRegistry`; optional provider injection now uses the managed registry when present and an internal simple-registry fallback otherwise, preserving validation startup behavior and non-fatal instrumentation.
 - P-3.2: a zero-I/O mocked timing gate produced scheduler-dominated overhead samples and blocked the first full suite; the gate now uses a saturated literal-loopback HTTP upstream, and the access-log handoff shares request timing and uses a bounded single-consumer ring.
+- P-3.2: pre-PR concurrency review found that stop could exit between an access-log producer entering enqueue and publishing its record; in-flight producer accounting now keeps the writer draining, with concurrent stop/exact-once regressions.
 
 ## Reusable technical lessons
 

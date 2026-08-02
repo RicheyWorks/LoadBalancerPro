@@ -181,6 +181,29 @@ class ReverseProxyGracefulReloadTest {
         }
     }
 
+    @Test
+    void accessLogSinkChangesRequireRestartAndLeaveActiveGenerationUntouched() throws Exception {
+        ReverseProxyProperties initial = properties(beta(), Duration.ofSeconds(5));
+        ReverseProxyService service = service(initial, respondingClient("beta", 200), Clock.systemUTC());
+
+        try {
+            long generation = service.statusSnapshot().reload().activeConfigGeneration();
+            ReverseProxyProperties candidate = properties(beta(), Duration.ofSeconds(5));
+            candidate.getAccessLog().setEnabled(true);
+            candidate.getAccessLog().setPath("logs/reconfigured-access.log");
+
+            ReverseProxyReloadResponse response = service.reload(candidate);
+
+            assertFalse(response.success());
+            assertTrue(response.validationErrors().get(0).contains(
+                    "access-log configuration requires application restart"));
+            assertEquals(generation, service.statusSnapshot().reload().activeConfigGeneration());
+            assertEquals(200, service.forward(request(), new byte[0]).statusCode());
+        } finally {
+            service.stop();
+        }
+    }
+
     private static ReverseProxyService service(
             ReverseProxyProperties properties, HttpClient client, Clock clock) {
         return new ReverseProxyService(

@@ -87,6 +87,7 @@ public class ReverseProxyService implements SmartLifecycle {
     private final HttpClient httpClient;
     private final ReverseProxyHttpClientProvider httpClientProvider;
     private final ReverseProxyMetrics metrics;
+    private final ReverseProxyAccessLog accessLog;
     private final RoutingStrategyRegistry registry;
     private final Clock clock;
     private final AtomicReference<ActiveProxyConfig> activeConfig;
@@ -109,8 +110,9 @@ public class ReverseProxyService implements SmartLifecycle {
                                HttpClient httpClient,
                                ReverseProxyHttpClientProvider httpClientProvider,
                                ReverseProxyMetrics metrics,
+                               ReverseProxyAccessLog accessLog,
                                ObjectProvider<LaseShadowRuntime> laseShadowRuntimeProvider) {
-        this(properties, httpClient, httpClientProvider, metrics,
+        this(properties, httpClient, httpClientProvider, metrics, accessLog,
                 RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(),
                 laseShadowRuntimeProvider.getIfAvailable(LaseShadowRuntime::disabled));
     }
@@ -131,19 +133,33 @@ public class ReverseProxyService implements SmartLifecycle {
                         LaseShadowRuntime laseShadowRuntime) {
         this(properties, httpClient,
                 ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
-                metrics, registry, clock, laseShadowRuntime);
+                metrics, ReverseProxyAccessLog.disabled(), registry, clock, laseShadowRuntime);
+    }
+
+    ReverseProxyService(ReverseProxyProperties properties,
+                        HttpClient httpClient,
+                        ReverseProxyMetrics metrics,
+                        RoutingStrategyRegistry registry,
+                        Clock clock,
+                        LaseShadowRuntime laseShadowRuntime,
+                        ReverseProxyAccessLog accessLog) {
+        this(properties, httpClient,
+                ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
+                metrics, accessLog, registry, clock, laseShadowRuntime);
     }
 
     private ReverseProxyService(ReverseProxyProperties properties,
-                                HttpClient httpClient,
-                                ReverseProxyHttpClientProvider httpClientProvider,
-                                ReverseProxyMetrics metrics,
-                                RoutingStrategyRegistry registry,
+                                 HttpClient httpClient,
+                                 ReverseProxyHttpClientProvider httpClientProvider,
+                                 ReverseProxyMetrics metrics,
+                                 ReverseProxyAccessLog accessLog,
+                                 RoutingStrategyRegistry registry,
                                 Clock clock,
                                 LaseShadowRuntime laseShadowRuntime) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient cannot be null");
         this.httpClientProvider = Objects.requireNonNull(httpClientProvider, "httpClientProvider cannot be null");
         this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
+        this.accessLog = Objects.requireNonNull(accessLog, "accessLog cannot be null");
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.laseShadowRuntime = Objects.requireNonNull(laseShadowRuntime, "laseShadowRuntime cannot be null");
@@ -205,8 +221,8 @@ public class ReverseProxyService implements SmartLifecycle {
             ProxyRequestBody requestBody,
             ProxyDownstream downstream) throws IOException {
         ReverseProxyProperties properties = config.properties();
-        ReverseProxyMetrics.RequestObservation observation = properties.isEnabled()
-                ? metrics.beginRequest()
+        ProxyRequestObservation observation = properties.isEnabled()
+                ? new ProxyRequestObservation(metrics.beginRequest(), accessLog.begin(request.getMethod()))
                 : null;
         ProxyDownstream observedDownstream = observation == null
                 ? downstream
@@ -326,7 +342,7 @@ public class ReverseProxyService implements SmartLifecycle {
             HttpServletRequest request,
             ProxyRequestBody requestBody,
             ProxyDownstream downstream,
-            ReverseProxyMetrics.RequestObservation observation,
+            ProxyRequestObservation observation,
             String proxyPathSuffix,
             int retryAfterSeconds) throws IOException {
         ReverseProxyProperties properties = config.properties();
@@ -550,7 +566,7 @@ public class ReverseProxyService implements SmartLifecycle {
             ProxyDownstream downstream,
             ReverseProxyRoutePlanner.ConfiguredRoute route,
             ForwardAttemptResult attemptResult,
-            ReverseProxyMetrics.RequestObservation observation) throws IOException {
+            ProxyRequestObservation observation) throws IOException {
         try {
             attemptResult.prepareForDelivery(request);
             ReverseProxyResponse response = route.selectionPolicy().applyAffinityResponse(
@@ -634,7 +650,7 @@ public class ReverseProxyService implements SmartLifecycle {
     private static ReverseProxyResponse writeTerminalLocalResponse(
             HttpServletRequest request,
             ProxyDownstream downstream,
-            ReverseProxyMetrics.RequestObservation observation,
+            ProxyRequestObservation observation,
             ReverseProxyMetrics.TerminalOutcome outcome,
             ReverseProxyResponse response) throws IOException {
         observation.terminal(response.statusCode(), outcome);
@@ -825,6 +841,13 @@ public class ReverseProxyService implements SmartLifecycle {
             throw new IllegalStateException(
                     "loadbalancerpro.proxy.connect-timeout requires application restart and cannot change by reload");
         }
+        if (!ReverseProxyAccessLog.sameConfiguration(
+                candidateProperties.getAccessLog(),
+                previousConfig.properties().getAccessLog())) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.access-log configuration requires application restart"
+                            + " and cannot change by reload");
+        }
         return buildActiveConfig(
                 candidateProperties, nextGeneration.get(), previousConfig.routes());
     }
@@ -857,6 +880,7 @@ public class ReverseProxyService implements SmartLifecycle {
             throw new IllegalStateException(
                     "loadbalancerpro.proxy.max-response-bytes must be zero or greater");
         }
+        ReverseProxyAccessLog.validateConfiguration(properties.getAccessLog());
         normalizedHealthCheckPath(properties.getHealthCheck().getPath());
         positiveDuration(properties.getHealthCheck().getTimeout(),
                 "loadbalancerpro.proxy.health-check.timeout");
@@ -975,7 +999,7 @@ public class ReverseProxyService implements SmartLifecycle {
                                              String strategyName,
                                              Duration requestTimeout,
                                              String proxyPathSuffix,
-                                             ReverseProxyMetrics.RequestObservation observation,
+                                             ProxyRequestObservation observation,
                                              boolean retryAttempt,
                                              ReverseProxyMetrics.RetryReason retryReason) {
         String upstreamId = upstream.state().serverId();
@@ -1002,6 +1026,7 @@ public class ReverseProxyService implements SmartLifecycle {
                         upstreamId, response.statusCode());
             }
             return new ForwardAttemptResult(
+                    observation,
                     properties,
                     upstreamId,
                     upstream.resilienceState(),
@@ -1017,10 +1042,13 @@ public class ReverseProxyService implements SmartLifecycle {
             Thread.currentThread().interrupt();
             logger.warn("proxy.forward.failure upstreamId={} reason=interrupted", upstreamId);
             metrics.recordFailure(upstreamId, HttpStatus.BAD_GATEWAY.value());
-            recordResilienceFailure(properties, upstreamId, upstream.resilienceState());
+            if (recordResilienceFailure(properties, upstreamId, upstream.resilienceState())) {
+                observation.cooldownActivated();
+            }
             runtimeStats.requestCompleted(
                     Duration.ofNanos(Math.max(0, System.nanoTime() - startedAtNanos)), false);
             return new ForwardAttemptResult(
+                    observation,
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy forwarding was interrupted while calling upstream " + upstreamId),
                     false,
@@ -1034,6 +1062,7 @@ public class ReverseProxyService implements SmartLifecycle {
                 runtimeStats.requestCompleted(
                         Duration.ofNanos(Math.max(0, System.nanoTime() - startedAtNanos)), true);
                 return new ForwardAttemptResult(
+                        observation,
                         proxyError(HttpStatus.PAYLOAD_TOO_LARGE, "proxy_payload_too_large",
                                 "Proxy request body exceeds maximum size of "
                                         + properties.getMaxRequestBytes() + " bytes"),
@@ -1044,10 +1073,13 @@ public class ReverseProxyService implements SmartLifecycle {
             logger.warn("proxy.forward.failure upstreamId={} reason=upstream_unreachable exceptionType={}",
                     upstreamId, exception.getClass().getSimpleName());
             metrics.recordFailure(upstreamId, HttpStatus.BAD_GATEWAY.value());
-            recordResilienceFailure(properties, upstreamId, upstream.resilienceState());
+            if (recordResilienceFailure(properties, upstreamId, upstream.resilienceState())) {
+                observation.cooldownActivated();
+            }
             runtimeStats.requestCompleted(
                     Duration.ofNanos(Math.max(0, System.nanoTime() - startedAtNanos)), false);
             return new ForwardAttemptResult(
+                    observation,
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy could not reach upstream " + upstreamId),
                     true,
@@ -1504,17 +1536,17 @@ public class ReverseProxyService implements SmartLifecycle {
         return properties.getRetry().isEnabled() && normalizedRetryStatuses(properties).contains(statusCode);
     }
 
-    private void recordResilienceFailure(ReverseProxyProperties properties, String upstreamId) {
+    private boolean recordResilienceFailure(ReverseProxyProperties properties, String upstreamId) {
         if (upstreamId == null || upstreamId.isBlank()) {
-            return;
+            return false;
         }
-        recordResilienceFailure(properties, upstreamId, resilienceStates.get(upstreamId));
+        return recordResilienceFailure(properties, upstreamId, resilienceStates.get(upstreamId));
     }
 
-    private void recordResilienceFailure(
+    private boolean recordResilienceFailure(
             ReverseProxyProperties properties, String upstreamId, ResilienceState state) {
         if (state == null) {
-            return;
+            return false;
         }
         Instant now = Instant.now(clock);
         boolean activated = state.recordFailure(now, properties.getCooldown());
@@ -1525,6 +1557,7 @@ public class ReverseProxyService implements SmartLifecycle {
                     Math.max(1, properties.getCooldown().getConsecutiveFailureThreshold()),
                     Math.max(0, properties.getCooldown().getDuration().toMillis()));
         }
+        return activated;
     }
 
     private void recordResilienceSuccess(String upstreamId, ResilienceState state) {
@@ -1846,6 +1879,7 @@ public class ReverseProxyService implements SmartLifecycle {
         copy.setLimits(copyLimits(source.getLimits()));
         copy.setShedding(copyShedding(source.getShedding()));
         copy.setBackendTls(copyBackendTls(source.getBackendTls()));
+        copy.setAccessLog(copyAccessLog(source.getAccessLog()));
         copy.setUpstreams(source.getUpstreams().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
@@ -1930,6 +1964,18 @@ public class ReverseProxyService implements SmartLifecycle {
         ReverseProxyProperties.BackendTls copy = new ReverseProxyProperties.BackendTls();
         if (source != null) {
             copy.setTruststore(source.getTruststore());
+        }
+        return copy;
+    }
+
+    private static ReverseProxyProperties.AccessLog copyAccessLog(
+            ReverseProxyProperties.AccessLog source) {
+        ReverseProxyProperties.AccessLog copy = new ReverseProxyProperties.AccessLog();
+        if (source != null) {
+            copy.setEnabled(source.isEnabled());
+            copy.setFormat(source.getFormat());
+            copy.setPath(source.getPath());
+            copy.setSampleRate(source.getSampleRate());
         }
         return copy;
     }
@@ -2161,6 +2207,71 @@ public class ReverseProxyService implements SmartLifecycle {
             String lastProbeOutcome) {
     }
 
+    private static final class ProxyRequestObservation {
+        private final ReverseProxyMetrics.RequestObservation metrics;
+        private final ReverseProxyAccessLog.RequestLogObservation accessLog;
+
+        private ProxyRequestObservation(
+                ReverseProxyMetrics.RequestObservation metrics,
+                ReverseProxyAccessLog.RequestLogObservation accessLog) {
+            this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
+            this.accessLog = accessLog;
+        }
+
+        private void bindRoute(String route) {
+            metrics.bindRoute(route);
+            safely(() -> accessLog.bindRoute(route));
+        }
+
+        private void bindUpstream(String route, String upstream) {
+            metrics.bindUpstream(route, upstream);
+            safely(() -> accessLog.bindUpstream(route, upstream));
+        }
+
+        private void recordDispatch(boolean retry, ReverseProxyMetrics.RetryReason reason) {
+            metrics.recordDispatch(retry, reason);
+            safely(() -> accessLog.recordDispatch(retry));
+        }
+
+        private void addResponseBytes(long bytes) {
+            metrics.addResponseBytes(bytes);
+            safely(() -> accessLog.addResponseBytes(bytes));
+        }
+
+        private void cooldownActivated() {
+            safely(() -> accessLog.cooldownActivated());
+        }
+
+        private void terminal(int statusCode, ReverseProxyMetrics.TerminalOutcome outcome) {
+            metrics.terminal(statusCode, outcome);
+            safely(() -> accessLog.terminal(statusCode, outcome));
+        }
+
+        private void terminalIfUnset(int statusCode, ReverseProxyMetrics.TerminalOutcome outcome) {
+            metrics.terminalIfUnset(statusCode, outcome);
+            safely(() -> accessLog.terminalIfUnset(statusCode, outcome));
+        }
+
+        private void complete(long requestBytes) {
+            try {
+                metrics.complete(requestBytes);
+            } finally {
+                safely(() -> accessLog.complete(requestBytes));
+            }
+        }
+
+        private void safely(Runnable action) {
+            if (accessLog == null) {
+                return;
+            }
+            try {
+                action.run();
+            } catch (RuntimeException exception) {
+                // Access logging cannot alter the proxy request lifecycle.
+            }
+        }
+    }
+
     private interface ProxyDownstream {
         void status(int statusCode);
 
@@ -2171,11 +2282,11 @@ public class ReverseProxyService implements SmartLifecycle {
 
     private static final class CountingProxyDownstream implements ProxyDownstream {
         private final ProxyDownstream delegate;
-        private final ReverseProxyMetrics.RequestObservation observation;
+        private final ProxyRequestObservation observation;
         private OutputStream countingOutput;
 
         private CountingProxyDownstream(
-                ProxyDownstream delegate, ReverseProxyMetrics.RequestObservation observation) {
+                ProxyDownstream delegate, ProxyRequestObservation observation) {
             this.delegate = Objects.requireNonNull(delegate, "delegate cannot be null");
             this.observation = Objects.requireNonNull(observation, "observation cannot be null");
         }
@@ -2201,10 +2312,10 @@ public class ReverseProxyService implements SmartLifecycle {
 
     private static final class CountingOutputStream extends OutputStream {
         private final OutputStream delegate;
-        private final ReverseProxyMetrics.RequestObservation observation;
+        private final ProxyRequestObservation observation;
 
         private CountingOutputStream(
-                OutputStream delegate, ReverseProxyMetrics.RequestObservation observation) {
+                OutputStream delegate, ProxyRequestObservation observation) {
             this.delegate = Objects.requireNonNull(delegate, "delegate cannot be null");
             this.observation = Objects.requireNonNull(observation, "observation cannot be null");
         }
@@ -2271,6 +2382,7 @@ public class ReverseProxyService implements SmartLifecycle {
     }
 
     private final class ForwardAttemptResult {
+        private final ProxyRequestObservation observation;
         private final ReverseProxyProperties properties;
         private final String upstreamId;
         private final ResilienceState resilienceState;
@@ -2293,6 +2405,7 @@ public class ReverseProxyService implements SmartLifecycle {
         private boolean decisionRecorded;
 
         private ForwardAttemptResult(
+                ProxyRequestObservation observation,
                 ReverseProxyProperties properties,
                 String upstreamId,
                 ResilienceState resilienceState,
@@ -2304,6 +2417,7 @@ public class ReverseProxyService implements SmartLifecycle {
                 boolean retryStatus,
                 boolean runtimeSuccessfulStatus,
                 String outcome) {
+            this.observation = observation;
             this.properties = properties;
             this.upstreamId = upstreamId;
             this.resilienceState = resilienceState;
@@ -2322,10 +2436,12 @@ public class ReverseProxyService implements SmartLifecycle {
         }
 
         private ForwardAttemptResult(
+                ProxyRequestObservation observation,
                 ReverseProxyResponse response,
                 boolean retriable,
                 boolean affinityEligible,
                 String outcome) {
+            this.observation = observation;
             this.properties = null;
             this.upstreamId = null;
             this.resilienceState = null;
@@ -2393,7 +2509,7 @@ public class ReverseProxyService implements SmartLifecycle {
             closeBody();
             if (runtimePending) {
                 if (retryStatus) {
-                    recordResilienceFailure(properties, upstreamId, resilienceState);
+                    recordAttemptResilienceFailure();
                 }
                 completeRuntime(runtimeSuccessfulStatus);
             }
@@ -2405,7 +2521,7 @@ public class ReverseProxyService implements SmartLifecycle {
                 return;
             }
             if (retryStatus) {
-                recordResilienceFailure(properties, upstreamId, resilienceState);
+                recordAttemptResilienceFailure();
             } else {
                 recordResilienceSuccess(upstreamId, resilienceState);
             }
@@ -2421,7 +2537,7 @@ public class ReverseProxyService implements SmartLifecycle {
                                 ? "upstream_stream_failure_before_commit"
                                 : "upstream_stream_failure_after_commit");
                 metrics.recordFailure(upstreamId, HttpStatus.BAD_GATEWAY.value());
-                recordResilienceFailure(properties, upstreamId, resilienceState);
+                recordAttemptResilienceFailure();
                 completeRuntime(false);
             }
             retriable = beforeCommitment;
@@ -2435,6 +2551,12 @@ public class ReverseProxyService implements SmartLifecycle {
                         HttpStatus.BAD_GATEWAY,
                         "proxy_upstream_failure",
                         "Proxy upstream response failed before downstream commitment");
+            }
+        }
+
+        private void recordAttemptResilienceFailure() {
+            if (recordResilienceFailure(properties, upstreamId, resilienceState) && observation != null) {
+                observation.cooldownActivated();
             }
         }
 

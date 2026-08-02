@@ -40,4 +40,10 @@ public class ReverseProxyConfiguration {
                 properties.getConnectTimeout(),
                 sslBundlesProvider.getIfAvailable());
     }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "loadbalancerpro.proxy", name = "enabled", havingValue = "true")
+    ReverseProxyAccessLog reverseProxyAccessLog(ReverseProxyProperties properties) {
+        return new ReverseProxyAccessLog(properties);
+    }
 }

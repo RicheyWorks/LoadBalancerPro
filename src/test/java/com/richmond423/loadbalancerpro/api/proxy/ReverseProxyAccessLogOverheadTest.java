@@ -46,9 +46,8 @@ class ReverseProxyAccessLogOverheadTest {
         CountingWriter writer = new CountingWriter();
         ExecutorService upstreamExecutor = Executors.newFixedThreadPool(threads);
         HttpServer upstream = loopbackUpstream(upstreamExecutor);
-        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
-        Fixture disabled = fixture(false, writer, upstream.getAddress().getPort(), httpClient);
-        Fixture enabled = fixture(true, writer, upstream.getAddress().getPort(), httpClient);
+        Fixture disabled = fixture(false, writer, upstream.getAddress().getPort());
+        Fixture enabled = fixture(true, writer, upstream.getAddress().getPort());
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         try {
             for (int warmup = 0; warmup < 2; warmup++) {
@@ -113,11 +112,7 @@ class ReverseProxyAccessLogOverheadTest {
         }
     }
 
-    private Fixture fixture(
-            boolean accessLogEnabled,
-            CountingWriter writer,
-            int upstreamPort,
-            HttpClient httpClient) {
+    private Fixture fixture(boolean accessLogEnabled, CountingWriter writer, int upstreamPort) {
         ReverseProxyProperties properties = new ReverseProxyProperties();
         properties.setEnabled(true);
         properties.setRequestTimeout(Duration.ofSeconds(30));
@@ -135,7 +130,7 @@ class ReverseProxyAccessLogOverheadTest {
         accessLog.start();
         ReverseProxyService service = new ReverseProxyService(
                 properties,
-                httpClient,
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
                 new ReverseProxyMetrics(),
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),

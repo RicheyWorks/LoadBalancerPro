@@ -20,7 +20,10 @@ cleanup() {
     trap - EXIT
     docker compose -p "$project_name" -f "$compose_file" down --volumes --remove-orphans >/dev/null 2>&1 || true
     case "$work_dir" in
-        "${TMPDIR:-/tmp}"/lbp-proxy-prod.*) rm -rf -- "$work_dir" ;;
+        "${TMPDIR:-/tmp}"/lbp-proxy-prod.*)
+            chmod -R u+w -- "$work_dir" 2>/dev/null || true
+            rm -rf -- "$work_dir"
+            ;;
         *) echo "Refusing to remove unexpected temporary path: $work_dir" >&2 ;;
     esac
     exit "$status"

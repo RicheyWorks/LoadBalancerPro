@@ -33,9 +33,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
  * evidence, not a production throughput or latency benchmark.
  */
 class ReverseProxyAccessLogOverheadTest {
-    private static final int SAMPLE_COUNT = 7;
-    private static final int WARMUP_REQUESTS_PER_THREAD = 40;
-    private static final int REQUESTS_PER_THREAD = 120;
+    private static final int SAMPLE_COUNT = 9;
+    private static final int WARMUP_REQUESTS_PER_THREAD = 80;
+    private static final int REQUESTS_PER_THREAD = 300;
 
     @TempDir
     Path temporaryDirectory;
@@ -46,8 +46,9 @@ class ReverseProxyAccessLogOverheadTest {
         CountingWriter writer = new CountingWriter();
         ExecutorService upstreamExecutor = Executors.newFixedThreadPool(threads);
         HttpServer upstream = loopbackUpstream(upstreamExecutor);
-        Fixture disabled = fixture(false, writer, upstream.getAddress().getPort());
-        Fixture enabled = fixture(true, writer, upstream.getAddress().getPort());
+        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+        Fixture disabled = fixture(false, writer, upstream.getAddress().getPort(), httpClient);
+        Fixture enabled = fixture(true, writer, upstream.getAddress().getPort(), httpClient);
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         try {
             for (int warmup = 0; warmup < 2; warmup++) {
@@ -112,7 +113,11 @@ class ReverseProxyAccessLogOverheadTest {
         }
     }
 
-    private Fixture fixture(boolean accessLogEnabled, CountingWriter writer, int upstreamPort) {
+    private Fixture fixture(
+            boolean accessLogEnabled,
+            CountingWriter writer,
+            int upstreamPort,
+            HttpClient httpClient) {
         ReverseProxyProperties properties = new ReverseProxyProperties();
         properties.setEnabled(true);
         ReverseProxyProperties.Upstream upstream = new ReverseProxyProperties.Upstream();
@@ -129,7 +134,7 @@ class ReverseProxyAccessLogOverheadTest {
         accessLog.start();
         ReverseProxyService service = new ReverseProxyService(
                 properties,
-                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
+                httpClient,
                 new ReverseProxyMetrics(),
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),

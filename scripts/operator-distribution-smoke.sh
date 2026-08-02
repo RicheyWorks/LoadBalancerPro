@@ -88,6 +88,7 @@ required_paths=(
   "src/main/resources/application-proxy-demo-round-robin.properties"
   "src/main/resources/application-proxy-demo-weighted-round-robin.properties"
   "src/main/resources/application-proxy-demo-failover.properties"
+  "src/main/resources/application-proxy-prod.properties"
   "docs/examples/proxy/application-proxy-real-backend-example.properties"
   "docs/examples/proxy/application-proxy-real-backend-weighted-example.properties"
   "docs/examples/proxy/application-proxy-real-backend-failover-example.properties"
@@ -118,6 +119,7 @@ Packaged jar startup:
 
 Proxy status checks:
   curl -fsS http://127.0.0.1:$PORT/api/health
+  curl -fsS http://127.0.0.1:$PORT/actuator/health/readiness
   curl -fsS http://127.0.0.1:$PORT/proxy-status.html
   curl -fsS http://127.0.0.1:$PORT/api/proxy/status
 
@@ -157,8 +159,14 @@ if [[ "$RUN_JAR_SMOKE" == "true" ]]; then
   APP_PID="$!"
   trap 'kill "$APP_PID" >/dev/null 2>&1 || true' EXIT
   wait_for_url "http://127.0.0.1:$PORT/api/health"
+  wait_for_url "http://127.0.0.1:$PORT/actuator/health/readiness"
   wait_for_url "http://127.0.0.1:$PORT/proxy-status.html"
   wait_for_url "http://127.0.0.1:$PORT/api/proxy/status"
+  if ! curl -fsS "http://127.0.0.1:$PORT/api/proxy/status" | grep -Eq '"proxyEnabled"[[:space:]]*:[[:space:]]*false'; then
+    echo "Packaged jar smoke expected proxyEnabled=false in the explicit local profile." >&2
+    exit 1
+  fi
+  echo "OK: packaged jar keeps proxy forwarding disabled by default"
   kill "$APP_PID" >/dev/null 2>&1 || true
   trap - EXIT
   echo "Stopped packaged jar smoke process."

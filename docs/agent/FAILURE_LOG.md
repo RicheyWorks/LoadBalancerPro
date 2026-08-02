@@ -13,6 +13,7 @@ None.
 - P-1.2: the written campaign lifecycle includes `LOCAL_GREEN`, but the manifest guard accepts only `OPEN`, `IN_PROGRESS`, and `MAIN_GREEN`. The slot remains `IN_PROGRESS` through remote gating; this product PR does not widen campaign-infrastructure scope.
 - P-1.4: the first focused compatibility run failed because the legacy retry/cooldown test assumed a status read performed the recovery probe; the background prober could instead complete a successful probe before the fixture changed health. The test now coordinates on the initial snapshot and bounded background transitions.
 - P-2.2: aggregate CodeQL blocked the first PR head because local proxy JSON errors reflected request-derived path and exception details. Client messages are now deterministic while detailed diagnostics remain server-side, with a regression assertion that unmatched paths are not echoed.
+- P-2.5: the first remote Compose gate proved every deployment assertion but failed during teardown because the deliberately read-only TLS directory prevented the runner from deleting its ephemeral files. Teardown now restores owner write permission only after the containers are down, then removes the bounded temporary directory.
 
 ## Reusable technical lessons
 

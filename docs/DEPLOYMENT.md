@@ -1,4 +1,79 @@
-# TLS Deployment
+# Proxy Production Profile
+
+`proxy-prod` is an explicit deployment profile layered after `prod`; ordinary `prod` and the unqualified default still keep `loadbalancerpro.proxy.enabled=false`. The profile requires two upstream URLs, enables health checks, cooldown, bounded in-flight requests, graceful drain/slow-start settings, API-key authentication, and Prometheus exposure. Its Actuator surface is API-key protected. The Prometheus endpoint currently exposes the existing JVM/HTTP metrics; dedicated `lbp.proxy.*` Micrometer series remain P-3.1 work. The protected JSON status endpoint continues to report process-local proxy counters.
+
+The local deployment example is [`../deploy/docker-compose.proxy-prod.yml`](../deploy/docker-compose.proxy-prod.yml). It builds the existing digest-pinned, non-root application image plus two source-built Java fixture backends. Only the application TLS port is published, on host loopback. All containers drop Linux capabilities, prohibit privilege escalation, use read-only root filesystems with bounded `/tmp` mounts, and receive SIGTERM with a 35-second stop window. The fixtures are local validation backends, not a production backend design.
+
+Prepare runtime material outside the repository. `certificate.pem`, `private-key.pem`, and `ca.pem` must describe the same trusted server identity; never commit them:
+
+```bash
+runtime_dir="$(mktemp -d)"
+mkdir -p "$runtime_dir"/{tls,trust,identity,config}
+openssl rand -hex 32 > "$runtime_dir/api-key"
+openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
+  -subj "/CN=lbp.local" \
+  -addext "subjectAltName=DNS:lbp.local,IP:127.0.0.1" \
+  -keyout "$runtime_dir/tls/private-key.pem" \
+  -out "$runtime_dir/tls/certificate.pem"
+cp "$runtime_dir/tls/certificate.pem" "$runtime_dir/tls/ca.pem"
+chmod 0444 "$runtime_dir/api-key" "$runtime_dir/tls/"*.pem
+chmod 0555 "$runtime_dir"/{tls,trust,identity,config}
+
+export LBP_API_KEY_FILE="$runtime_dir/api-key"
+export LBP_TLS_DIRECTORY="$runtime_dir/tls"
+export LBP_TRUST_DIRECTORY="$runtime_dir/trust"
+export LBP_IDENTITY_DIRECTORY="$runtime_dir/identity"
+export LBP_CONFIG_DIRECTORY="$runtime_dir/config"
+docker compose -f deploy/docker-compose.proxy-prod.yml up --build -d
+```
+
+Verify TLS, public health, authenticated proxying, and protected metrics:
+
+```bash
+curl --cacert "$LBP_TLS_DIRECTORY/ca.pem" --resolve lbp.local:18443:127.0.0.1 \
+  https://lbp.local:18443/api/health
+curl --cacert "$LBP_TLS_DIRECTORY/ca.pem" --resolve lbp.local:18443:127.0.0.1 \
+  -H "X-API-Key: $(<"$LBP_API_KEY_FILE")" https://lbp.local:18443/proxy/example
+curl --cacert "$LBP_TLS_DIRECTORY/ca.pem" --resolve lbp.local:18443:127.0.0.1 \
+  -H "X-API-Key: $(<"$LBP_API_KEY_FILE")" https://lbp.local:18443/actuator/prometheus
+docker compose -f deploy/docker-compose.proxy-prod.yml down
+```
+
+The API key is mounted read-only as `/run/secrets/loadbalancerpro.api.key` and imported through Spring config trees. The temporary example uses read-only files inside a private `mktemp` parent so the image's non-root user can read the mounts; for a durable host path, grant read access only to the runtime UID/GID through the host's ownership or ACL mechanism. TLS, trust, client identity, and additional configuration directories are separate read-only mounts. Define backend custom trust or mTLS bundles only in the external configuration directory, for example:
+
+```properties
+spring.ssl.bundle.pem.backendtrust.truststore.certificate=file:/run/trust/ca.pem
+spring.ssl.bundle.pem.backendidentity.keystore.certificate=file:/run/identity/client-certificate.pem
+spring.ssl.bundle.pem.backendidentity.keystore.private-key=file:/run/identity/client-private-key.pem
+loadbalancerpro.proxy.backend-tls.truststore=backendtrust
+loadbalancerpro.proxy.upstreams[0].tls.client-cert=backendidentity
+```
+
+Hostname verification remains mandatory; `tls.verify=false` is rejected. Server PEM reload is enabled, but replacement behavior depends on the mounted filesystem propagating atomic file updates. Run `bash scripts/smoke/proxy-prod-compose-smoke.sh` for the destructive local stack smoke; it creates ephemeral loopback-only material, verifies the image does not contain it, sends SIGTERM during an in-flight request, and removes its temporary project.
+
+## Proxy Profile Configuration
+
+| Environment variable | Property | Profile default |
+| --- | --- | --- |
+| `LBP_UPSTREAM_0_URL` | `loadbalancerpro.proxy.upstreams[0].url` | required |
+| `LBP_UPSTREAM_1_URL` | `loadbalancerpro.proxy.upstreams[1].url` | required |
+| `LBP_PROXY_STRATEGY` | `loadbalancerpro.proxy.strategy` | `ROUND_ROBIN` |
+| `LBP_CONNECT_TIMEOUT` | `loadbalancerpro.proxy.connect-timeout` | `1s` |
+| `LBP_REQUEST_TIMEOUT` | `loadbalancerpro.proxy.request-timeout` | `30s` |
+| `LBP_MAX_REQUEST_BYTES` | `loadbalancerpro.proxy.max-request-bytes` | `65536` |
+| `LBP_MAX_RESPONSE_BYTES` | `loadbalancerpro.proxy.max-response-bytes` | `0` (streaming/unbounded) |
+| `LBP_MAX_IN_FLIGHT` | `loadbalancerpro.proxy.limits.max-in-flight` | `100` |
+| `LBP_HEALTH_CHECK_PATH` | `loadbalancerpro.proxy.health-check.path` | `/health` |
+| `LBP_HEALTH_CHECK_INTERVAL` | `loadbalancerpro.proxy.health-check.interval` | `5s` |
+| `LBP_COOLDOWN_DURATION` | `loadbalancerpro.proxy.cooldown.duration` | `30s` |
+| `LBP_DRAIN_TIMEOUT` | `loadbalancerpro.proxy.reload.drain-timeout` | `30s` |
+| `LBP_SLOW_START_DURATION` | `loadbalancerpro.proxy.slow-start.duration` | `5s` |
+| `LBP_BACKEND_TRUST_BUNDLE` | `loadbalancerpro.proxy.backend-tls.truststore` | blank |
+| `LBP_UPSTREAM_0_CLIENT_CERT_BUNDLE` | `loadbalancerpro.proxy.upstreams[0].tls.client-cert` | blank |
+
+[`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical static manifest sketch. It shows `/api/health` readiness/liveness, a five-second preStop delay, a 40-second pod termination window, non-root/capability-dropped/read-only execution, and external Secret/ConfigMap mounts. It has not been applied to a cluster and does not establish Kubernetes, multi-host, capacity, or production-readiness evidence.
+
+## TLS Deployment
 
 TLS material, DNS, firewall policy, secret delivery, and certificate issuance remain operator responsibilities. Spring SSL bundles support JKS or PEM (`spring.ssl.bundle.pem.<name>.keystore.{certificate,private-key}`); this JKS example enables HTTPS, SNI, and watched file reload, with `edge-api` defined from its own keystore by the same named-bundle pattern:
 

@@ -37,14 +37,17 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final byte[] configuredApiKey;
     private final boolean apiKeyConfigured;
+    private final boolean protectActuator;
     private final AtomicBoolean missingKeyWarningLogged = new AtomicBoolean(false);
 
     public ProdApiKeyFilter(ObjectMapper objectMapper,
-                            @Value("${loadbalancerpro.api.key:}") String configuredApiKey) {
+                            @Value("${loadbalancerpro.api.key:}") String configuredApiKey,
+                            @Value("${loadbalancerpro.auth.protect-actuator:false}") boolean protectActuator) {
         this.objectMapper = objectMapper;
         String normalizedKey = configuredApiKey == null ? "" : configuredApiKey.trim();
         this.apiKeyConfigured = !normalizedKey.isEmpty();
         this.configuredApiKey = normalizedKey.getBytes(StandardCharsets.UTF_8);
+        this.protectActuator = protectActuator;
     }
 
     @Override
@@ -71,13 +74,14 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private static boolean isProtectedApiRequest(HttpServletRequest request) {
+    private boolean isProtectedApiRequest(HttpServletRequest request) {
         if ("OPTIONS".equals(request.getMethod())) {
             return false;
         }
         return isProtectedApiSurface(request)
                 || isProtectedProxyRequest(request)
-                || isProtectedOpenApiDocs(request);
+                || isProtectedOpenApiDocs(request)
+                || protectActuator && isActuatorRequest(request);
     }
 
     private static boolean isProtectedApiSurface(HttpServletRequest request) {
@@ -100,6 +104,11 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
                 || requestUri.startsWith("/v3/api-docs/")
                 || "/swagger-ui.html".equals(requestUri)
                 || requestUri.startsWith("/swagger-ui/");
+    }
+
+    private static boolean isActuatorRequest(HttpServletRequest request) {
+        String requestUri = request.getRequestURI();
+        return "/actuator".equals(requestUri) || requestUri.startsWith("/actuator/");
     }
 
     private static boolean constantTimeEquals(byte[] expected, byte[] actual) {

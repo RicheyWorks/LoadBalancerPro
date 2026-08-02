@@ -175,6 +175,7 @@ jobs:
           require_entry "BOOT-INF/classes/application-proxy-demo-round-robin.properties"
           require_entry "BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"
           require_entry "BOOT-INF/classes/application-proxy-demo-failover.properties"
+          require_entry "BOOT-INF/classes/application-proxy-prod.properties"
           require_entry "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
 
           forbid_pattern() {
@@ -193,6 +194,9 @@ jobs:
           forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/gui/(LoadBalancerGUI|ServerTableRow)' \
             "application classes that directly import JavaFX"
           forbid_pattern '^BOOT-INF/lib/javafx' "OpenJFX libraries"
+          forbid_pattern '^BOOT-INF/classes/.*(Test|Tests)\.class$' "test classes"
+          forbid_pattern '\.(exe|dll|msi|dmg|pkg|deb|rpm|appimage)$' "unexpected native installers or executables"
+          forbid_pattern '\.(pem|p12|pfx|jks|keystore|key)$' "embedded key, certificate, or trust material"
 
           {
             echo ""
@@ -400,6 +404,14 @@ jobs:
           docker inspect "$CONTAINER_NAME"
           exit 1
 
+      - name: Smoke test proxy-prod Compose deployment
+        shell: bash
+        env:
+          LBP_PROXY_PROD_IMAGE: loadbalancerpro:ci
+          LBP_PROXY_PROD_FIXTURE_IMAGE: loadbalancerpro:proxy-prod-fixture-ci
+          LBP_PROXY_PROD_REUSE_IMAGE: "true"
+        run: bash scripts/smoke/proxy-prod-compose-smoke.sh
+
       - name: Capture container dry-run evidence
         shell: bash
         run: |
@@ -432,8 +444,8 @@ jobs:
             echo "- Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo "- Source image tag: \`${IMAGE_TAG}\`"
             echo "- Local dry-run image tag: \`${DRY_RUN_TAG}\`"
-            echo "- Docker runtime smoke: passed before this evidence was captured."
-            echo "- Trivy scan: see \`trivy-summary.txt\` when the scan step completes."
+            echo "- Docker runtime and proxy-prod Compose smokes: passed before this evidence was captured."
+            echo "- Trivy scans: see \`trivy-summary.txt\` and \`fixture-trivy-summary.txt\` when the scan steps complete."
             echo "- Evidence directory: \`${EVIDENCE_DIR}\`"
             echo "- Artifact name: \`container-dry-run-evidence-no-publish-no-sign\`"
             echo ""
@@ -456,8 +468,19 @@ jobs:
           output: target/container-dry-run-evidence/trivy-summary.txt
           vuln-type: os,library
           severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          trivyignores: .trivyignore
+          ignore-unfixed: false
+          exit-code: '1'
+
+      - name: Scan proxy-prod fixture image
+        # aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: loadbalancerpro:proxy-prod-fixture-ci
+          format: table
+          output: target/container-dry-run-evidence/fixture-trivy-summary.txt
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
           exit-code: '1'
 
       - name: Upload container dry-run evidence

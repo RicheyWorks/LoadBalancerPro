@@ -39,6 +39,7 @@ class CiPackagedArtifactSmokeWorkflowTest {
         assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-demo-round-robin.properties"));
         assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"));
         assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-demo-failover.properties"));
+        assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-prod.properties"));
         assertTrue(workflow.contains("BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"));
     }
 

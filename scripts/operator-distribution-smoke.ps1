@@ -49,6 +49,7 @@ $requiredPaths = @(
     "src/main/resources/application-proxy-demo-round-robin.properties",
     "src/main/resources/application-proxy-demo-weighted-round-robin.properties",
     "src/main/resources/application-proxy-demo-failover.properties",
+    "src/main/resources/application-proxy-prod.properties",
     "docs/examples/proxy/application-proxy-real-backend-example.properties",
     "docs/examples/proxy/application-proxy-real-backend-weighted-example.properties",
     "docs/examples/proxy/application-proxy-real-backend-failover-example.properties",
@@ -78,6 +79,7 @@ Write-Host "  java -jar $expectedJarPath --server.address=127.0.0.1 --server.por
 Write-Host ""
 Write-Host "Proxy status checks:"
 Write-Host "  curl -fsS http://127.0.0.1:$Port/api/health"
+Write-Host "  curl -fsS http://127.0.0.1:$Port/actuator/health/readiness"
 Write-Host "  curl -fsS http://127.0.0.1:$Port/proxy-status.html"
 Write-Host "  curl -fsS http://127.0.0.1:$Port/api/proxy/status"
 Write-Host ""
@@ -114,8 +116,14 @@ if ($RunJarSmoke) {
     $process = Start-Process -FilePath "java" -ArgumentList $arguments -PassThru -WindowStyle Hidden
     try {
         Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/api/health"
+        Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/actuator/health/readiness"
         Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/proxy-status.html"
         Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/api/proxy/status"
+        $proxyStatus = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/proxy/status" -TimeoutSec 2
+        if ($proxyStatus.proxyEnabled -ne $false) {
+            throw "Packaged jar smoke expected proxyEnabled=false in the explicit local profile."
+        }
+        Write-Host "OK: packaged jar keeps proxy forwarding disabled by default"
     } finally {
         if ($process -and -not $process.HasExited) {
             Stop-Process -Id $process.Id -Force

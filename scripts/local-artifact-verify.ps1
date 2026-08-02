@@ -17,6 +17,20 @@ function Assert-RequiredJarEntry {
     Write-Host "OK: $Entry"
 }
 
+function Assert-ForbiddenJarPattern {
+    param(
+        [string[]]$Entries,
+        [string]$Pattern,
+        [string]$Description
+    )
+
+    $matches = @($Entries | Where-Object { $_ -match $Pattern })
+    if ($matches.Count -gt 0) {
+        throw "Forbidden production artifact content ($Description): $($matches -join ', ')"
+    }
+    Write-Host "ABSENT: $Description"
+}
+
 Write-Host "LoadBalancerPro local artifact verification"
 Write-Host "Release-free: no tags, releases, assets, or release workflow changes."
 Write-Host "CI artifact parity: packaged-artifact-smoke contains artifact-smoke-summary.txt, artifact-sha256.txt, and jar-resource-list.txt."
@@ -56,12 +70,19 @@ $requiredEntries = @(
     "BOOT-INF/classes/application-proxy-demo-round-robin.properties",
     "BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties",
     "BOOT-INF/classes/application-proxy-demo-failover.properties",
+    "BOOT-INF/classes/application-proxy-prod.properties",
     "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
 )
 
 foreach ($entry in $requiredEntries) {
     Assert-RequiredJarEntry -Entries $entries -Entry $entry
 }
+
+Write-Host ""
+Write-Host "Forbidden jar entries:"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '^BOOT-INF/classes/.*(Test|Tests)\.class$' -Description "test classes"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '\.(exe|dll|msi|dmg|pkg|deb|rpm|appimage)$' -Description "unexpected native installers or executables"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '\.(pem|p12|pfx|jks|keystore|key)$' -Description "embedded key, certificate, or trust material"
 
 Write-Host ""
 Write-Host "Packaged jar startup:"

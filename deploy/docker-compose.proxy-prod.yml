@@ -1,0 +1,113 @@
+services:
+  backend-a:
+    build:
+      context: ..
+      dockerfile: deploy/fixture/Dockerfile
+    image: ${LBP_PROXY_PROD_FIXTURE_IMAGE:-loadbalancerpro:proxy-prod-fixture}
+    environment:
+      FIXTURE_ID: backend-a
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    restart: "no"
+
+  backend-b:
+    build:
+      context: ..
+      dockerfile: deploy/fixture/Dockerfile
+    image: ${LBP_PROXY_PROD_FIXTURE_IMAGE:-loadbalancerpro:proxy-prod-fixture}
+    environment:
+      FIXTURE_ID: backend-b
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    restart: "no"
+
+  loadbalancerpro:
+    depends_on:
+      - backend-a
+      - backend-b
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: ${LBP_PROXY_PROD_IMAGE:-loadbalancerpro:proxy-prod}
+    command:
+      - --server.address=0.0.0.0
+      - --server.ssl.enabled=true
+      - --server.ssl.bundle=proxyprod
+      - --spring.ssl.bundle.pem.proxyprod.keystore.certificate=file:/run/tls/certificate.pem
+      - --spring.ssl.bundle.pem.proxyprod.keystore.private-key=file:/run/tls/private-key.pem
+      - --spring.ssl.bundle.pem.proxyprod.reload-on-update=true
+    ports:
+      - "127.0.0.1:${LBP_PROXY_PROD_PORT:-18443}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod,proxy-prod
+      SPRING_CONFIG_IMPORT: configtree:/run/secrets/
+      SPRING_CONFIG_ADDITIONAL_LOCATION: optional:file:/run/config/
+      LBP_UPSTREAM_0_URL: http://backend-a:8080
+      LBP_UPSTREAM_1_URL: http://backend-b:8080
+      LBP_TLS_HOSTNAME: ${LBP_TLS_HOSTNAME:-lbp.local}
+    secrets:
+      - source: api-key
+        target: loadbalancerpro.api.key
+        mode: 0444
+    volumes:
+      - type: bind
+        source: ${LBP_TLS_DIRECTORY:?LBP_TLS_DIRECTORY must contain certificate.pem private-key.pem and ca.pem}
+        target: /run/tls
+        read_only: true
+      - type: bind
+        source: ${LBP_TRUST_DIRECTORY:?LBP_TRUST_DIRECTORY must be an external directory}
+        target: /run/trust
+        read_only: true
+      - type: bind
+        source: ${LBP_IDENTITY_DIRECTORY:?LBP_IDENTITY_DIRECTORY must be an external directory}
+        target: /run/identity
+        read_only: true
+      - type: bind
+        source: ${LBP_CONFIG_DIRECTORY:?LBP_CONFIG_DIRECTORY must be an external directory}
+        target: /run/config
+        read_only: true
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --silent --show-error --cacert /run/tls/ca.pem
+          --resolve "$${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
+          "https://$${LBP_TLS_HOSTNAME}:8080/api/health" > /dev/null
+      interval: 5s
+      timeout: 3s
+      start_period: 30s
+      retries: 12
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 512m
+    stop_signal: SIGTERM
+    stop_grace_period: 35s
+    restart: "no"
+
+secrets:
+  api-key:
+    file: ${LBP_API_KEY_FILE:?LBP_API_KEY_FILE must name an external API-key file}

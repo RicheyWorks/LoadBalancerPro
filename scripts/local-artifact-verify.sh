@@ -64,6 +64,18 @@ assert_entry() {
   echo "OK: $entry"
 }
 
+assert_absent() {
+  local entries="$1"
+  local pattern="$2"
+  local description="$3"
+  if grep -Eiq "$pattern" "$entries"; then
+    echo "Forbidden production artifact content: $description" >&2
+    grep -Ei "$pattern" "$entries" >&2
+    exit 1
+  fi
+  echo "ABSENT: $description"
+}
+
 echo "LoadBalancerPro local artifact verification"
 echo "Release-free: no tags, releases, assets, or release workflow changes."
 echo "CI artifact parity: packaged-artifact-smoke contains artifact-smoke-summary.txt, artifact-sha256.txt, and jar-resource-list.txt."
@@ -99,12 +111,19 @@ required_entries=(
   "BOOT-INF/classes/application-proxy-demo-round-robin.properties"
   "BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"
   "BOOT-INF/classes/application-proxy-demo-failover.properties"
+  "BOOT-INF/classes/application-proxy-prod.properties"
   "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
 )
 
 for entry in "${required_entries[@]}"; do
   assert_entry "$ENTRY_FILE" "$entry"
 done
+
+echo
+echo "Forbidden jar entries:"
+assert_absent "$ENTRY_FILE" '^BOOT-INF/classes/.*(Test|Tests)\.class$' "test classes"
+assert_absent "$ENTRY_FILE" '\.(exe|dll|msi|dmg|pkg|deb|rpm|appimage)$' "unexpected native installers or executables"
+assert_absent "$ENTRY_FILE" '\.(pem|p12|pfx|jks|keystore|key)$' "embedded key, certificate, or trust material"
 
 cat <<COMMANDS
 

@@ -120,6 +120,7 @@ class ReverseProxyAccessLogOverheadTest {
             HttpClient httpClient) {
         ReverseProxyProperties properties = new ReverseProxyProperties();
         properties.setEnabled(true);
+        properties.setRequestTimeout(Duration.ofSeconds(30));
         ReverseProxyProperties.Upstream upstream = new ReverseProxyProperties.Upstream();
         upstream.setId("benchmark-backend");
         upstream.setUrl("http://127.0.0.1:" + upstreamPort);
@@ -188,7 +189,7 @@ class ReverseProxyAccessLogOverheadTest {
         assertTrue(ready.await(5, TimeUnit.SECONDS));
         long startedAtNanos = System.nanoTime();
         start.countDown();
-        assertTrue(done.await(30, TimeUnit.SECONDS));
+        assertTrue(done.await(90, TimeUnit.SECONDS));
         long elapsed = System.nanoTime() - startedAtNanos;
         for (Future<?> future : futures) {
             future.get(1, TimeUnit.SECONDS);

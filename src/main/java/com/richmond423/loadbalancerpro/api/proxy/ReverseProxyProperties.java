@@ -27,6 +27,7 @@ public class ReverseProxyProperties {
     private Forwarded forwarded = new Forwarded();
     private Limits limits = new Limits();
     private Shedding shedding = new Shedding();
+    private BackendTls backendTls = new BackendTls();
     private List<Upstream> upstreams = new ArrayList<>();
     private Map<String, Route> routes = new LinkedHashMap<>();
 
@@ -152,6 +153,14 @@ public class ReverseProxyProperties {
 
     public void setShedding(Shedding shedding) {
         this.shedding = shedding == null ? new Shedding() : shedding;
+    }
+
+    public BackendTls getBackendTls() {
+        return backendTls;
+    }
+
+    public void setBackendTls(BackendTls backendTls) {
+        this.backendTls = backendTls == null ? new BackendTls() : backendTls;
     }
 
     public List<Upstream> getUpstreams() {
@@ -441,6 +450,7 @@ public class ReverseProxyProperties {
         private double p99LatencyMillis = 1.0;
         private double recentErrorRate = 0.0;
         private Integer queueDepth = 0;
+        private Tls tls = new Tls();
 
         public String getId() {
             return id;
@@ -544,6 +554,47 @@ public class ReverseProxyProperties {
 
         public void setQueueDepth(Integer queueDepth) {
             this.queueDepth = queueDepth;
+        }
+
+        public Tls getTls() {
+            return tls;
+        }
+
+        public void setTls(Tls tls) {
+            this.tls = tls == null ? new Tls() : tls;
+        }
+    }
+
+    public static final class BackendTls {
+        private String truststore = "";
+
+        public String getTruststore() {
+            return truststore;
+        }
+
+        public void setTruststore(String truststore) {
+            this.truststore = truststore == null ? "" : truststore;
+        }
+    }
+
+    public static final class Tls {
+        private boolean verify = true;
+        private String clientCert = "";
+
+        public boolean isVerify() {
+            return verify;
+        }
+
+        public void setVerify(boolean verify) {
+            this.verify = verify;
+        }
+
+        public String getClientCert() {
+            return clientCert;
+        }
+
+        public void setClientCert(String clientCert) {
+            this.clientCert = clientCert == null ? "" : clientCert;
         }
     }
 

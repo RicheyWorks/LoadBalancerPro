@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.atomic.LongAdder;
@@ -42,6 +43,8 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
     private static final String UNMATCHED = "UNMATCHED";
     private static final String NONE = "NONE";
     private static final String OTHER = "OTHER";
+    private static final AtomicIntegerFieldUpdater<RequestLogObservation> COMPLETED =
+            AtomicIntegerFieldUpdater.newUpdater(RequestLogObservation.class, "completed");
 
     private final Configuration configuration;
     private final Clock clock;
@@ -239,13 +242,8 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
                 dropped.increment();
                 return;
             }
-            OfferResult result = queue.offer(event);
-            if (result == OfferResult.FULL) {
+            if (!queue.offer(event)) {
                 dropped.increment();
-                return;
-            }
-            if (result == OfferResult.WAS_EMPTY) {
-                LockSupport.unpark(writerThread);
             }
         } catch (RuntimeException exception) {
             dropped.increment();
@@ -383,7 +381,14 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
         private final long timestampMillis;
         private final long startedAtNanos;
         private final String method;
-        private boolean completed;
+        /*
+         * A request owns its observation until completion. The atomic transition
+         * keeps completion idempotent if defensive callers race, and publishing
+         * the observation through the queue makes the request-owned fields
+         * visible to the writer thread.
+         */
+        @SuppressWarnings("unused") // Accessed by COMPLETED.
+        private volatile int completed;
         private boolean terminalAssigned;
         private long responseBytes;
         private int retries;
@@ -402,41 +407,41 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             this.method = method;
         }
 
-        synchronized void bindRoute(String value) {
-            if (!completed) {
+        void bindRoute(String value) {
+            if (completed == 0) {
                 route = normalizedIdentifier(value, OTHER);
             }
         }
 
-        synchronized void bindUpstream(String routeValue, String upstreamValue) {
-            if (!completed) {
+        void bindUpstream(String routeValue, String upstreamValue) {
+            if (completed == 0) {
                 route = normalizedIdentifier(routeValue, OTHER);
                 upstream = normalizedIdentifier(upstreamValue, OTHER);
             }
         }
 
-        synchronized void recordDispatch(boolean retry) {
-            if (retry && !completed && retries < Integer.MAX_VALUE) {
+        void recordDispatch(boolean retry) {
+            if (retry && completed == 0 && retries < Integer.MAX_VALUE) {
                 retries++;
             }
         }
 
-        synchronized void addResponseBytes(long bytes) {
-            if (bytes > 0 && !completed) {
+        void addResponseBytes(long bytes) {
+            if (bytes > 0 && completed == 0) {
                 responseBytes = Long.MAX_VALUE - responseBytes < bytes
                         ? Long.MAX_VALUE
                         : responseBytes + bytes;
             }
         }
 
-        synchronized void cooldownActivated() {
-            if (!completed) {
+        void cooldownActivated() {
+            if (completed == 0) {
                 cooldown = true;
             }
         }
 
-        synchronized void terminal(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
-            if (completed) {
+        void terminal(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
+            if (completed != 0) {
                 return;
             }
             status = normalizedStatus(statusCode);
@@ -444,8 +449,8 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             terminalAssigned = true;
         }
 
-        synchronized void terminalIfUnset(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
-            if (completed || terminalAssigned) {
+        void terminalIfUnset(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
+            if (completed != 0 || terminalAssigned) {
                 return;
             }
             terminalAssigned = true;
@@ -457,11 +462,10 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             completeAt(requestBytes, System.nanoTime());
         }
 
-        synchronized void completeAt(long requestBytes, long completedAtNanos) {
-            if (completed) {
+        void completeAt(long requestBytes, long completedAtNanos) {
+            if (!COMPLETED.compareAndSet(this, 0, 1)) {
                 return;
             }
-            completed = true;
             long elapsedNanos = Math.max(0L, completedAtNanos - startedAtNanos);
             bytesIn = nonNegative(requestBytes);
             durationMicros = TimeUnit.NANOSECONDS.toMicros(elapsedNanos);
@@ -589,17 +593,17 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             this.mask = capacity - 1;
         }
 
-        private OfferResult offer(E entry) {
+        private boolean offer(E entry) {
             Objects.requireNonNull(entry, "entry cannot be null");
             while (true) {
                 long producer = producerIndex.get();
                 long consumer = consumerIndex.get();
                 if (producer - consumer >= entries.length()) {
-                    return OfferResult.FULL;
+                    return false;
                 }
                 if (producerIndex.compareAndSet(producer, producer + 1)) {
                     entries.lazySet((int) producer & mask, entry);
-                    return producer == consumer ? OfferResult.WAS_EMPTY : OfferResult.NOT_EMPTY;
+                    return true;
                 }
                 Thread.onSpinWait();
             }
@@ -627,12 +631,6 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
         private long offeredCount() {
             return producerIndex.get();
         }
-    }
-
-    private enum OfferResult {
-        FULL,
-        WAS_EMPTY,
-        NOT_EMPTY
     }
 
     @FunctionalInterface

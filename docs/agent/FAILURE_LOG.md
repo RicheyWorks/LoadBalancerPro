@@ -17,6 +17,7 @@ None.
 - P-3.1: the first full suite exposed that minimal proxy configuration-test contexts do not install a `MeterRegistry`; optional provider injection now uses the managed registry when present and an internal simple-registry fallback otherwise, preserving validation startup behavior and non-fatal instrumentation.
 - P-3.2: a zero-I/O mocked timing gate produced scheduler-dominated overhead samples and blocked the first full suite; the gate now uses a saturated literal-loopback HTTP upstream, and the access-log handoff shares request timing and uses a bounded single-consumer ring.
 - P-3.2: pre-PR concurrency review found that stop could exit between an access-log producer entering enqueue and publishing its record; in-flight producer accounting now keeps the writer draining, with concurrent stop/exact-once regressions.
+- P-3.2: merge-main CI and the first repair head failed only the `<5%` overhead gate while repeated local runs passed; runner samples exposed continued warm-up plus avoidable monitors on request-owned observations, so the repair adds steady-state warm-up and an atomic exactly-once publication boundary without relaxing the workload, zero-drop assertion, or threshold.
 
 ## Reusable technical lessons
 

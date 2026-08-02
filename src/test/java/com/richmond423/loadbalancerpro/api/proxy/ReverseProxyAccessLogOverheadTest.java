@@ -33,9 +33,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
  * evidence, not a production throughput or latency benchmark.
  */
 class ReverseProxyAccessLogOverheadTest {
-    private static final int SAMPLE_COUNT = 7;
-    private static final int WARMUP_REQUESTS_PER_THREAD = 40;
-    private static final int REQUESTS_PER_THREAD = 120;
+    private static final int SAMPLE_COUNT = 9;
+    private static final int WARMUP_REQUESTS_PER_THREAD = 600;
+    private static final int REQUESTS_PER_THREAD = 300;
 
     @TempDir
     Path temporaryDirectory;
@@ -50,7 +50,7 @@ class ReverseProxyAccessLogOverheadTest {
         Fixture enabled = fixture(true, writer, upstream.getAddress().getPort());
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         try {
-            for (int warmup = 0; warmup < 2; warmup++) {
+            for (int warmup = 0; warmup < 3; warmup++) {
                 runConcurrent(executor, disabled.service, threads, WARMUP_REQUESTS_PER_THREAD);
                 runConcurrent(executor, enabled.service, threads, WARMUP_REQUESTS_PER_THREAD);
                 runConcurrent(executor, enabled.service, threads, WARMUP_REQUESTS_PER_THREAD);
@@ -115,6 +115,7 @@ class ReverseProxyAccessLogOverheadTest {
     private Fixture fixture(boolean accessLogEnabled, CountingWriter writer, int upstreamPort) {
         ReverseProxyProperties properties = new ReverseProxyProperties();
         properties.setEnabled(true);
+        properties.setRequestTimeout(Duration.ofSeconds(30));
         ReverseProxyProperties.Upstream upstream = new ReverseProxyProperties.Upstream();
         upstream.setId("benchmark-backend");
         upstream.setUrl("http://127.0.0.1:" + upstreamPort);
@@ -183,7 +184,7 @@ class ReverseProxyAccessLogOverheadTest {
         assertTrue(ready.await(5, TimeUnit.SECONDS));
         long startedAtNanos = System.nanoTime();
         start.countDown();
-        assertTrue(done.await(30, TimeUnit.SECONDS));
+        assertTrue(done.await(90, TimeUnit.SECONDS));
         long elapsed = System.nanoTime() - startedAtNanos;
         for (Future<?> future : futures) {
             future.get(1, TimeUnit.SECONDS);

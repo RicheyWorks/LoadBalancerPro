@@ -34,7 +34,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 class ReverseProxyAccessLogOverheadTest {
     private static final int SAMPLE_COUNT = 9;
-    private static final int WARMUP_REQUESTS_PER_THREAD = 80;
+    private static final int WARMUP_REQUESTS_PER_THREAD = 300;
     private static final int REQUESTS_PER_THREAD = 300;
 
     @TempDir
@@ -50,7 +50,7 @@ class ReverseProxyAccessLogOverheadTest {
         Fixture enabled = fixture(true, writer, upstream.getAddress().getPort());
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         try {
-            for (int warmup = 0; warmup < 2; warmup++) {
+            for (int warmup = 0; warmup < 3; warmup++) {
                 runConcurrent(executor, disabled.service, threads, WARMUP_REQUESTS_PER_THREAD);
                 runConcurrent(executor, enabled.service, threads, WARMUP_REQUESTS_PER_THREAD);
                 runConcurrent(executor, enabled.service, threads, WARMUP_REQUESTS_PER_THREAD);

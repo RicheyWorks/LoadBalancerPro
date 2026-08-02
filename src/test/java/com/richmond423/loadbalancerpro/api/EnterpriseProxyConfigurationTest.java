@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
+import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyAccessLog;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyConfiguration;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyMetrics;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyProperties;
@@ -33,6 +34,9 @@ class EnterpriseProxyConfigurationTest {
             assertThat(properties.getRequestTimeout()).isEqualTo(Duration.ofSeconds(2));
             assertThat(properties.getBackendTls().getTruststore()).isEmpty();
             assertThat(properties.getReload().getDrainTimeout()).isEqualTo(Duration.ofSeconds(30));
+            assertThat(properties.getAccessLog().isEnabled()).isFalse();
+            assertThat(properties.getAccessLog().getFormat()).isEqualTo("JSON");
+            assertThat(properties.getAccessLog().getSampleRate()).isEqualTo(1.0);
         });
     }
 
@@ -58,6 +62,7 @@ class EnterpriseProxyConfigurationTest {
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     assertThat(context).hasSingleBean(ReverseProxyService.class);
+                    assertThat(context).hasSingleBean(ReverseProxyAccessLog.class);
                     ReverseProxyProperties properties = context.getBean(ReverseProxyProperties.class);
                     assertThat(properties.isEnabled()).isTrue();
                     assertThat(properties.getPrivateNetworkLiveValidation().isEnabled()).isFalse();
@@ -72,6 +77,35 @@ class EnterpriseProxyConfigurationTest {
                     assertThat(context.getBean(HttpClient.class).connectTimeout())
                             .contains(Duration.ofMillis(275));
                 });
+    }
+
+    @Test
+    void accessLogConfigurationBindsAndMalformedValuesFailClosed() {
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues(
+                        "loadbalancerpro.proxy.access-log.enabled=false",
+                        "loadbalancerpro.proxy.access-log.format=combined",
+                        "loadbalancerpro.proxy.access-log.path=logs/operator-access.log",
+                        "loadbalancerpro.proxy.access-log.sample-rate=0.25")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    ReverseProxyProperties.AccessLog accessLog = context
+                            .getBean(ReverseProxyProperties.class).getAccessLog();
+                    assertThat(accessLog.isEnabled()).isFalse();
+                    assertThat(accessLog.getFormat()).isEqualTo("combined");
+                    assertThat(accessLog.getPath()).isEqualTo("logs/operator-access.log");
+                    assertThat(accessLog.getSampleRate()).isEqualTo(0.25);
+                });
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.access-log.format=xml")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "access-log.format must be JSON or COMBINED"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.access-log.sample-rate=1.01")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "access-log.sample-rate must be between 0.0 and 1.0"));
     }
 
     @Test

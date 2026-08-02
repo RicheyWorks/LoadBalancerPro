@@ -29,6 +29,7 @@ public class ReverseProxyProperties {
     private Limits limits = new Limits();
     private Shedding shedding = new Shedding();
     private BackendTls backendTls = new BackendTls();
+    private AccessLog accessLog = new AccessLog();
     private List<Upstream> upstreams = new ArrayList<>();
     private Map<String, Route> routes = new LinkedHashMap<>();
 
@@ -170,6 +171,14 @@ public class ReverseProxyProperties {
 
     public void setBackendTls(BackendTls backendTls) {
         this.backendTls = backendTls == null ? new BackendTls() : backendTls;
+    }
+
+    public AccessLog getAccessLog() {
+        return accessLog;
+    }
+
+    public void setAccessLog(AccessLog accessLog) {
+        this.accessLog = accessLog == null ? new AccessLog() : accessLog;
     }
 
     public List<Upstream> getUpstreams() {
@@ -844,6 +853,45 @@ public class ReverseProxyProperties {
 
         public void setDrainTimeout(Duration drainTimeout) {
             this.drainTimeout = drainTimeout == null ? Duration.ofSeconds(30) : drainTimeout;
+        }
+    }
+
+    public static final class AccessLog {
+        private boolean enabled = false;
+        private String format = "JSON";
+        private String path = "logs/proxy-access.log";
+        private double sampleRate = 1.0;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getFormat() {
+            return format;
+        }
+
+        public void setFormat(String format) {
+            this.format = format;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public double getSampleRate() {
+            return sampleRate;
+        }
+
+        public void setSampleRate(double sampleRate) {
+            this.sampleRate = sampleRate;
         }
     }
 }

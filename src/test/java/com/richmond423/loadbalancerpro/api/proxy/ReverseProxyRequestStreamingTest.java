@@ -31,6 +31,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 class ReverseProxyRequestStreamingTest {
     private static final long ONE_GIB = 1_073_741_824L;
     private static final int REQUEST_LIMIT = 65_536;
@@ -67,7 +70,10 @@ class ReverseProxyRequestStreamingTest {
             body[index] = (byte) (index * 31);
         }
         try (RequestBackend backend = RequestBackend.start()) {
-            ReverseProxyService service = service(properties(backend.url()), new ReverseProxyMetrics());
+            SimpleMeterRegistry registry = new SimpleMeterRegistry();
+            ReverseProxyService service = service(
+                    properties(backend.url()),
+                    new ReverseProxyMetrics(registry));
             try {
                 ReverseProxyResponse response = service.forward(request(
                         -1,
@@ -77,6 +83,12 @@ class ReverseProxyRequestStreamingTest {
                 assertEquals(200, response.statusCode());
                 assertArrayEquals(body, backend.lastBody());
                 assertEquals(1, backend.requestCount());
+                DistributionSummary requestBytes = registry.get("lbp.proxy.request.bytes")
+                        .tag("route", "legacy-upstreams")
+                        .tag("upstream", "backend-0")
+                        .summary();
+                assertEquals(1, requestBytes.count());
+                assertEquals(body.length, requestBytes.totalAmount());
             } finally {
                 service.closeHealthProber();
             }

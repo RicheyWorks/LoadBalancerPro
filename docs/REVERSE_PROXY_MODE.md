@@ -241,7 +241,7 @@ http://localhost:8080/proxy-status.html
 
 The page uses same-origin `GET /api/proxy/status` only. It shows the upstream table, counters, retry-budget/backoff, cooldown/slow-start state, raw JSON, copyable status summary, and local demo curl commands without browser storage or backend mutation controls.
 
-Counters, runtime statistics, and active health state are local memory only. They are reset when the app process restarts. There is no persistence, reset/admin mutation endpoint, Prometheus compatibility claim, external metrics store, generated runtime report, or cloud mutation.
+Counters, Micrometer measurements, runtime statistics, and active health state are local memory only. They are reset when the app process restarts. When a protected Prometheus Actuator endpoint is enabled, the proxy measurements are exported as fixed `lbp.proxy.*` series with bounded tags derived from closed outcomes/reasons and validated configured logical ids. There is no persistence, reset/admin mutation endpoint, external metrics store, generated runtime report, cloud mutation, distributed correlation, SLO evidence, or p95/p99 claim.
 
 ## Local Two-Backend Demo Fixture
 

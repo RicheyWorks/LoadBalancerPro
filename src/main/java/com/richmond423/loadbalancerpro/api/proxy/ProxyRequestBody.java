@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -19,6 +20,7 @@ final class ProxyRequestBody {
     private final boolean bodyPresent;
     private final AtomicBoolean opened = new AtomicBoolean();
     private final AtomicBoolean limitExceeded = new AtomicBoolean();
+    private final AtomicLong consumedBytes = new AtomicLong();
 
     private ProxyRequestBody(HttpServletRequest servletRequest,
                              byte[] repeatableBytes,
@@ -28,6 +30,9 @@ final class ProxyRequestBody {
         this.repeatableBytes = repeatableBytes;
         this.declaredLength = declaredLength;
         this.bodyPresent = bodyPresent;
+        if (repeatableBytes != null) {
+            consumedBytes.set(repeatableBytes.length);
+        }
     }
 
     static ProxyRequestBody streaming(HttpServletRequest request) {
@@ -55,6 +60,10 @@ final class ProxyRequestBody {
         return limitExceeded.get();
     }
 
+    long consumedBytes() {
+        return consumedBytes.get();
+    }
+
     HttpRequest.BodyPublisher publisher(long maxRequestBytes) throws IOException {
         if (!bodyPresent) {
             return HttpRequest.BodyPublishers.noBody();
@@ -68,7 +77,7 @@ final class ProxyRequestBody {
             }
             try {
                 return new BoundedInputStream(
-                        servletRequest.getInputStream(), maxRequestBytes, limitExceeded);
+                        servletRequest.getInputStream(), maxRequestBytes, limitExceeded, consumedBytes);
             } catch (IOException exception) {
                 throw new UncheckedIOException("Proxy request body could not be opened.", exception);
             }
@@ -101,15 +110,22 @@ final class ProxyRequestBody {
     static final class BoundedInputStream extends FilterInputStream {
         private final long maxBytes;
         private final AtomicBoolean limitExceeded;
+        private final AtomicLong consumedBytes;
         private long bytesRead;
 
         BoundedInputStream(InputStream input, long maxBytes, AtomicBoolean limitExceeded) {
+            this(input, maxBytes, limitExceeded, new AtomicLong());
+        }
+
+        BoundedInputStream(
+                InputStream input, long maxBytes, AtomicBoolean limitExceeded, AtomicLong consumedBytes) {
             super(Objects.requireNonNull(input, "input cannot be null"));
             if (maxBytes <= 0) {
                 throw new IllegalArgumentException("maxBytes must be greater than 0");
             }
             this.maxBytes = maxBytes;
             this.limitExceeded = Objects.requireNonNull(limitExceeded, "limitExceeded cannot be null");
+            this.consumedBytes = Objects.requireNonNull(consumedBytes, "consumedBytes cannot be null");
         }
 
         @Override
@@ -118,6 +134,7 @@ final class ProxyRequestBody {
             if (value == -1) {
                 return -1;
             }
+            consumedBytes.incrementAndGet();
             if (bytesRead >= maxBytes) {
                 failLimit();
             }
@@ -142,6 +159,7 @@ final class ProxyRequestBody {
             if (count == -1) {
                 return -1;
             }
+            consumedBytes.addAndGet(count);
             if (count > remaining) {
                 failLimit();
             }
@@ -162,6 +180,7 @@ final class ProxyRequestBody {
                     ? count
                     : Math.min(count, remaining + 1);
             long skipped = super.skip(boundedCount);
+            consumedBytes.addAndGet(skipped);
             if (skipped > remaining) {
                 failLimit();
             }

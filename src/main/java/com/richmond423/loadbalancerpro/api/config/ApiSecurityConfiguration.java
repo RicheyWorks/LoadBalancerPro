@@ -102,6 +102,9 @@ public class ApiSecurityConfiguration {
                     authorize.requestMatchers(HttpMethod.POST, "/api/routing/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.GET, "/api/routing/**").hasAnyRole(readRoles);
                     authorize.requestMatchers("/api/allocate/**").hasRole(allocationRole);
+                    authorize.requestMatchers(
+                                    "/actuator/prometheus", "/actuator/metrics", "/actuator/metrics/**")
+                            .hasAnyRole(readRoles);
                     authorize.requestMatchers("/actuator/health/**", "/actuator/info").hasAnyRole(readRoles);
                     authorize.requestMatchers("/api/**").denyAll();
                     authorize.anyRequest().denyAll();

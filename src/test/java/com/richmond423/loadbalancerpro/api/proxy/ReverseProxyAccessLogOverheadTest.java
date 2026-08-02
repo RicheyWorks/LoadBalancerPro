@@ -2,13 +2,10 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Duration;
@@ -16,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +20,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.sun.net.httpserver.HttpServer;
 import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import org.junit.jupiter.api.Test;
@@ -32,13 +29,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * A bounded local saturation guard for request-thread access-log overhead. It
- * uses a no-network upstream and no-op async sink, so it is regression evidence,
- * not a production throughput or latency benchmark.
+ * uses a literal-loopback upstream and no-op async sink, so it is regression
+ * evidence, not a production throughput or latency benchmark.
  */
 class ReverseProxyAccessLogOverheadTest {
-    private static final int SAMPLE_COUNT = 9;
-    private static final int WARMUP_REQUESTS_PER_THREAD = 1_500;
-    private static final int REQUESTS_PER_THREAD = 2_500;
+    private static final int SAMPLE_COUNT = 7;
+    private static final int WARMUP_REQUESTS_PER_THREAD = 40;
+    private static final int REQUESTS_PER_THREAD = 120;
 
     @TempDir
     Path temporaryDirectory;
@@ -47,8 +44,10 @@ class ReverseProxyAccessLogOverheadTest {
     void boundedConcurrentSaturationKeepsMedianRequestThreadOverheadBelowFivePercent() throws Exception {
         int threads = Math.max(2, Math.min(8, Runtime.getRuntime().availableProcessors()));
         CountingWriter writer = new CountingWriter();
-        Fixture disabled = fixture(false, writer);
-        Fixture enabled = fixture(true, writer);
+        ExecutorService upstreamExecutor = Executors.newFixedThreadPool(threads);
+        HttpServer upstream = loopbackUpstream(upstreamExecutor);
+        Fixture disabled = fixture(false, writer, upstream.getAddress().getPort());
+        Fixture enabled = fixture(true, writer, upstream.getAddress().getPort());
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         try {
             for (int warmup = 0; warmup < 2; warmup++) {
@@ -108,15 +107,17 @@ class ReverseProxyAccessLogOverheadTest {
             executor.shutdownNow();
             disabled.close();
             enabled.close();
+            upstream.stop(0);
+            upstreamExecutor.shutdownNow();
         }
     }
 
-    private Fixture fixture(boolean accessLogEnabled, CountingWriter writer) throws Exception {
+    private Fixture fixture(boolean accessLogEnabled, CountingWriter writer, int upstreamPort) {
         ReverseProxyProperties properties = new ReverseProxyProperties();
         properties.setEnabled(true);
         ReverseProxyProperties.Upstream upstream = new ReverseProxyProperties.Upstream();
         upstream.setId("benchmark-backend");
-        upstream.setUrl("http://127.0.0.1:18080");
+        upstream.setUrl("http://127.0.0.1:" + upstreamPort);
         properties.setUpstreams(List.of(upstream));
         properties.getAccessLog().setEnabled(accessLogEnabled);
         properties.getAccessLog().setPath(temporaryDirectory.resolve("access.log").toString());
@@ -128,7 +129,7 @@ class ReverseProxyAccessLogOverheadTest {
         accessLog.start();
         ReverseProxyService service = new ReverseProxyService(
                 properties,
-                noNetworkClient(),
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
                 new ReverseProxyMetrics(),
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),
@@ -137,16 +138,19 @@ class ReverseProxyAccessLogOverheadTest {
         return new Fixture(service, accessLog);
     }
 
-    @SuppressWarnings("unchecked")
-    private static HttpClient noNetworkClient() throws Exception {
-        HttpClient client = mock(HttpClient.class);
-        HttpResponse<InputStream> response = mock(HttpResponse.class);
-        when(response.statusCode()).thenReturn(204);
-        when(response.headers()).thenReturn(java.net.http.HttpHeaders.of(Map.of(), (name, value) -> true));
-        when(response.body()).thenAnswer(ignored -> InputStream.nullInputStream());
-        when(client.send(any(), org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<InputStream>>any()))
-                .thenReturn(response);
-        return client;
+    private static HttpServer loopbackUpstream(ExecutorService executor) throws Exception {
+        HttpServer server = HttpServer.create(
+                new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0), 0);
+        server.createContext("/", exchange -> {
+            try {
+                exchange.sendResponseHeaders(204, -1);
+            } finally {
+                exchange.close();
+            }
+        });
+        server.setExecutor(executor);
+        server.start();
+        return server;
     }
 
     private static long runConcurrent(

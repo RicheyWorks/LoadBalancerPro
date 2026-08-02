@@ -221,9 +221,13 @@ public class ReverseProxyService implements SmartLifecycle {
             ProxyRequestBody requestBody,
             ProxyDownstream downstream) throws IOException {
         ReverseProxyProperties properties = config.properties();
-        ProxyRequestObservation observation = properties.isEnabled()
-                ? new ProxyRequestObservation(metrics.beginRequest(), accessLog.begin(request.getMethod()))
-                : null;
+        ProxyRequestObservation observation = null;
+        if (properties.isEnabled()) {
+            ReverseProxyMetrics.RequestObservation metricObservation = metrics.beginRequest();
+            observation = new ProxyRequestObservation(
+                    metricObservation,
+                    accessLog.begin(request.getMethod(), metricObservation.startedAtNanos()));
+        }
         ProxyDownstream observedDownstream = observation == null
                 ? downstream
                 : new CountingProxyDownstream(downstream, observation);
@@ -2220,54 +2224,92 @@ public class ReverseProxyService implements SmartLifecycle {
 
         private void bindRoute(String route) {
             metrics.bindRoute(route);
-            safely(() -> accessLog.bindRoute(route));
+            if (accessLog != null) {
+                try {
+                    accessLog.bindRoute(route);
+                } catch (RuntimeException exception) {
+                    // Access logging cannot alter the proxy request lifecycle.
+                }
+            }
         }
 
         private void bindUpstream(String route, String upstream) {
             metrics.bindUpstream(route, upstream);
-            safely(() -> accessLog.bindUpstream(route, upstream));
+            if (accessLog != null) {
+                try {
+                    accessLog.bindUpstream(route, upstream);
+                } catch (RuntimeException exception) {
+                    // Access logging cannot alter the proxy request lifecycle.
+                }
+            }
         }
 
         private void recordDispatch(boolean retry, ReverseProxyMetrics.RetryReason reason) {
             metrics.recordDispatch(retry, reason);
-            safely(() -> accessLog.recordDispatch(retry));
+            if (accessLog != null) {
+                try {
+                    accessLog.recordDispatch(retry);
+                } catch (RuntimeException exception) {
+                    // Access logging cannot alter the proxy request lifecycle.
+                }
+            }
         }
 
         private void addResponseBytes(long bytes) {
             metrics.addResponseBytes(bytes);
-            safely(() -> accessLog.addResponseBytes(bytes));
+            if (accessLog != null) {
+                try {
+                    accessLog.addResponseBytes(bytes);
+                } catch (RuntimeException exception) {
+                    // Access logging cannot alter the proxy request lifecycle.
+                }
+            }
         }
 
         private void cooldownActivated() {
-            safely(() -> accessLog.cooldownActivated());
+            if (accessLog != null) {
+                try {
+                    accessLog.cooldownActivated();
+                } catch (RuntimeException exception) {
+                    // Access logging cannot alter the proxy request lifecycle.
+                }
+            }
         }
 
         private void terminal(int statusCode, ReverseProxyMetrics.TerminalOutcome outcome) {
             metrics.terminal(statusCode, outcome);
-            safely(() -> accessLog.terminal(statusCode, outcome));
+            if (accessLog != null) {
+                try {
+                    accessLog.terminal(statusCode, outcome);
+                } catch (RuntimeException exception) {
+                    // Access logging cannot alter the proxy request lifecycle.
+                }
+            }
         }
 
         private void terminalIfUnset(int statusCode, ReverseProxyMetrics.TerminalOutcome outcome) {
             metrics.terminalIfUnset(statusCode, outcome);
-            safely(() -> accessLog.terminalIfUnset(statusCode, outcome));
+            if (accessLog != null) {
+                try {
+                    accessLog.terminalIfUnset(statusCode, outcome);
+                } catch (RuntimeException exception) {
+                    // Access logging cannot alter the proxy request lifecycle.
+                }
+            }
         }
 
         private void complete(long requestBytes) {
+            long completedAtNanos = System.nanoTime();
             try {
-                metrics.complete(requestBytes);
+                metrics.completeAt(requestBytes, completedAtNanos);
             } finally {
-                safely(() -> accessLog.complete(requestBytes));
-            }
-        }
-
-        private void safely(Runnable action) {
-            if (accessLog == null) {
-                return;
-            }
-            try {
-                action.run();
-            } catch (RuntimeException exception) {
-                // Access logging cannot alter the proxy request lifecycle.
+                if (accessLog != null) {
+                    try {
+                        accessLog.completeAt(requestBytes, completedAtNanos);
+                    } catch (RuntimeException exception) {
+                        // Access logging cannot alter the proxy request lifecycle.
+                    }
+                }
             }
         }
     }

@@ -454,6 +454,14 @@ public class ReverseProxyMetrics {
         }
 
         void complete(long requestBytes) {
+            completeAt(requestBytes, System.nanoTime());
+        }
+
+        long startedAtNanos() {
+            return startedAtNanos;
+        }
+
+        void completeAt(long requestBytes, long completedAtNanos) {
             if (!enabled || !completed.compareAndSet(false, true)) {
                 return;
             }
@@ -463,7 +471,7 @@ public class ReverseProxyMetrics {
                 TerminalMeters terminalMeters = series.terminalMeters.computeIfAbsent(
                         terminalKey, series::registerTerminalMeters);
                 safeIncrement(terminalMeters.requests);
-                safeRecord(series.latency, System.nanoTime() - startedAtNanos);
+                safeRecord(series.latency, Math.max(0L, completedAtNanos - startedAtNanos));
                 safeRecord(series.requestBytes, requestBytes);
                 safeRecord(series.responseBytes, responseBytes.get());
                 recordTerminalSideMeters(series, outcome);

@@ -92,12 +92,18 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
     }
 
     RequestLogObservation begin(String method) {
+        return begin(method, System.nanoTime());
+    }
+
+    RequestLogObservation begin(String method, long startedAtNanos) {
         try {
             if (!accepting.get() || !selected()) {
                 return null;
             }
             return new RequestLogObservation(
-                    clock.millis(), System.nanoTime(), normalizedMethod(method));
+                    clock.millis(),
+                    startedAtNanos > 0 ? startedAtNanos : System.nanoTime(),
+                    normalizedMethod(method));
         } catch (RuntimeException exception) {
             return null;
         }
@@ -227,11 +233,16 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
 
     private void enqueue(RequestLogObservation event) {
         try {
-            if (!accepting.get() || !queue.offer(event)) {
+            if (!accepting.get()) {
                 dropped.increment();
                 return;
             }
-            if (queue.size() == 1) {
+            OfferResult result = queue.offer(event);
+            if (result == OfferResult.FULL) {
+                dropped.increment();
+                return;
+            }
+            if (result == OfferResult.WAS_EMPTY) {
                 LockSupport.unpark(writerThread);
             }
         } catch (RuntimeException exception) {
@@ -438,11 +449,15 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
         }
 
         void complete(long requestBytes) {
+            completeAt(requestBytes, System.nanoTime());
+        }
+
+        void completeAt(long requestBytes, long completedAtNanos) {
             if (completed) {
                 return;
             }
             completed = true;
-            long elapsedNanos = Math.max(0L, System.nanoTime() - startedAtNanos);
+            long elapsedNanos = Math.max(0L, completedAtNanos - startedAtNanos);
             bytesIn = nonNegative(requestBytes);
             durationMicros = TimeUnit.NANOSECONDS.toMicros(elapsedNanos);
             enqueue(this);
@@ -569,17 +584,17 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             this.mask = capacity - 1;
         }
 
-        private boolean offer(E entry) {
+        private OfferResult offer(E entry) {
             Objects.requireNonNull(entry, "entry cannot be null");
             while (true) {
                 long producer = producerIndex.get();
                 long consumer = consumerIndex.get();
                 if (producer - consumer >= entries.length()) {
-                    return false;
+                    return OfferResult.FULL;
                 }
                 if (producerIndex.compareAndSet(producer, producer + 1)) {
                     entries.lazySet((int) producer & mask, entry);
-                    return true;
+                    return producer == consumer ? OfferResult.WAS_EMPTY : OfferResult.NOT_EMPTY;
                 }
                 Thread.onSpinWait();
             }
@@ -604,14 +619,15 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             return consumerIndex.get() >= producerIndex.get();
         }
 
-        private int size() {
-            return (int) Math.min(Integer.MAX_VALUE,
-                    Math.max(0L, producerIndex.get() - consumerIndex.get()));
-        }
-
         private long offeredCount() {
             return producerIndex.get();
         }
+    }
+
+    private enum OfferResult {
+        FULL,
+        WAS_EMPTY,
+        NOT_EMPTY
     }
 
     @FunctionalInterface

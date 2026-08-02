@@ -34,7 +34,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 class ReverseProxyAccessLogOverheadTest {
     private static final int SAMPLE_COUNT = 9;
-    private static final int WARMUP_REQUESTS_PER_THREAD = 300;
+    private static final int WARMUP_REQUESTS_PER_THREAD = 600;
     private static final int REQUESTS_PER_THREAD = 300;
 
     @TempDir

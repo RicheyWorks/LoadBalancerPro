@@ -31,6 +31,7 @@ class EnterpriseProxyConfigurationTest {
             assertThat(properties.getPrivateNetworkLiveValidation().isOperatorApproved()).isFalse();
             assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(1));
             assertThat(properties.getRequestTimeout()).isEqualTo(Duration.ofSeconds(2));
+            assertThat(properties.getBackendTls().getTruststore()).isEmpty();
         });
     }
 
@@ -88,6 +89,24 @@ class EnterpriseProxyConfigurationTest {
                 .withPropertyValues("loadbalancerpro.proxy.routes.api.request-timeout=0ms")
                 .run(context -> assertStartupFailureContains(
                         context.getStartupFailure(), "routes.api.request-timeout must be greater than zero"));
+    }
+
+    @Test
+    void backendTlsDefaultsToVerificationAndRejectsUnsafeOrCleartextTlsConfiguration() {
+        contextRunner.withPropertyValues(validSingleTargetRouteProperties("https://127.0.0.1"))
+                .withPropertyValues("loadbalancerpro.proxy.routes.api.targets[0].tls.verify=false")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "tls.verify=false is not supported"));
+
+        contextRunner.withPropertyValues(validSingleTargetRouteProperties("http://127.0.0.1:18081"))
+                .withPropertyValues("loadbalancerpro.proxy.routes.api.targets[0].tls.client-cert=client")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "backend TLS bundles require an https upstream URL"));
+
+        contextRunner.withPropertyValues(validSingleTargetRouteProperties("https://127.0.0.1"))
+                .withPropertyValues("loadbalancerpro.proxy.backend-tls.truststore=backend-ca")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "Spring SSL bundles are unavailable"));
     }
 
     @Test

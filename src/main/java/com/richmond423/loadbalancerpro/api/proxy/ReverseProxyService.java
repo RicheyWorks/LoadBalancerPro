@@ -77,6 +77,7 @@ public class ReverseProxyService {
             "upgrade");
 
     private final HttpClient httpClient;
+    private final ReverseProxyHttpClientProvider httpClientProvider;
     private final ReverseProxyMetrics metrics;
     private final RoutingStrategyRegistry registry;
     private final Clock clock;
@@ -93,9 +94,11 @@ public class ReverseProxyService {
     @Autowired
     public ReverseProxyService(ReverseProxyProperties properties,
                                HttpClient httpClient,
+                               ReverseProxyHttpClientProvider httpClientProvider,
                                ReverseProxyMetrics metrics,
                                ObjectProvider<LaseShadowRuntime> laseShadowRuntimeProvider) {
-        this(properties, httpClient, metrics, RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(),
+        this(properties, httpClient, httpClientProvider, metrics,
+                RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(),
                 laseShadowRuntimeProvider.getIfAvailable(LaseShadowRuntime::disabled));
     }
 
@@ -113,7 +116,20 @@ public class ReverseProxyService {
                         RoutingStrategyRegistry registry,
                         Clock clock,
                         LaseShadowRuntime laseShadowRuntime) {
+        this(properties, httpClient,
+                ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
+                metrics, registry, clock, laseShadowRuntime);
+    }
+
+    private ReverseProxyService(ReverseProxyProperties properties,
+                                HttpClient httpClient,
+                                ReverseProxyHttpClientProvider httpClientProvider,
+                                ReverseProxyMetrics metrics,
+                                RoutingStrategyRegistry registry,
+                                Clock clock,
+                                LaseShadowRuntime laseShadowRuntime) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient cannot be null");
+        this.httpClientProvider = Objects.requireNonNull(httpClientProvider, "httpClientProvider cannot be null");
         this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
@@ -745,6 +761,7 @@ public class ReverseProxyService {
                     "loadbalancerpro.proxy.routes." + route.name() + ".request-timeout");
             for (ReverseProxyProperties.Upstream upstream : route.targets()) {
                 validateUpstreamRuntimeFields(upstream);
+                httpClientProvider.clientFor(properties.getBackendTls(), upstream);
             }
         }
     }
@@ -841,7 +858,7 @@ public class ReverseProxyService {
             HttpRequest outbound = buildOutboundRequest(
                     request, requestBody, properties.getMaxRequestBytes(), upstream,
                     requestTimeout, proxyPathSuffix, forwardedPolicy, headerRewrites);
-            HttpResponse<InputStream> response = httpClient.send(
+            HttpResponse<InputStream> response = upstream.httpClient().send(
                     outbound, HttpResponse.BodyHandlers.ofInputStream());
             metrics.recordForwarded(upstreamId, response.statusCode());
             HttpHeaders responseHeaders = forwardedResponseHeaders(response.headers().map());
@@ -1034,7 +1051,8 @@ public class ReverseProxyService {
                 runtime.latencySampleCount(),
                 saturatedAdd(runtime.recentSuccessCount(), runtime.recentFailureCount()));
         return new UpstreamCandidate(
-                baseUri, state, effectiveMaxInFlight, telemetrySampleSize);
+                baseUri, state, effectiveMaxInFlight, telemetrySampleSize,
+                httpClientProvider.clientFor(properties.getBackendTls(), upstream));
     }
 
     private int liveShadowConcurrencyLimit(
@@ -1439,7 +1457,8 @@ public class ReverseProxyService {
                             id,
                             healthCheckUri(properties, baseUri),
                             healthCheck.getTimeout(),
-                            config.generation());
+                            config.generation(),
+                            httpClientProvider.clientFor(properties.getBackendTls(), upstream));
                 })
                 .toList();
         healthProber.configure(
@@ -1548,6 +1567,7 @@ public class ReverseProxyService {
         copy.setForwarded(copyForwarded(source.getForwarded()));
         copy.setLimits(copyLimits(source.getLimits()));
         copy.setShedding(copyShedding(source.getShedding()));
+        copy.setBackendTls(copyBackendTls(source.getBackendTls()));
         copy.setUpstreams(source.getUpstreams().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
@@ -1623,6 +1643,25 @@ public class ReverseProxyService {
         copy.setP99LatencyMillis(source.getP99LatencyMillis());
         copy.setRecentErrorRate(source.getRecentErrorRate());
         copy.setQueueDepth(source.getQueueDepth());
+        copy.setTls(copyTls(source.getTls()));
+        return copy;
+    }
+
+    private static ReverseProxyProperties.BackendTls copyBackendTls(
+            ReverseProxyProperties.BackendTls source) {
+        ReverseProxyProperties.BackendTls copy = new ReverseProxyProperties.BackendTls();
+        if (source != null) {
+            copy.setTruststore(source.getTruststore());
+        }
+        return copy;
+    }
+
+    private static ReverseProxyProperties.Tls copyTls(ReverseProxyProperties.Tls source) {
+        ReverseProxyProperties.Tls copy = new ReverseProxyProperties.Tls();
+        if (source != null) {
+            copy.setVerify(source.isVerify());
+            copy.setClientCert(source.getClientCert());
+        }
         return copy;
     }
 
@@ -1779,7 +1818,8 @@ public class ReverseProxyService {
             URI baseUri,
             ServerStateVector state,
             int maxInFlight,
-            int telemetrySampleSize) {
+            int telemetrySampleSize,
+            HttpClient httpClient) {
     }
 
     private record EffectiveHealth(

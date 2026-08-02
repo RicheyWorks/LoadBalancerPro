@@ -176,12 +176,14 @@ final class UpstreamHealthProber implements AutoCloseable {
     @SuppressWarnings("java/ssrf")
     private static ProbeResult httpProbe(HttpClient httpClient, Target target)
             throws IOException, InterruptedException {
-        Objects.requireNonNull(httpClient, "httpClient cannot be null");
+        HttpClient selectedClient = target.httpClient() == null
+                ? Objects.requireNonNull(httpClient, "httpClient cannot be null")
+                : target.httpClient();
         HttpRequest request = HttpRequest.newBuilder(target.uri())
                 .timeout(target.timeout())
                 .GET()
                 .build();
-        HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        HttpResponse<Void> response = selectedClient.send(request, HttpResponse.BodyHandlers.discarding());
         int statusCode = response.statusCode();
         boolean successful = statusCode >= 200 && statusCode <= 399;
         return new ProbeResult(
@@ -201,9 +203,13 @@ final class UpstreamHealthProber implements AutoCloseable {
         }
     }
 
-    record Target(String id, URI uri, Duration timeout, long configurationGeneration) {
+    record Target(String id, URI uri, Duration timeout, long configurationGeneration, HttpClient httpClient) {
         Target(String id, URI uri, Duration timeout) {
-            this(id, uri, timeout, 0);
+            this(id, uri, timeout, 0, null);
+        }
+
+        Target(String id, URI uri, Duration timeout, long configurationGeneration) {
+            this(id, uri, timeout, configurationGeneration, null);
         }
 
         Target {

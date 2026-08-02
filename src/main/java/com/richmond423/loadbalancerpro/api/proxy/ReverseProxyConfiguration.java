@@ -6,6 +6,8 @@ import java.time.Duration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,5 +27,17 @@ public class ReverseProxyConfiguration {
                 .connectTimeout(connectTimeout)
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "loadbalancerpro.proxy", name = "enabled", havingValue = "true")
+    ReverseProxyHttpClientProvider reverseProxyHttpClientProvider(
+            HttpClient reverseProxyHttpClient,
+            ReverseProxyProperties properties,
+            ObjectProvider<SslBundles> sslBundlesProvider) {
+        return new ReverseProxyHttpClientProvider(
+                reverseProxyHttpClient,
+                properties.getConnectTimeout(),
+                sslBundlesProvider.getIfAvailable());
     }
 }

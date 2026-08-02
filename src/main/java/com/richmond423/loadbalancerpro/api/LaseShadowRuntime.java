@@ -7,11 +7,13 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Service;
 
 import com.richmond423.loadbalancerpro.core.LaseEvaluationReport;
@@ -23,13 +25,11 @@ import com.richmond423.loadbalancerpro.core.LiveRoutingShadowObservation;
 import com.richmond423.loadbalancerpro.core.LoadDistributionResult;
 import com.richmond423.loadbalancerpro.core.Server;
 
-import jakarta.annotation.PreDestroy;
-
 /**
  * Application-scoped owner for LASE shadow state and bounded live-proxy dispatch.
  */
 @Service
-public final class LaseShadowRuntime {
+public final class LaseShadowRuntime implements SmartLifecycle {
     public static final int LIVE_QUEUE_CAPACITY = 100;
     private static final long SHUTDOWN_TIMEOUT_SECONDS = 2;
 
@@ -38,6 +38,7 @@ public final class LaseShadowRuntime {
     private final LaseShadowAdvisor advisor;
     private final Consumer<LiveRoutingShadowObservation> liveObserver;
     private final ThreadPoolExecutor liveExecutor;
+    private final AtomicBoolean running = new AtomicBoolean(true);
     private final AtomicLong totalAccepted = new AtomicLong();
     private final AtomicLong totalCompleted = new AtomicLong();
     private final AtomicLong totalDropped = new AtomicLong();
@@ -93,7 +94,7 @@ public final class LaseShadowRuntime {
 
     public boolean submitLiveRouting(LiveRoutingShadowObservation observation) {
         Objects.requireNonNull(observation, "observation cannot be null");
-        if (!liveProxyEnabled || liveExecutor == null || liveExecutor.isShutdown()) {
+        if (!running.get() || !liveProxyEnabled || liveExecutor == null || liveExecutor.isShutdown()) {
             return false;
         }
         try {
@@ -149,9 +150,16 @@ public final class LaseShadowRuntime {
         return executor;
     }
 
-    @PreDestroy
-    void close() {
-        if (liveExecutor == null) {
+    @Override
+    public void start() {
+        if (!running.get()) {
+            throw new IllegalStateException("LASE shadow runtime cannot restart after shutdown");
+        }
+    }
+
+    @Override
+    public void stop() {
+        if (!running.compareAndSet(true, false) || liveExecutor == null) {
             return;
         }
         liveExecutor.shutdown();
@@ -163,5 +171,24 @@ public final class LaseShadowRuntime {
             Thread.currentThread().interrupt();
             totalDropped.addAndGet(liveExecutor.shutdownNow().size());
         }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running.get();
+    }
+
+    @Override
+    public boolean isAutoStartup() {
+        return true;
+    }
+
+    @Override
+    public int getPhase() {
+        return Integer.MAX_VALUE;
+    }
+
+    void close() {
+        stop();
     }
 }

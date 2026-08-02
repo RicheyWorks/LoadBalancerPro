@@ -22,6 +22,7 @@ public class ReverseProxyProperties {
     private PrivateNetworkLiveValidation privateNetworkLiveValidation = new PrivateNetworkLiveValidation();
     private HealthCheck healthCheck = new HealthCheck();
     private Retry retry = new Retry();
+    private Reload reload = new Reload();
     private Cooldown cooldown = new Cooldown();
     private SlowStart slowStart = new SlowStart();
     private Forwarded forwarded = new Forwarded();
@@ -113,6 +114,14 @@ public class ReverseProxyProperties {
 
     public void setRetry(Retry retry) {
         this.retry = retry == null ? new Retry() : retry;
+    }
+
+    public Reload getReload() {
+        return reload;
+    }
+
+    public void setReload(Reload reload) {
+        this.reload = reload == null ? new Reload() : reload;
     }
 
     public Cooldown getCooldown() {
@@ -823,6 +832,18 @@ public class ReverseProxyProperties {
 
         public void setDuration(Duration duration) {
             this.duration = duration == null ? Duration.ZERO : duration;
+        }
+    }
+
+    public static final class Reload {
+        private Duration drainTimeout = Duration.ofSeconds(30);
+
+        public Duration getDrainTimeout() {
+            return drainTimeout;
+        }
+
+        public void setDrainTimeout(Duration drainTimeout) {
+            this.drainTimeout = drainTimeout == null ? Duration.ofSeconds(30) : drainTimeout;
         }
     }
 }

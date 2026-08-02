@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 
@@ -21,6 +22,18 @@ import com.richmond423.loadbalancerpro.core.ServerStateVector;
 
 class LaseShadowRuntimeTest {
     private static final Instant NOW = Instant.parse("2026-07-31T12:00:00Z");
+
+    @Test
+    void lifecycleStopIsIdempotentAndTerminal() {
+        LaseShadowRuntime runtime = LaseShadowRuntime.disabled();
+
+        assertTrue(runtime.isRunning());
+        runtime.stop();
+        runtime.stop();
+
+        assertFalse(runtime.isRunning());
+        assertThrows(IllegalStateException.class, runtime::start);
+    }
 
     @Test
     void liveDispatchIsNonBlockingBoundedAndObservable() throws Exception {

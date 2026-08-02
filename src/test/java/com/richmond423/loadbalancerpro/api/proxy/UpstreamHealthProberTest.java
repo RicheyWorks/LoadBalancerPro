@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
@@ -141,9 +142,79 @@ class UpstreamHealthProberTest {
         }
     }
 
+    @Test
+    void reconfigureCarriesHealthOnlyForAnUnchangedTargetAndPolicy() throws Exception {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        AtomicInteger probes = new AtomicInteger();
+        CountDownLatch replacementProbeStarted = new CountDownLatch(1);
+        CountDownLatch releaseReplacementProbe = new CountDownLatch(1);
+        UpstreamHealthProber prober = new UpstreamHealthProber(
+                scheduler,
+                target -> {
+                    if (probes.incrementAndGet() > 1) {
+                        replacementProbeStarted.countDown();
+                        releaseReplacementProbe.await();
+                    }
+                    return new UpstreamHealthProber.ProbeResult(false, 503, "unhealthy");
+                },
+                Clock.systemUTC(),
+                (target, successful, snapshot) -> { },
+                interval -> 0);
+
+        try {
+            prober.configure(List.of(target("backend", 1)), Duration.ofHours(1), 1, 1);
+            await(() -> prober.snapshot("backend", 1)
+                            .map(snapshot -> !snapshot.healthy())
+                            .orElse(false),
+                    Duration.ofSeconds(2));
+            UpstreamHealthProber.HealthSnapshot before = prober.snapshot("backend", 1).orElseThrow();
+
+            prober.configure(List.of(target("backend", 2)), Duration.ofHours(1), 1, 1);
+            assertTrue(replacementProbeStarted.await(2, TimeUnit.SECONDS));
+
+            UpstreamHealthProber.HealthSnapshot after = prober.snapshot("backend", 2).orElseThrow();
+            assertFalse(after.healthy());
+            assertEquals(before.consecutiveFailures(), after.consecutiveFailures());
+            assertEquals(before.checkedAt(), after.checkedAt());
+            assertEquals(before, prober.snapshot("backend", 1).orElseThrow(),
+                    "the prior generation may finish requests against the same unchanged target");
+
+            prober.configure(List.of(target("backend", 3)), Duration.ofHours(1), 1, 1);
+            assertEquals(before, prober.snapshot("backend", 1).orElseThrow(),
+                    "overlapping requests may outlive more than one unchanged reload");
+        } finally {
+            releaseReplacementProbe.countDown();
+            prober.close();
+        }
+    }
+
+    @Test
+    void lifecycleStopCancelsTasksAndRejectsFurtherConfiguration() {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        UpstreamHealthProber prober = new UpstreamHealthProber(
+                scheduler,
+                target -> new UpstreamHealthProber.ProbeResult(true, 200, "healthy"),
+                Clock.systemUTC(),
+                (target, successful, snapshot) -> { },
+                interval -> 0);
+
+        assertTrue(prober.isRunning());
+        prober.stop();
+
+        assertFalse(prober.isRunning());
+        assertTrue(scheduler.isShutdown());
+        assertThrows(IllegalStateException.class,
+                () -> prober.configure(List.of(target("backend")), Duration.ofSeconds(1), 1, 1));
+    }
+
     private static UpstreamHealthProber.Target target(String id) {
         return new UpstreamHealthProber.Target(
                 id, URI.create("http://127.0.0.1:18081/health"), Duration.ofSeconds(1));
+    }
+
+    private static UpstreamHealthProber.Target target(String id, long generation) {
+        return new UpstreamHealthProber.Target(
+                id, URI.create("http://127.0.0.1:18081/health"), Duration.ofSeconds(1), generation);
     }
 
     private static void await(BooleanSupplier condition, Duration timeout) throws Exception {

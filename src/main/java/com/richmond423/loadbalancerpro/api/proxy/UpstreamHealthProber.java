@@ -21,17 +21,19 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongUnaryOperator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.SmartLifecycle;
 
 /**
  * Runs bounded active-health probes away from request and status threads.
  */
-final class UpstreamHealthProber implements AutoCloseable {
+final class UpstreamHealthProber implements AutoCloseable, SmartLifecycle {
     static final String THREAD_NAME_PREFIX = "loadbalancerpro-health-probe-";
     private static final Logger logger = LoggerFactory.getLogger(UpstreamHealthProber.class);
 
@@ -43,6 +45,8 @@ final class UpstreamHealthProber implements AutoCloseable {
     private final ConcurrentMap<String, HealthState> states = new ConcurrentHashMap<>();
     private final Map<String, ScheduledFuture<?>> tasks = new LinkedHashMap<>();
     private final AtomicLong generation = new AtomicLong();
+    private final AtomicBoolean running = new AtomicBoolean(true);
+    private ProbeConfiguration activeConfiguration;
 
     UpstreamHealthProber(HttpClient httpClient, Clock clock, ProbeListener listener) {
         this(
@@ -82,22 +86,37 @@ final class UpstreamHealthProber implements AutoCloseable {
         if (unhealthyThreshold <= 0) {
             throw new IllegalArgumentException("unhealthyThreshold must be greater than zero");
         }
+        if (!running.get()) {
+            throw new IllegalStateException("health prober is stopped");
+        }
 
         long configuredGeneration = generation.incrementAndGet();
         cancelTasks();
-        states.clear();
+        ProbeConfiguration nextConfiguration =
+                new ProbeConfiguration(intervalNanos, healthyThreshold, unhealthyThreshold);
+        boolean preserveUnchanged = nextConfiguration.equals(activeConfiguration);
         Map<String, Target> uniqueTargets = new LinkedHashMap<>();
         for (Target target : configuredTargets) {
             Target validated = Objects.requireNonNull(target, "configuredTargets cannot contain null");
             uniqueTargets.putIfAbsent(validated.id(), validated);
         }
+        Map<String, HealthState> nextStates = new LinkedHashMap<>();
         uniqueTargets.forEach((id, target) -> {
-            HealthState state = new HealthState(target.configurationGeneration());
-            states.put(id, state);
+            HealthState prior = preserveUnchanged ? states.get(id) : null;
+            HealthState state = prior != null && prior.matches(target)
+                    ? prior.retarget(target)
+                    : new HealthState(target);
+            nextStates.put(id, state);
+        });
+        states.clear();
+        states.putAll(nextStates);
+        activeConfiguration = nextConfiguration;
+        uniqueTargets.forEach((id, target) -> {
             long requestedJitter = initialJitterNanos.applyAsLong(intervalNanos);
             long initialDelay = Math.max(0, Math.min(intervalNanos - 1, requestedJitter));
             ScheduledFuture<?> task = scheduler.scheduleWithFixedDelay(
-                    () -> probe(configuredGeneration, target, state, healthyThreshold, unhealthyThreshold),
+                    () -> probe(configuredGeneration, target, nextStates.get(id),
+                            healthyThreshold, unhealthyThreshold),
                     initialDelay,
                     intervalNanos,
                     TimeUnit.NANOSECONDS);
@@ -105,10 +124,11 @@ final class UpstreamHealthProber implements AutoCloseable {
         });
     }
 
-    synchronized void stop() {
+    synchronized void clear() {
         generation.incrementAndGet();
         cancelTasks();
         states.clear();
+        activeConfiguration = null;
     }
 
     Optional<HealthSnapshot> snapshot(String upstreamId, long configurationGeneration) {
@@ -158,9 +178,39 @@ final class UpstreamHealthProber implements AutoCloseable {
     }
 
     @Override
-    public synchronized void close() {
+    public void start() {
+        if (scheduler.isShutdown()) {
+            throw new IllegalStateException("health prober cannot restart after shutdown");
+        }
+        running.set(true);
+    }
+
+    @Override
+    public synchronized void stop() {
+        if (running.compareAndSet(true, false)) {
+            clear();
+            scheduler.shutdownNow();
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running.get();
+    }
+
+    @Override
+    public boolean isAutoStartup() {
+        return true;
+    }
+
+    @Override
+    public int getPhase() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public void close() {
         stop();
-        scheduler.shutdownNow();
     }
 
     private static ScheduledExecutorService newScheduler() {
@@ -225,6 +275,9 @@ final class UpstreamHealthProber implements AutoCloseable {
         }
     }
 
+    private record ProbeConfiguration(long intervalNanos, int healthyThreshold, int unhealthyThreshold) {
+    }
+
     record HealthSnapshot(
             boolean healthy,
             Integer statusCode,
@@ -258,7 +311,8 @@ final class UpstreamHealthProber implements AutoCloseable {
     }
 
     private static final class HealthState {
-        private final long configurationGeneration;
+        private Target target;
+        private final long firstCompatibleConfigurationGeneration;
         private boolean healthy = true;
         private int consecutiveSuccesses;
         private int consecutiveFailures;
@@ -270,12 +324,25 @@ final class UpstreamHealthProber implements AutoCloseable {
                 0,
                 0);
 
-        private HealthState(long configurationGeneration) {
-            this.configurationGeneration = configurationGeneration;
+        private HealthState(Target target) {
+            this.target = target;
+            this.firstCompatibleConfigurationGeneration = target.configurationGeneration();
         }
 
-        private boolean belongsTo(long expectedGeneration) {
-            return configurationGeneration == expectedGeneration;
+        private synchronized boolean matches(Target candidate) {
+            return target.uri().equals(candidate.uri())
+                    && target.timeout().equals(candidate.timeout())
+                    && target.httpClient() == candidate.httpClient();
+        }
+
+        private synchronized HealthState retarget(Target candidate) {
+            target = candidate;
+            return this;
+        }
+
+        private synchronized boolean belongsTo(long expectedGeneration) {
+            return expectedGeneration >= firstCompatibleConfigurationGeneration
+                    && expectedGeneration <= target.configurationGeneration();
         }
 
         private synchronized HealthSnapshot record(

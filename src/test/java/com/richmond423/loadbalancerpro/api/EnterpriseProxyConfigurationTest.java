@@ -32,6 +32,7 @@ class EnterpriseProxyConfigurationTest {
             assertThat(properties.getConnectTimeout()).isEqualTo(Duration.ofSeconds(1));
             assertThat(properties.getRequestTimeout()).isEqualTo(Duration.ofSeconds(2));
             assertThat(properties.getBackendTls().getTruststore()).isEmpty();
+            assertThat(properties.getReload().getDrainTimeout()).isEqualTo(Duration.ofSeconds(30));
         });
     }
 
@@ -89,6 +90,19 @@ class EnterpriseProxyConfigurationTest {
                 .withPropertyValues("loadbalancerpro.proxy.routes.api.request-timeout=0ms")
                 .run(context -> assertStartupFailureContains(
                         context.getStartupFailure(), "routes.api.request-timeout must be greater than zero"));
+    }
+
+    @Test
+    void reloadDrainTimeoutIsPositiveAndBounded() {
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.reload.drain-timeout=0ms")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "reload.drain-timeout must be greater than zero"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.reload.drain-timeout=11m")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "reload.drain-timeout must be no greater than 10m"));
     }
 
     @Test

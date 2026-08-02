@@ -253,7 +253,8 @@ public class ReverseProxyService implements SmartLifecycle {
             try {
                 proxyPathSuffix = validatedProxyPathSuffix(request);
             } catch (IllegalArgumentException exception) {
-                logger.warn("proxy.forward.failure reason=invalid_path message={}", exception.getMessage());
+                logger.warn("proxy.forward.failure reason=invalid_path exceptionType={}",
+                        exception.getClass().getSimpleName());
                 metrics.recordFailure(null, HttpStatus.BAD_REQUEST.value());
                 if (observation != null) {
                     observation.terminal(

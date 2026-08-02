@@ -176,6 +176,81 @@ class ReverseProxyAccessLogTest {
     }
 
     @Test
+    void concurrentCompletionStillEmitsExactlyOneRecord() throws Exception {
+        MemoryWriter writer = new MemoryWriter();
+        ReverseProxyAccessLog accessLog = accessLog("JSON", 1.0, 64, ignored -> writer);
+        accessLog.start();
+        ReverseProxyAccessLog.RequestLogObservation observation = accessLog.begin("GET");
+        int contenderCount = 32;
+        CountDownLatch ready = new CountDownLatch(contenderCount);
+        CountDownLatch release = new CountDownLatch(1);
+        Thread[] contenders = new Thread[contenderCount];
+
+        for (int index = 0; index < contenderCount; index++) {
+            int status = index == 0 ? 200 : 503;
+            contenders[index] = new Thread(() -> {
+                ready.countDown();
+                await(release);
+                observation.terminal(status, ReverseProxyMetrics.TerminalOutcome.SUCCESS);
+                observation.complete(0);
+            });
+            contenders[index].start();
+        }
+        assertTrue(ready.await(2, TimeUnit.SECONDS));
+        release.countDown();
+        for (Thread contender : contenders) {
+            contender.join(2_000);
+            assertFalse(contender.isAlive());
+        }
+        accessLog.stop();
+
+        assertEquals(1, accessLog.acceptedCount());
+        assertEquals(1, writer.lines.size());
+    }
+
+    @Test
+    void stopDrainsEveryRecordAcceptedByConcurrentProducers() throws Exception {
+        MemoryWriter writer = new MemoryWriter();
+        ReverseProxyAccessLog accessLog = accessLog("JSON", 1.0, 512, ignored -> writer);
+        accessLog.start();
+        int producerCount = 32;
+        int observationsPerProducer = 8;
+        ReverseProxyAccessLog.RequestLogObservation[][] observations =
+                new ReverseProxyAccessLog.RequestLogObservation[producerCount][observationsPerProducer];
+        for (int producer = 0; producer < producerCount; producer++) {
+            for (int observation = 0; observation < observationsPerProducer; observation++) {
+                observations[producer][observation] = accessLog.begin("GET");
+            }
+        }
+        CountDownLatch ready = new CountDownLatch(producerCount);
+        CountDownLatch release = new CountDownLatch(1);
+        Thread[] producers = new Thread[producerCount];
+        for (int producer = 0; producer < producerCount; producer++) {
+            ReverseProxyAccessLog.RequestLogObservation[] assigned = observations[producer];
+            producers[producer] = new Thread(() -> {
+                ready.countDown();
+                await(release);
+                for (ReverseProxyAccessLog.RequestLogObservation observation : assigned) {
+                    observation.terminal(200, ReverseProxyMetrics.TerminalOutcome.SUCCESS);
+                    observation.complete(0);
+                }
+            });
+            producers[producer].start();
+        }
+        assertTrue(ready.await(2, TimeUnit.SECONDS));
+        release.countDown();
+        accessLog.stop();
+        for (Thread producer : producers) {
+            producer.join(2_000);
+            assertFalse(producer.isAlive());
+        }
+
+        assertEquals(producerCount * observationsPerProducer,
+                accessLog.acceptedCount() + accessLog.droppedCount());
+        assertEquals(accessLog.acceptedCount(), writer.lines.size());
+    }
+
+    @Test
     void malformedConfigurationFailsClosedWithBoundedMessages() {
         ReverseProxyProperties.AccessLog invalidFormat = enabledProperties("XML", 1.0);
         assertThrows(IllegalStateException.class,
@@ -218,6 +293,15 @@ class ReverseProxyAccessLogTest {
         if (observation != null) {
             observation.terminal(200, ReverseProxyMetrics.TerminalOutcome.SUCCESS);
             observation.complete(0);
+        }
+    }
+
+    private static void await(CountDownLatch latch) {
+        try {
+            latch.await();
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("test thread interrupted", exception);
         }
     }
 

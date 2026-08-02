@@ -49,6 +49,7 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
     private final EventWriterFactory writerFactory;
     private final AtomicBoolean accepting = new AtomicBoolean();
     private final AtomicBoolean running = new AtomicBoolean();
+    private final AtomicInteger enqueueInFlight = new AtomicInteger();
     private final AtomicLong sequence = new AtomicLong();
     private final LongAdder dropped = new LongAdder();
     private final LongAdder writeFailures = new LongAdder();
@@ -195,7 +196,7 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
                 return;
             }
             try (EventWriter writer = openedWriter) {
-                while (running.get() || !queue.isEmpty()) {
+                while (running.get() || enqueueInFlight.get() != 0 || !queue.isEmpty()) {
                     RequestLogObservation event = queue.poll();
                     if (event == null) {
                         if (queue.isEmpty()) {
@@ -232,6 +233,7 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
     }
 
     private void enqueue(RequestLogObservation event) {
+        enqueueInFlight.incrementAndGet();
         try {
             if (!accepting.get()) {
                 dropped.increment();
@@ -247,6 +249,9 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             }
         } catch (RuntimeException exception) {
             dropped.increment();
+        } finally {
+            enqueueInFlight.decrementAndGet();
+            LockSupport.unpark(writerThread);
         }
     }
 
@@ -397,26 +402,26 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             this.method = method;
         }
 
-        void bindRoute(String value) {
+        synchronized void bindRoute(String value) {
             if (!completed) {
                 route = normalizedIdentifier(value, OTHER);
             }
         }
 
-        void bindUpstream(String routeValue, String upstreamValue) {
+        synchronized void bindUpstream(String routeValue, String upstreamValue) {
             if (!completed) {
                 route = normalizedIdentifier(routeValue, OTHER);
                 upstream = normalizedIdentifier(upstreamValue, OTHER);
             }
         }
 
-        void recordDispatch(boolean retry) {
+        synchronized void recordDispatch(boolean retry) {
             if (retry && !completed && retries < Integer.MAX_VALUE) {
                 retries++;
             }
         }
 
-        void addResponseBytes(long bytes) {
+        synchronized void addResponseBytes(long bytes) {
             if (bytes > 0 && !completed) {
                 responseBytes = Long.MAX_VALUE - responseBytes < bytes
                         ? Long.MAX_VALUE
@@ -424,13 +429,13 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             }
         }
 
-        void cooldownActivated() {
+        synchronized void cooldownActivated() {
             if (!completed) {
                 cooldown = true;
             }
         }
 
-        void terminal(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
+        synchronized void terminal(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
             if (completed) {
                 return;
             }
@@ -439,7 +444,7 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             terminalAssigned = true;
         }
 
-        void terminalIfUnset(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
+        synchronized void terminalIfUnset(int statusCode, ReverseProxyMetrics.TerminalOutcome terminalOutcome) {
             if (completed || terminalAssigned) {
                 return;
             }
@@ -452,7 +457,7 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             completeAt(requestBytes, System.nanoTime());
         }
 
-        void completeAt(long requestBytes, long completedAtNanos) {
+        synchronized void completeAt(long requestBytes, long completedAtNanos) {
             if (completed) {
                 return;
             }

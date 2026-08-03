@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -794,6 +795,271 @@ public class ReverseProxyService implements SmartLifecycle {
     PrivateNetworkLiveValidationCommandResponse privateNetworkLiveValidationCommand(
             PrivateNetworkLiveValidationCommandRequest request) {
         return PrivateNetworkLiveValidationCommandResponse.from(activeConfig.get().properties(), request);
+    }
+
+    ReverseProxyAdminConfigResponse adminConfigSnapshot() {
+        return adminConfigResponse(activeConfig.get());
+    }
+
+    synchronized ReverseProxyAdminMutationResponse addUpstream(ReverseProxyUpstreamAddRequest request) {
+        String action = "add";
+        ActiveProxyConfig current = activeConfig.get();
+        if (request == null) {
+            return adminRejected("invalid", action, "", current,
+                    "request body is required");
+        }
+        ReverseProxyAdminMutationResponse blocked = mutationPrecondition(
+                request.expectedGeneration(), action, request.id(), current);
+        if (blocked != null) {
+            return blocked;
+        }
+        try {
+            String upstreamId = ReverseProxyRoutePlanner.validateUpstreamId(
+                    request.id(), "upstream id");
+            String routeName = ReverseProxyRoutePlanner.validateRouteName(request.route());
+            ReverseProxyProperties candidate = copyProperties(current.properties());
+            if (configuredTargets(candidate).stream()
+                    .anyMatch(target -> upstreamId.equals(target.getId().trim()))) {
+                return adminRejected("invalid", action, upstreamId, current,
+                        "upstream id is already configured");
+            }
+
+            ReverseProxyProperties.Upstream upstream = new ReverseProxyProperties.Upstream();
+            upstream.setId(upstreamId);
+            upstream.setUrl(request.url());
+            upstream.setHealthy(request.healthy() == null || request.healthy());
+            upstream.setWeight(request.weight() == null ? 1.0 : request.weight());
+            upstream.setMaxInFlight(request.maxInFlight() == null ? 0 : request.maxInFlight());
+            addTarget(candidate, routeName, upstream);
+            return applyAdminMutation(action, upstreamId, candidate);
+        } catch (RuntimeException exception) {
+            return adminRejected("invalid", action, safeAdminUpstreamId(request.id()), current,
+                    safeValidationError(exception));
+        }
+    }
+
+    synchronized ReverseProxyAdminMutationResponse patchUpstream(
+            String requestedUpstreamId,
+            ReverseProxyUpstreamPatchRequest request) {
+        String action = "patch";
+        ActiveProxyConfig current = activeConfig.get();
+        if (request == null) {
+            return adminRejected("invalid", action, safeAdminUpstreamId(requestedUpstreamId), current,
+                    "request body is required");
+        }
+        ReverseProxyAdminMutationResponse blocked = mutationPrecondition(
+                request.expectedGeneration(), action, requestedUpstreamId, current);
+        if (blocked != null) {
+            return blocked;
+        }
+        try {
+            String upstreamId = ReverseProxyRoutePlanner.validateUpstreamId(
+                    requestedUpstreamId, "upstream id");
+            if (request.weight() == null && request.healthy() == null && request.drain() == null) {
+                return adminRejected("invalid", action, upstreamId, current,
+                        "patch must include weight, healthy, or drain");
+            }
+            ReverseProxyProperties candidate = copyProperties(current.properties());
+            List<ReverseProxyProperties.Upstream> matches = configuredTargets(candidate).stream()
+                    .filter(target -> upstreamId.equals(target.getId().trim()))
+                    .toList();
+            if (matches.isEmpty()) {
+                return adminRejected("not_found", action, upstreamId, current,
+                        "upstream id is not configured");
+            }
+            if (matches.size() > 1) {
+                return adminRejected("invalid", action, upstreamId, current,
+                        "upstream id is ambiguous across configured routes");
+            }
+
+            ReverseProxyProperties.Upstream target = matches.get(0);
+            double nextWeight = target.getWeight();
+            if (request.weight() != null) {
+                if (!Double.isFinite(request.weight()) || request.weight() < 0.0) {
+                    return adminRejected("invalid", action, upstreamId, current,
+                            "weight must be finite and non-negative");
+                }
+                nextWeight = request.weight();
+            }
+            if (Boolean.TRUE.equals(request.drain())) {
+                if (request.weight() != null && Double.compare(request.weight(), 0.0) != 0) {
+                    return adminRejected("invalid", action, upstreamId, current,
+                            "drain=true requires weight to be omitted or zero");
+                }
+                nextWeight = 0.0;
+            } else if (Boolean.FALSE.equals(request.drain())) {
+                if (request.weight() != null && Double.compare(request.weight(), 0.0) == 0) {
+                    return adminRejected("invalid", action, upstreamId, current,
+                            "drain=false requires a positive weight");
+                }
+                if (request.weight() == null && Double.compare(nextWeight, 0.0) == 0) {
+                    nextWeight = 1.0;
+                }
+            }
+            boolean nextHealthy = request.healthy() == null ? target.isHealthy() : request.healthy();
+            if (Double.compare(nextWeight, target.getWeight()) == 0
+                    && nextHealthy == target.isHealthy()) {
+                return adminRejected("invalid", action, upstreamId, current,
+                        "patch does not change upstream state");
+            }
+            target.setWeight(nextWeight);
+            target.setHealthy(nextHealthy);
+            return applyAdminMutation(action, upstreamId, candidate);
+        } catch (RuntimeException exception) {
+            return adminRejected("invalid", action, safeAdminUpstreamId(requestedUpstreamId), current,
+                    safeValidationError(exception));
+        }
+    }
+
+    synchronized ReverseProxyAdminMutationResponse deleteUpstream(
+            String requestedUpstreamId,
+            Long expectedGeneration) {
+        String action = "delete";
+        ActiveProxyConfig current = activeConfig.get();
+        ReverseProxyAdminMutationResponse blocked = mutationPrecondition(
+                expectedGeneration, action, requestedUpstreamId, current);
+        if (blocked != null) {
+            return blocked;
+        }
+        try {
+            String upstreamId = ReverseProxyRoutePlanner.validateUpstreamId(
+                    requestedUpstreamId, "upstream id");
+            ReverseProxyProperties candidate = copyProperties(current.properties());
+            long matches = configuredTargets(candidate).stream()
+                    .filter(target -> upstreamId.equals(target.getId().trim()))
+                    .count();
+            if (matches == 0) {
+                return adminRejected("not_found", action, upstreamId, current,
+                        "upstream id is not configured");
+            }
+            if (matches > 1) {
+                return adminRejected("invalid", action, upstreamId, current,
+                        "upstream id is ambiguous across configured routes");
+            }
+            removeTarget(candidate, upstreamId);
+            return applyAdminMutation(action, upstreamId, candidate);
+        } catch (RuntimeException exception) {
+            return adminRejected("invalid", action, safeAdminUpstreamId(requestedUpstreamId), current,
+                    safeValidationError(exception));
+        }
+    }
+
+    private ReverseProxyAdminMutationResponse mutationPrecondition(
+            Long expectedGeneration,
+            String action,
+            String requestedUpstreamId,
+            ActiveProxyConfig current) {
+        String upstreamId = safeAdminUpstreamId(requestedUpstreamId);
+        if (!running.get()) {
+            return adminRejected("unavailable", action, upstreamId, current,
+                    "proxy runtime is stopping and cannot mutate configuration");
+        }
+        if (expectedGeneration == null || expectedGeneration < 1) {
+            return adminRejected("invalid", action, upstreamId, current,
+                    "expectedGeneration must be a positive generation");
+        }
+        if (expectedGeneration != current.generation()) {
+            return adminRejected("generation_conflict", action, upstreamId, current,
+                    "expectedGeneration does not match the active generation");
+        }
+        return null;
+    }
+
+    private ReverseProxyAdminMutationResponse applyAdminMutation(
+            String action,
+            String upstreamId,
+            ReverseProxyProperties candidate) {
+        ReverseProxyReloadResponse reloadResponse = reload(candidate);
+        ActiveProxyConfig active = activeConfig.get();
+        if (!reloadResponse.success()) {
+            return ReverseProxyAdminMutationResponse.rejected(
+                    "invalid", action, upstreamId, adminConfigResponse(active),
+                    reloadResponse.validationErrors());
+        }
+        logger.info("proxy.admin.audit action={} upstreamId={} generation={} status=success",
+                action, upstreamId, active.generation());
+        return ReverseProxyAdminMutationResponse.success(
+                action, upstreamId, adminConfigResponse(active));
+    }
+
+    private ReverseProxyAdminMutationResponse adminRejected(
+            String status,
+            String action,
+            String upstreamId,
+            ActiveProxyConfig current,
+            String error) {
+        return ReverseProxyAdminMutationResponse.rejected(
+                status, action, upstreamId, adminConfigResponse(current), List.of(error));
+    }
+
+    private ReverseProxyAdminConfigResponse adminConfigResponse(ActiveProxyConfig config) {
+        List<ReverseProxyAdminConfigResponse.RouteConfig> routes = config.routes().stream()
+                .map(route -> new ReverseProxyAdminConfigResponse.RouteConfig(
+                        route.name(),
+                        route.strategyId().externalName(),
+                        route.targets().stream()
+                                .map(target -> new ReverseProxyAdminConfigResponse.UpstreamConfig(
+                                        target.getId().trim(),
+                                        target.isHealthy(),
+                                        target.getWeight(),
+                                        Math.max(0, target.getMaxInFlight()),
+                                        Double.compare(target.getWeight(), 0.0) == 0))
+                                .toList()))
+                .toList();
+        List<String> drainingIds = drainingUpstreams.keySet().stream().sorted().toList();
+        return new ReverseProxyAdminConfigResponse(
+                config.generation(), config.routeCount(), config.backendTargetCount(), routes, drainingIds);
+    }
+
+    private static List<ReverseProxyProperties.Upstream> configuredTargets(ReverseProxyProperties properties) {
+        if (properties.getRoutes().isEmpty()) {
+            return properties.getUpstreams();
+        }
+        return properties.getRoutes().values().stream()
+                .flatMap(route -> route.getTargets().stream())
+                .toList();
+    }
+
+    private static void addTarget(
+            ReverseProxyProperties properties,
+            String routeName,
+            ReverseProxyProperties.Upstream upstream) {
+        if (properties.getRoutes().isEmpty()) {
+            if (!ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME.equals(routeName)) {
+                throw new IllegalStateException("route is not configured");
+            }
+            List<ReverseProxyProperties.Upstream> targets = new ArrayList<>(properties.getUpstreams());
+            targets.add(upstream);
+            properties.setUpstreams(targets);
+            return;
+        }
+        ReverseProxyProperties.Route route = properties.getRoutes().get(routeName);
+        if (route == null) {
+            throw new IllegalStateException("route is not configured");
+        }
+        List<ReverseProxyProperties.Upstream> targets = new ArrayList<>(route.getTargets());
+        targets.add(upstream);
+        route.setTargets(targets);
+    }
+
+    private static void removeTarget(ReverseProxyProperties properties, String upstreamId) {
+        if (properties.getRoutes().isEmpty()) {
+            properties.setUpstreams(properties.getUpstreams().stream()
+                    .filter(target -> !upstreamId.equals(target.getId().trim()))
+                    .toList());
+            return;
+        }
+        properties.getRoutes().values().forEach(route -> route.setTargets(route.getTargets().stream()
+                .filter(target -> !upstreamId.equals(target.getId().trim()))
+                .toList()));
+    }
+
+    private static String safeAdminUpstreamId(String value) {
+        if (value == null) {
+            return "";
+        }
+        String candidate = value.trim();
+        return candidate.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,63}") ? candidate : "";
     }
 
     synchronized ReverseProxyReloadResponse reload(ReverseProxyProperties candidateProperties) {

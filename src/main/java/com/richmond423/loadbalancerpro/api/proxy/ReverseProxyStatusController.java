@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -19,11 +20,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -145,6 +149,69 @@ public class ReverseProxyStatusController {
                 .<ResponseEntity<?>>map(decision -> ResponseEntity.ok(
                         routingExplanationService.explain(decision)))
                 .orElseGet(() -> decisionNotFound(request));
+    }
+
+    @GetMapping("/config")
+    public ResponseEntity<?> adminConfig(HttpServletRequest request) {
+        ResponseEntity<ApiErrorResponse> unauthorized = rejectAdminAuthentication(request);
+        if (unauthorized != null) {
+            return unauthorized;
+        }
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        if (service == null) {
+            return adminUnavailable(request);
+        }
+        return ResponseEntity.ok(service.adminConfigSnapshot());
+    }
+
+    @PostMapping("/upstreams")
+    public ResponseEntity<?> addUpstream(
+            @RequestBody(required = false) ReverseProxyUpstreamAddRequest addRequest,
+            HttpServletRequest request) {
+        ResponseEntity<ApiErrorResponse> unauthorized = rejectAdminAuthentication(request);
+        if (unauthorized != null) {
+            return unauthorized;
+        }
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        if (service == null) {
+            return adminUnavailable(request);
+        }
+        ReverseProxyAdminMutationResponse response = service.addUpstream(addRequest);
+        return ResponseEntity.status(response.httpStatus()).body(response);
+    }
+
+    @PatchMapping("/upstreams/{id}")
+    public ResponseEntity<?> patchUpstream(
+            @PathVariable("id") String upstreamId,
+            @RequestBody(required = false) ReverseProxyUpstreamPatchRequest patchRequest,
+            HttpServletRequest request) {
+        ResponseEntity<ApiErrorResponse> unauthorized = rejectAdminAuthentication(request);
+        if (unauthorized != null) {
+            return unauthorized;
+        }
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        if (service == null) {
+            return adminUnavailable(request);
+        }
+        ReverseProxyAdminMutationResponse response = service.patchUpstream(upstreamId, patchRequest);
+        return ResponseEntity.status(response.httpStatus()).body(response);
+    }
+
+    @DeleteMapping("/upstreams/{id}")
+    public ResponseEntity<?> deleteUpstream(
+            @PathVariable("id") String upstreamId,
+            @RequestParam(name = "expectedGeneration", required = false) Long expectedGeneration,
+            HttpServletRequest request) {
+        ResponseEntity<ApiErrorResponse> unauthorized = rejectAdminAuthentication(request);
+        if (unauthorized != null) {
+            return unauthorized;
+        }
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        if (service == null) {
+            return adminUnavailable(request);
+        }
+        ReverseProxyAdminMutationResponse response = service.deleteUpstream(upstreamId, expectedGeneration);
+        return ResponseEntity.status(response.httpStatus()).body(response);
     }
 
     @PostMapping("/reload")
@@ -353,6 +420,24 @@ public class ReverseProxyStatusController {
         return presented != null && !presented.isBlank()
                 && constantTimeEquals(expected.getBytes(StandardCharsets.UTF_8),
                         presented.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private ResponseEntity<ApiErrorResponse> rejectAdminAuthentication(HttpServletRequest request) {
+        if (oauth2Mode() || validApiKey(request)) {
+            return null;
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiErrorResponse.unauthorized(
+                request.getRequestURI(), "X-API-Key is required for proxy administration"));
+    }
+
+    private static ResponseEntity<ApiErrorResponse> adminUnavailable(HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "proxy_admin_unavailable",
+                "Proxy mode must be enabled at startup before runtime administration is available.",
+                request.getRequestURI(),
+                Instant.now().toString(),
+                List.of()));
     }
 
     private static boolean constantTimeEquals(byte[] expected, byte[] actual) {

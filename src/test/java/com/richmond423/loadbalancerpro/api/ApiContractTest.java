@@ -112,6 +112,14 @@ class ApiContractTest {
                 "/api/proxy/decisions/recent");
         assertTrue(docs.at("/paths/~1api~1proxy~1decisions~1{decisionId}~1explain/get").isObject(),
                 "/api/proxy/decisions/{decisionId}/explain");
+        assertTrue(docs.at("/paths/~1api~1proxy~1config/get").isObject(),
+                "/api/proxy/config");
+        assertTrue(docs.at("/paths/~1api~1proxy~1upstreams/post").isObject(),
+                "/api/proxy/upstreams POST");
+        assertTrue(docs.at("/paths/~1api~1proxy~1upstreams~1{id}/patch").isObject(),
+                "/api/proxy/upstreams/{id} PATCH");
+        assertTrue(docs.at("/paths/~1api~1proxy~1upstreams~1{id}/delete").isObject(),
+                "/api/proxy/upstreams/{id} DELETE");
         JsonNode recentDecisions =
                 docs.at("/components/schemas/RecentProxyDecisionsResponse/properties");
         for (String field : List.of(

@@ -18,6 +18,7 @@ None.
 - P-3.2: a zero-I/O mocked timing gate produced scheduler-dominated overhead samples and blocked the first full suite; the gate now uses a saturated literal-loopback HTTP upstream, and the access-log handoff shares request timing and uses a bounded single-consumer ring.
 - P-3.2: pre-PR concurrency review found that stop could exit between an access-log producer entering enqueue and publishing its record; in-flight producer accounting now keeps the writer draining, with concurrent stop/exact-once regressions.
 - P-3.2: merge-main CI and the first repair head failed only the `<5%` overhead gate while repeated local runs passed; runner samples exposed continued warm-up plus avoidable monitors on request-owned observations, so the repair adds steady-state warm-up and an atomic exactly-once publication boundary without relaxing the workload, zero-drop assertion, or threshold.
+- P-3.3: both first-head Linux CI runs failed the inherited `<5%` access-log overhead gate while request completion still issued an unconditional writer wake for every accepted record; the bounded writer now coalesces wakeups only while waiting, preserving the workload, threshold, zero-drop assertion, queue bound, and exact-once stop boundary.
 
 ## Reusable technical lessons
 

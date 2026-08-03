@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,6 +57,22 @@ class ReverseProxyReloadSecurityTest {
 
     @Test
     void prodApiKeyBoundaryProtectsReloadEndpointAndAllowsAuthenticatedReload() throws Exception {
+        mockMvc.perform(get("/api/proxy/config"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path").value("/api/proxy/config"));
+
+        mockMvc.perform(get("/api/proxy/config").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(content().string(not(containsString(STARTUP_BACKEND.baseUrl()))))
+                .andExpect(jsonPath("$.generation").value(1));
+
+        mockMvc.perform(post("/api/proxy/upstreams")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path").value("/api/proxy/upstreams"));
+
         mockMvc.perform(post("/api/proxy/reload")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validReloadBody()))

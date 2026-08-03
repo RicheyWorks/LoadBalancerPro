@@ -141,7 +141,7 @@ final class ReverseProxyRoutePlanner {
         return strategy == null || strategy.isBlank() ? properties.getStrategy() : strategy.trim();
     }
 
-    private static String validateRouteName(String routeName) {
+    static String validateRouteName(String routeName) {
         if (routeName == null || !ROUTE_NAME.matcher(routeName).matches()) {
             throw new IllegalStateException(
                     "loadbalancerpro.proxy.routes route names must match " + ROUTE_NAME.pattern());
@@ -152,6 +152,15 @@ final class ReverseProxyRoutePlanner {
                             + RESERVED_METRIC_TAG_VALUES);
         }
         return routeName;
+    }
+
+    static String validateUpstreamId(String value, String fieldName) {
+        String id = requireNonBlank(value, fieldName);
+        if (!UPSTREAM_ID.matcher(id).matches() || RESERVED_METRIC_TAG_VALUES.contains(id)) {
+            throw new IllegalStateException(fieldName + " must match " + UPSTREAM_ID.pattern()
+                    + " and must not use reserved metric tag values " + RESERVED_METRIC_TAG_VALUES);
+        }
+        return id;
     }
 
     private static RoutingStrategyId strategyId(String value, String fieldName) {
@@ -215,11 +224,7 @@ final class ReverseProxyRoutePlanner {
             if (target == null) {
                 throw new IllegalStateException(targetPrefix + " must not be null");
             }
-            String id = requireNonBlank(target.getId(), targetPrefix + ".id");
-            if (!UPSTREAM_ID.matcher(id).matches() || RESERVED_METRIC_TAG_VALUES.contains(id)) {
-                throw new IllegalStateException(targetPrefix + ".id must match " + UPSTREAM_ID.pattern()
-                        + " and must not use reserved metric tag values " + RESERVED_METRIC_TAG_VALUES);
-            }
+            String id = validateUpstreamId(target.getId(), targetPrefix + ".id");
             if (!ids.add(id)) {
                 throw new IllegalStateException(fieldPrefix + " contains duplicate target id: " + id);
             }

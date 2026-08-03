@@ -57,6 +57,7 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
     private final LongAdder dropped = new LongAdder();
     private final LongAdder writeFailures = new LongAdder();
     private final AtomicInteger warnedFailureKinds = new AtomicInteger();
+    private final AtomicBoolean writerWaiting = new AtomicBoolean();
     private volatile Thread writerThread;
 
     public ReverseProxyAccessLog(ReverseProxyProperties properties) {
@@ -203,7 +204,11 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
                     RequestLogObservation event = queue.poll();
                     if (event == null) {
                         if (queue.isEmpty()) {
-                            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(100));
+                            writerWaiting.set(true);
+                            if (queue.isEmpty() && writerWaiting.get()) {
+                                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(100));
+                            }
+                            writerWaiting.set(false);
                         } else {
                             Thread.onSpinWait();
                         }
@@ -232,6 +237,7 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
         } finally {
             accepting.set(false);
             running.set(false);
+            writerWaiting.set(false);
         }
     }
 
@@ -249,7 +255,9 @@ public final class ReverseProxyAccessLog implements SmartLifecycle {
             dropped.increment();
         } finally {
             enqueueInFlight.decrementAndGet();
-            LockSupport.unpark(writerThread);
+            if (writerWaiting.get() && writerWaiting.compareAndSet(true, false)) {
+                LockSupport.unpark(writerThread);
+            }
         }
     }
 

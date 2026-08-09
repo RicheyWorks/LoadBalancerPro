@@ -1971,12 +1971,12 @@ public class ReverseProxyService implements SmartLifecycle {
                 properties.getRetry().isEnabled(),
                 properties.getCooldown().isEnabled());
         config.routes().forEach(route -> logger.info(
-                "proxy.observability.route route={} pathPrefix={} hostMatch={} headerMatchNames={} "
+                "proxy.observability.route route={} pathPrefix={} hostMatchConfigured={} headerMatchCount={} "
                         + "splitCount={} strategy={} targetCount={} targetIds={}",
                 route.name(),
                 route.pathPrefix(),
-                route.match().host(),
-                route.match().headerNames(),
+                route.match().host() != null,
+                route.match().headers().size(),
                 route.splits().size(),
                 route.strategyId().externalName(),
                 route.targets().size(),

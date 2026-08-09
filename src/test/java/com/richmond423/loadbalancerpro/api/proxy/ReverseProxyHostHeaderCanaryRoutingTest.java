@@ -262,6 +262,14 @@ class ReverseProxyHostHeaderCanaryRoutingTest {
 
     @Test
     void statusAndAdminResponsesExposeRulesWithoutHeaderValuesAndReloadCopiesThem() throws Exception {
+        ReverseProxyStatusResponse.RouteStatus legacyStatusConstructor =
+                new ReverseProxyStatusResponse.RouteStatus(
+                        "legacy", "/", "ROUND_ROBIN", "client-ip", false, List.of("one"));
+        ReverseProxyAdminConfigResponse.RouteConfig legacyAdminConstructor =
+                new ReverseProxyAdminConfigResponse.RouteConfig("legacy", "ROUND_ROBIN", List.of());
+        assertEquals(List.of(), legacyStatusConstructor.splits());
+        assertEquals("/", legacyAdminConstructor.pathPrefix());
+
         ReverseProxyProperties properties = splitProperties();
         properties.getRoutes().get("api").getMatch().setHost("API.Example:443");
         properties.getRoutes().get("api").getMatch().setHeader(Map.of("X-Channel", "private-canary-value"));

@@ -26,6 +26,7 @@ class AccessLogBenchmarkLaneContractTest {
         assertTrue(source.contains("disabledFirstNanos"));
         assertTrue(source.contains("enabledFirstNanos"));
         assertTrue(source.contains("pairedOverheadPercent"));
+        assertTrue(source.contains("writtenRecords"));
         assertTrue(source.contains("not production proof"));
 
         assertTrue(script.contains("LBP_ACCESS_LOG_BENCHMARK_FORKS"));
@@ -38,6 +39,7 @@ class AccessLogBenchmarkLaneContractTest {
         assertTrue(workflow.contains("schedule:"));
         assertTrue(workflow.contains("pull_request:"));
         assertTrue(workflow.contains("paths:"));
+        assertTrue(workflow.contains("github.event.pull_request.head.sha || github.sha"));
         assertTrue(workflow.contains("if: always()"));
         assertTrue(workflow.contains("target/access-log-benchmark"));
         assertTrue(workflow.contains("Non-Production Evidence"));

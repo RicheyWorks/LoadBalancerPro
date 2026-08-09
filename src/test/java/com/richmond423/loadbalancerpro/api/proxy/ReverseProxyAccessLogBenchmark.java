@@ -44,7 +44,7 @@ class ReverseProxyAccessLogBenchmark {
      * is small relative to the observation. Shorter 300-request windows were
      * about 120 ms on the Linux runner and produced materially different medians
      * for identical trees. This strengthens the workload without changing the
-     * sample count, zero-drop assertion, or five-percent budget.
+     * sample count, zero-drop assertion, or evidence boundary.
      */
     private static final int REQUESTS_PER_THREAD = 900;
 
@@ -131,6 +131,7 @@ class ReverseProxyAccessLogBenchmark {
                     Map.entry("pairedOverheadPercent", overheadSamples),
                     Map.entry("medianOverheadPercent", overheadPercent),
                     Map.entry("acceptedRecords", enabled.accessLog.acceptedCount()),
+                    Map.entry("writtenRecords", writer.count.get()),
                     Map.entry("droppedRecords", enabled.accessLog.droppedCount())));
             assertEquals(0, enabled.accessLog.droppedCount());
         } finally {

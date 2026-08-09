@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Java
         uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
@@ -37,7 +39,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: access-log-benchmark-${{ github.sha }}-${{ github.run_attempt }}
+          name: access-log-benchmark-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_attempt }}
           path: target/access-log-benchmark
           if-no-files-found: error
           retention-days: 30

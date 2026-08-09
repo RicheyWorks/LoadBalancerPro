@@ -192,6 +192,17 @@ Run verification and generate JaCoCo reports:
 mvn -B verify
 ```
 
+Run the bounded local proxy regression scenarios (Docker Compose, Bash, `curl`, `jq`, OpenSSL, and Vegeta required):
+
+```bash
+bash scripts/bench/proxy-benchmark-soak.sh --mode smoke
+```
+
+The smoke and scheduled one-hour soak gates use only the TLS-authenticated loopback Compose stack and ignored
+`target/bench/` output. See [`scripts/bench/README.md`](scripts/bench/README.md) for scenarios, thresholds, and the
+evidence boundary; local results do not establish production SLOs, capacity, public-ingress safety, or p95/p99
+guarantees.
+
 Generate CycloneDX JSON and XML SBOMs:
 
 ```bash

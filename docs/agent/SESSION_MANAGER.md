@@ -1,10 +1,10 @@
 # Session Manager
 
-- Active work: `P-3.3` authenticated incremental proxy upstream administration
-- Branch: `codex/p-3-3-admin-api-v1`
-- PR: `#547`
-- Exact source main: `786411ef41348ceadbc5c066e1860a24ed674456`
-- Previous slot: `P-3.2` is `MAIN_GREEN` through PRs `#545` and `#546`, final repair head `3655c2c1b516c113efaed4ff35c1318b297173b3`, merge `786411ef41348ceadbc5c066e1860a24ed674456`
-- Completed gates: exact-green source and canonical scope; focused auth/privacy/generation/concurrency/drain tests; full zero-skip Maven and both package modes; unchanged `<5%` overhead gate; constrained-heap streaming, TLS/mTLS, graceful drain, access-log and metric lifecycle, packaged Enterprise Lab, operator profiles, Tomcat convergence, and CycloneDX SBOM
+- Active work: `P-3.4` deterministic local proxy benchmark and nightly soak regression harness
+- Branch: `codex/p-3-4-benchmark-soak-harness`
+- PR: `#550`
+- Exact source main: `54f1b7f9c27daadfa3aafb58c186ef665cfc79d9`
+- Previous slot: `P-3.3` is `MAIN_GREEN` through PR `#547`, final head `965a251d31217233753e8fdc5c12adb2ee45bebe`, merge `54f1b7f9c27daadfa3aafb58c186ef665cfc79d9`
+- Completed gates: exact-green source main; P-3.3 PR and merge SHA reconciliation; exact-main CI and CodeQL audit; P-3.4 acceptance and existing Compose/metrics/admin surface audit; local Bash/Compose/actionlint/focused/full/package gates; first-head remote CI/CodeQL and six-scenario smoke; first one-hour traffic phases completed but heap evidence was invalidated by parser defects
 - Genuine blocker: none
-- Next action: commit the locally green access-log wake repair, update PR `#547`, and require all current-head remote gates before normal merge
+- Next action: push the portable heap-parser repair, then require fresh exact-head CI/CodeQL and a successful one-hour soak with positive heap samples before merge

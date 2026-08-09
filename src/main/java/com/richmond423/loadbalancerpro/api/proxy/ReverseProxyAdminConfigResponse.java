@@ -11,8 +11,25 @@ public record ReverseProxyAdminConfigResponse(
 
     public record RouteConfig(
             String name,
+            String pathPrefix,
+            String hostMatch,
+            List<String> headerMatchNames,
+            List<SplitConfig> splits,
             String strategy,
             List<UpstreamConfig> upstreams) {
+
+        public RouteConfig(
+                String name,
+                String strategy,
+                List<UpstreamConfig> upstreams) {
+            this(name, "/", null, List.of(), List.of(), strategy, upstreams);
+        }
+    }
+
+    public record SplitConfig(
+            String name,
+            int percentage,
+            List<String> targetIds) {
     }
 
     public record UpstreamConfig(

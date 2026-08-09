@@ -345,6 +345,9 @@ public class ReverseProxyStatusController {
                 routes.add(new ReverseProxyStatusResponse.RouteStatus(
                         entry.getKey(),
                         safePathPrefix(route.getPathPrefix()),
+                        safeHostMatch(route),
+                        safeHeaderMatchNames(route),
+                        safeSplitStatuses(route),
                         ReverseProxyRoutePlanner.safeRouteStrategy(properties, route),
                         safeHashOn(route),
                         route.getAffinity() != null
@@ -361,6 +364,9 @@ public class ReverseProxyStatusController {
             return List.of(new ReverseProxyStatusResponse.RouteStatus(
                     ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME,
                     "/",
+                    null,
+                    List.of(),
+                    List.of(),
                     properties.getStrategy(),
                     "client-ip",
                     false,
@@ -375,6 +381,59 @@ public class ReverseProxyStatusController {
     private static String safeHashOn(ReverseProxyProperties.Route route) {
         String hashOn = route.getHashOn();
         return hashOn == null || hashOn.isBlank() ? "client-ip" : hashOn.trim();
+    }
+
+    private static String safeHostMatch(ReverseProxyProperties.Route route) {
+        ReverseProxyProperties.Match match = route.getMatch();
+        if (match == null || match.getHost() == null || match.getHost().isBlank()) {
+            return null;
+        }
+        try {
+            return ReverseProxyRoutePlanner.normalizedHost(match.getHost(), "route match host");
+        } catch (IllegalStateException exception) {
+            return null;
+        }
+    }
+
+    private static List<String> safeHeaderMatchNames(ReverseProxyProperties.Route route) {
+        ReverseProxyProperties.Match match = route.getMatch();
+        if (match == null || match.getHeader() == null) {
+            return List.of();
+        }
+        return match.getHeader().keySet().stream()
+                .filter(Objects::nonNull)
+                .map(name -> name.trim().toLowerCase(Locale.ROOT))
+                .filter(name -> !name.isEmpty())
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    private static List<ReverseProxyStatusResponse.SplitStatus> safeSplitStatuses(
+            ReverseProxyProperties.Route route) {
+        if (route.getSplit() == null) {
+            return List.of();
+        }
+        return route.getSplit().entrySet().stream()
+                .filter(entry -> entry.getKey() != null && !entry.getKey().isBlank())
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    ReverseProxyProperties.SplitGroup split = entry.getValue();
+                    return new ReverseProxyStatusResponse.SplitStatus(
+                            entry.getKey(),
+                            split == null ? 0 : split.getPercentage(),
+                            split == null ? List.of() : split.getTargetIds().stream()
+                                    .map(ReverseProxyStatusController::safeText)
+                                    .filter(value -> !value.isEmpty())
+                                    .distinct()
+                                    .sorted()
+                                    .toList());
+                })
+                .toList();
+    }
+
+    private static String safeText(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private static String safeUpstreamId(ReverseProxyProperties.Upstream upstream) {

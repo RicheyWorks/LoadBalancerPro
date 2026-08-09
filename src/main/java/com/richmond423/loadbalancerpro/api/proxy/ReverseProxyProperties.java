@@ -202,6 +202,8 @@ public class ReverseProxyProperties {
         private String strategy;
         private String hashOn = "client-ip";
         private Duration requestTimeout;
+        private Match match = new Match();
+        private Map<String, SplitGroup> split = new LinkedHashMap<>();
         private Affinity affinity = new Affinity();
         private Headers headers = new Headers();
         private List<Upstream> targets = new ArrayList<>();
@@ -238,6 +240,22 @@ public class ReverseProxyProperties {
             this.requestTimeout = requestTimeout;
         }
 
+        public Match getMatch() {
+            return match;
+        }
+
+        public void setMatch(Match match) {
+            this.match = match == null ? new Match() : match;
+        }
+
+        public Map<String, SplitGroup> getSplit() {
+            return split;
+        }
+
+        public void setSplit(Map<String, SplitGroup> split) {
+            this.split = split == null ? new LinkedHashMap<>() : new LinkedHashMap<>(split);
+        }
+
         public Affinity getAffinity() {
             return affinity;
         }
@@ -260,6 +278,48 @@ public class ReverseProxyProperties {
 
         public void setTargets(List<Upstream> targets) {
             this.targets = targets == null ? new ArrayList<>() : new ArrayList<>(targets);
+        }
+    }
+
+    public static final class Match {
+        private String host = "";
+        private Map<String, String> header = new LinkedHashMap<>();
+
+        public String getHost() {
+            return host;
+        }
+
+        public void setHost(String host) {
+            this.host = host == null ? "" : host;
+        }
+
+        public Map<String, String> getHeader() {
+            return header;
+        }
+
+        public void setHeader(Map<String, String> header) {
+            this.header = header == null ? new LinkedHashMap<>() : new LinkedHashMap<>(header);
+        }
+    }
+
+    public static final class SplitGroup {
+        private int percentage;
+        private List<String> targetIds = new ArrayList<>();
+
+        public int getPercentage() {
+            return percentage;
+        }
+
+        public void setPercentage(int percentage) {
+            this.percentage = percentage;
+        }
+
+        public List<String> getTargetIds() {
+            return targetIds;
+        }
+
+        public void setTargetIds(List<String> targetIds) {
+            this.targetIds = targetIds == null ? new ArrayList<>() : new ArrayList<>(targetIds);
         }
     }
 

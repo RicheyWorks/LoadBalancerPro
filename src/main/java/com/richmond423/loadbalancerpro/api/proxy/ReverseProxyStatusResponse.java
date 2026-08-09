@@ -76,9 +76,29 @@ public record ReverseProxyStatusResponse(
     public record RouteStatus(
             String name,
             String pathPrefix,
+            String hostMatch,
+            List<String> headerMatchNames,
+            List<SplitStatus> splits,
             String strategy,
             String hashOn,
             boolean affinityEnabled,
+            List<String> targetIds) {
+
+        public RouteStatus(
+                String name,
+                String pathPrefix,
+                String strategy,
+                String hashOn,
+                boolean affinityEnabled,
+                List<String> targetIds) {
+            this(name, pathPrefix, null, List.of(), List.of(),
+                    strategy, hashOn, affinityEnabled, targetIds);
+        }
+    }
+
+    public record SplitStatus(
+            String name,
+            int percentage,
             List<String> targetIds) {
     }
 

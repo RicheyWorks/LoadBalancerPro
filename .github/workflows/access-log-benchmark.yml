@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 6 * * 0'
+  pull_request:
+    paths:
+      - '.github/workflows/access-log-benchmark.yml'
+      - 'scripts/bench/access-log-overhead.sh'
+      - 'src/test/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyAccessLogBenchmark.java'
 
 permissions:
   contents: read

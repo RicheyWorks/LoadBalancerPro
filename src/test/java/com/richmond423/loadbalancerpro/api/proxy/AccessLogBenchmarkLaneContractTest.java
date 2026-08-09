@@ -36,6 +36,8 @@ class AccessLogBenchmarkLaneContractTest {
 
         assertTrue(workflow.contains("workflow_dispatch:"));
         assertTrue(workflow.contains("schedule:"));
+        assertTrue(workflow.contains("pull_request:"));
+        assertTrue(workflow.contains("paths:"));
         assertTrue(workflow.contains("if: always()"));
         assertTrue(workflow.contains("target/access-log-benchmark"));
         assertTrue(workflow.contains("Non-Production Evidence"));

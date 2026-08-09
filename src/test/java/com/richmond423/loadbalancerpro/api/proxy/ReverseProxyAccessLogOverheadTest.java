@@ -35,7 +35,14 @@ import org.springframework.mock.web.MockHttpServletRequest;
 class ReverseProxyAccessLogOverheadTest {
     private static final int SAMPLE_COUNT = 9;
     private static final int WARMUP_REQUESTS_PER_THREAD = 600;
-    private static final int REQUESTS_PER_THREAD = 300;
+    /*
+     * Keep each measured saturation window long enough that a scheduler quantum
+     * is small relative to the observation. Shorter 300-request windows were
+     * about 120 ms on the Linux runner and produced materially different medians
+     * for identical trees. This strengthens the workload without changing the
+     * sample count, zero-drop assertion, or five-percent budget.
+     */
+    private static final int REQUESTS_PER_THREAD = 900;
 
     @TempDir
     Path temporaryDirectory;

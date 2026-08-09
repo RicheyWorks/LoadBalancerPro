@@ -1,10 +1,10 @@
 # Session Manager
 
-- Active work: `P-4.1` host/header route matching and deterministic percentage canary splitting
-- Branch: `codex/p-4-1-host-header-canary-routing`
-- PR: `#551`
-- Exact source main: `03d7c83e303f3170b43d1bd34bfaaa9e8f0a889f`
+- Active work: `P-4.1` merge-main access-log overhead gate repair
+- Branch: `codex/p-4-1-main-ci-overhead-repair`
+- PR: pending
+- Exact source main: `46049ae4914e63bd8a69875319a3a01786d18f0f`
 - Previous slot: `P-3.4` is `MAIN_GREEN` through PR `#550`, final head `20000df5efae739f92505b6ebb05cf9e24ca82c8`, merge `03d7c83e303f3170b43d1bd34bfaaa9e8f0a889f`
-- Completed gates: P-3.4 exact-head and main-green reconciliation; P-4.1 design-first ADR; configuration, planner, immutable reload, request-path, status/admin, binding, retry-confinement, and concurrency implementation; focused and adjacent proxy suites; resolver-free source guard; corrected full zero-skip Maven test suite
-- Genuine blocker: none
-- Next action: require fresh exact-head CI, CodeQL, dependency review, runtime smoke, SBOM, and image scans for PR `#551`, then complete the unchanged-head self-review before merge
+- Completed gates: P-4.1 design-first implementation and unchanged-head review; PR `#551` exact-head CI, CodeQL, dependency review, runtime smoke, SBOM, and image scans; merge-main CodeQL; repeated local reproduction audit of the inherited overhead gate
+- Genuine blocker: merge-main CI run `31337576286` failed only `ReverseProxyAccessLogOverheadTest` at `6.939%` against the unchanged `<5%` budget
+- Next action: prove the longer saturation window under repeated focused and full current-head verification, then require fresh exact-head remote gates in a repair PR before reconciling main

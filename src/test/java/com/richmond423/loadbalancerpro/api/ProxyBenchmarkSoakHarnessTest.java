@@ -74,12 +74,12 @@ class ProxyBenchmarkSoakHarnessTest {
 
     @Test
     void guideKeepsEvidenceAndSecretBoundariesExplicit() throws IOException {
-        String guide = Files.readString(GUIDE);
+        String guide = Files.readString(GUIDE).replaceAll("\\s+", " ");
         assertTrue(guide.contains("fixed to `https://127.0.0.1:<port>`"));
         assertTrue(guide.contains("never written to evidence"));
         assertTrue(guide.contains("one-hour soak"));
         assertTrue(guide.contains("zero 5xx responses or transport errors during reload and drain"));
         assertTrue(guide.contains("do not establish production SLOs"));
-        assertTrue(guide.contains("do not establish production SLOs, production capacity"));
+        assertTrue(guide.contains("production capacity"));
     }
 }

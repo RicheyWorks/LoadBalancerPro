@@ -1,10 +1,10 @@
 # Session Manager
 
-- Active work: `P-4.1` merge-main access-log overhead gate repair
-- Branch: `codex/p-4-1-main-ci-overhead-repair`
-- PR: `#552` (repair after merged implementation PR `#551`)
-- Exact source main: `46049ae4914e63bd8a69875319a3a01786d18f0f`
-- Previous slot: `P-3.4` is `MAIN_GREEN` through PR `#550`, final head `20000df5efae739f92505b6ebb05cf9e24ca82c8`, merge `03d7c83e303f3170b43d1bd34bfaaa9e8f0a889f`
-- Completed gates: P-4.1 design-first implementation and unchanged-head review; PR `#551` exact-head CI, CodeQL, dependency review, runtime smoke, SBOM, and image scans; merge-main CodeQL; repeated local reproduction audit; repair focused runs; repair full suite with `2,621` tests, zero failures/errors/skips, and `2.014%` overhead; repair package
-- Genuine blocker: required exact-head CI, CodeQL, and dependency review for repair PR `#552` are pending
-- Next action: require fresh exact-head remote gates and unchanged-head self-review for PR `#552`, merge only when green, then reconcile main CI and CodeQL before closing P-4.1
+- Active work: `P-4.2` DNS service discovery with bounded periodic re-resolution and per-address health
+- Branch: `codex/p-4-2-dns-service-discovery`
+- PR: pending
+- Exact source main: `26cf58d2c8018707277f687b4275bbb30522d0a0`
+- Previous slot: `P-4.1` is `MAIN_GREEN` through PRs `#551` and `#552`, final head `0c0e998ba9e3b2cbf39f1503e7dc212edd7f8d2e`, merge `26cf58d2c8018707277f687b4275bbb30522d0a0`
+- Completed gates: P-4.1 exact-head and merge-main CI/CodeQL reconciliation; P-4.2 current-source audit; design-first ADR for configuration, HTTP-only address pinning, bounded off-thread resolution, stale expiry, private-network filtering, per-address health, atomic snapshots, reload, visibility, and not-proven boundaries
+- Genuine blocker: none
+- Next action: implement the P-4.2 resolver component and effective-member integration with deterministic loopback-only focused tests

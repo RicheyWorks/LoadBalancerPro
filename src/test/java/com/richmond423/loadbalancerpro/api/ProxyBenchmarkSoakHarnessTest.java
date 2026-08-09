@@ -61,6 +61,8 @@ class ProxyBenchmarkSoakHarnessTest {
         String nightly = Files.readString(NIGHTLY);
         assertTrue(ci.contains("proxy-benchmark-soak.sh --mode smoke"));
         assertTrue(ci.contains("e8759ce45c14e18374bdccd3ba6068197bc3a9f9b7e484db3837f701b9d12e61"));
+        assertTrue(nightly.contains("pull_request:"));
+        assertTrue(nightly.contains("- 'scripts/bench/**'"));
         assertTrue(nightly.contains("cron: '23 5 * * *'"));
         assertTrue(nightly.contains("LBP_BENCH_SOAK_SECONDS: '3600'"));
         assertTrue(nightly.contains("proxy-benchmark-soak.sh --mode soak"));

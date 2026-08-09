@@ -1,6 +1,12 @@
 name: Proxy Nightly Soak
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/proxy-nightly-soak.yml'
+      - 'scripts/bench/**'
+      - 'deploy/docker-compose.proxy-prod.yml'
+      - 'deploy/fixture/**'
   schedule:
     - cron: '23 5 * * *'
   workflow_dispatch:

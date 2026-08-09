@@ -35,7 +35,8 @@ Environment overrides are intentionally numeric and local: rates, durations, p99
 the loopback port, project name, and output directory. There is no remote base-URL option. Temporary API-key and TLS
 material is generated per run, mounted read-only, never written to evidence, and removed during bounded cleanup.
 
-The ordinary CI workflow runs smoke mode against its already-built local images. The scheduled workflow runs the
-one-hour soak and uploads the ignored reports. These results are regression evidence for the exact local runner and
-commit only. They do not establish production SLOs, production capacity, public-ingress safety, sustained real-world
-load, p95/p99 guarantees, high availability, or production certification.
+The ordinary CI workflow runs smoke mode against its already-built local images. The scheduled workflow, plus pull
+requests that change the soak workflow, benchmark harness, or its Compose fixtures, run the one-hour soak and upload
+the ignored reports. These results are regression evidence for the exact local runner and commit only. They do not
+establish production SLOs, production capacity, public-ingress safety, sustained real-world load, p95/p99 guarantees,
+high availability, or production certification.

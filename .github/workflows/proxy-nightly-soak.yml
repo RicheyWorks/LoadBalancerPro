@@ -1,0 +1,63 @@
+name: Proxy Nightly Soak
+
+on:
+  schedule:
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proxy-nightly-soak
+  cancel-in-progress: false
+
+jobs:
+  soak:
+    name: One-hour loopback proxy soak
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        # actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Install checksum-verified Vegeta 12.13.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/vegeta_12.13.0_linux_amd64.tar.gz"
+          install_dir="$RUNNER_TEMP/vegeta-12.13.0"
+          curl --fail --silent --show-error --location \
+            --output "$archive" \
+            https://github.com/tsenart/vegeta/releases/download/v12.13.0/vegeta_12.13.0_linux_amd64.tar.gz
+          echo 'e8759ce45c14e18374bdccd3ba6068197bc3a9f9b7e484db3837f701b9d12e61  '"$archive" \
+            | sha256sum --check --strict
+          mkdir -p "$install_dir"
+          tar -xzf "$archive" -C "$install_dir" vegeta
+          echo "$install_dir" >> "$GITHUB_PATH"
+
+      - name: Validate benchmark harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/bench/proxy-benchmark-soak.sh
+          bash scripts/bench/proxy-benchmark-soak.sh --mode validate
+
+      - name: Run one-hour loopback proxy soak
+        shell: bash
+        env:
+          LBP_BENCH_PROJECT: lbp-soak-${{ github.run_id }}-${{ github.run_attempt }}
+          LBP_BENCH_OUTPUT_DIR: target/bench/nightly
+          LBP_BENCH_SOAK_SECONDS: '3600'
+        run: bash scripts/bench/proxy-benchmark-soak.sh --mode soak
+
+      - name: Upload exact-run soak reports
+        if: always() && hashFiles('target/bench/nightly/**') != ''
+        # actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: proxy-nightly-soak-${{ github.sha }}-${{ github.run_attempt }}
+          path: target/bench/nightly
+          retention-days: 30

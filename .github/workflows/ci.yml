@@ -412,6 +412,44 @@ jobs:
           LBP_PROXY_PROD_REUSE_IMAGE: "true"
         run: bash scripts/smoke/proxy-prod-compose-smoke.sh
 
+      - name: Install checksum-verified Vegeta 12.13.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/vegeta_12.13.0_linux_amd64.tar.gz"
+          install_dir="$RUNNER_TEMP/vegeta-12.13.0"
+          curl --fail --silent --show-error --location \
+            --output "$archive" \
+            https://github.com/tsenart/vegeta/releases/download/v12.13.0/vegeta_12.13.0_linux_amd64.tar.gz
+          echo 'e8759ce45c14e18374bdccd3ba6068197bc3a9f9b7e484db3837f701b9d12e61  '"$archive" \
+            | sha256sum --check --strict
+          mkdir -p "$install_dir"
+          tar -xzf "$archive" -C "$install_dir" vegeta
+          echo "$install_dir" >> "$GITHUB_PATH"
+
+      - name: Run loopback proxy benchmark smoke
+        shell: bash
+        env:
+          LBP_BENCH_PROJECT: lbp-bench-${{ github.run_id }}-${{ github.run_attempt }}
+          LBP_BENCH_OUTPUT_DIR: target/bench/ci-smoke
+          LBP_BENCH_REUSE_IMAGE: "true"
+          LBP_PROXY_PROD_IMAGE: loadbalancerpro:ci
+          LBP_PROXY_PROD_FIXTURE_IMAGE: loadbalancerpro:proxy-prod-fixture-ci
+        run: |
+          set -euo pipefail
+          bash -n scripts/bench/proxy-benchmark-soak.sh
+          bash scripts/bench/proxy-benchmark-soak.sh --mode validate
+          bash scripts/bench/proxy-benchmark-soak.sh --mode smoke
+
+      - name: Upload loopback proxy benchmark smoke reports
+        if: always() && hashFiles('target/bench/ci-smoke/**') != ''
+        # actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: proxy-benchmark-smoke-${{ github.event.pull_request.head.sha || github.sha }}
+          path: target/bench/ci-smoke
+          retention-days: 30
+
       - name: Capture container dry-run evidence
         shell: bash
         run: |

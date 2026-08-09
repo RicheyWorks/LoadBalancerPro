@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class ProxyBenchmarkSoakHarnessTest {
     private static final Path SCRIPT = Path.of("scripts/bench/proxy-benchmark-soak.sh");
+    private static final Path HEAP_ANALYZER = Path.of("scripts/bench/analyze-heap.awk");
     private static final Path OVERRIDE = Path.of("scripts/bench/docker-compose.bench.yml");
     private static final Path GUIDE = Path.of("scripts/bench/README.md");
     private static final Path NIGHTLY = Path.of(".github/workflows/proxy-nightly-soak.yml");
@@ -19,6 +20,7 @@ class ProxyBenchmarkSoakHarnessTest {
     @Test
     void harnessContainsAllBoundedLoopbackScenariosAndGates() throws IOException {
         String script = Files.readString(SCRIPT);
+        String heapAnalyzer = Files.readString(HEAP_ANALYZER);
         for (String scenario : List.of(
                 "steady",
                 "spike",
@@ -32,13 +34,19 @@ class ProxyBenchmarkSoakHarnessTest {
         assertFalse(script.contains("LBP_BENCH_BASE_URL"));
         assertTrue(script.contains("lbp_proxy_inflight"));
         assertTrue(script.contains("jvm_memory_used_bytes"));
+        assertTrue(script.contains("total += $NF"));
+        assertTrue(script.contains("Heap sample must be a positive byte count"));
+        assertTrue(script.contains("-f \"$heap_analyzer\""));
+        assertTrue(heapAnalyzer.contains("sample_index"));
+        assertTrue(heapAnalyzer.contains("Every heap sample must be a positive byte count"));
+        assertFalse(heapAnalyzer.contains("for (index ="));
         assertTrue(script.contains(".latencies[\"99th\"]"));
         assertTrue(script.contains("p99_budget_ms"));
         assertTrue(script.contains("zero_failure_required"));
         assertTrue(script.contains("^5[0-9][0-9]$"));
         assertTrue(script.contains("require_zero_failures"));
         assertTrue(script.contains("Soak mode requires at least 3600 seconds"));
-        assertTrue(script.contains("Heap post-GC floor trend exceeded the local growth budget"));
+        assertTrue(heapAnalyzer.contains("Heap post-GC floor trend exceeded the local growth budget"));
         assertTrue(script.contains("Refusing to remove unexpected temporary path"));
         assertTrue(script.contains("no production SLO, capacity, or certification claim"));
     }
@@ -68,6 +76,7 @@ class ProxyBenchmarkSoakHarnessTest {
         assertTrue(nightly.contains("proxy-benchmark-soak.sh --mode soak"));
         assertTrue(nightly.contains("timeout-minutes: 90"));
         assertTrue(nightly.contains("retention-days: 30"));
+        assertTrue(nightly.contains("github.event.pull_request.head.sha || github.sha"));
         assertTrue(nightly.contains("e8759ce45c14e18374bdccd3ba6068197bc3a9f9b7e484db3837f701b9d12e61"));
         assertFalse(nightly.contains("secrets."));
     }

@@ -5,6 +5,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/../.." && pwd)"
 compose_base="$repo_root/deploy/docker-compose.proxy-prod.yml"
 compose_override="$script_dir/docker-compose.bench.yml"
+heap_analyzer="$script_dir/analyze-heap.awk"
 
 mode="${LBP_BENCH_MODE:-smoke}"
 while [[ $# -gt 0 ]]; do
@@ -77,17 +78,24 @@ if [[ "$mode" == "soak" && "$soak_seconds" -lt 3600 ]]; then
     exit 2
 fi
 
-for required_file in "$compose_base" "$compose_override"; do
+for required_file in "$compose_base" "$compose_override" "$heap_analyzer"; do
     [[ -f "$required_file" ]] || { echo "Missing required file: $required_file" >&2; exit 2; }
 done
 
 scenario_names=(steady spike slow-backend backend-kill reload-under-load drain-under-load)
 if [[ "$mode" == "validate" ]]; then
+    command -v awk >/dev/null 2>&1 || { echo "awk is required" >&2; exit 2; }
+    {
+        printf 'epoch_seconds,heap_used_bytes\n'
+        for sample in $(seq 1 12); do
+            printf '%s,%s\n' "$sample" "$(( 104857600 + sample ))"
+        done
+    } | awk -F, -v budget="$heap_growth_budget_bytes" -v output=/dev/null -f "$heap_analyzer"
     printf 'Validated loopback-only scenarios: %s\n' "${scenario_names[*]}"
     exit 0
 fi
 
-for command_name in curl docker jq openssl vegeta; do
+for command_name in awk curl docker jq openssl vegeta; do
     command -v "$command_name" >/dev/null 2>&1 || {
         echo "$command_name is required" >&2
         exit 2
@@ -109,6 +117,7 @@ config_dir="$work_dir/config"
 reload_payload="$work_dir/reload.json"
 heap_sampler_pid=""
 attack_pid=""
+heap_stop_file="$work_dir/stop-heap-sampler"
 
 cleanup() {
     local status=$?
@@ -234,7 +243,7 @@ fetch_metrics() {
 wait_for_inflight_zero() {
     local value
     for attempt in $(seq 1 30); do
-        value="$(fetch_metrics | awk '$1 ~ /^lbp_proxy_inflight(\{|$)/ { total += $2 } END { printf "%.0f", total + 0 }')"
+        value="$(fetch_metrics | awk '$1 ~ /^lbp_proxy_inflight(\{|$)/ { total += $NF } END { printf "%.0f", total + 0 }')"
         if [[ "$value" == "0" ]]; then
             return
         fi
@@ -371,56 +380,33 @@ run_scenario_set() {
         "$normal_p99_budget_ms" true 0 action_drain after_drain
 }
 
+read_heap_used() {
+    fetch_metrics | awk '$1 ~ /^jvm_memory_used_bytes\{/ && $1 ~ /area="heap"/ { total += $NF } END { printf "%.0f", total + 0 }'
+}
+
 sample_heap() {
     local heap_file="$output_dir/heap-samples.csv"
     printf 'epoch_seconds,heap_used_bytes\n' > "$heap_file"
-    while true; do
-        local heap_used
-        heap_used="$(fetch_metrics | awk '$1 ~ /^jvm_memory_used_bytes\{/ && $1 ~ /area="heap"/ { total += $2 } END { printf "%.0f", total + 0 }')"
+    while [[ ! -f "$heap_stop_file" ]]; do
+        local heap_used waited
+        heap_used="$(read_heap_used)"
+        [[ "$heap_used" =~ ^[1-9][0-9]*$ ]] || {
+            echo "Heap sample must be a positive byte count" >&2
+            return 1
+        }
         printf '%s,%s\n' "$(date +%s)" "$heap_used" >> "$heap_file"
-        sleep "$heap_sample_seconds"
+        for (( waited = 0; waited < heap_sample_seconds; waited++ )); do
+            [[ -f "$heap_stop_file" ]] && break
+            sleep 1
+        done
     done
 }
 
 analyze_heap_trend() {
     local heap_file="$output_dir/heap-samples.csv"
     local analysis_file="$output_dir/heap-analysis.json"
-    awk -F, -v budget="$heap_growth_budget_bytes" -v output="$analysis_file" '
-        NR > 1 { value[count++] = $2 }
-        END {
-            if (count < 12) {
-                print "At least 12 heap samples are required" > "/dev/stderr"
-                exit 1
-            }
-            buckets = 6
-            width = int(count / buckets)
-            for (bucket = 0; bucket < buckets; bucket++) {
-                start = bucket * width
-                finish = (bucket == buckets - 1) ? count : start + width
-                minimum = value[start]
-                for (index = start + 1; index < finish; index++) {
-                    if (value[index] < minimum) minimum = value[index]
-                }
-                x = bucket
-                y = minimum
-                floor[bucket] = minimum
-                sum_x += x
-                sum_y += y
-                sum_xy += x * y
-                sum_xx += x * x
-            }
-            denominator = buckets * sum_xx - sum_x * sum_x
-            slope = denominator == 0 ? 0 : (buckets * sum_xy - sum_x * sum_y) / denominator
-            projected = slope * (buckets - 1)
-            observed = floor[buckets - 1] - floor[0]
-            pass = projected <= budget && observed <= budget
-            printf "{\"sampleCount\":%d,\"bucketCount\":%d,\"firstFloorBytes\":%.0f,\"lastFloorBytes\":%.0f,\"observedFloorGrowthBytes\":%.0f,\"projectedTrendBytes\":%.0f,\"growthBudgetBytes\":%.0f,\"pass\":%s}\n", count, buckets, floor[0], floor[buckets - 1], observed, projected, budget, pass ? "true" : "false" > output
-            if (!pass) {
-                print "Heap post-GC floor trend exceeded the local growth budget" > "/dev/stderr"
-                exit 1
-            }
-        }
-    ' "$heap_file"
+    awk -F, -v budget="$heap_growth_budget_bytes" -v output="$analysis_file" \
+        -f "$heap_analyzer" "$heap_file"
 }
 
 run_scenario_set
@@ -436,6 +422,8 @@ if [[ "$mode" == "soak" ]]; then
     done
     reload_baseline
     wait_for_two_healthy_backends
+    initial_heap_used="$(read_heap_used)"
+    require_positive_integer "initial heap sample" "$initial_heap_used"
     sample_heap &
     heap_sampler_pid=$!
     first_segment=$(( soak_seconds / 3 ))
@@ -447,8 +435,12 @@ if [[ "$mode" == "soak" ]]; then
         "$normal_p99_budget_ms" true 0 action_reload
     run_attack soak-drain-under-load '/proxy/bench/soak-drain' "$steady_rate" "$third_segment" \
         "$normal_p99_budget_ms" true 0 action_drain after_drain
-    kill "$heap_sampler_pid" >/dev/null 2>&1 || true
-    wait "$heap_sampler_pid" >/dev/null 2>&1 || true
+    : > "$heap_stop_file"
+    if ! wait "$heap_sampler_pid"; then
+        heap_sampler_pid=""
+        echo "Heap sampler failed" >&2
+        exit 1
+    fi
     heap_sampler_pid=""
     analyze_heap_trend
 fi

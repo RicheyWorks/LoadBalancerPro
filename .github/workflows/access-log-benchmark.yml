@@ -1,0 +1,38 @@
+name: Access Log Benchmark (Non-Production Evidence)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Fresh-JVM enabled/disabled comparison
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Set up Java
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run non-production access-log benchmark forks
+        run: bash scripts/bench/access-log-overhead.sh
+
+      - name: Upload raw access-log benchmark samples
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: access-log-benchmark-${{ github.sha }}-${{ github.run_attempt }}
+          path: target/access-log-benchmark
+          if-no-files-found: error
+          retention-days: 30

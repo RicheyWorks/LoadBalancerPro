@@ -1,5 +1,15 @@
 # Proxy Benchmark And Soak Harness
 
+## Access-log overhead lane
+
+Run `bash scripts/bench/access-log-overhead.sh` for five fresh-JVM enabled/disabled access-log comparisons. Raw JSON
+samples and Maven logs are written under `target/access-log-benchmark/`. Set
+`LBP_ACCESS_LOG_BENCHMARK_FORKS=3..20` to change the fork count.
+
+This lane is diagnostic local or hosted-runner evidence. It does not enforce or prove the production `<5%` target,
+production throughput or latency, SLOs, production readiness, or production certification. Deterministic access-log
+correctness and architecture guards remain in the default Maven suite.
+
 This harness exercises the authenticated TLS `proxy-prod` Compose stack with deterministic local fixture backends. It
 uses Vegeta for steady, spike, slow-backend, backend-kill, reload-under-load, and drain-under-load scenarios. It never
 accepts a caller-supplied target; the proxy endpoint is fixed to `https://127.0.0.1:<port>`, while upstreams stay on the

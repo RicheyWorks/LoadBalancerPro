@@ -32,6 +32,8 @@ Predicates use AND semantics: the path, configured host, and every configured he
 case-insensitive after safe authority normalization and ignores an optional request port. Header names are validated
 HTTP field names and compared case-insensitively by the servlet API; configured values use exact, case-sensitive
 comparison. Wildcard, suffix, regular-expression, and trusted-forwarded-host matching are not supported.
+Sensitive, forwarding, and hop-by-hop header names are rejected because raw request predicates are not authentication
+or trusted tenant identity.
 
 Matching routes use this total deterministic order:
 
@@ -55,7 +57,8 @@ A route may configure named `split` groups. Each group has a positive integer `p
 - ordinary unsplit routes omit the `split` map.
 
 The request's existing route routing key is hashed into a bucket from 0 through 99 and assigned once to the ordered
-cumulative percentage ranges. The chosen group is retained for the entire request. Retries, affinity lookup,
+cumulative percentage ranges; group names are ordered lexicographically before those ranges are built. The chosen
+group is retained for the entire request. Retries, affinity lookup,
 capacity filtering, health filtering, and strategy selection see only that group's targets; the proxy does not spill
 a failed group into another percentage group. Each group owns an independent strategy instance so round-robin and
 weighted strategy state cannot leak between groups or routes. Unchanged reloads may retain matching route/group

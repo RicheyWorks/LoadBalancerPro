@@ -43,6 +43,7 @@ import com.richmond423.loadbalancerpro.core.LiveRoutingShadowObservation;
 import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
 import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
+import com.richmond423.loadbalancerpro.core.RoutingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import org.slf4j.Logger;
@@ -275,7 +276,7 @@ public class ReverseProxyService implements SmartLifecycle {
                                 "Proxy mode is disabled in the active configuration."));
             }
             Optional<ReverseProxyRoutePlanner.ConfiguredRoute> selectedRoute =
-                    routeFor(config.routes(), proxyPathSuffix);
+                    routeFor(config.routes(), request, proxyPathSuffix);
             if (selectedRoute.isEmpty()) {
                 logger.warn("proxy.forward.failure reason=route_not_found pathSuffix={}", proxyPathSuffix);
                 metrics.recordFailure(null, HttpStatus.NOT_FOUND.value());
@@ -357,6 +358,13 @@ public class ReverseProxyService implements SmartLifecycle {
                 : 1;
         config.retryPolicy().recordPrimaryRequest();
         String routingKey = route.selectionPolicy().routingKey(request);
+        Optional<ReverseProxyRoutePlanner.ConfiguredSplit> selectedSplit = route.splitFor(routingKey);
+        Set<String> splitTargetIds = selectedSplit
+                .map(ReverseProxyRoutePlanner.ConfiguredSplit::targetIds)
+                .orElse(null);
+        RoutingStrategy selectionStrategy = selectedSplit
+                .map(ReverseProxyRoutePlanner.ConfiguredSplit::strategy)
+                .orElse(route.strategy());
         Set<String> attemptedUpstreamIds = new LinkedHashSet<>();
         ForwardAttemptResult pendingAttempt = null;
         try {
@@ -365,7 +373,8 @@ public class ReverseProxyService implements SmartLifecycle {
                 while (true) {
                     Set<String> excludedIds = new LinkedHashSet<>(attemptedUpstreamIds);
                     excludedIds.addAll(capacityExcludedIds);
-                    List<UpstreamCandidate> upstreams = configuredUpstreams(config, route, excludedIds);
+                    List<UpstreamCandidate> upstreams = configuredUpstreams(
+                            config, route, splitTargetIds, excludedIds);
                     if (upstreams.isEmpty()) {
                         if (pendingAttempt != null) {
                             ForwardAttemptResult finalAttempt = pendingAttempt;
@@ -401,7 +410,7 @@ public class ReverseProxyService implements SmartLifecycle {
                     String selectionSource = selectedServerId.isPresent() ? "affinity" : "strategy";
                     RoutingDecisionExplanation selectionExplanation = null;
                     if (selectedServerId.isEmpty()) {
-                        RoutingDecision decision = route.strategy().chooseForKey(candidateStates, routingKey);
+                        RoutingDecision decision = selectionStrategy.chooseForKey(candidateStates, routingKey);
                         selectionExplanation = decision.explanation();
                         selectedServerId = selectionExplanation.chosenServerId();
                     }
@@ -718,6 +727,13 @@ public class ReverseProxyService implements SmartLifecycle {
                 .map(route -> new ReverseProxyStatusResponse.RouteStatus(
                         route.name(),
                         route.pathPrefix(),
+                        route.match().host(),
+                        route.match().headerNames(),
+                        route.splits().stream()
+                                .map(split -> new ReverseProxyStatusResponse.SplitStatus(
+                                        split.name(), split.percentage(),
+                                        split.targetIds().stream().sorted().toList()))
+                                .toList(),
                         route.strategyId().externalName(),
                         route.selectionPolicy().hashOnDescription(),
                         route.selectionPolicy().affinityEnabled(),
@@ -996,6 +1012,14 @@ public class ReverseProxyService implements SmartLifecycle {
         List<ReverseProxyAdminConfigResponse.RouteConfig> routes = config.routes().stream()
                 .map(route -> new ReverseProxyAdminConfigResponse.RouteConfig(
                         route.name(),
+                        route.pathPrefix(),
+                        route.match().host(),
+                        route.match().headerNames(),
+                        route.splits().stream()
+                                .map(split -> new ReverseProxyAdminConfigResponse.SplitConfig(
+                                        split.name(), split.percentage(),
+                                        split.targetIds().stream().sorted().toList()))
+                                .toList(),
                         route.strategyId().externalName(),
                         route.targets().stream()
                                 .map(target -> new ReverseProxyAdminConfigResponse.UpstreamConfig(
@@ -1419,17 +1443,33 @@ public class ReverseProxyService implements SmartLifecycle {
 
     private Optional<ReverseProxyRoutePlanner.ConfiguredRoute> routeFor(
             List<ReverseProxyRoutePlanner.ConfiguredRoute> routes,
+            HttpServletRequest request,
             String proxyPathSuffix) {
         return routes.stream()
                 .filter(route -> ReverseProxyRoutePlanner.pathMatches(route.pathPrefix(), proxyPathSuffix))
-                .max(Comparator.comparingInt(route -> route.pathPrefix().length()));
+                .filter(route -> route.match().matches(request))
+                .sorted(Comparator
+                        .comparingInt((ReverseProxyRoutePlanner.ConfiguredRoute route) ->
+                                route.match().hostSpecificity()).reversed()
+                        .thenComparing(Comparator.comparingInt(
+                                (ReverseProxyRoutePlanner.ConfiguredRoute route) ->
+                                        route.pathPrefix().length()).reversed())
+                        .thenComparing(Comparator.comparingInt(
+                                (ReverseProxyRoutePlanner.ConfiguredRoute route) ->
+                                        route.match().headers().size()).reversed())
+                        .thenComparing(ReverseProxyRoutePlanner.ConfiguredRoute::name))
+                .findFirst();
     }
 
     private List<UpstreamCandidate> configuredUpstreams(ActiveProxyConfig config,
                                                          ReverseProxyRoutePlanner.ConfiguredRoute route,
+                                                         Set<String> allowedUpstreamIds,
                                                          Set<String> excludedUpstreamIds) {
         Instant now = Instant.now(clock);
         return route.targets().stream()
+                .filter(upstream -> allowedUpstreamIds == null
+                        || allowedUpstreamIds.contains(requireNonBlank(
+                                upstream.getId(), "loadbalancerpro.proxy.upstreams[].id")))
                 .filter(upstream -> !config.isUpstreamRetired(requireNonBlank(
                         upstream.getId(), "loadbalancerpro.proxy.upstreams[].id")))
                 .filter(upstream -> excludedUpstreamIds == null
@@ -1931,9 +1971,13 @@ public class ReverseProxyService implements SmartLifecycle {
                 properties.getRetry().isEnabled(),
                 properties.getCooldown().isEnabled());
         config.routes().forEach(route -> logger.info(
-                "proxy.observability.route route={} pathPrefix={} strategy={} targetCount={} targetIds={}",
+                "proxy.observability.route route={} pathPrefix={} hostMatch={} headerMatchNames={} "
+                        + "splitCount={} strategy={} targetCount={} targetIds={}",
                 route.name(),
                 route.pathPrefix(),
+                route.match().host(),
+                route.match().headerNames(),
+                route.splits().size(),
                 route.strategyId().externalName(),
                 route.targets().size(),
                 route.targets().stream()
@@ -2169,11 +2213,33 @@ public class ReverseProxyService implements SmartLifecycle {
         copy.setStrategy(source.getStrategy());
         copy.setHashOn(source.getHashOn());
         copy.setRequestTimeout(source.getRequestTimeout());
+        copy.setMatch(copyMatch(source.getMatch()));
+        Map<String, ReverseProxyProperties.SplitGroup> splits = new LinkedHashMap<>();
+        source.getSplit().forEach((name, split) -> splits.put(name, copySplit(split)));
+        copy.setSplit(splits);
         copy.setAffinity(copyAffinity(source.getAffinity()));
         copy.setHeaders(copyHeaders(source.getHeaders()));
         copy.setTargets(source.getTargets().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
+        return copy;
+    }
+
+    private static ReverseProxyProperties.Match copyMatch(ReverseProxyProperties.Match source) {
+        ReverseProxyProperties.Match copy = new ReverseProxyProperties.Match();
+        if (source != null) {
+            copy.setHost(source.getHost());
+            copy.setHeader(source.getHeader());
+        }
+        return copy;
+    }
+
+    private static ReverseProxyProperties.SplitGroup copySplit(ReverseProxyProperties.SplitGroup source) {
+        ReverseProxyProperties.SplitGroup copy = new ReverseProxyProperties.SplitGroup();
+        if (source != null) {
+            copy.setPercentage(source.getPercentage());
+            copy.setTargetIds(source.getTargetIds());
+        }
         return copy;
     }
 

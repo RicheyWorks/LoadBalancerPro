@@ -89,7 +89,40 @@ loadbalancerpro.proxy.routes.api.targets[1].url=http://127.0.0.1:18082
 loadbalancerpro.proxy.routes.api.targets[1].weight=1
 ```
 
-When `routes` are configured, the proxy selects the longest matching `path-prefix` after removing `/proxy`. A request to `/proxy/api/widgets` matches the `api` route above and forwards `/api/widgets` to one configured target. A route-level `request-timeout` overrides the global request timeout for that route; routes without it inherit the global value. The separate connection timeout applies when the shared HTTP client establishes an upstream connection and requires an application restart to change. If `routes` are absent, the legacy global upstream list acts as a single `/` route so existing demos keep working.
+When `routes` are configured, matching uses the path after removing `/proxy` plus optional exact `match.host` and
+`match.header.<name>` predicates. A route's predicates use AND semantics. Matching routes are ordered by exact-host
+presence first, then longest `path-prefix`, then greatest header-predicate count, then lexicographically by route name
+as a stable tie-break. Host matching is case-insensitive, ignores an optional numeric port, and does not support
+wildcards. Header values match exactly and case-sensitively. Sensitive, forwarding, and hop-by-hop header names are
+rejected as match predicates because these routing inputs are not authentication or trusted tenant identity.
+
+A request to `/proxy/api/widgets` matches the `api` route above and forwards `/api/widgets` to one configured target.
+A route-level `request-timeout` overrides the global request timeout for that route; routes without it inherit the
+global value. The separate connection timeout applies when the shared HTTP client establishes an upstream connection
+and requires an application restart to change. If `routes` are absent, the legacy global upstream list acts as a
+single `/` route so existing demos keep working.
+
+Named routes can partition their existing targets into deterministic percentage groups:
+
+```properties
+loadbalancerpro.proxy.routes.api.match.host=api.example.test
+loadbalancerpro.proxy.routes.api.match.header.x-release-channel=preview
+loadbalancerpro.proxy.routes.api.hash-on=header:X-Request-Bucket
+
+loadbalancerpro.proxy.routes.api.split.stable.percentage=90
+loadbalancerpro.proxy.routes.api.split.stable.target-ids[0]=local-a
+loadbalancerpro.proxy.routes.api.split.canary.percentage=10
+loadbalancerpro.proxy.routes.api.split.canary.target-ids[0]=local-b
+```
+
+Split group names are ordered lexicographically before their cumulative percentage ranges are built. Positive integer
+percentages must total exactly 100, and the groups must partition every route target exactly once. The proxy hashes
+the route's existing routing key into one group once per request. Affinity, health/capacity filtering, strategy
+selection, and retries remain inside that group; an unavailable group does not spill into another percentage group.
+Each group owns independent process-local strategy state. The protected status and admin configuration responses show
+the normalized host, header names, group percentages, and target IDs but never configured header match values.
+Percentage behavior is deterministic for a routing key; it is not an exact small-sample or fleet-wide traffic
+guarantee and is not an authentication boundary.
 
 Forwarding metadata defaults to `loadbalancerpro.proxy.forwarded.mode=strip-and-set`: inbound `Forwarded`, `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` values are removed and replaced with values derived from the immediate caller. `append` preserves and appends to those headers only when the immediate peer's literal address matches `loadbalancerpro.proxy.forwarded.trusted-proxies`; entries are IPv4 or IPv6 literal CIDRs such as `10.0.0.0/8`, `127.0.0.1/32`, or `2001:db8::/32`, and hostnames are rejected. An untrusted peer in `append` mode still gets strip-and-set behavior. `off` strips the four forwarding headers and emits no replacements. Configure trusted CIDRs narrowly; this trust is about the immediate peer, not every address claimed inside an inbound chain.
 

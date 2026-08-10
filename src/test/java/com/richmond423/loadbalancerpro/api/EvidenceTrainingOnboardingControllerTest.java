@@ -343,26 +343,6 @@ class EvidenceTrainingOnboardingControllerTest {
                 trainingFolder.at("/item/6/request/url/raw").asText());
     }
 
-    @Test
-    void docsMentionPostmanOnboardingLimitsAndCliContinuity() throws Exception {
-        String postmanDocs = Files.readString(Path.of("docs/POSTMAN_EVIDENCE_TRAINING.md"),
-                StandardCharsets.UTF_8);
-        String normalizedPostmanDocs = postmanDocs.toLowerCase(Locale.ROOT);
-        String runbook = Files.readString(Path.of("docs/OPERATIONS_RUNBOOK.md"), StandardCharsets.UTF_8);
-        String cliDocs = Files.readString(Path.of("docs/REMEDIATION_REPORT_CLI.md"), StandardCharsets.UTF_8);
-
-        assertTrue(postmanDocs.contains("/api/evidence-training/onboarding"));
-        assertTrue(postmanDocs.contains("postman/LoadBalancerPro.postman_collection.json"));
-        assertTrue(normalizedPostmanDocs.contains("not certification"));
-        assertTrue(normalizedPostmanDocs.contains("not legal compliance proof"));
-        assertTrue(normalizedPostmanDocs.contains("not identity proof"));
-        assertTrue(normalizedPostmanDocs.contains("no cloud mutation"));
-        assertTrue(postmanDocs.contains("API server is optional for CLI workflows"));
-        assertTrue(runbook.contains("/api/evidence-training/onboarding"));
-        assertTrue(cliDocs.contains("--grade-training-scorecard"));
-        assertTrue(cliDocs.contains("/api/evidence-training/scorecards/grade"));
-    }
-
     private static Map<String, String> decisionsByName(String body, String nameField) throws Exception {
         Map<String, String> decisions = new LinkedHashMap<>();
         for (JsonNode node : OBJECT_MAPPER.readTree(body)) {

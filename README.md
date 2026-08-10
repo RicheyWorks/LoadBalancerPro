@@ -16,11 +16,20 @@ The default posture is conservative: API-key authentication is selected, proxyin
 - A guarded AWS `CloudManager` boundary using AWS SDK v2; live mutation requires explicit operator and account/region/capacity gates.
 - Executable Spring Boot JAR, non-root Docker image, CycloneDX SBOM generation, and local smoke helpers.
 
-## Honest boundaries
+## Engineering Trust Interface
 
-This repository provides deployable software and controlled local evidence; it is not production certification. It does not by itself prove public-ingress safety, high availability, real-tenant or live-cloud operation, production SLOs, sustained load/soak capacity, p95/p99 guarantees, identity lifecycle, secret rotation, or environment-specific disaster recovery.
+Trust comes from executable behavior and independently verifiable controls: secure defaults, deterministic tests, required CI and security gates, reproducible loopback evidence, and concise documentation that points to those sources. Documentation describes evidence; it does not create evidence.
 
-The `local` profile disables authentication and is for loopback development only. Lab decisions and Decision Explorer output do not shift production traffic. Cloud mutation remains disabled unless every live-mode guard is deliberately configured. TLS termination and network access control are deployment responsibilities.
+- Safety, authentication, TLS, secret handling, data integrity, dependency/image scanning, and protected merge gates remain strict.
+- Engineering work is the default. Update documentation when user-facing behavior, configuration, security posture, operator procedure, or a material architectural decision changes.
+- Transient branch, pull-request, SHA, CI, and campaign state belongs in GitHub and CI rather than README.
+- Documentation must not claim evidence that runtime behavior and verification do not establish.
+
+See [`AGENTS.md`](AGENTS.md) for the authoritative agent rules, optional [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) for a short task template, and [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md) for executable evidence navigation.
+
+This repository provides deployable software and controlled local evidence, not production certification. The `local`
+profile disables authentication and is loopback-only. Lab and Decision Explorer output do not shift production traffic.
+Cloud mutation remains gated and disabled by default. TLS termination and network access control are deployment duties.
 
 ## Requirements
 
@@ -174,21 +183,11 @@ Request and response contracts live in [`API_CONTRACTS.md`](docs/API_CONTRACTS.m
 
 ## Build and verification
 
-Run the full test suite:
+Run tests, build the executable artifact, or generate the JaCoCo verification report:
 
 ```bash
 mvn -B test
-```
-
-Build the executable artifact:
-
-```bash
 mvn -B package
-```
-
-Run verification and generate JaCoCo reports:
-
-```bash
 mvn -B verify
 ```
 
@@ -268,7 +267,6 @@ For the packaged-application proof path use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEP
 
 ## Architecture and security references
 
-- [`LOADBALANCERPRO_NEXT_LEVEL_ARCHITECTURE.md`](docs/architecture/LOADBALANCERPRO_NEXT_LEVEL_ARCHITECTURE.md)
 - [`ENTERPRISE_LAB_DURABLE_EVIDENCE.md`](docs/architecture/ENTERPRISE_LAB_DURABLE_EVIDENCE.md)
 - [`ENTERPRISE_LAB_INDEPENDENT_ALLOCATION_SUPERVISOR.md`](docs/architecture/ENTERPRISE_LAB_INDEPENDENT_ALLOCATION_SUPERVISOR.md)
 - [`SECURITY.md`](SECURITY.md)
@@ -276,5 +274,3 @@ For the packaged-application proof path use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEP
 - [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md)
 - [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md)
 - [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md)
-
-Repository contribution and agent rules are in [`CONTRIBUTING.md`](CONTRIBUTING.md), [`AGENTS.md`](AGENTS.md), and [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md).

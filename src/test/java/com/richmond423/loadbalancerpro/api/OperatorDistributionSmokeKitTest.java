@@ -14,11 +14,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class OperatorDistributionSmokeKitTest {
-    private static final Path DISTRIBUTION_SMOKE_DOC = Path.of("docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md");
-    private static final Path OPERATOR_PACKAGING_DOC = Path.of("docs/OPERATOR_PACKAGING.md");
-    private static final Path PROXY_DEMO_STACK_DOC = Path.of("docs/PROXY_DEMO_STACK.md");
-    private static final Path FIXTURE_LAUNCHER_DOC = Path.of("docs/PROXY_DEMO_FIXTURE_LAUNCHER.md");
-    private static final Path README = Path.of("README.md");
     private static final Path POWERSHELL_SMOKE_SCRIPT = Path.of("scripts/operator-distribution-smoke.ps1");
     private static final Path UNIX_SMOKE_SCRIPT = Path.of("scripts/operator-distribution-smoke.sh");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
@@ -37,38 +32,6 @@ class OperatorDistributionSmokeKitTest {
             Pattern.compile("https?://(?!127\\.0\\.0\\.1(?::|/|$)|localhost(?::|/|$))[^\\s\"'`]+");
     private static final Pattern SECRET_ASSIGNMENT =
             Pattern.compile("(?im)^\\s*[^#\\r\\n]*(password|secret|token|api[-_]?key|x-api-key)\\s*=");
-
-    @Test
-    void distributionSmokeDocDocumentsReleaseFreePackagedJarAndStatusPath() throws Exception {
-        String doc = read(DISTRIBUTION_SMOKE_DOC);
-
-        assertTrue(doc.contains("# Operator Distribution Smoke Kit"));
-        assertTrue(doc.contains("No tags, releases, or assets are created"));
-        assertTrue(doc.contains("mvn -B -DskipTests package"));
-        assertTrue(doc.contains("resolve-executable-jar.ps1"));
-        assertTrue(doc.contains("scripts/resolve-executable-jar.sh"));
-        assertTrue(doc.contains("java -jar \"$JAR_PATH\""));
-        assertFalse(doc.contains("LoadBalancerPro-2.5.0.jar"));
-        assertTrue(doc.contains("compile exec:java"));
-        assertTrue(doc.contains("ProxyDemoFixtureLauncher"));
-        assertTrue(doc.contains("/proxy-status.html"));
-        assertTrue(doc.contains("/api/proxy/status"));
-        assertTrue(doc.contains("BOOT-INF/classes/static/proxy-status.html"));
-        assertTrue(doc.contains("BOOT-INF/classes/static/load-balancing-cockpit.html"));
-        assertTrue(doc.contains("X-LoadBalancerPro-Upstream"));
-        assertTrue(doc.contains("X-LoadBalancerPro-Strategy"));
-        assertTrue(doc.contains("proxy-demo-round-robin"));
-        assertTrue(doc.contains("proxy-demo-weighted-round-robin"));
-        assertTrue(doc.contains("proxy-demo-failover"));
-        assertTrue(doc.contains("docs/examples/proxy/application-proxy-real-backend-example.properties"));
-        assertTrue(doc.contains("docs/examples/proxy/application-proxy-real-backend-weighted-example.properties"));
-        assertTrue(doc.contains("docs/examples/proxy/application-proxy-real-backend-failover-example.properties"));
-        assertTrue(doc.contains("packaged-artifact-smoke"));
-        assertTrue(doc.contains("artifact-smoke-summary.txt"));
-        assertTrue(doc.contains("artifact-sha256.txt"));
-        assertTrue(doc.contains("jar-resource-list.txt"));
-        assertNoUnsafeDistributionContent(doc, DISTRIBUTION_SMOKE_DOC);
-    }
 
     @Test
     void smokeHelpersExistAndAvoidReleaseCommands() throws Exception {

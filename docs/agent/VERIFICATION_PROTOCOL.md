@@ -1,87 +1,29 @@
-# Verification Protocol
+# Verification Guide
 
-This protocol defines the usual verification escalation for Codex and reviewer-agent work. It is procedural guidance only; it does not add CI/Maven wiring or runtime behavior.
+Choose verification according to the changed risk surface.
 
-For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) so checkpoints, pause/resume decisions, and merge-readiness claims stay tied to current verification. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) and [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) to apply these tiers one scoped PR at a time.
+## During Development
 
-## Tier 1: Focused Failing Test Or Focused Doc Guard
+- Run the smallest focused test that covers the changed behavior or invariant.
+- Add or strengthen executable tests when behavior, security, concurrency, persistence, or failure handling changes.
+- Do not preserve an obsolete exact-prose assertion merely to keep a documentation test green.
 
-Run the exact failing test first when CI or local output identifies one. For documentation-only work, run the new or affected documentation guard test first.
+## Before Review
 
-Use this tier while editing so failures stay close to the change.
+- Run affected integration and contract tests.
+- Run `mvn -B test` for shared runtime, security, build, or broad test/governance changes.
+- Run `mvn -B package` for packaging/runtime-resource changes and merge candidates.
+- Run relevant artifact, loopback, Compose, benchmark, or enterprise-lab smoke checks when those surfaces changed or
+  form part of acceptance.
+- Run `git diff --check` and inspect the complete branch diff.
 
-## Tier 2: Relevant Focused Selector Bundle
+An unchanged SHA does not need an identical expensive local rerun solely for reporting.
 
-Run related tests that cover adjacent docs, guardrails, and contracts. Use this when a change touches README positioning, reviewer trust docs, local-lab docs, Compose guardrails, or agent contracts.
+## Remote And Merge Gates
 
-## Tier 3: Full Test Suite
+Required GitHub checks are the source of truth for the exact pull-request head. Apply Build/Test/Package/Smoke,
+CodeQL, dependency review, SBOM, container, benchmark, and image gates when configured. Do not accept failed,
+cancelled, stale, skipped-only, duplicate-only, queued, or pending required evidence.
 
-Run:
-
-```powershell
-mvn -q test
-```
-
-Use full tests before merge decisions or before claiming that a branch is locally green.
-
-## Tier 4: Package Checks
-
-These are the package checks:
-
-Run:
-
-```powershell
-mvn -q "-DskipTests" package
-mvn -B package
-```
-
-These confirm packaging posture in both skipped-test and full Maven package modes.
-
-## Tier 5: Diff Checks
-
-These are the diff checks:
-
-Run:
-
-```powershell
-git diff --check
-git diff --check origin/main...HEAD
-git diff --cached --check
-```
-
-These catch whitespace and staged/unstaged diff issues.
-
-## Tier 6: Enterprise Lab Package Smoke
-
-This is the enterprise lab package smoke tier.
-
-Run:
-
-```powershell
-.\scripts\smoke\enterprise-lab-workflow.ps1 -Package
-```
-
-This writes ignored local evidence under `target/` and does not prove production activation.
-
-## Tier 7: Remote PR Checks
-
-Use GitHub PR checks for required remote status:
-
-- Build/Test/Package/Smoke;
-- Analyze Java / CodeQL;
-- Dependency Review when applicable;
-- any additional required branch-protection checks.
-
-Do not accept stale, failed, cancelled, or pending required checks as green.
-
-## Tier 8: Main Post-Merge Checks
-
-After merge, update local `main`, verify the merge commit, rerun the requested local checks, and inspect main remote CI/CodeQL for the merge commit.
-
-Do not claim fully green main while remote checks are pending.
-
-## Campaign Mode Refinement
-
-For a multi-PR `/goal` campaign, each slot must verify the latest/current head SHA. Use focused checks while editing, full verification before opening a merge decision, current-head remote PR checks before merge, and post-merge main checks before counting the slot or starting the next branch.
-
-See [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) for the campaign-specific order, final-head verification rule, and remote check rules. Keep SESSION_MANAGER.md concise and record only material failures in FAILURE_LOG.md.
+Merge normally only after the current head is reviewed, mergeable, and green. Then verify the merge commit is on local
+`main` and wait for exact merge-main CI and CodeQL before calling main green.

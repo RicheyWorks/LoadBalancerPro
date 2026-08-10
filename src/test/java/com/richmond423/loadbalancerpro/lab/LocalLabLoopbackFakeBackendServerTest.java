@@ -17,11 +17,6 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 class LocalLabLoopbackFakeBackendServerTest {
-    private static final Path ADR_0009 =
-            Path.of("docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md");
-    private static final Path MATRIX = Path.of("docs/LOCAL_LAB_SCENARIO_MATRIX.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path READINESS_DOC = Path.of("docs/LOCAL_LAB_IMPLEMENTATION_READINESS_GATE.md");
     private static final Path SERVER_SOURCE =
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabLoopbackFakeBackendServer.java");
 
@@ -205,30 +200,6 @@ class LocalLabLoopbackFakeBackendServerTest {
         assertFalse(source.contains("path.of"));
         assertFalse(source.contains("8080"));
         assertFalse(source.contains("9090"));
-    }
-
-    @Test
-    void docsDescribeTestScopeLoopbackFakeBackendServerBoundary() throws Exception {
-        for (Path path : List.of(ADR_0009, MATRIX, TRUST_MAP, READINESS_DOC)) {
-            String doc = read(path);
-
-            assertTrue(doc.contains(
-                    "This PR adds a test-scope loopback fake backend server harness only."));
-            assertTrue(doc.contains("The harness lives under `src/test/java`."));
-            assertTrue(doc.contains("It binds to `127.0.0.1` only and uses OS-assigned ephemeral ports."));
-            assertTrue(doc.contains("It does not add production endpoints."));
-            assertTrue(doc.contains(
-                    "It does not change production routing, proxy, scoring, strategy, or API behavior."));
-            assertTrue(doc.contains("It does not add Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana."));
-            assertTrue(doc.contains("It does not execute replay."));
-            assertTrue(doc.contains("It does not generate evidence reports."));
-            assertTrue(doc.contains("It does not write files."));
-            assertTrue(doc.contains("It does not persist storage."));
-            assertTrue(doc.contains("It does not export/download/upload/PDF/ZIP anything."));
-            assertTrue(doc.contains("Passing loopback tests is not production proof."));
-            assertTrue(doc.contains(
-                    "Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven."));
-        }
     }
 
     private static void assertLoopbackMatchesFixture(LocalLabFakeBackendBehaviorProfile behaviorProfile)

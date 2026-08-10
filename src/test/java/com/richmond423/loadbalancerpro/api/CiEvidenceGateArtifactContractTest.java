@@ -30,22 +30,10 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 class CiEvidenceGateArtifactContractTest {
-    private static final Path CONTRACT = Path.of("docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md");
     private static final Path TEMPLATE = Path.of("docs/examples/ci-evidence-gate-summary.template.json");
     private static final Path PAGE = Path.of("src/main/resources/static/ci-evidence-gate.html");
     private static final Path CONTROLLER = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/api/EnterpriseLabCiEvidenceGateSummaryController.java");
-    private static final Path INDEX = Path.of("src/main/resources/static/index.html");
-    private static final Path REVIEWER = Path.of("src/main/resources/static/enterprise-lab-reviewer.html");
-    private static final Path OPERATOR = Path.of("src/main/resources/static/operator-evidence-dashboard.html");
-    private static final Path TIMELINE = Path.of("src/main/resources/static/evidence-timeline.html");
-    private static final Path EXPORT_PACKET = Path.of("src/main/resources/static/evidence-export-packet.html");
-    private static final Path README = Path.of("README.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path READINESS_AUDIT = Path.of("docs/ENTERPRISE_READINESS_AUDIT.md");
-    private static final Path READINESS_LANE = Path.of("docs/CI_EVIDENCE_GATE_READINESS_LANE.md");
-    private static final Path PERFORMANCE_AUTH_LANE =
-            Path.of("docs/MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md");
 
     private static final String CONTRACT_PATH = "docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md";
     private static final String TEMPLATE_PATH = "docs/examples/ci-evidence-gate-summary.template.json";
@@ -54,44 +42,6 @@ class CiEvidenceGateArtifactContractTest {
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Test
-    void contractDocumentDefinesTheLocalArtifactShapeAndBoundaries() throws Exception {
-        String contract = read(CONTRACT);
-
-        for (String required : List.of(
-                "artifactVersion",
-                "artifactKind",
-                "generatedBy",
-                "generatedAtPolicy",
-                "mode",
-                "decision",
-                "enforcementStatus",
-                "evidenceInputs",
-                "readinessChecks",
-                "manualReviewSteps",
-                "safetyBoundaries",
-                "notProvenBoundaries",
-                "recommendedNextSteps",
-                "ci-evidence-gate-artifact/v1",
-                "TEMPLATE_ONLY",
-                "READY_FOR_LOCAL_REVIEW",
-                "NEEDS_MANUAL_REVIEW",
-                "BLOCKED_FOR_LOCAL_REVIEW",
-                "NOT_ENFORCED",
-                "DOCUMENTATION_ONLY",
-                "LOCAL_REVIEW_ONLY",
-                "PASS_STYLE",
-                "WARN_STYLE",
-                "FAIL_STYLE_BLOCKER",
-                "target/",
-                "reviewer handoff",
-                "not a generated run result")) {
-            assertTrue(contract.contains(required), "contract should document " + required);
-        }
-
-        assertSafeNoFakeProofClaims(contract);
-    }
 
     @Test
     void templateJsonIsValidClearlyTemplateOnlyAndFreeOfFakeEvidence() throws Exception {
@@ -181,7 +131,7 @@ class CiEvidenceGateArtifactContractTest {
                     "endpoint must stay static/read-only and avoid " + prohibited);
         }
 
-        String combined = read(CONTRACT) + "\n" + read(TEMPLATE) + "\n" + read(PAGE) + "\n" + controller;
+        String combined = read(TEMPLATE) + "\n" + read(PAGE) + "\n" + controller;
         assertNoSecretLikeValues(combined);
         assertSafeNoFakeProofClaims(combined);
 

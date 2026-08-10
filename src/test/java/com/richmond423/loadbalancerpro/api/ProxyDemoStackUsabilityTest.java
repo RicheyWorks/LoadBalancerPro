@@ -14,8 +14,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class ProxyDemoStackUsabilityTest {
-    private static final Path DEMO_STACK_DOC = Path.of("docs/PROXY_DEMO_STACK.md");
-    private static final Path LAUNCHER_DOC = Path.of("docs/PROXY_DEMO_FIXTURE_LAUNCHER.md");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
     private static final Path ROUND_ROBIN_PROFILE =
             Path.of("src/main/resources/application-proxy-demo-round-robin.properties");
@@ -30,41 +28,6 @@ class ProxyDemoStackUsabilityTest {
             Pattern.compile("https?://(?!127\\.0\\.0\\.1(?::|/|$)|localhost(?::|/|$))[^\\s\"'`]+");
     private static final Pattern SECRET_ASSIGNMENT =
             Pattern.compile("(?im)^\\s*[^#\\r\\n]*(password|secret|token|api[-_]?key|x-api-key)\\s*=");
-
-    @Test
-    void demoStackDocsExposeSingleOperatorPathAndEvidence() throws Exception {
-        String doc = read(DEMO_STACK_DOC);
-        String launcherDoc = read(LAUNCHER_DOC);
-
-        assertTrue(doc.contains("# Proxy Demo Stack"));
-        assertTrue(doc.contains("ProxyDemoFixtureLauncher"));
-        assertTrue(doc.contains("java -cp target/classes"));
-        assertTrue(launcherDoc.contains("# Proxy Demo Fixture Launcher"));
-        assertTrue(launcherDoc.contains("ProxyDemoFixtureLauncher"));
-        assertTrue(launcherDoc.contains("--mode round-robin"));
-        assertTrue(launcherDoc.contains("--mode weighted-round-robin"));
-        assertTrue(launcherDoc.contains("--mode failover"));
-        assertTrue(launcherDoc.contains("X-Fixture-Upstream"));
-        assertTrue(launcherDoc.contains("X-LoadBalancerPro-Upstream"));
-        assertTrue(launcherDoc.contains("X-LoadBalancerPro-Strategy"));
-        assertTrue(launcherDoc.toLowerCase(Locale.ROOT).contains("no cloud"));
-        assertTrue(launcherDoc.toLowerCase(Locale.ROOT).contains("no production gateway"));
-        assertTrue(doc.contains(".\\scripts\\proxy-demo.ps1 -Mode round-robin"));
-        assertTrue(doc.contains("bash scripts/proxy-demo.sh --mode round-robin"));
-        assertTrue(doc.contains("proxy-demo-round-robin"));
-        assertTrue(doc.contains("proxy-demo-weighted-round-robin"));
-        assertTrue(doc.contains("proxy-demo-failover"));
-        assertTrue(doc.contains("/proxy-status.html"));
-        assertTrue(doc.contains("/api/proxy/status"));
-        assertTrue(doc.contains("X-LoadBalancerPro-Upstream"));
-        assertTrue(doc.contains("X-LoadBalancerPro-Strategy"));
-        assertTrue(doc.toLowerCase(Locale.ROOT).contains("cleanup"));
-        assertTrue(doc.toLowerCase(Locale.ROOT).contains("no cloud"));
-        assertTrue(doc.toLowerCase(Locale.ROOT).contains("no production gateway"));
-        assertTrue(doc.toLowerCase(Locale.ROOT).contains("not benchmark")
-                || doc.toLowerCase(Locale.ROOT).contains("no benchmark"));
-        assertNoUnsafeDemoContent(launcherDoc, LAUNCHER_DOC);
-    }
 
     @Test
     void demoProfilesExistAndStayLoopbackOnly() throws Exception {

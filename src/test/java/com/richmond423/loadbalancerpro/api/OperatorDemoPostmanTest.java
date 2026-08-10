@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Locale;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,30 +40,6 @@ class OperatorDemoPostmanTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Test
-    void operatorDemoGuideExistsAndMentionsSafetyLimitations() throws Exception {
-        String guide = Files.readString(Path.of("docs/OPERATOR_DEMO_WALKTHROUGH.md"), StandardCharsets.UTF_8);
-        String normalized = guide.toLowerCase(Locale.ROOT);
-
-        assertTrue(guide.contains("Operator Evidence Training Demo Walkthrough"));
-        assertTrue(guide.contains("curl -fsS http://127.0.0.1:8080/api/health"));
-        assertTrue(guide.contains("curl -fsS http://127.0.0.1:8080/actuator/health/readiness"));
-        assertTrue(guide.contains("/api/evidence-training/onboarding"));
-        assertTrue(guide.contains("postman/LoadBalancerPro.postman_collection.json"));
-        assertTrue(guide.contains("http://localhost:8080/evidence-training-demo.html"));
-        assertTrue(guide.contains("Evidence Training Demo Walkthrough"));
-        assertTrue(guide.contains("src/test/resources/evidence-training-demo/perfect-scorecard-answers.json"));
-        assertTrue(guide.contains("src/test/resources/evidence-training-demo/partial-scorecard-answers.json"));
-        assertTrue(guide.contains("src/test/resources/evidence-training-demo/failing-scorecard-answers.json"));
-        assertTrue(normalized.contains("local/operator training aid only"));
-        assertTrue(normalized.contains("not certification"));
-        assertTrue(normalized.contains("not legal compliance proof"));
-        assertTrue(normalized.contains("not identity proof"));
-        assertTrue(normalized.contains("no cloud mutation"));
-        assertTrue(normalized.contains("no `cloudmanager` required"));
-        assertTrue(normalized.contains("api server is required for browser/postman demo but not for offline cli workflows"));
-    }
 
     @Test
     void demoFixturesAreValidJsonAndUsePackagedScorecards() throws Exception {

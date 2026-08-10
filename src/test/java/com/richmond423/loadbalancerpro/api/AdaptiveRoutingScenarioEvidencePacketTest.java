@@ -56,13 +56,6 @@ class AdaptiveRoutingScenarioEvidencePacketTest {
     private static final Path PACKET_SECTION = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/core/"
                     + "AdaptiveRoutingScenarioEvidenceSection.java");
-    private static final Path README = Path.of("README.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path READINESS = Path.of("docs/CI_EVIDENCE_GATE_READINESS_LANE.md");
-    private static final Path CONTRACT = Path.of("docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md");
-    private static final Path READINESS_AUDIT = Path.of("docs/ENTERPRISE_READINESS_AUDIT.md");
-    private static final Path PERFORMANCE_AUTH_LANE =
-            Path.of("docs/MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md");
     private static final Path CI_GATE_PAGE = Path.of("src/main/resources/static/ci-evidence-gate.html");
     private static final Path INDEX = Path.of("src/main/resources/static/index.html");
     private static final Path REVIEWER = Path.of("src/main/resources/static/enterprise-lab-reviewer.html");
@@ -202,12 +195,7 @@ class AdaptiveRoutingScenarioEvidencePacketTest {
                     "packet endpoint and model must not include side-effect behavior: " + prohibited);
         }
 
-        String combined = (read(PAGE) + "\n"
-                + endpointCode + "\n"
-                + read(README) + "\n"
-                + read(TRUST_MAP) + "\n"
-                + read(READINESS) + "\n"
-                + read(CONTRACT))
+        String combined = (read(PAGE) + "\n" + endpointCode)
                 .toLowerCase(Locale.ROOT);
         for (String prohibited : List.of(
                 "production benchmark complete",

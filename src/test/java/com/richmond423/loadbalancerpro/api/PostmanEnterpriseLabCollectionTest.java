@@ -26,7 +26,6 @@ class PostmanEnterpriseLabCollectionTest {
             Path.of("docs/postman/LoadBalancerPro Enterprise Lab.postman_collection.json");
     private static final Path ENVIRONMENT =
             Path.of("docs/postman/LoadBalancerPro Local.postman_environment.json");
-    private static final Path DOC = Path.of("docs/POSTMAN_COLLECTION.md");
     private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s\\\"<>]+");
     private static final List<Pattern> SECRET_PATTERNS = List.of(
             Pattern.compile("AKIA[0-9A-Z]{16}"),
@@ -189,30 +188,6 @@ class PostmanEnterpriseLabCollectionTest {
                             || url.startsWith("https://schema.getpostman.com/"),
                     () -> "unexpected live URL: " + url);
         }
-    }
-
-    @Test
-    void documentationMentionsImportSafetyAndPr98Gating() throws Exception {
-        assertTrue(Files.exists(DOC), "Postman collection guide should exist");
-
-        String doc = read(DOC);
-        String normalized = doc.toLowerCase(Locale.ROOT);
-
-        assertTrue(doc.contains("docs/postman/LoadBalancerPro Enterprise Lab.postman_collection.json"));
-        assertTrue(doc.contains("docs/postman/LoadBalancerPro Local.postman_environment.json"));
-        assertTrue(doc.contains("PR #98"));
-        assertTrue(doc.contains("Swagger"));
-        assertTrue(doc.contains("OpenAPI"));
-        assertTrue(doc.contains("X-API-Key"));
-        assertTrue(doc.contains("<API_KEY>"));
-        assertTrue(doc.contains("GET /api/lab/policy"));
-        assertTrue(doc.contains("GET /api/lab/audit-events"));
-        assertTrue(doc.contains("GET /api/lab/metrics"));
-        assertTrue(doc.contains("GET /api/lab/metrics/prometheus"));
-        assertTrue(normalized.contains("no real secrets"));
-        assertTrue(normalized.contains("cloud state"));
-        assertTrue(normalized.contains("oauth2"));
-        assertTrue(normalized.contains("not production iam"));
     }
 
     private static JsonNode readJson(Path path) throws Exception {

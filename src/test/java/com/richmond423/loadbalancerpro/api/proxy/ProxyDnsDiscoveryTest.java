@@ -14,13 +14,15 @@ class ProxyDnsDiscoveryTest {
     @Test
     void compilesNormalizedDnsContractAndHttpTemplate() {
         ProxyDnsDiscovery.Spec spec = ProxyDnsDiscovery.compile(
-                "dns:Service.Example:8080", "http://service.example:8080/base", "upstream.discovery");
+                "dns:Service.Example:8080", "http://service.example:8080/base",
+                "address", "upstream.discovery");
 
         assertEquals("service.example", spec.name());
         assertEquals(8080, spec.port());
         assertEquals("/base", spec.template().getPath());
         assertEquals("service", ProxyDnsDiscovery.compile(
-                "dns:service:8080", "http://service:8080", "upstream.discovery").name());
+                "dns:service:8080", "http://service:8080", "address", "upstream.discovery").name());
+        assertEquals("address", spec.authorityMode());
     }
 
     @Test
@@ -31,12 +33,17 @@ class ProxyDnsDiscoveryTest {
         assertInvalid("IP literal", "dns:127.0.0.1:8080", "http://127.0.0.1:8080");
         assertInvalid("trailing dot", "dns:service.example.:8080", "http://service.example.:8080");
         assertInvalid("invalid port", "dns:service.example:0", "http://service.example:0");
+        assertThrows(IllegalStateException.class, () -> ProxyDnsDiscovery.compile(
+                "dns:service.example:8080", "http://service.example:8080", "", "upstream.discovery"));
+        assertThrows(IllegalStateException.class, () -> ProxyDnsDiscovery.compile(
+                "dns:service.example:8080", "http://service.example:8080", "logical", "upstream.discovery"));
     }
 
     @Test
     void canonicalizesDeduplicatesSortsAndBuildsStableMembers() throws Exception {
         ProxyDnsDiscovery.Spec spec = ProxyDnsDiscovery.compile(
-                "dns:service.example:8080", "http://service.example:8080/base", "upstream.discovery");
+                "dns:service.example:8080", "http://service.example:8080/base",
+                "address", "upstream.discovery");
         InetAddress second = literal(127, 0, 0, 2);
         InetAddress first = literal(127, 0, 0, 1);
 
@@ -53,7 +60,8 @@ class ProxyDnsDiscoveryTest {
     @Test
     void filtersPublicAnswersWhenPrivateNetworkValidationIsEnabled() throws Exception {
         ProxyDnsDiscovery.Spec spec = ProxyDnsDiscovery.compile(
-                "dns:service.example:8080", "http://service.example:8080", "upstream.discovery");
+                "dns:service.example:8080", "http://service.example:8080",
+                "address", "upstream.discovery");
         InetAddress loopback = literal(127, 0, 0, 1);
         InetAddress publicAddress = literal(8, 8, 8, 8);
 
@@ -66,24 +74,38 @@ class ProxyDnsDiscoveryTest {
     }
 
     @Test
-    void capsCanonicalMemberSetWithoutDependingOnResolverOrder() throws Exception {
+    void rejectsOverflowingCanonicalMemberSetWithoutPublishingAPartialSet() throws Exception {
         ProxyDnsDiscovery.Spec spec = ProxyDnsDiscovery.compile(
-                "dns:service.example:8080", "http://service.example:8080", "upstream.discovery");
+                "dns:service.example:8080", "http://service.example:8080",
+                "address", "upstream.discovery");
         List<InetAddress> answers = new ArrayList<>();
         for (int value = 40; value >= 1; value--) {
             answers.add(literal(10, 0, 0, value));
         }
 
-        List<ProxyDnsDiscovery.Member> members = ProxyDnsDiscovery.members(spec, "backend", answers, true);
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> ProxyDnsDiscovery.members(spec, "backend", answers, true));
+        assertTrue(exception.getMessage().contains("more than 32"));
+    }
 
-        assertEquals(ProxyDnsDiscovery.MAX_ADDRESSES_PER_NAME, members.size());
-        assertEquals("10.0.0.1", members.get(0).address());
-        assertEquals("10.0.0.32", members.get(members.size() - 1).address());
+    @Test
+    void preservesEscapedBasePathWithoutDoubleEncodingOrDecoding() throws Exception {
+        ProxyDnsDiscovery.Spec spec = ProxyDnsDiscovery.compile(
+                "dns:service.example:8080",
+                "http://service.example:8080/api%2Fv1/%7Euser/%25value",
+                "address", "upstream.discovery");
+
+        ProxyDnsDiscovery.Member member = ProxyDnsDiscovery.members(
+                spec, "backend", List.of(literal(127, 0, 0, 1)), true).get(0);
+
+        assertEquals("/api%2Fv1/%7Euser/%25value", member.endpoint().getRawPath());
+        assertEquals("/api/v1/~user/%value", member.endpoint().getPath());
+        assertEquals("http://127.0.0.1:8080/api%2Fv1/%7Euser/%25value", member.endpoint().toString());
     }
 
     private static void assertInvalid(String label, String discovery, String template) {
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> ProxyDnsDiscovery.compile(discovery, template, "upstream.discovery"), label);
+                () -> ProxyDnsDiscovery.compile(discovery, template, "address", "upstream.discovery"), label);
         assertTrue(exception.getMessage().startsWith("upstream."), label);
     }
 

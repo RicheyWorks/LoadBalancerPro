@@ -4,7 +4,6 @@ import java.net.IDN;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -27,7 +26,7 @@ final class ProxyDnsDiscovery {
     private ProxyDnsDiscovery() {
     }
 
-    static Spec compile(String discovery, String templateUrl, String fieldName) {
+    static Spec compile(String discovery, String templateUrl, String authorityMode, String fieldName) {
         String value = requireText(discovery, fieldName);
         if (!value.startsWith("dns:")) {
             throw invalid(fieldName, "must use dns:<name>:<port>");
@@ -41,7 +40,13 @@ final class ProxyDnsDiscovery {
         String name = normalizedName(authority.substring(0, separator), fieldName);
         int port = parsePort(authority.substring(separator + 1), fieldName);
         URI template = parseTemplate(templateUrl, name, port, fieldName.replace(".discovery", ".url"));
-        return new Spec(name, port, template);
+        String normalizedAuthorityMode = requireText(
+                authorityMode, fieldName.replace(".discovery", ".discovery-authority"));
+        if (!"address".equals(normalizedAuthorityMode)) {
+            throw invalid(fieldName.replace(".discovery", ".discovery-authority"),
+                    "must be address when DNS discovery is configured");
+        }
+        return new Spec(name, port, template, normalizedAuthorityMode);
     }
 
     static List<Member> members(
@@ -56,10 +61,14 @@ final class ProxyDnsDiscovery {
         Map<String, byte[]> unique = new LinkedHashMap<>();
         for (InetAddress answer : answers) {
             if (answer == null || answer.isAnyLocalAddress() || answer.isMulticastAddress()
-                    || answer instanceof Inet6Address ipv6 && ipv6.getScopeId() != 0) {
+                    || answer instanceof Inet6Address ipv6
+                    && (ipv6.getScopeId() != 0 || ipv6.getScopedInterface() != null)) {
                 continue;
             }
             byte[] bytes = answer.getAddress();
+            if (bytes == null || bytes.length != 4 && bytes.length != 16) {
+                continue;
+            }
             String address = literalAddress(bytes);
             if (privateNetworkOnly && !privateAddressAllowed(address, spec.port())) {
                 continue;
@@ -70,7 +79,8 @@ final class ProxyDnsDiscovery {
         List<byte[]> ordered = new ArrayList<>(unique.values());
         ordered.sort(ProxyDnsDiscovery::compareUnsigned);
         if (ordered.size() > MAX_ADDRESSES_PER_NAME) {
-            ordered = ordered.subList(0, MAX_ADDRESSES_PER_NAME);
+            throw new IllegalStateException("DNS answer contains more than "
+                    + MAX_ADDRESSES_PER_NAME + " usable unique addresses");
         }
         return ordered.stream()
                 .map(bytes -> member(spec, logicalId, bytes))
@@ -79,13 +89,9 @@ final class ProxyDnsDiscovery {
 
     private static Member member(Spec spec, String logicalId, byte[] bytes) {
         String address = literalAddress(bytes);
-        URI endpoint;
-        try {
-            endpoint = new URI("http", null, address, spec.port(),
-                    spec.template().getRawPath(), null, null);
-        } catch (URISyntaxException exception) {
-            throw new IllegalStateException("canonical DNS member URI could not be constructed", exception);
-        }
+        String authority = address.contains(":") ? "[" + address + "]" : address;
+        String rawPath = Objects.requireNonNullElse(spec.template().getRawPath(), "");
+        URI endpoint = URI.create("http://" + authority + ":" + spec.port() + rawPath);
         return new Member(memberId(logicalId, spec, address), address, endpoint);
     }
 
@@ -209,10 +215,11 @@ final class ProxyDnsDiscovery {
         return new IllegalStateException(fieldName + " " + reason);
     }
 
-    record Spec(String name, int port, URI template) {
+    record Spec(String name, int port, URI template, String authorityMode) {
         Spec {
             Objects.requireNonNull(name, "name cannot be null");
             Objects.requireNonNull(template, "template cannot be null");
+            Objects.requireNonNull(authorityMode, "authorityMode cannot be null");
         }
     }
 

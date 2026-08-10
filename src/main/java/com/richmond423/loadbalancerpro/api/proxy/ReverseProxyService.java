@@ -2281,6 +2281,8 @@ public class ReverseProxyService implements SmartLifecycle {
         }
         copy.setId(source.getId());
         copy.setUrl(source.getUrl());
+        copy.setDiscovery(source.getDiscovery());
+        copy.setDiscoveryAuthority(source.getDiscoveryAuthority());
         copy.setHealthy(source.isHealthy());
         copy.setInFlightRequestCount(source.getInFlightRequestCount());
         copy.setConfiguredCapacity(source.getConfiguredCapacity());

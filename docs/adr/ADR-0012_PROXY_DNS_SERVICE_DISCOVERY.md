@@ -29,6 +29,12 @@ retaining hostname-based certificate identity and SNI on a per-request basis. Di
 acceptable. DNS-discovered targets are consequently HTTP-only in this slot; HTTPS discovery is rejected until a
 transport with reviewed address pinning plus service-name TLS verification exists.
 
+The same client derives the HTTP `Host` authority from the literal member URI, and its per-request API does not allow
+a safe restricted-header override. P-4.2 therefore uses an explicit address-authority contract rather than silently
+claiming virtual-host preservation. Discovery configuration must set `discovery-authority=address`; the selected
+literal address and port are both the connection endpoint and backend HTTP authority. Logical-host authority is not
+supported in this slot, and no global restricted-header property is enabled.
+
 ## Decision
 
 ### Configuration contract
@@ -36,7 +42,9 @@ transport with reviewed address pinning plus service-name TLS verification exist
 Each existing upstream may optionally set `discovery` to exactly `dns:<name>:<port>`. A discovered upstream keeps its
 existing `url` as an HTTP transport and base-path template. The URL host and effective port must equal the normalized
 discovery name and port, and the URL must otherwise satisfy the existing no-user-info, no-query, and no-fragment
-rules. Blank discovery retains current static-target behavior. Unsupported schemes, IP literals as discovery names,
+rules. Valid percent escapes in its raw base path are retained exactly when literal member URIs are built.
+`discovery-authority` must be exactly `address` for discovered upstreams and must be blank for static upstreams.
+Blank discovery retains current static-target behavior. Unsupported schemes, IP literals as discovery names,
 wildcards, trailing-dot ambiguity, control characters, invalid IDN/ASCII labels, and malformed or out-of-range ports
 fail configuration atomically.
 
@@ -58,6 +66,9 @@ loopback/private classifier before it can enter an effective snapshot. A hostnam
 its text looks internal. Public answers are allowed only when the existing private-network validation feature is
 disabled, matching the static-target policy.
 
+More than 32 usable unique addresses is a failed refresh. The runtime retains the prior non-empty snapshot only
+within its stale bound; it never truncates and publishes a partial answer that could distort weights or canary state.
+
 A successful non-empty answer atomically replaces that logical upstream's member set. Empty answers and resolver
 failures retain the last successful set only until `stale-after`; after that bound the member set becomes empty and
 new requests fail closed with the existing no-healthy-upstream response. Resolution failures never fall back to
@@ -70,6 +81,9 @@ logical upstream ID plus the canonical address. Routing strategies, capacity, ru
 and active health checks operate on those member identifiers, so health for one address cannot mark its siblings
 healthy or unhealthy. Split groups continue to reference logical configured target IDs and are expanded only within
 their existing group; discovery cannot let retries escape the selected canary group.
+
+The outbound HTTP request uses the selected member URI unchanged. Its backend `Host` authority is consequently the
+canonical literal address plus the port when non-default; the configured discovery name is not sent as `Host`.
 
 Discovery publication rebuilds the affected effective route snapshot under the existing configuration lock and
 atomically swaps it for new requests. Requests already holding the previous snapshot finish against it. Unchanged
@@ -112,6 +126,7 @@ existing proxy Compose smoke, CodeQL, dependency review, SBOM, and image scans r
 ## Not-proven boundaries
 
 This decision and later local/CI tests will not prove authoritative TTL observation, DNS cache bypass, DNSSEC,
-split-horizon correctness, HTTPS discovery, service-name TLS identity across pinned addresses, production DNS
+split-horizon correctness, logical-host HTTP authority or virtual-host compatibility, HTTPS discovery,
+service-name TLS identity across pinned addresses, production DNS
 availability, production throughput or latency, live-cloud behavior, production readiness, or production
 certification.

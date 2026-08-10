@@ -517,6 +517,8 @@ public class ReverseProxyProperties {
     public static final class Upstream {
         private String id;
         private String url;
+        private String discovery = "";
+        private String discoveryAuthority = "";
         private boolean healthy = true;
         private int inFlightRequestCount = 0;
         private Double configuredCapacity = 100.0;
@@ -544,6 +546,22 @@ public class ReverseProxyProperties {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public String getDiscovery() {
+            return discovery;
+        }
+
+        public void setDiscovery(String discovery) {
+            this.discovery = discovery == null ? "" : discovery;
+        }
+
+        public String getDiscoveryAuthority() {
+            return discoveryAuthority;
+        }
+
+        public void setDiscoveryAuthority(String discoveryAuthority) {
+            this.discoveryAuthority = discoveryAuthority == null ? "" : discoveryAuthority;
         }
 
         public boolean isHealthy() {

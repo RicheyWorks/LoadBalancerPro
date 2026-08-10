@@ -6,7 +6,8 @@ Accepted for the scoped P-4.2 implementation.
 
 Decision type: proxy backend discovery and runtime routing behavior.
 
-Implementation status: design contract recorded before implementation; verification remains required.
+Implementation status: implemented and locally verified on P-4.2 pull request `#554`; exact-head remote and
+post-merge main verification remain required before the slot can count as `MAIN_GREEN`.
 
 ## Date
 
@@ -48,18 +49,27 @@ Blank discovery retains current static-target behavior. Unsupported schemes, IP 
 wildcards, trailing-dot ambiguity, control characters, invalid IDN/ASCII labels, and malformed or out-of-range ports
 fail configuration atomically.
 
-`loadbalancerpro.proxy.dns-discovery.ttl-floor` defines the minimum interval between attempts and defaults to 30
-seconds. `stale-after` defaults to five minutes, must not be shorter than the floor, and bounds retention of the last
-successful answer after repeated failures. `resolution-timeout` defaults to two seconds. Per-name answers and the
-aggregate effective target set remain within the existing route and configuration target limits.
+`loadbalancerpro.proxy.dns-discovery.ttl-floor` defines the minimum interval between attempts, defaults to 30
+seconds, and is bounded from one second through one hour. `stale-after` defaults to five minutes, is bounded from one
+second through 24 hours, must not be shorter than the floor, and bounds retention of the last successful answer after
+repeated failures. `resolution-timeout` defaults to two seconds and is bounded from 100 milliseconds through 30
+seconds. `lookup-threads` defaults to four and is bounded from one through 16. A configuration may register at most
+256 logical names, publish at most 32 members for one name, expand to at most 64 members on one route, and contain at
+most 256 effective members in total. Limit failures reject the candidate atomically rather than partially publishing
+it.
 
 ### Resolution and publication
 
-A dedicated bounded daemon component resolves configured names through an injectable resolver abstraction. The
-production resolver uses the JVM/operating-system resolver; deterministic tests use only injected literal-loopback
-answers and never query external DNS. A name has at most one in-flight lookup. Results are canonicalized to literal
-IPv4 or unscoped IPv6 addresses, deduplicated, sorted by address bytes, and capped before publication. Unspecified,
-multicast, and malformed addresses are rejected.
+A dedicated bounded daemon component resolves configured names through an injectable resolver abstraction. It uses
+a single bounded scheduler, a fixed bounded lookup pool, and a coalescing single-thread publisher so scheduling,
+blocked resolution, and effective-config publication do not consume request, status, configuration, reload, or
+health-probe threads. The production resolver uses the JVM/operating-system resolver; deterministic tests use only
+injected literal-loopback answers and never query external DNS. A name has at most one in-flight lookup. A timeout
+marks the attempt failed but does not pretend to cancel the underlying JDK/native call: the call remains that name's
+single in-flight lookup, other names and stale expiry continue to advance, and a late completion is discarded.
+Results are canonicalized to literal IPv4 or unscoped IPv6 addresses, deduplicated, sorted by address bytes, and
+capped before publication. Unspecified, multicast, link-local, scoped, and disallowed special-use addresses are
+rejected; site-local IPv6 is also rejected.
 
 When private-network validation is enabled, every resolved literal address must independently pass the existing
 loopback/private classifier before it can enter an effective snapshot. A hostname is never accepted merely because
@@ -82,8 +92,16 @@ and active health checks operate on those member identifiers, so health for one 
 healthy or unhealthy. Split groups continue to reference logical configured target IDs and are expanded only within
 their existing group; discovery cannot let retries escape the selected canary group.
 
+Logical upstream weight, capacity, estimated concurrency, maximum in-flight requests, seed in-flight requests, and
+queue depth are divided deterministically across the current member set, including a stable quotient/remainder
+assignment. This prevents one logical upstream from multiplying its configured share merely because DNS returns
+more addresses. Retry, canary, affinity, and consistent-hash decisions then operate on the effective members within
+the already selected logical group.
+
 The outbound HTTP request uses the selected member URI unchanged. Its backend `Host` authority is consequently the
 canonical literal address plus the port when non-default; the configured discovery name is not sent as `Host`.
+Forwarding and active-health URI construction both retain the configured raw escaped base path and raw escaped
+request or health suffix without double encoding.
 
 Discovery publication rebuilds the affected effective route snapshot under the existing configuration lock and
 atomically swaps it for new requests. Requests already holding the previous snapshot finish against it. Unchanged
@@ -114,14 +132,22 @@ configured names and accepted addresses. Address changes can reset strategy stat
 move consistent-hash assignments, which is expected. An unresolved or expired service fails closed instead of
 silently bypassing discovery. HTTPS service discovery remains unavailable rather than weakening backend TLS.
 
+Shutdown interrupts and joins the bounded discovery workers. A truly uninterruptible JVM/operating-system resolver
+call may outlive that bounded close on its daemon lookup thread until the platform resolver returns; it cannot create
+duplicate lookups for the same name or keep the process alive. This slot does not claim hard cancellation of native
+DNS resolution.
+
 ## Verification contract
 
-Focused tests must cover configuration parsing and rejection, deterministic address canonicalization and limits,
-off-request-thread resolution, refresh-floor scheduling, last-known-good expiry, private/public answer filtering,
-per-address health isolation, membership add/remove publication, split-group confinement, retry behavior, stale
-generation suppression, immutable concurrent request snapshots, status/admin visibility, reload copying, shutdown,
-and unchanged static upstream behavior. Resolver tests use injected loopback answers only. Full tests, packaging, the
-existing proxy Compose smoke, CodeQL, dependency review, SBOM, and image scans remain required before merge.
+Focused tests cover configuration parsing and rejection, deterministic address canonicalization and limits,
+off-request-thread resolution, refresh-floor scheduling, timeout without duplicate fan-out, last-known-good expiry,
+private/public answer filtering, per-address health isolation, membership add/remove publication, split-group
+confinement, retry/affinity/consistent-hash behavior, stale generation suppression, immutable concurrent request
+snapshots, status/admin privacy, metrics and access-log cardinality, reload rejection, shutdown, raw request and
+health paths, and unchanged static upstream behavior. Resolver tests use injected loopback answers only. Full tests,
+both package modes, artifact inspection, SBOM generation, Enterprise Lab package smoke, and loopback proxy Compose
+and benchmark smoke have passed locally. The canonical Dockerfile build and image scans, CodeQL, dependency review,
+current-head CI, merge, and post-merge main gates remain required remotely.
 
 ## Not-proven boundaries
 

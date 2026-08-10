@@ -9,7 +9,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -229,6 +231,43 @@ class ReverseProxyDnsRoutingSemanticsTest {
         }
     }
 
+    @Test
+    void unchangedMemberKeepsCooldownStateWhileAnAddedMemberStartsFresh() throws Exception {
+        AtomicReference<List<InetAddress>> answers = new AtomicReference<>(
+                List.of(literal(127, 0, 0, 1)));
+        ReverseProxyProperties properties = singleRoute("ROUND_ROBIN");
+        properties.getCooldown().setEnabled(true);
+        properties.getCooldown().setConsecutiveFailureThreshold(1);
+        properties.getCooldown().setDuration(Duration.ofMinutes(1));
+        ReverseProxyService service = service(properties, client(ignored -> {
+            throw new UncheckedIOException(new IOException("synthetic transport failure"));
+        }), name -> answers.get());
+        try {
+            assertTrue(waitUntil(() -> service.statusSnapshot().upstreams().size() == 1,
+                    Duration.ofSeconds(3)));
+            String unchangedId = service.statusSnapshot().upstreams().get(0).id();
+            assertEquals(502, service.forward(request("cooldown-a", null), new byte[0]).statusCode());
+            assertTrue(service.statusSnapshot().upstreams().get(0).cooldownActive());
+
+            answers.set(List.of(literal(127, 0, 0, 1), literal(127, 0, 0, 2)));
+            assertTrue(waitUntil(() -> service.statusSnapshot().upstreams().size() == 2,
+                    Duration.ofSeconds(3)));
+            Map<String, ReverseProxyStatusResponse.UpstreamStatus> statusById =
+                    service.statusSnapshot().upstreams().stream().collect(Collectors.toMap(
+                            ReverseProxyStatusResponse.UpstreamStatus::id,
+                            Function.identity()));
+            ReverseProxyStatusResponse.UpstreamStatus added = statusById.values().stream()
+                    .filter(status -> !status.id().equals(unchangedId))
+                    .findFirst().orElseThrow();
+
+            assertTrue(statusById.get(unchangedId).cooldownActive());
+            assertFalse(added.cooldownActive());
+            assertEquals(0, added.consecutiveFailures());
+        } finally {
+            service.stop();
+        }
+    }
+
     private static ReverseProxyProperties splitProperties() {
         ReverseProxyProperties properties = baseProperties();
         ReverseProxyProperties.Route route = new ReverseProxyProperties.Route();
@@ -310,8 +349,9 @@ class ReverseProxyDnsRoutingSemanticsTest {
         HttpClient client = mock(HttpClient.class);
         when(client.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenAnswer(invocation -> {
             HttpRequest request = invocation.getArgument(0, HttpRequest.class);
+            int status = responseStatus.apply(request);
             HttpResponse<InputStream> response = mock(HttpResponse.class);
-            when(response.statusCode()).thenReturn(responseStatus.apply(request));
+            when(response.statusCode()).thenReturn(status);
             when(response.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
             when(response.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
             return response;

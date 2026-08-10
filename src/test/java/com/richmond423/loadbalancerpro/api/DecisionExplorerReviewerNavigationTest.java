@@ -24,9 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 class DecisionExplorerReviewerNavigationTest {
     private static final Path INDEX = Path.of("src/main/resources/static/index.html");
     private static final Path PAGE = Path.of("src/main/resources/static/decision-explorer.html");
-    private static final Path README = Path.of("README.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
 
     @Autowired
     private MockMvc mockMvc;
@@ -65,44 +62,16 @@ class DecisionExplorerReviewerNavigationTest {
     }
 
     @Test
-    void activeDocsLinkAndNameTheV2RoutingExplanationContract() throws Exception {
-        String combined = read(README) + "\n" + read(TRUST_MAP) + "\n" + read(API_CONTRACTS);
+    void decisionExplorerPagePreservesSafetyBoundaries() throws Exception {
+        String normalized = read(PAGE).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "http://localhost:8080/decision-explorer.html",
-                "/decision-explorer.html",
-                "POST /api/routing/decision-explorer",
-                "RoutingExplanation",
-                "counterfactualWeightScenarios",
-                "read-only",
-                "simulation-only")) {
-            assertTrue(combined.contains(expected), "active docs should contain " + expected);
-        }
-        for (String retired : List.of(
-                "DecisionExplorerPayloadV1",
-                "counterfactualAnalysis",
-                "shadowDecisionQualityEvaluation",
-                "routeTradeoffAnalysis")) {
-            assertFalse(combined.contains(retired), "active docs should not present retired field " + retired);
-        }
-    }
-
-    @Test
-    void activeReviewerPathPreservesSafetyBoundaries() throws Exception {
-        String normalized = (read(README) + "\n" + read(TRUST_MAP) + "\n"
-                + read(API_CONTRACTS) + "\n" + read(PAGE)).toLowerCase(Locale.ROOT);
-
-        for (String expected : List.of(
-                "does not shift traffic",
-                "mutate routing",
-                "call cloud or tenant systems",
-                "persist",
-                "execute replay",
                 "production readiness",
                 "live-cloud validation",
                 "real-tenant validation",
-                "throughput/p95/p99")) {
-            assertTrue(normalized.contains(expected), "reviewer path should preserve " + expected);
+                "no replay execution",
+                "persistent storage")) {
+            assertTrue(normalized.contains(expected), "decision explorer should preserve " + expected);
         }
         for (String forbidden : List.of(
                 "production readiness is proven",

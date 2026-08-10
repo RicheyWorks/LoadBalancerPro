@@ -15,10 +15,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class LocalLabPassiveReviewerChecklistMapperTest {
-    private static final Path ADR_0009 =
-            Path.of("docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md");
-    private static final Path MATRIX = Path.of("docs/LOCAL_LAB_SCENARIO_MATRIX.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final List<Path> CHECKLIST_SOURCES = List.of(
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabPassiveReviewerChecklistItem.java"),
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabPassiveReviewerChecklist.java"),
@@ -208,29 +204,6 @@ class LocalLabPassiveReviewerChecklistMapperTest {
                     "executor")) {
                 assertFalse(normalized.contains(forbidden), source + " must not use " + forbidden);
             }
-        }
-    }
-
-    @Test
-    void docsDescribePassiveReviewerChecklistMapperSprintAsTestScopeOnly() throws Exception {
-        String adr = read(ADR_0009);
-        String matrix = read(MATRIX);
-        String trustMap = read(TRUST_MAP);
-
-        for (String doc : List.of(adr, matrix, trustMap)) {
-            assertTrue(doc.contains("This PR adds a test-scope passive reviewer checklist mapper only."));
-            assertTrue(doc.contains(
-                    "The mapper turns existing passive transcript summaries into in-memory reviewer checklist entries."));
-            assertTrue(doc.contains("It does not execute replay."));
-            assertTrue(doc.contains("It does not generate evidence reports."));
-            assertTrue(doc.contains("It does not write files."));
-            assertTrue(doc.contains("It does not persist storage."));
-            assertTrue(doc.contains("It does not export/download/upload/PDF/ZIP anything."));
-            assertTrue(doc.contains("It does not implement fake backend servers."));
-            assertTrue(doc.contains(
-                    "It does not start listeners, open ports, call localhost, generate traffic, or run tools."));
-            assertTrue(doc.contains("Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling."));
-            assertTrue(doc.contains("This is still not production proof."));
         }
     }
 

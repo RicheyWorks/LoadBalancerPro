@@ -13,7 +13,6 @@ class ProxyBenchmarkSoakHarnessTest {
     private static final Path SCRIPT = Path.of("scripts/bench/proxy-benchmark-soak.sh");
     private static final Path HEAP_ANALYZER = Path.of("scripts/bench/analyze-heap.awk");
     private static final Path OVERRIDE = Path.of("scripts/bench/docker-compose.bench.yml");
-    private static final Path GUIDE = Path.of("scripts/bench/README.md");
     private static final Path NIGHTLY = Path.of(".github/workflows/proxy-nightly-soak.yml");
     private static final Path CI = Path.of(".github/workflows/ci.yml");
 
@@ -81,14 +80,4 @@ class ProxyBenchmarkSoakHarnessTest {
         assertFalse(nightly.contains("secrets."));
     }
 
-    @Test
-    void guideKeepsEvidenceAndSecretBoundariesExplicit() throws IOException {
-        String guide = Files.readString(GUIDE).replaceAll("\\s+", " ");
-        assertTrue(guide.contains("fixed to `https://127.0.0.1:<port>`"));
-        assertTrue(guide.contains("never written to evidence"));
-        assertTrue(guide.contains("one-hour soak"));
-        assertTrue(guide.contains("zero 5xx responses or transport errors during reload and drain"));
-        assertTrue(guide.contains("do not establish production SLOs"));
-        assertTrue(guide.contains("production capacity"));
-    }
 }

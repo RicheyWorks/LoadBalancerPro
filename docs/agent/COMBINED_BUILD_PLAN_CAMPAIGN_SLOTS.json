@@ -46,7 +46,7 @@
     {"slotId":"P-3.3","status":"MAIN_GREEN","pr":"547","finalHead":"965a251d31217233753e8fdc5c12adb2ee45bebe","mergeCommit":"54f1b7f9c27daadfa3aafb58c186ef665cfc79d9","blocker":null},
     {"slotId":"P-3.4","status":"MAIN_GREEN","pr":"550","finalHead":"20000df5efae739f92505b6ebb05cf9e24ca82c8","mergeCommit":"03d7c83e303f3170b43d1bd34bfaaa9e8f0a889f","blocker":null},
     {"slotId":"P-4.1","status":"MAIN_GREEN","pr":"551, 552","finalHead":"0c0e998ba9e3b2cbf39f1503e7dc212edd7f8d2e","mergeCommit":"26cf58d2c8018707277f687b4275bbb30522d0a0","blocker":null},
-    {"slotId":"P-4.2","status":"IN_PROGRESS","pr":"554","finalHead":null,"mergeCommit":null,"blocker":null},
+    {"slotId":"P-4.2","status":"MAIN_GREEN","pr":"554","finalHead":"a3f7d2eba5a80bc9e80f24997751632afbacca1f","mergeCommit":"026173104450a569bec8c6accb8b1d0a5e40a47a","blocker":null},
     {"slotId":"P-4.3","status":"OPEN","pr":null,"finalHead":null,"mergeCommit":null,"blocker":null},
     {"slotId":"P-4.4","status":"OPEN","pr":null,"finalHead":null,"mergeCommit":null,"blocker":null}
   ]

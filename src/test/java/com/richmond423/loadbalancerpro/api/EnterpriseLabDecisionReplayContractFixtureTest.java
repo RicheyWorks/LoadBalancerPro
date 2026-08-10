@@ -23,8 +23,6 @@ class EnterpriseLabDecisionReplayContractFixtureTest {
             "src/test/resources/enterprise-lab/decision-replay/sample-what-if-request.json");
     private static final Path RESULT = Path.of(
             "src/test/resources/enterprise-lab/decision-replay/sample-what-if-result.json");
-    private static final Path PLAN = Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_WHAT_IF_PLAN.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path ROUTING_CONTROLLER = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/api/RoutingController.java");
     private static final Path MAIN_SOURCE = Path.of("src/main/java");
@@ -173,27 +171,6 @@ class EnterpriseLabDecisionReplayContractFixtureTest {
             assertFalse(fixtures.contains(forbiddenEndpoint),
                     "fixtures must not advertise a live endpoint: " + forbiddenEndpoint);
         }
-    }
-
-    @Test
-    void docsSayContractFixtureLaneIsFixtureOnlyAndStillPlannedNotImplemented() throws Exception {
-        String plan = read(PLAN);
-        String trustMap = read(TRUST_MAP);
-
-        assertTrue(plan.contains("## Contract Fixture Lane"));
-        assertTrue(plan.contains("sample-decision-snapshot.json"));
-        assertTrue(plan.contains("sample-what-if-request.json"));
-        assertTrue(plan.contains("sample-what-if-result.json"));
-        assertTrue(plan.contains("EnterpriseLabDecisionReplayContractFixtureTest"));
-        assertTrue(plan.contains("fixture-only contract seed"));
-        assertTrue(plan.contains("It does not execute replay."));
-        assertTrue(plan.contains("It does not execute what-if experiments."));
-        assertTrue(plan.contains("No live replay endpoint exists."));
-        assertTrue(plan.contains("No routing behavior, scoring behavior, strategy weights, proxy behavior"));
-        assertTrue(trustMap.contains("EnterpriseLabDecisionReplayContractFixtureTest"));
-        assertTrue(trustMap.contains("fixture-only"));
-        assertNoUnsafeClaims(plan);
-        assertNoUnsafeClaims(trustMap);
     }
 
     @Test

@@ -4,11 +4,8 @@ This document summarizes the current security and safety posture for the portfol
 
 For the concise reviewer-facing production-candidate snapshot, see `docs/PRODUCTION_READINESS_SUMMARY.md`.
 
-Historical Enterprise Lab transition anchor: `main` at `11c60ce621357a76ca946ddfb8729a38b2f149a1`,
-refreshed on 2026-05-14 in `docs/ENTERPRISE_READINESS_AUDIT.md`. The auth and Actuator sections below were
-reconciled on 2026-07-29 by the combined-build `SEC-DEFAULT-DENY` slot; its exact branch/PR/main checkpoints belong in
-`docs/agent/SESSION_MANAGER.md` and the campaign board. Older historical audit notes can still mention
-`loadbalancerpro-clean`; this document records the current bounded evidence posture and deployment caveats.
+The sections below describe the current bounded evidence posture and deployment caveats. Exact commit and check state
+belongs in GitHub rather than this document.
 
 ## Auth/RBAC Posture
 

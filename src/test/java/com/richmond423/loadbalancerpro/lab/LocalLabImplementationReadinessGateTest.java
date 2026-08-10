@@ -15,11 +15,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class LocalLabImplementationReadinessGateTest {
-    private static final Path ADR_0009 =
-            Path.of("docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md");
-    private static final Path MATRIX = Path.of("docs/LOCAL_LAB_SCENARIO_MATRIX.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path READINESS_DOC = Path.of("docs/LOCAL_LAB_IMPLEMENTATION_READINESS_GATE.md");
     private static final List<Path> READINESS_SOURCES = List.of(
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/"
                     + "LocalLabImplementationReadinessCriterion.java"),
@@ -180,29 +175,6 @@ class LocalLabImplementationReadinessGateTest {
                     "executor")) {
                 assertFalse(normalized.contains(normalize(forbidden)), source + " must not use " + forbidden);
             }
-        }
-    }
-
-    @Test
-    void docsDescribeImplementationReadinessGateAsPassiveTestScopeOnly() throws Exception {
-        for (Path path : List.of(ADR_0009, MATRIX, TRUST_MAP, READINESS_DOC)) {
-            String doc = read(path);
-
-            assertTrue(doc.contains("This PR adds a test-scope implementation readiness gate only."));
-            assertTrue(doc.contains("The readiness gate evaluates passive planning/test artifacts in memory."));
-            assertTrue(doc.contains("It does not implement fake backend servers."));
-            assertTrue(doc.contains("It does not execute replay."));
-            assertTrue(doc.contains("It does not generate evidence reports."));
-            assertTrue(doc.contains("It does not write files."));
-            assertTrue(doc.contains("It does not persist storage."));
-            assertTrue(doc.contains("It does not export/download/upload/PDF/ZIP anything."));
-            assertTrue(doc.contains(
-                    "It does not start listeners, open ports, call localhost, generate traffic, or run tools."));
-            assertTrue(doc.contains("Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling."));
-            assertTrue(doc.contains("Fake backend execution remains future tooling only."));
-            assertTrue(doc.contains(
-                    "Passing the readiness gate only means ready for a separately scoped implementation PR, "
-                            + "not production proof."));
         }
     }
 

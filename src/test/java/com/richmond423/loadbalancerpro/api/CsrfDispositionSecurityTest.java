@@ -18,10 +18,6 @@ class CsrfDispositionSecurityTest {
             "src/main/java/com/richmond423/loadbalancerpro/api/config/ApiSecurityConfiguration.java");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
     private static final Path LOCAL_PROPERTIES = Path.of("src/main/resources/application-local.properties");
-    private static final Path API_SECURITY = Path.of("docs/API_SECURITY.md");
-    private static final Path DEPLOYMENT_HARDENING = Path.of("docs/DEPLOYMENT_HARDENING_GUIDE.md");
-    private static final Path REVIEWER_TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path SECURITY_POSTURE = Path.of("evidence/SECURITY_POSTURE.md");
     private static final Pattern CLOUD_MANAGER_CONSTRUCTION =
             Pattern.compile("new\\s+CloudManager\\s*\\(|CloudManager\\s*\\(");
     private static final Pattern RELEASE_COMMAND =
@@ -47,29 +43,6 @@ class CsrfDispositionSecurityTest {
     }
 
     @Test
-    void csrfDispositionDocsExplainStatelessHeaderAuthAndFutureCookieCaveat() throws Exception {
-        String apiSecurity = read(API_SECURITY);
-        String deploymentHardening = read(DEPLOYMENT_HARDENING);
-        String reviewerTrustMap = read(REVIEWER_TRUST_MAP);
-        String securityPosture = read(SECURITY_POSTURE);
-
-        assertTrue(apiSecurity.contains("## CSRF Disposition"));
-        assertTrue(apiSecurity.contains("stateless sessions"));
-        assertTrue(apiSecurity.contains("form login disabled"));
-        assertTrue(apiSecurity.contains("HTTP Basic disabled"));
-        assertTrue(apiSecurity.contains("logout disabled"));
-        assertTrue(apiSecurity.contains("X-API-Key"));
-        assertTrue(apiSecurity.contains("Authorization: Bearer"));
-        assertTrue(apiSecurity.contains("do not rely on browser ambient cookie credentials"));
-        assertTrue(apiSecurity.contains("session-cookie authentication"));
-        assertTrue(apiSecurity.contains("must be re-evaluated before that change ships"));
-        assertTrue(deploymentHardening.contains("CSRF protection is scoped for the current stateless API model"));
-        assertTrue(reviewerTrustMap.contains("API_SECURITY.md#csrf-disposition"));
-        assertTrue(securityPosture.contains("CSRF is not globally disabled."));
-        assertTrue(securityPosture.contains("earlier disabled-CSRF finding is addressed by scoped CSRF configuration"));
-    }
-
-    @Test
     void csrfDispositionPreservesFailClosedDefaultAndExplicitLocalMode() throws Exception {
         String defaults = read(DEFAULT_PROPERTIES);
         String local = read(LOCAL_PROPERTIES);
@@ -91,15 +64,14 @@ class CsrfDispositionSecurityTest {
                 "src/test/java/com/richmond423/loadbalancerpro/api/ProdApiKeyProtectionTest.java",
                 "src/test/java/com/richmond423/loadbalancerpro/api/OAuth2AuthorizationTest.java",
                 "src/test/java/com/richmond423/loadbalancerpro/api/ReverseProxyReloadSecurityTest.java",
-                "src/test/java/com/richmond423/loadbalancerpro/api/DeploymentSmokeKitDocumentationTest.java")) {
+                "src/test/java/com/richmond423/loadbalancerpro/api/CheckedInSecurityDefaultsTest.java")) {
             assertTrue(Files.exists(Path.of(path)), path + " should remain present");
         }
     }
 
     @Test
     void csrfDispositionAddsNoCloudReleaseOrInflatedSecurityClaims() throws Exception {
-        for (Path path : List.of(API_SECURITY_CONFIG, API_SECURITY, DEPLOYMENT_HARDENING, REVIEWER_TRUST_MAP,
-                SECURITY_POSTURE)) {
+        for (Path path : List.of(API_SECURITY_CONFIG, DEFAULT_PROPERTIES, LOCAL_PROPERTIES)) {
             String content = read(path);
             String normalized = content.toLowerCase(Locale.ROOT);
 

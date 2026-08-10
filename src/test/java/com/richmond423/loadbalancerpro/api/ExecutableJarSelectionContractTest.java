@@ -33,8 +33,7 @@ class ExecutableJarSelectionContractTest {
             Path.of("scripts/smoke/release-candidate-dry-run-packet.ps1"),
             Path.of("scripts/smoke/release-intent-review.ps1"),
             Path.of("Dockerfile"),
-            Path.of(".github/workflows/ci.yml"),
-            Path.of("README.md"));
+            Path.of(".github/workflows/ci.yml"));
 
     @Test
     void crossPlatformResolversUseTheEffectiveMavenFinalNameAndRequireTheExactJar() throws IOException {

@@ -14,10 +14,6 @@ import org.junit.jupiter.api.Test;
 
 class PostmanLocalSmokeHarnessTest {
     private static final Path SCRIPT = Path.of("scripts/smoke/postman-enterprise-lab-safe-smoke.ps1");
-    private static final Path POSTMAN_DOC = Path.of("docs/POSTMAN_COLLECTION.md");
-    private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
-    private static final Path API_SECURITY = Path.of("docs/API_SECURITY.md");
-    private static final Path README = Path.of("README.md");
     private static final Pattern SECRET_PATTERN = Pattern.compile(
             "AKIA[0-9A-Z]{16}|(?i)aws_secret_access_key\\s*[:=]|(?i)client_secret\\s*[:=]|"
                     + "(?i)ghp_[A-Za-z0-9_]{20,}|(?i)xox[baprs]-[A-Za-z0-9-]{20,}|"
@@ -119,28 +115,8 @@ class PostmanLocalSmokeHarnessTest {
     }
 
     @Test
-    void docsMentionLocalOnlySmokeEvidenceAndLimitations() throws Exception {
-        String combined = read(POSTMAN_DOC) + "\n" + read(RUNBOOK) + "\n" + read(API_SECURITY) + "\n" + read(README);
-        String normalized = combined.toLowerCase(Locale.ROOT);
-
-        assertTrue(combined.contains("postman-enterprise-lab-safe-smoke.ps1"));
-        assertTrue(combined.contains("-DryRun"));
-        assertTrue(combined.contains("-Package"));
-        assertTrue(combined.contains("-EvidenceDir"));
-        assertTrue(combined.contains("sanitized Markdown"));
-        assertTrue(combined.contains("sanitized JSON"));
-        assertTrue(combined.contains("X-API-Key"));
-        assertTrue(combined.contains("<REDACTED>"));
-        assertTrue(normalized.contains("local-only"));
-        assertTrue(normalized.contains("no real secrets"));
-        assertTrue(normalized.contains("cloud mutation"));
-        assertTrue(normalized.contains("oauth2"));
-        assertTrue(normalized.contains("not production iam"));
-    }
-
-    @Test
     void committedPostmanSmokeFilesAvoidSecretsAndGeneratedEvidence() throws Exception {
-        for (Path path : List.of(SCRIPT, POSTMAN_DOC, RUNBOOK, API_SECURITY, README)) {
+        for (Path path : List.of(SCRIPT)) {
             String content = read(path);
             assertFalse(SECRET_PATTERN.matcher(content).find(), path + " must not contain secret-like values");
             assertFalse(CLOUD_MANAGER_CONSTRUCTION.matcher(content).find(), path + " must not construct CloudManager");

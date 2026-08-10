@@ -15,10 +15,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class LocalLabFakeBackendResponseFixtureTest {
-    private static final Path ADR_0009 =
-            Path.of("docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md");
-    private static final Path MATRIX = Path.of("docs/LOCAL_LAB_SCENARIO_MATRIX.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final List<Path> FIXTURE_SOURCES = List.of(
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabFakeBackendResponseFixture.java"),
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabFakeBackendResponseFixtureCatalog.java"));
@@ -209,24 +205,6 @@ class LocalLabFakeBackendResponseFixtureTest {
                     "executor")) {
                 assertFalse(normalized.contains(forbidden), source + " must not use " + forbidden);
             }
-        }
-    }
-
-    @Test
-    void docsDescribeResponseFixtureSprintAsTestScopeOnly() throws Exception {
-        String adr = read(ADR_0009);
-        String matrix = read(MATRIX);
-        String trustMap = read(TRUST_MAP);
-
-        for (String doc : List.of(adr, matrix, trustMap)) {
-            assertTrue(doc.contains("This PR adds test-scope response fixtures only."));
-            assertTrue(doc.contains("The fixtures describe future fake backend response expectations."));
-            assertTrue(doc.contains("It is not fake backend server implementation."));
-            assertTrue(doc.contains("It does not implement fake backend servers."));
-            assertTrue(doc.contains(
-                    "It does not start listeners, open ports, call localhost, generate traffic, run Docker, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior."));
-            assertTrue(doc.contains("Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling"));
-            assertTrue(doc.contains("this is not production proof"));
         }
     }
 

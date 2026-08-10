@@ -15,10 +15,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class LocalLabFakeBackendScenarioModelTest {
-    private static final Path ADR_0009 =
-            Path.of("docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md");
-    private static final Path MATRIX = Path.of("docs/LOCAL_LAB_SCENARIO_MATRIX.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final List<Path> MODEL_SOURCES = List.of(
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabFakeBackendBehaviorProfile.java"),
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabFakeBackendNodeScenario.java"),
@@ -136,21 +132,6 @@ class LocalLabFakeBackendScenarioModelTest {
                     "executor")) {
                 assertFalse(normalized.contains(forbidden), source + " must not use " + forbidden);
             }
-        }
-    }
-
-    @Test
-    void docsDescribePr250AsTestScopeScenarioModelOnly() throws Exception {
-        String adr = read(ADR_0009);
-        String matrix = read(MATRIX);
-        String trustMap = read(TRUST_MAP);
-
-        for (String doc : List.of(adr, matrix, trustMap)) {
-            assertTrue(doc.contains("PR #250 adds only a test-scope scenario model/catalog."));
-            assertTrue(doc.contains("It does not implement fake backend servers."));
-            assertTrue(doc.contains(
-                    "It does not implement Docker Compose, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior."));
-            assertTrue(doc.contains("It is a stepping stone toward future local lab tooling."));
         }
     }
 

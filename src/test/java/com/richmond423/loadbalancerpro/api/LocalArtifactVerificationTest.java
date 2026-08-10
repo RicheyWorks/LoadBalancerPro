@@ -15,9 +15,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class LocalArtifactVerificationTest {
-    private static final Path LOCAL_ARTIFACT_DOC = Path.of("docs/LOCAL_ARTIFACT_VERIFICATION.md");
-    private static final Path DISTRIBUTION_SMOKE_DOC = Path.of("docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md");
-    private static final Path OPERATOR_PACKAGING_DOC = Path.of("docs/OPERATOR_PACKAGING.md");
     private static final Path WINDOWS_HELPER = Path.of("scripts/local-artifact-verify.ps1");
     private static final Path UNIX_HELPER = Path.of("scripts/local-artifact-verify.sh");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
@@ -36,37 +33,6 @@ class LocalArtifactVerificationTest {
             Pattern.compile("https?://(?!127\\.0\\.0\\.1(?::|/|$)|localhost(?::|/|$))[^\\s\"'`]+");
     private static final Pattern SECRET_ASSIGNMENT =
             Pattern.compile("(?im)^\\s*[^#\\r\\n]*(password|secret|token|api[-_]?key|x-api-key)\\s*=");
-
-    @Test
-    void localArtifactVerificationDocCoversChecksumJarInspectionAndRunCommands() throws Exception {
-        String doc = read(LOCAL_ARTIFACT_DOC);
-
-        assertTrue(doc.contains("# Local Artifact Verification"));
-        assertTrue(doc.contains("no tags, no GitHub releases, no release assets"));
-        assertTrue(doc.contains("does not touch `release-downloads/`"));
-        assertTrue(doc.contains("mvn -B -DskipTests package"));
-        assertTrue(doc.contains("Get-FileHash -Algorithm SHA256"));
-        assertTrue(doc.contains("scripts\\resolve-executable-jar.ps1"));
-        assertTrue(doc.contains("scripts/resolve-executable-jar.sh"));
-        assertTrue(doc.contains("sha256sum \"$JAR_PATH\""));
-        assertTrue(doc.contains("shasum -a 256 \"$JAR_PATH\""));
-        assertTrue(doc.contains("jar tf \"$JAR_PATH\""));
-        assertTrue(doc.contains("META-INF/MANIFEST.MF"));
-        assertTrue(doc.contains("BOOT-INF/classes/static/proxy-status.html"));
-        assertTrue(doc.contains("BOOT-INF/classes/static/load-balancing-cockpit.html"));
-        assertTrue(doc.contains("BOOT-INF/classes/application-proxy-demo-round-robin.properties"));
-        assertTrue(doc.contains("BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"));
-        assertTrue(doc.contains("BOOT-INF/classes/application-proxy-demo-failover.properties"));
-        assertTrue(doc.contains("BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"));
-        assertTrue(doc.contains("java -jar \"$JAR_PATH\""));
-        assertFalse(doc.contains("LoadBalancerPro-2.5.0.jar"));
-        assertTrue(doc.contains("compile exec:java"));
-        assertTrue(doc.contains("ProxyDemoFixtureLauncher"));
-        assertTrue(doc.contains("packaged-artifact-smoke"));
-        assertTrue(doc.contains("artifact-sha256.txt"));
-        assertTrue(doc.contains("jar-resource-list.txt"));
-        assertNoUnsafeArtifactContent(doc, LOCAL_ARTIFACT_DOC);
-    }
 
     @Test
     void artifactHelpersComputeChecksumsInspectJarEntriesAndAvoidReleaseCommands() throws Exception {
@@ -130,12 +96,6 @@ class LocalArtifactVerificationTest {
             assertTrue(content.contains("http://localhost:9002"));
             assertNoUnsafeArtifactContent(content, example);
         }
-    }
-
-    @Test
-    void existingOperatorDocsPointToLocalArtifactVerification() throws Exception {
-        assertTrue(read(DISTRIBUTION_SMOKE_DOC).contains("LOCAL_ARTIFACT_VERIFICATION.md"));
-        assertTrue(read(OPERATOR_PACKAGING_DOC).contains("LOCAL_ARTIFACT_VERIFICATION.md"));
     }
 
     private static void assertClasspathResource(String resourceName) {

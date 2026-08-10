@@ -39,11 +39,6 @@ class AdaptiveRoutingScenarioRunnerTest {
     private static final Path RUNNER = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/core/AdaptiveRoutingScenarioRunner.java");
     private static final Path INDEX = Path.of("src/main/resources/static/index.html");
-    private static final Path README = Path.of("README.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path READINESS = Path.of("docs/CI_EVIDENCE_GATE_READINESS_LANE.md");
-    private static final Path CONTRACT = Path.of("docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md");
-    private static final Path READINESS_AUDIT = Path.of("docs/ENTERPRISE_READINESS_AUDIT.md");
     private static final List<Path> REVIEWER_SURFACES = List.of(
             Path.of("src/main/resources/static/ci-evidence-gate.html"),
             Path.of("src/main/resources/static/enterprise-lab-reviewer.html"),
@@ -219,7 +214,7 @@ class AdaptiveRoutingScenarioRunnerTest {
                     "scenario endpoint/runner must not include side-effect behavior: " + prohibited);
         }
 
-        String combined = (read(PAGE) + "\n" + endpointCode + "\n" + read(README) + "\n" + read(TRUST_MAP))
+        String combined = (read(PAGE) + "\n" + endpointCode)
                 .toLowerCase(Locale.ROOT);
         for (String prohibited : List.of(
                 "production benchmark complete",

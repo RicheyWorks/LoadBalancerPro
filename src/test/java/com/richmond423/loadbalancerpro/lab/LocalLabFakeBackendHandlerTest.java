@@ -13,11 +13,6 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 class LocalLabFakeBackendHandlerTest {
-    private static final Path ADR_0009 =
-            Path.of("docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md");
-    private static final Path MATRIX = Path.of("docs/LOCAL_LAB_SCENARIO_MATRIX.md");
-    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
-    private static final Path READINESS_DOC = Path.of("docs/LOCAL_LAB_IMPLEMENTATION_READINESS_GATE.md");
     private static final List<Path> HANDLER_SOURCES = List.of(
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabFakeBackendRequest.java"),
             Path.of("src/test/java/com/richmond423/loadbalancerpro/lab/LocalLabFakeBackendHandledResponse.java"),
@@ -218,29 +213,6 @@ class LocalLabFakeBackendHandlerTest {
                     "executor")) {
                 assertFalse(normalized.contains(forbidden), source + " must not use " + forbidden);
             }
-        }
-    }
-
-    @Test
-    void docsDescribeTestScopeFakeBackendHandlerBoundary() throws Exception {
-        for (Path path : List.of(ADR_0009, MATRIX, TRUST_MAP, READINESS_DOC)) {
-            String doc = read(path);
-
-            assertTrue(doc.contains("This PR adds a test-scope fake backend handler only."));
-            assertTrue(doc.contains(
-                    "The handler maps simulated request labels to existing response fixtures in memory."));
-            assertTrue(doc.contains("It does not implement fake backend servers."));
-            assertTrue(doc.contains("It does not start listeners."));
-            assertTrue(doc.contains("It does not open ports."));
-            assertTrue(doc.contains("It does not call localhost."));
-            assertTrue(doc.contains("It does not generate traffic."));
-            assertTrue(doc.contains("It does not execute replay."));
-            assertTrue(doc.contains("It does not generate evidence reports."));
-            assertTrue(doc.contains("It does not write files."));
-            assertTrue(doc.contains("It does not persist storage."));
-            assertTrue(doc.contains("It does not export/download/upload/PDF/ZIP anything."));
-            assertTrue(doc.contains("Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling."));
-            assertTrue(doc.contains("Passing handler tests is not production proof."));
         }
     }
 

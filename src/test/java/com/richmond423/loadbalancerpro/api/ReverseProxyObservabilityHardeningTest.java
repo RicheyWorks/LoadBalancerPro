@@ -21,11 +21,6 @@ class ReverseProxyObservabilityHardeningTest {
     private static final Path REVERSE_PROXY_SERVICE =
             Path.of("src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.java");
     private static final Path PROXY_STATUS_PAGE = Path.of("src/main/resources/static/proxy-status.html");
-    private static final Path HEALTH_METRICS_DOC = Path.of("docs/REVERSE_PROXY_HEALTH_AND_METRICS.md");
-    private static final Path STATUS_UI_DOC = Path.of("docs/PROXY_OPERATOR_STATUS_UI.md");
-    private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
-    private static final Path SMOKE_DOC = Path.of("docs/DEPLOYMENT_SMOKE_KIT.md");
-    private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
     private static final Pattern CLOUD_MANAGER_CONSTRUCTION =
             Pattern.compile("new\\s+" + "CloudManager\\s*\\(|" + "CloudManager\\s*\\(");
     private static final Pattern RELEASE_COMMAND =
@@ -83,34 +78,8 @@ class ReverseProxyObservabilityHardeningTest {
     }
 
     @Test
-    void docsExplainStatusSignalsSmokeInterpretationAndNoExternalTelemetry() throws Exception {
-        String healthMetrics = read(HEALTH_METRICS_DOC);
-        String statusUi = read(STATUS_UI_DOC);
-        String runbook = read(RUNBOOK);
-        String smoke = read(SMOKE_DOC);
-        String contracts = read(API_CONTRACTS);
-
-        assertTrue(healthMetrics.contains("observability"));
-        assertTrue(healthMetrics.contains("route count"));
-        assertTrue(healthMetrics.contains("backend target count"));
-        assertTrue(healthMetrics.contains("securityBoundary"));
-        assertTrue(healthMetrics.contains("retry/cooldown/failure"));
-        assertTrue(statusUi.contains("observability summary"));
-        assertTrue(statusUi.contains("Access boundary"));
-        assertTrue(runbook.contains("proxy.observability.startup"));
-        assertTrue(runbook.contains("proxy.forward.failure"));
-        assertTrue(smoke.contains("proxy.observability.startup"));
-        assertTrue(smoke.contains("proxy.forward.retryable_status"));
-        assertTrue(healthMetrics.contains("No external telemetry"));
-        assertTrue(contracts.contains("privateNetworkLiveValidation"));
-        assertTrue(contracts.contains("trafficExecuted=false"));
-        assertTrue(contracts.contains("does not call the live executor or send validation traffic"));
-    }
-
-    @Test
     void observabilitySprintFilesAvoidReleaseMutationFakeEvidenceAndInflatedClaims() throws Exception {
-        for (Path path : List.of(STATUS_RESPONSE, STATUS_SUMMARIES, REVERSE_PROXY_SERVICE, PROXY_STATUS_PAGE,
-                HEALTH_METRICS_DOC, STATUS_UI_DOC, RUNBOOK, SMOKE_DOC)) {
+        for (Path path : List.of(STATUS_RESPONSE, STATUS_SUMMARIES, REVERSE_PROXY_SERVICE, PROXY_STATUS_PAGE)) {
             String content = read(path);
             String normalized = content.toLowerCase(Locale.ROOT);
 

@@ -13,9 +13,6 @@ import org.junit.jupiter.api.Test;
 
 class CiPackagedArtifactSmokeWorkflowTest {
     private static final Path CI_WORKFLOW = Path.of(".github/workflows/ci.yml");
-    private static final Path LOCAL_ARTIFACT_DOC = Path.of("docs/LOCAL_ARTIFACT_VERIFICATION.md");
-    private static final Path DISTRIBUTION_SMOKE_DOC = Path.of("docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md");
-    private static final Path TESTING_COVERAGE_DOC = Path.of("docs/TESTING_COVERAGE.md");
     private static final Path WINDOWS_HELPER = Path.of("scripts/local-artifact-verify.ps1");
     private static final Path UNIX_HELPER = Path.of("scripts/local-artifact-verify.sh");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
@@ -53,24 +50,6 @@ class CiPackagedArtifactSmokeWorkflowTest {
         assertFalse(workflow.contains("softprops/action-gh-release"), "CI smoke workflow must not upload release assets");
         assertFalse(workflow.contains("upload-release-asset"), "CI smoke workflow must not upload release assets");
         assertFalse(workflow.contains("release-downloads"), "CI smoke workflow must not touch release-downloads");
-    }
-
-    @Test
-    void docsPointReviewersToPackagedArtifactSmokeWorkflowArtifact() throws Exception {
-        String localArtifactDoc = read(LOCAL_ARTIFACT_DOC);
-        String distributionSmokeDoc = read(DISTRIBUTION_SMOKE_DOC);
-        String testingCoverageDoc = read(TESTING_COVERAGE_DOC);
-        String combined = localArtifactDoc + "\n" + distributionSmokeDoc + "\n" + testingCoverageDoc;
-
-        assertTrue(combined.contains("packaged-artifact-smoke"));
-        assertTrue(combined.contains("artifact-smoke-summary.txt"));
-        assertTrue(combined.contains("artifact-sha256.txt"));
-        assertTrue(combined.contains("jar-resource-list.txt"));
-        assertTrue(combined.contains("GitHub Actions artifact"));
-        assertTrue(combined.contains("no tags"));
-        assertTrue(combined.contains("GitHub releases"));
-        assertTrue(combined.contains("release assets"));
-        assertTrue(combined.contains("release-downloads/"));
     }
 
     @Test

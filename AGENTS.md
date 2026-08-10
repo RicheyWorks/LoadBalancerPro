@@ -1,60 +1,75 @@
 # Agent Operating Rules
 
-This file gives Codex and other repository agents explicit operating rules. It does not replace the README public trust surface; it keeps task/session procedure out of the README while preserving the same safety boundaries.
+This is the authoritative repository rule source for Codex and other engineering agents. A user prompt or pull-request
+description may define the task contract; [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) is an optional short template.
 
-For the session startup path that ties README, this file, the build contract, and the docs/agent templates together, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md). For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md), use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md), and apply the campaign-specific discipline in [`docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md).
+## Engineering Priority
 
-## Core Rules
+- Deliver the smallest complete engineering outcome inside the user's scope.
+- Prefer runtime behavior, secure configuration, deterministic tests, infrastructure, deployment capability,
+  benchmarks, and reproducible lab evidence over governance prose.
+- Preserve existing valid work and unrelated user changes. Never overwrite or abandon an active branch or pull request
+  to simplify a new task.
+- For implementation campaigns, keep at least 90% of substantive effort in engineering surfaces. Routine documentation
+  stays at or below 10%.
+- Documentation-only work is appropriate only when explicitly requested or needed to correct a material false claim,
+  broken operator/security instruction, or legal/compliance requirement.
 
-- Preserve safety boundaries and not-proven boundaries.
-- Do not overclaim production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmark evidence, throughput/p95/p99 evidence, or broader automation.
-- Do not weaken guardrails or remove boundary language just to make prose shorter.
-- Do not change production behavior unless the task explicitly scopes that behavior change.
-- Respect docs/test-only scope when requested.
-- Keep local-lab claims bounded to optional/manual/local-lab-only behavior unless a later scoped PR proves otherwise.
-- Do not add CI/Maven/Docker/Compose/runtime behavior unless explicitly scoped.
-- Do not introduce secrets, external targets, cloud/tenant targets, private-network targets, or production-looking defaults.
-- Report honestly what was verified, what was not verified, and which checks remain pending.
+## Safety Invariants
 
-## Verification Posture
+- Keep authentication, authorization, TLS verification, secret handling, private-network validation, dependency and
+  image vulnerability gates, data integrity, concurrency bounds, failure containment, rollback, and destructive-action
+  safeguards intact.
+- Do not introduce credentials, customer data, production targets, billable cloud actions, or production-looking
+  defaults. Use mocks and loopback fixtures unless the user explicitly authorizes a reviewed external target.
+- Do not bypass required checks, branch protection, dependency review, CodeQL, SBOM generation, image scanning, or
+  pinned workflow controls.
+- Do not claim production readiness, certification, live-cloud or real-tenant proof, capacity, latency, or SLO evidence
+  beyond what executable verification actually establishes.
+- Stop before an irreversible action when the exact target or recovery path is uncertain.
 
-- Use focused verification first while editing.
-- Use relevant selector bundles when a change touches shared documentation or guard tests.
-- Use full verification before merge decisions.
-- Do not accept stale, failed, cancelled, or pending required checks as green.
-- Do not claim green main while main remote checks are pending.
+## Scope And Change Discipline
 
-## Scope Discipline
+- Inspect the request, current Git state, active pull requests, and relevant code before editing.
+- Keep changes close to the requested behavior. Do not mix unrelated refactors or dependency updates.
+- Product behavior may change when the task explicitly scopes it; docs/test-only is not the default.
+- Documentation required to explain a behavior, configuration, security posture, operator procedure, or material
+  architectural decision may ship in the same pull request as the implementation.
+- Treat campaign boards and manifests as operational state, not evidence. Update them only at slot start, PR opening,
+  merge completion, or a genuine blocker.
+- Record failures in repository prose only when they expose an unresolved defect, persistent-state risk, invalid
+  evidence, or a reusable engineering lesson.
 
-- Read the user request and the current branch diff before editing.
-- For long-running `/goal` work, keep the active objective inside the task contract and keep the session manager limited to current state.
-- Keep edits close to the requested files and behavior surface.
-- Treat README and reviewer docs as claim contracts, not cosmetic copy.
-- Preserve reviewer trust wording when refactoring or reorganizing documentation.
-- Stop and report if required safety wording conflicts with a requested wording change.
+## Risk-Proportional Verification
 
-## Goal Campaign Discipline
+- During development, run the smallest focused tests covering the changed behavior.
+- Before a pull request, run affected integration/contract tests. Run the full suite when shared runtime, security,
+  build, or broad governance/test surfaces changed.
+- Package when packaging/runtime resources changed or when preparing a merge candidate.
+- Use required GitHub checks as the exact-head remote source of truth. Never accept stale, failed, cancelled, skipped-only,
+  duplicate-only, or pending required evidence.
+- Merge normally only when the current pull-request head is reviewed, mergeable, and all applicable required checks are
+  green. Verify merge-main CI and CodeQL before calling main green.
+- Do not repeat an unchanged expensive local check merely to populate a report field.
 
-- For a goal campaign, work one scoped PR at a time and do not open a later slot before the current slot is merged and main CI/CodeQL are green.
-- Spend at least 90% of campaign effort on production code, infrastructure, security, deterministic tests, executable verification, deployment capability, and real lab evidence; routine documentation must remain at or below 10%.
-- Use [`docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md) with the campaign contract, board, session manager, failure log, verification protocol, merge gate, and [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md) when a campaign reaches closeout.
-- Keep `docs/agent/SESSION_MANAGER.md` to the active slot, branch/PR, exact-head source, completed gates, genuine blocker, and next action. Do not store command history, polling, repeated test totals, or transient CI narration.
-- Add `docs/agent/FAILURE_LOG.md` entries only for product/security defects, invalidated evidence, persistent-state risk, non-obvious recovery, mandatory-gate blocks, or reusable technical lessons. Do not log harmless command mistakes, failed searches, optional-tool absence, or polling.
-- Keep no overclaiming as a campaign invariant: a multi-PR campaign does not upgrade evidence claims or relax the README trust contract.
-- Change README only for an actual user-facing capability, installation step, configuration contract, security default, operator command, or major verified limitation. Do not commit documentation solely to narrate work, green heads, checks, or merges.
-- Treat pending, failed, cancelled, stale, or duplicate-only required checks as a stop condition, not as progress.
-- Do not use the campaign format as permission to change production behavior, add automation, add CI/Maven/Docker/Compose/runtime behavior, introduce secrets or external/cloud/tenant targets, or weaken not-proven boundaries.
-- Continue only while the current slot remains docs/test-only or otherwise explicitly scoped, local verification is current-head clean, remote checks are current-head green, and main is green after merge.
+See [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md) for the compact verification matrix.
+
+## Documentation Policy
+
+- Documentation describes executable evidence; it does not create evidence.
+- Change docs when user-facing behavior, configuration, security posture, operator procedure, or a material architecture
+  decision changes. Keep prose current, concise, and link to the executable source of truth.
+- Do not store transient branches, SHAs, polling, CI narration, or completed campaign history in README or reviewer docs.
+- Tests may protect executable safety invariants and essential links, but must not freeze positive boilerplate, historical
+  PRs/SHAs, repeated limitations, or cross-link webs.
+
+## Genuine Stop Conditions
+
+Stop and report when scope or authority is insufficient, a security invariant conflicts with the request, a required
+check fails without a safe in-scope repair, protected workflow state is ambiguous, data integrity is at risk, or an
+irreversible action needs a user decision. Obsolete prose or an exact-wording test is not a stop condition.
 
 ## Reporting
 
-Every final report should name:
-
-- branch and PR;
-- head SHA;
-- changed files;
-- verification run;
-- remote check status when available;
-- scope/safety audit;
-- remaining not-proven boundaries;
-- next recommended action.
+Normally report only the outcome, PR, exact final head or merge, important verification, a genuine blocker or remaining
+risk, and the next engineering action. Add detail only when the task's risk requires it.

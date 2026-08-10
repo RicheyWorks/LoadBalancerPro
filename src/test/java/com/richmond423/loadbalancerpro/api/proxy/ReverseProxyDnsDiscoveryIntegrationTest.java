@@ -273,13 +273,16 @@ class ReverseProxyDnsDiscoveryIntegrationTest {
 
     @Test
     void activeHealthIsIsolatedForEachResolvedAddress() throws Exception {
+        AtomicReference<String> healthyProbeRawPath = new AtomicReference<>();
         HttpServer healthyBackend = backend(exchange -> {
+            healthyProbeRawPath.set(exchange.getRequestURI().getRawPath());
             exchange.sendResponseHeaders(204, -1);
             exchange.close();
         });
-        ReverseProxyProperties properties = discoveredProperties(healthyBackend.getAddress().getPort(), "");
+        ReverseProxyProperties properties = discoveredProperties(
+                healthyBackend.getAddress().getPort(), "/base%2Froot");
         properties.getHealthCheck().setEnabled(true);
-        properties.getHealthCheck().setPath("/health");
+        properties.getHealthCheck().setPath("/health%2Fready");
         properties.getHealthCheck().setInterval(Duration.ofMillis(20));
         properties.getHealthCheck().setTimeout(Duration.ofMillis(100));
         properties.getHealthCheck().setHealthyThreshold(1);
@@ -303,6 +306,7 @@ class ReverseProxyDnsDiscoveryIntegrationTest {
 
             assertTrue(statusById.get(idByAddress.get("127.0.0.1")).effectiveHealthy());
             assertFalse(statusById.get(idByAddress.get("127.0.0.2")).effectiveHealthy());
+            assertEquals("/base%2Froot/health%2Fready", healthyProbeRawPath.get());
         } finally {
             service.stop();
             healthyBackend.stop(0);

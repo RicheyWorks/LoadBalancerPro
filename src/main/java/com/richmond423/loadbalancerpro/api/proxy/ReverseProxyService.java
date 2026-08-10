@@ -1962,13 +1962,17 @@ public class ReverseProxyService implements SmartLifecycle {
 
     private URI healthCheckUri(ReverseProxyProperties properties, URI baseUri) {
         String healthPath = normalizedHealthCheckPath(properties.getHealthCheck().getPath());
-        String targetPath = joinPath(baseUri.getPath(), healthPath);
+        String targetPath = joinPath(baseUri.getRawPath(), healthPath);
         try {
-            URI target = new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(),
-                    targetPath, null, null);
+            URI target = URI.create(baseUri.getScheme() + "://" + baseUri.getRawAuthority() + targetPath);
+            if (!Objects.equals(target.getRawPath(), targetPath)
+                    || target.getRawQuery() != null || target.getRawFragment() != null) {
+                throw new IllegalArgumentException(
+                        "Proxy health-check path could not be preserved as a raw URI component.");
+            }
             validateConfiguredAuthority(baseUri, target);
             return target;
-        } catch (URISyntaxException exception) {
+        } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException("Proxy health-check URI could not be constructed for upstream.",
                     exception);
         }

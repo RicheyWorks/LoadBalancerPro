@@ -61,12 +61,15 @@ final class ProxyDnsDiscovery {
         Map<String, byte[]> unique = new LinkedHashMap<>();
         for (InetAddress answer : answers) {
             if (answer == null || answer.isAnyLocalAddress() || answer.isMulticastAddress()
+                    || answer.isLinkLocalAddress()
                     || answer instanceof Inet6Address ipv6
-                    && (ipv6.getScopeId() != 0 || ipv6.getScopedInterface() != null)) {
+                    && (ipv6.isSiteLocalAddress()
+                            || ipv6.getScopeId() != 0 || ipv6.getScopedInterface() != null)) {
                 continue;
             }
             byte[] bytes = answer.getAddress();
-            if (bytes == null || bytes.length != 4 && bytes.length != 16) {
+            if (bytes == null || bytes.length != 4 && bytes.length != 16
+                    || disallowedSpecialUse(bytes)) {
                 continue;
             }
             String address = literalAddress(bytes);
@@ -193,6 +196,56 @@ final class ProxyDnsDiscovery {
             }
         }
         return 0;
+    }
+
+    private static boolean disallowedSpecialUse(byte[] address) {
+        if (address.length == 4) {
+            int first = Byte.toUnsignedInt(address[0]);
+            int second = Byte.toUnsignedInt(address[1]);
+            int third = Byte.toUnsignedInt(address[2]);
+            if (first == 0 || first >= 224 || first == 100 && (second & 0xc0) == 0x40) {
+                return true;
+            }
+            if (first == 192 && second == 0 && third == 0
+                    || first == 192 && second == 0 && third == 2
+                    || first == 192 && second == 88 && third == 99
+                    || first == 198 && (second == 18 || second == 19)
+                    || first == 198 && second == 51 && third == 100
+                    || first == 203 && second == 0 && third == 113) {
+                return true;
+            }
+            return false;
+        }
+        if (allZero(address, 0, 12)) {
+            return !(allZero(address, 12, 3) && address[15] == 1);
+        }
+        return prefix(address, 0x00, 0x64, 0xff, 0x9b)
+                || prefix(address, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+                || prefix(address, 0x20, 0x01, 0x00, 0x02)
+                || prefix(address, 0x20, 0x01, 0x0d, 0xb8)
+                || (Byte.toUnsignedInt(address[0]) == 0xfe
+                        && (Byte.toUnsignedInt(address[1]) & 0xc0) == 0xc0);
+    }
+
+    private static boolean prefix(byte[] address, int... prefix) {
+        if (address.length < prefix.length) {
+            return false;
+        }
+        for (int index = 0; index < prefix.length; index++) {
+            if (Byte.toUnsignedInt(address[index]) != prefix[index]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean allZero(byte[] address, int offset, int length) {
+        for (int index = offset; index < offset + length; index++) {
+            if (address[index] != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String hex(byte[] bytes) {

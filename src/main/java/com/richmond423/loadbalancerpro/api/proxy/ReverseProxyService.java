@@ -1176,6 +1176,7 @@ public class ReverseProxyService implements SmartLifecycle {
                     "loadbalancerpro.proxy.max-response-bytes must be zero or greater");
         }
         ReverseProxyAccessLog.validateConfiguration(properties.getAccessLog());
+        ProxyDnsDiscoverySettings.compile(properties.getDnsDiscovery());
         normalizedHealthCheckPath(properties.getHealthCheck().getPath());
         positiveDuration(properties.getHealthCheck().getTimeout(),
                 "loadbalancerpro.proxy.health-check.timeout");
@@ -2195,6 +2196,7 @@ public class ReverseProxyService implements SmartLifecycle {
         copy.setShedding(copyShedding(source.getShedding()));
         copy.setBackendTls(copyBackendTls(source.getBackendTls()));
         copy.setAccessLog(copyAccessLog(source.getAccessLog()));
+        copy.setDnsDiscovery(copyDnsDiscovery(source.getDnsDiscovery()));
         copy.setUpstreams(source.getUpstreams().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
@@ -2315,6 +2317,18 @@ public class ReverseProxyService implements SmartLifecycle {
             copy.setFormat(source.getFormat());
             copy.setPath(source.getPath());
             copy.setSampleRate(source.getSampleRate());
+        }
+        return copy;
+    }
+
+    private static ReverseProxyProperties.DnsDiscovery copyDnsDiscovery(
+            ReverseProxyProperties.DnsDiscovery source) {
+        ReverseProxyProperties.DnsDiscovery copy = new ReverseProxyProperties.DnsDiscovery();
+        if (source != null) {
+            copy.setTtlFloor(source.getTtlFloor());
+            copy.setStaleAfter(source.getStaleAfter());
+            copy.setResolutionTimeout(source.getResolutionTimeout());
+            copy.setLookupThreads(source.getLookupThreads());
         }
         return copy;
     }

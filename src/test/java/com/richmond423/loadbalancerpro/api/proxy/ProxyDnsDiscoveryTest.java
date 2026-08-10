@@ -74,6 +74,32 @@ class ProxyDnsDiscoveryTest {
     }
 
     @Test
+    void rejectsUnusableAndReservedSpecialUseAnswersEvenWhenPublicAnswersAreAllowed() throws Exception {
+        ProxyDnsDiscovery.Spec spec = ProxyDnsDiscovery.compile(
+                "dns:service.example:8080", "http://service.example:8080",
+                "address", "upstream.discovery");
+        List<InetAddress> answers = List.of(
+                literal(0, 1, 2, 3),
+                literal(100, 64, 0, 1),
+                literal(169, 254, 1, 1),
+                literal(192, 0, 2, 1),
+                literal(198, 18, 0, 1),
+                literal(198, 51, 100, 1),
+                literal(203, 0, 113, 1),
+                literal(240, 0, 0, 1),
+                literal(0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+                literal(0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+                literal(8, 8, 8, 8),
+                literal(127, 0, 0, 1),
+                literal(10, 0, 0, 1));
+
+        assertEquals(List.of("8.8.8.8", "10.0.0.1", "127.0.0.1"),
+                ProxyDnsDiscovery.members(spec, "backend", answers, false).stream()
+                        .map(ProxyDnsDiscovery.Member::address)
+                        .toList());
+    }
+
+    @Test
     void rejectsOverflowingCanonicalMemberSetWithoutPublishingAPartialSet() throws Exception {
         ProxyDnsDiscovery.Spec spec = ProxyDnsDiscovery.compile(
                 "dns:service.example:8080", "http://service.example:8080",

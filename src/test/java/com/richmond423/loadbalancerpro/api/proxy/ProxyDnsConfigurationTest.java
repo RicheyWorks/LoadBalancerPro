@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -63,6 +64,28 @@ class ProxyDnsConfigurationTest {
                 assertFalse(text.contains("jdk.httpclient.allowRestrictedHeaders"), source.toString());
             }
         }
+    }
+
+    @Test
+    void validatesFiniteGlobalDiscoveryBounds() {
+        ReverseProxyProperties.DnsDiscovery defaults = new ReverseProxyProperties.DnsDiscovery();
+        ProxyDnsDiscoverySettings compiled = ProxyDnsDiscoverySettings.compile(defaults);
+        assertEquals(Duration.ofSeconds(30), compiled.ttlFloor());
+        assertEquals(Duration.ofMinutes(5), compiled.staleAfter());
+        assertEquals(Duration.ofSeconds(2), compiled.resolutionTimeout());
+        assertEquals(4, compiled.lookupThreads());
+
+        defaults.setTtlFloor(Duration.ofMillis(999));
+        assertThrows(IllegalStateException.class, () -> ProxyDnsDiscoverySettings.compile(defaults));
+        defaults.setTtlFloor(Duration.ofSeconds(30));
+        defaults.setStaleAfter(Duration.ofSeconds(29));
+        assertThrows(IllegalStateException.class, () -> ProxyDnsDiscoverySettings.compile(defaults));
+        defaults.setStaleAfter(Duration.ofMinutes(5));
+        defaults.setResolutionTimeout(Duration.ofSeconds(31));
+        assertThrows(IllegalStateException.class, () -> ProxyDnsDiscoverySettings.compile(defaults));
+        defaults.setResolutionTimeout(Duration.ofSeconds(2));
+        defaults.setLookupThreads(17);
+        assertThrows(IllegalStateException.class, () -> ProxyDnsDiscoverySettings.compile(defaults));
     }
 
     private static ReverseProxyProperties properties(ReverseProxyProperties.Upstream target) {

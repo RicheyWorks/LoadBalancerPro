@@ -52,6 +52,14 @@ final class ReverseProxyRoutePlanner {
             ReverseProxyProperties properties,
             RoutingStrategyRegistry registry,
             List<ConfiguredRoute> previousRoutes) {
+        return buildEnabledRoutes(properties, registry, previousRoutes, null);
+    }
+
+    static List<ConfiguredRoute> buildEnabledRoutes(
+            ReverseProxyProperties properties,
+            RoutingStrategyRegistry registry,
+            List<ConfiguredRoute> previousRoutes,
+            ProxyDnsEffectiveConfig.Expansion discoveryExpansion) {
         Objects.requireNonNull(properties, "properties cannot be null");
         Objects.requireNonNull(registry, "registry cannot be null");
         Objects.requireNonNull(previousRoutes, "previousRoutes cannot be null");
@@ -85,7 +93,8 @@ final class ReverseProxyRoutePlanner {
                 RoutingStrategyId strategyId = strategyId(strategyName,
                         "loadbalancerpro.proxy.routes." + routeName + ".strategy");
                 List<ReverseProxyProperties.Upstream> targets = route.getTargets();
-                if (targets.isEmpty()) {
+                if (targets.isEmpty() && (discoveryExpansion == null
+                        || !discoveryExpansion.allowsEmptyRoute(routeName))) {
                     throw new IllegalStateException(
                             "loadbalancerpro.proxy.routes." + routeName + ".targets must contain at least one target");
                 }
@@ -99,7 +108,7 @@ final class ReverseProxyRoutePlanner {
                         route.getMatch(), "loadbalancerpro.proxy.routes." + routeName + ".match");
                 List<ConfiguredSplit> splits = compileSplits(
                         routeName, route.getSplit(), targets, strategyId, registry,
-                        previousRoutesByName.get(routeName), ownedStrategies);
+                        previousRoutesByName.get(routeName), ownedStrategies, discoveryExpansion);
                 ProxyRequestHeaders.HeaderRewrites headerRewrites = ProxyRequestHeaders.compileRewrites(
                         route.getHeaders(), "loadbalancerpro.proxy.routes." + routeName + ".headers");
                 ProxyRouteSelectionPolicy selectionPolicy = ProxyRouteSelectionPolicy.compile(
@@ -112,7 +121,8 @@ final class ReverseProxyRoutePlanner {
         }
 
         List<ReverseProxyProperties.Upstream> upstreams = properties.getUpstreams();
-        if (upstreams.isEmpty()) {
+        if (upstreams.isEmpty() && (discoveryExpansion == null
+                || !discoveryExpansion.allowsEmptyRoute(LEGACY_ROUTE_NAME))) {
             throw new IllegalStateException(
                     "loadbalancerpro.proxy.enabled=true requires at least one configured route or upstream target");
         }
@@ -263,7 +273,8 @@ final class ReverseProxyRoutePlanner {
             RoutingStrategyId strategyId,
             RoutingStrategyRegistry registry,
             ConfiguredRoute previousRoute,
-            List<RoutingStrategy> ownedStrategies) {
+            List<RoutingStrategy> ownedStrategies,
+            ProxyDnsEffectiveConfig.Expansion discoveryExpansion) {
         if (configuredSplits.isEmpty()) {
             return List.of();
         }
@@ -295,7 +306,8 @@ final class ReverseProxyRoutePlanner {
             if (cumulativePercentage > 100) {
                 throw new IllegalStateException(fieldPrefix + " percentages must total exactly 100");
             }
-            if (group.getTargetIds().isEmpty()) {
+            if (group.getTargetIds().isEmpty() && (discoveryExpansion == null
+                    || !discoveryExpansion.allowsEmptySplit(routeName, groupName))) {
                 throw new IllegalStateException(fieldPrefix + "." + groupName
                         + ".target-ids must contain at least one target id");
             }

@@ -30,6 +30,7 @@ public class ReverseProxyProperties {
     private Shedding shedding = new Shedding();
     private BackendTls backendTls = new BackendTls();
     private AccessLog accessLog = new AccessLog();
+    private DnsDiscovery dnsDiscovery = new DnsDiscovery();
     private List<Upstream> upstreams = new ArrayList<>();
     private Map<String, Route> routes = new LinkedHashMap<>();
 
@@ -179,6 +180,14 @@ public class ReverseProxyProperties {
 
     public void setAccessLog(AccessLog accessLog) {
         this.accessLog = accessLog == null ? new AccessLog() : accessLog;
+    }
+
+    public DnsDiscovery getDnsDiscovery() {
+        return dnsDiscovery;
+    }
+
+    public void setDnsDiscovery(DnsDiscovery dnsDiscovery) {
+        this.dnsDiscovery = dnsDiscovery == null ? new DnsDiscovery() : dnsDiscovery;
     }
 
     public List<Upstream> getUpstreams() {
@@ -517,6 +526,8 @@ public class ReverseProxyProperties {
     public static final class Upstream {
         private String id;
         private String url;
+        private String discovery = "";
+        private String discoveryAuthority = "";
         private boolean healthy = true;
         private int inFlightRequestCount = 0;
         private Double configuredCapacity = 100.0;
@@ -544,6 +555,22 @@ public class ReverseProxyProperties {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public String getDiscovery() {
+            return discovery;
+        }
+
+        public void setDiscovery(String discovery) {
+            this.discovery = discovery == null ? "" : discovery;
+        }
+
+        public String getDiscoveryAuthority() {
+            return discoveryAuthority;
+        }
+
+        public void setDiscoveryAuthority(String discoveryAuthority) {
+            this.discoveryAuthority = discoveryAuthority == null ? "" : discoveryAuthority;
         }
 
         public boolean isHealthy() {
@@ -952,6 +979,45 @@ public class ReverseProxyProperties {
 
         public void setSampleRate(double sampleRate) {
             this.sampleRate = sampleRate;
+        }
+    }
+
+    public static final class DnsDiscovery {
+        private Duration ttlFloor = Duration.ofSeconds(30);
+        private Duration staleAfter = Duration.ofMinutes(5);
+        private Duration resolutionTimeout = Duration.ofSeconds(2);
+        private int lookupThreads = 4;
+
+        public Duration getTtlFloor() {
+            return ttlFloor;
+        }
+
+        public void setTtlFloor(Duration ttlFloor) {
+            this.ttlFloor = ttlFloor == null ? Duration.ofSeconds(30) : ttlFloor;
+        }
+
+        public Duration getStaleAfter() {
+            return staleAfter;
+        }
+
+        public void setStaleAfter(Duration staleAfter) {
+            this.staleAfter = staleAfter == null ? Duration.ofMinutes(5) : staleAfter;
+        }
+
+        public Duration getResolutionTimeout() {
+            return resolutionTimeout;
+        }
+
+        public void setResolutionTimeout(Duration resolutionTimeout) {
+            this.resolutionTimeout = resolutionTimeout == null ? Duration.ofSeconds(2) : resolutionTimeout;
+        }
+
+        public int getLookupThreads() {
+            return lookupThreads;
+        }
+
+        public void setLookupThreads(int lookupThreads) {
+            this.lookupThreads = lookupThreads;
         }
     }
 }

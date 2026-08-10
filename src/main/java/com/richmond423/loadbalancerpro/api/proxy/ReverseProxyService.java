@@ -104,8 +104,10 @@ public class ReverseProxyService implements SmartLifecycle {
     private final UpstreamRuntimeStats globalRuntimeStats;
     private final LiveRoutingDecisionStore liveRoutingDecisions;
     private final LaseShadowRuntime laseShadowRuntime;
+    private final ProxyDnsDiscoveryRuntime.Resolver dnsResolver;
     private final UpstreamHealthProber healthProber;
     private final ScheduledExecutorService drainScheduler;
+    private volatile ProxyDnsDiscoveryRuntime dnsDiscoveryRuntime;
 
     @Autowired
     public ReverseProxyService(ReverseProxyProperties properties,
@@ -116,7 +118,8 @@ public class ReverseProxyService implements SmartLifecycle {
                                ObjectProvider<LaseShadowRuntime> laseShadowRuntimeProvider) {
         this(properties, httpClient, httpClientProvider, metrics, accessLog,
                 RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(),
-                laseShadowRuntimeProvider.getIfAvailable(LaseShadowRuntime::disabled));
+                laseShadowRuntimeProvider.getIfAvailable(LaseShadowRuntime::disabled),
+                ProxyDnsDiscoveryRuntime.Resolver.system());
     }
 
     ReverseProxyService(ReverseProxyProperties properties,
@@ -135,7 +138,8 @@ public class ReverseProxyService implements SmartLifecycle {
                         LaseShadowRuntime laseShadowRuntime) {
         this(properties, httpClient,
                 ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
-                metrics, ReverseProxyAccessLog.disabled(), registry, clock, laseShadowRuntime);
+                metrics, ReverseProxyAccessLog.disabled(), registry, clock, laseShadowRuntime,
+                ProxyDnsDiscoveryRuntime.Resolver.system());
     }
 
     ReverseProxyService(ReverseProxyProperties properties,
@@ -147,7 +151,21 @@ public class ReverseProxyService implements SmartLifecycle {
                         ReverseProxyAccessLog accessLog) {
         this(properties, httpClient,
                 ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
-                metrics, accessLog, registry, clock, laseShadowRuntime);
+                metrics, accessLog, registry, clock, laseShadowRuntime,
+                ProxyDnsDiscoveryRuntime.Resolver.system());
+    }
+
+    ReverseProxyService(ReverseProxyProperties properties,
+                        HttpClient httpClient,
+                        ReverseProxyMetrics metrics,
+                        RoutingStrategyRegistry registry,
+                        Clock clock,
+                        LaseShadowRuntime laseShadowRuntime,
+                        ReverseProxyAccessLog accessLog,
+                        ProxyDnsDiscoveryRuntime.Resolver dnsResolver) {
+        this(properties, httpClient,
+                ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
+                metrics, accessLog, registry, clock, laseShadowRuntime, dnsResolver);
     }
 
     private ReverseProxyService(ReverseProxyProperties properties,
@@ -156,8 +174,9 @@ public class ReverseProxyService implements SmartLifecycle {
                                  ReverseProxyMetrics metrics,
                                  ReverseProxyAccessLog accessLog,
                                  RoutingStrategyRegistry registry,
-                                Clock clock,
-                                LaseShadowRuntime laseShadowRuntime) {
+                                 Clock clock,
+                                 LaseShadowRuntime laseShadowRuntime,
+                                 ProxyDnsDiscoveryRuntime.Resolver dnsResolver) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient cannot be null");
         this.httpClientProvider = Objects.requireNonNull(httpClientProvider, "httpClientProvider cannot be null");
         this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
@@ -165,6 +184,7 @@ public class ReverseProxyService implements SmartLifecycle {
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.laseShadowRuntime = Objects.requireNonNull(laseShadowRuntime, "laseShadowRuntime cannot be null");
+        this.dnsResolver = Objects.requireNonNull(dnsResolver, "dnsResolver cannot be null");
         this.globalRuntimeStats = new UpstreamRuntimeStats(clock);
         this.liveRoutingDecisions = new LiveRoutingDecisionStore(clock);
         ActiveProxyConfig startupConfig = buildActiveConfig(
@@ -180,6 +200,7 @@ public class ReverseProxyService implements SmartLifecycle {
         });
         metrics.activateConfiguration(startupConfig.routes());
         configureHealthProber(startupConfig);
+        configureDiscoveryRuntime(startupConfig);
         logStartupSummary();
     }
 
@@ -792,12 +813,46 @@ public class ReverseProxyService implements SmartLifecycle {
                         admissionStatus.retryAfterSeconds()),
                 routeStatuses,
                 upstreamStatuses,
+                dnsDiscoveryStatuses(config),
                 metricsSnapshot,
                 ReverseProxyStatusSummaries.observability(properties.isEnabled(), routeStatuses, upstreamStatuses,
                         metricsSnapshot),
                 ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary(),
                 PrivateNetworkLiveValidationStatusResponse.from(properties),
                 reloadStatusSnapshot(config));
+    }
+
+    private List<ReverseProxyStatusResponse.DnsDiscoveryStatus> dnsDiscoveryStatuses(
+            ActiveProxyConfig config) {
+        ProxyDnsDiscoveryRuntime.Snapshot snapshot = config.discoverySnapshot();
+        ProxyDnsDiscoveryRuntime runtime = dnsDiscoveryRuntime;
+        if (runtime != null && runtime.snapshot().generation() == config.generation()) {
+            snapshot = runtime.snapshot();
+        }
+        ProxyDnsDiscoveryRuntime.Snapshot current = snapshot;
+        return current.statusByLogicalId().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    String logicalId = entry.getKey();
+                    ProxyDnsDiscoveryRuntime.Status status = entry.getValue();
+                    List<ReverseProxyStatusResponse.DnsMemberStatus> members = current.membersByLogicalId()
+                            .getOrDefault(logicalId, List.of()).stream()
+                            .map(member -> new ReverseProxyStatusResponse.DnsMemberStatus(
+                                    member.id(), member.address()))
+                            .toList();
+                    return new ReverseProxyStatusResponse.DnsDiscoveryStatus(
+                            logicalId,
+                            status.name(),
+                            status.port(),
+                            status.authorityMode(),
+                            status.outcome().name(),
+                            status.lookupInFlight(),
+                            status.memberCount(),
+                            status.lastSuccessAgeMillis(),
+                            status.staleRemainingMillis(),
+                            members);
+                })
+                .toList();
     }
 
     RecentProxyDecisionsResponse recentDecisionsSnapshot() {
@@ -1009,30 +1064,77 @@ public class ReverseProxyService implements SmartLifecycle {
     }
 
     private ReverseProxyAdminConfigResponse adminConfigResponse(ActiveProxyConfig config) {
-        List<ReverseProxyAdminConfigResponse.RouteConfig> routes = config.routes().stream()
-                .map(route -> new ReverseProxyAdminConfigResponse.RouteConfig(
-                        route.name(),
-                        route.pathPrefix(),
-                        route.match().host(),
-                        route.match().headerNames(),
-                        route.splits().stream()
-                                .map(split -> new ReverseProxyAdminConfigResponse.SplitConfig(
-                                        split.name(), split.percentage(),
-                                        split.targetIds().stream().sorted().toList()))
-                                .toList(),
-                        route.strategyId().externalName(),
-                        route.targets().stream()
-                                .map(target -> new ReverseProxyAdminConfigResponse.UpstreamConfig(
-                                        target.getId().trim(),
-                                        target.isHealthy(),
-                                        target.getWeight(),
-                                        Math.max(0, target.getMaxInFlight()),
-                                        Double.compare(target.getWeight(), 0.0) == 0))
-                                .toList()))
-                .toList();
+        List<ReverseProxyAdminConfigResponse.RouteConfig> routes = logicalAdminRoutes(config);
         List<String> drainingIds = drainingUpstreams.keySet().stream().sorted().toList();
         return new ReverseProxyAdminConfigResponse(
-                config.generation(), config.routeCount(), config.backendTargetCount(), routes, drainingIds);
+                config.generation(),
+                routes.size(),
+                configuredTargets(config.properties()).size(),
+                config.backendTargetCount(),
+                routes,
+                dnsDiscoveryStatuses(config),
+                drainingIds);
+    }
+
+    private List<ReverseProxyAdminConfigResponse.RouteConfig> logicalAdminRoutes(ActiveProxyConfig config) {
+        ReverseProxyProperties properties = config.properties();
+        Map<String, ReverseProxyRoutePlanner.ConfiguredRoute> plannedRoutes = config.routes().stream()
+                .collect(Collectors.toMap(
+                        ReverseProxyRoutePlanner.ConfiguredRoute::name,
+                        Function.identity()));
+        if (properties.getRoutes().isEmpty()) {
+            ReverseProxyRoutePlanner.ConfiguredRoute planned =
+                    plannedRoutes.get(ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME);
+            return List.of(new ReverseProxyAdminConfigResponse.RouteConfig(
+                    ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME,
+                    planned.pathPrefix(),
+                    planned.match().host(),
+                    planned.match().headerNames(),
+                    List.of(),
+                    planned.strategyId().externalName(),
+                    logicalAdminUpstreams(config, properties.getUpstreams())));
+        }
+        return properties.getRoutes().entrySet().stream()
+                .map(entry -> {
+                    String routeName = entry.getKey();
+                    ReverseProxyProperties.Route route = entry.getValue();
+                    ReverseProxyRoutePlanner.ConfiguredRoute planned = plannedRoutes.get(routeName);
+                    List<ReverseProxyAdminConfigResponse.SplitConfig> splits = route.getSplit().entrySet().stream()
+                            .sorted(Map.Entry.comparingByKey())
+                            .map(split -> new ReverseProxyAdminConfigResponse.SplitConfig(
+                                    split.getKey(),
+                                    split.getValue().getPercentage(),
+                                    split.getValue().getTargetIds().stream().sorted().toList()))
+                            .toList();
+                    return new ReverseProxyAdminConfigResponse.RouteConfig(
+                            routeName,
+                            planned.pathPrefix(),
+                            planned.match().host(),
+                            planned.match().headerNames(),
+                            splits,
+                            planned.strategyId().externalName(),
+                            logicalAdminUpstreams(config, route.getTargets()));
+                })
+                .toList();
+    }
+
+    private List<ReverseProxyAdminConfigResponse.UpstreamConfig> logicalAdminUpstreams(
+            ActiveProxyConfig config,
+            List<ReverseProxyProperties.Upstream> targets) {
+        return targets.stream()
+                .map(target -> {
+                    String id = target.getId().trim();
+                    return new ReverseProxyAdminConfigResponse.UpstreamConfig(
+                            id,
+                            target.isHealthy(),
+                            target.getWeight(),
+                            Math.max(0, target.getMaxInFlight()),
+                            Double.compare(target.getWeight(), 0.0) == 0,
+                            Objects.requireNonNullElse(target.getDiscovery(), ""),
+                            Objects.requireNonNullElse(target.getDiscoveryAuthority(), ""),
+                            config.effectiveIdsByLogicalId().getOrDefault(id, List.of()));
+                })
+                .toList();
     }
 
     private static List<ReverseProxyProperties.Upstream> configuredTargets(ReverseProxyProperties properties) {
@@ -1103,6 +1205,7 @@ public class ReverseProxyService implements SmartLifecycle {
                 activeConfig.set(candidateConfig);
                 metrics.activateConfiguration(candidateConfig.routes());
             }
+            configureDiscoveryRuntime(candidateConfig);
             nextGeneration.updateAndGet(current -> Math.max(current, candidateConfig.generation() + 1));
             sweepDrainingUpstreamsSafely();
             scheduleDrainSweep();
@@ -1143,25 +1246,82 @@ public class ReverseProxyService implements SmartLifecycle {
                     "loadbalancerpro.proxy.access-log configuration requires application restart"
                             + " and cannot change by reload");
         }
+        if (!ProxyDnsDiscoverySettings.compile(candidateProperties.getDnsDiscovery()).equals(
+                ProxyDnsDiscoverySettings.compile(previousConfig.properties().getDnsDiscovery()))) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.dns-discovery settings require application restart"
+                            + " and cannot change by reload");
+        }
+        long generation = nextGeneration.get();
+        ProxyDnsDiscoveryRuntime.Snapshot carried = ProxyDnsEffectiveConfig.carryForward(
+                candidateProperties,
+                previousConfig.properties(),
+                previousConfig.discoverySnapshot(),
+                generation);
         return buildActiveConfig(
-                candidateProperties, nextGeneration.get(), previousConfig.routes());
+                candidateProperties, generation, previousConfig.routes(), carried);
     }
 
     private ActiveProxyConfig buildActiveConfig(
             ReverseProxyProperties candidateProperties,
             long generation,
             List<ReverseProxyRoutePlanner.ConfiguredRoute> previousRoutes) {
+        return buildActiveConfig(
+                candidateProperties,
+                generation,
+                previousRoutes,
+                new ProxyDnsDiscoveryRuntime.Snapshot(generation, Map.of(), Map.of()));
+    }
+
+    private ActiveProxyConfig buildActiveConfig(
+            ReverseProxyProperties candidateProperties,
+            long generation,
+            List<ReverseProxyRoutePlanner.ConfiguredRoute> previousRoutes,
+            ProxyDnsDiscoveryRuntime.Snapshot discoverySnapshot) {
         ReverseProxyProperties safeProperties = copyProperties(
                 Objects.requireNonNull(candidateProperties, "properties cannot be null"));
-        List<ReverseProxyRoutePlanner.ConfiguredRoute> configuredRoutes =
-                ReverseProxyRoutePlanner.buildEnabledRoutes(safeProperties, registry, previousRoutes);
-        validateRuntimeFields(safeProperties, configuredRoutes);
+        ProxyDnsEffectiveConfig.Expansion expansion = ProxyDnsEffectiveConfig.expand(
+                safeProperties, discoverySnapshot);
+        List<ProxyDnsDiscoveryRuntime.Registration> registrations =
+                ProxyDnsEffectiveConfig.registrations(safeProperties);
+        List<ReverseProxyRoutePlanner.ConfiguredRoute> configuredRoutes;
+        if (registrations.isEmpty()) {
+            configuredRoutes = ReverseProxyRoutePlanner.buildEnabledRoutes(
+                    safeProperties, registry, previousRoutes);
+            validateRuntimeFields(safeProperties, configuredRoutes);
+        } else {
+            List<ReverseProxyRoutePlanner.ConfiguredRoute> logicalRoutes =
+                    ReverseProxyRoutePlanner.buildEnabledRoutes(safeProperties, registry, List.of());
+            validateRuntimeFields(safeProperties, logicalRoutes);
+            configuredRoutes = ReverseProxyRoutePlanner.buildEnabledRoutes(
+                    expansion.effectiveProperties(), registry, previousRoutes, expansion);
+            validateEffectiveTargets(safeProperties, configuredRoutes);
+        }
         ProxyRequestHeaders.ForwardedPolicy forwardedPolicy =
                 ProxyRequestHeaders.compileForwarded(safeProperties.getForwarded());
         ProxyAdmissionControl.Policy admissionPolicy = ProxyAdmissionControl.compile(safeProperties, clock);
         ProxyRetryPolicy retryPolicy = ProxyRetryPolicy.compile(safeProperties.getRetry());
         return new ActiveProxyConfig(
-                safeProperties, configuredRoutes, forwardedPolicy, admissionPolicy, retryPolicy, generation);
+                safeProperties,
+                configuredRoutes,
+                forwardedPolicy,
+                admissionPolicy,
+                retryPolicy,
+                generation,
+                discoverySnapshot,
+                expansion.effectiveIdsByLogicalId(),
+                expansion.logicalIdByEffectiveId());
+    }
+
+    private void validateEffectiveTargets(
+            ReverseProxyProperties properties,
+            List<ReverseProxyRoutePlanner.ConfiguredRoute> configuredRoutes) {
+        for (ReverseProxyRoutePlanner.ConfiguredRoute route : configuredRoutes) {
+            for (ReverseProxyProperties.Upstream upstream : route.targets()) {
+                validateUpstreamRuntimeFields(upstream);
+                httpClientProvider.clientFor(properties.getBackendTls(), upstream);
+            }
+        }
     }
 
     private void validateRuntimeFields(ReverseProxyProperties properties,
@@ -1176,6 +1336,7 @@ public class ReverseProxyService implements SmartLifecycle {
                     "loadbalancerpro.proxy.max-response-bytes must be zero or greater");
         }
         ReverseProxyAccessLog.validateConfiguration(properties.getAccessLog());
+        ProxyDnsDiscoverySettings.compile(properties.getDnsDiscovery());
         normalizedHealthCheckPath(properties.getHealthCheck().getPath());
         positiveDuration(properties.getHealthCheck().getTimeout(),
                 "loadbalancerpro.proxy.health-check.timeout");
@@ -1389,13 +1550,26 @@ public class ReverseProxyService implements SmartLifecycle {
             throw new IllegalArgumentException("Proxy query string must not contain control characters.");
         }
         URI baseUri = upstream.baseUri();
-        String targetPath = joinPath(baseUri.getPath(), suffix);
+        String targetPath = joinPath(baseUri.getRawPath(), suffix);
         try {
-            URI target = new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(),
-                    targetPath, query, null);
+            StringBuilder rawTarget = new StringBuilder()
+                    .append(baseUri.getScheme())
+                    .append("://")
+                    .append(baseUri.getRawAuthority())
+                    .append(targetPath);
+            if (query != null) {
+                rawTarget.append('?').append(query);
+            }
+            URI target = URI.create(rawTarget.toString());
+            if (!Objects.equals(target.getRawPath(), targetPath)
+                    || !Objects.equals(target.getRawQuery(), query)
+                    || target.getRawFragment() != null) {
+                throw new IllegalArgumentException(
+                        "Proxy path or query could not be preserved as raw URI components.");
+            }
             validateConfiguredAuthority(baseUri, target);
             return target;
-        } catch (URISyntaxException exception) {
+        } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException("Proxy target URI could not be constructed for configured upstream.",
                     exception);
         }
@@ -1788,13 +1962,17 @@ public class ReverseProxyService implements SmartLifecycle {
 
     private URI healthCheckUri(ReverseProxyProperties properties, URI baseUri) {
         String healthPath = normalizedHealthCheckPath(properties.getHealthCheck().getPath());
-        String targetPath = joinPath(baseUri.getPath(), healthPath);
+        String targetPath = joinPath(baseUri.getRawPath(), healthPath);
         try {
-            URI target = new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(),
-                    targetPath, null, null);
+            URI target = URI.create(baseUri.getScheme() + "://" + baseUri.getRawAuthority() + targetPath);
+            if (!Objects.equals(target.getRawPath(), targetPath)
+                    || target.getRawQuery() != null || target.getRawFragment() != null) {
+                throw new IllegalArgumentException(
+                        "Proxy health-check path could not be preserved as a raw URI component.");
+            }
             validateConfiguredAuthority(baseUri, target);
             return target;
-        } catch (URISyntaxException exception) {
+        } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException("Proxy health-check URI could not be constructed for upstream.",
                     exception);
         }
@@ -2095,6 +2273,11 @@ public class ReverseProxyService implements SmartLifecycle {
     @Override
     public void stop() {
         if (running.compareAndSet(true, false)) {
+            ProxyDnsDiscoveryRuntime discovery = dnsDiscoveryRuntime;
+            dnsDiscoveryRuntime = null;
+            if (discovery != null) {
+                discovery.close();
+            }
             healthProber.stop();
             drainScheduler.shutdownNow();
             drainingUpstreams.clear();
@@ -2174,7 +2357,7 @@ public class ReverseProxyService implements SmartLifecycle {
         return instant == null ? null : instant.toString();
     }
 
-    private static ReverseProxyProperties copyProperties(ReverseProxyProperties source) {
+    static ReverseProxyProperties copyProperties(ReverseProxyProperties source) {
         ReverseProxyProperties copy = new ReverseProxyProperties();
         copy.setEnabled(source.isEnabled());
         copy.setStrategy(source.getStrategy());
@@ -2195,6 +2378,7 @@ public class ReverseProxyService implements SmartLifecycle {
         copy.setShedding(copyShedding(source.getShedding()));
         copy.setBackendTls(copyBackendTls(source.getBackendTls()));
         copy.setAccessLog(copyAccessLog(source.getAccessLog()));
+        copy.setDnsDiscovery(copyDnsDiscovery(source.getDnsDiscovery()));
         copy.setUpstreams(source.getUpstreams().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
@@ -2274,13 +2458,15 @@ public class ReverseProxyService implements SmartLifecycle {
         return copy;
     }
 
-    private static ReverseProxyProperties.Upstream copyUpstream(ReverseProxyProperties.Upstream source) {
+    static ReverseProxyProperties.Upstream copyUpstream(ReverseProxyProperties.Upstream source) {
         ReverseProxyProperties.Upstream copy = new ReverseProxyProperties.Upstream();
         if (source == null) {
             return copy;
         }
         copy.setId(source.getId());
         copy.setUrl(source.getUrl());
+        copy.setDiscovery(source.getDiscovery());
+        copy.setDiscoveryAuthority(source.getDiscoveryAuthority());
         copy.setHealthy(source.isHealthy());
         copy.setInFlightRequestCount(source.getInFlightRequestCount());
         copy.setConfiguredCapacity(source.getConfiguredCapacity());
@@ -2313,6 +2499,88 @@ public class ReverseProxyService implements SmartLifecycle {
             copy.setFormat(source.getFormat());
             copy.setPath(source.getPath());
             copy.setSampleRate(source.getSampleRate());
+        }
+        return copy;
+    }
+
+    private void configureDiscoveryRuntime(ActiveProxyConfig config) {
+        List<ProxyDnsDiscoveryRuntime.Registration> registrations =
+                ProxyDnsEffectiveConfig.registrations(config.properties());
+        ProxyDnsDiscoveryRuntime runtime;
+        ProxyDnsDiscoveryRuntime toClose = null;
+        synchronized (configurationLock) {
+            if (registrations.isEmpty()) {
+                toClose = dnsDiscoveryRuntime;
+                dnsDiscoveryRuntime = null;
+                runtime = null;
+            } else {
+                runtime = dnsDiscoveryRuntime;
+                if (runtime == null) {
+                    runtime = new ProxyDnsDiscoveryRuntime(
+                            ProxyDnsDiscoverySettings.compile(config.properties().getDnsDiscovery()),
+                            dnsResolver,
+                            this::applyDiscoverySnapshot);
+                    dnsDiscoveryRuntime = runtime;
+                }
+            }
+        }
+        if (toClose != null) {
+            toClose.close();
+        }
+        if (runtime != null) {
+            runtime.replace(config.generation(), registrations);
+        }
+    }
+
+    private void applyDiscoverySnapshot(ProxyDnsDiscoveryRuntime.Snapshot snapshot) {
+        if (!running.get()) {
+            return;
+        }
+        ActiveProxyConfig previous = activeConfig.get();
+        if (snapshot.generation() != previous.generation()
+                || snapshot.membersByLogicalId().equals(
+                        previous.discoverySnapshot().membersByLogicalId())) {
+            return;
+        }
+        ActiveProxyConfig candidate;
+        try {
+            candidate = buildActiveConfig(
+                    previous.properties(), previous.generation(), previous.routes(), snapshot);
+        } catch (RuntimeException invalidSnapshot) {
+            logger.warn("proxy.dns.publication status=rejected generation={} reason=effective_snapshot_invalid",
+                    previous.generation());
+            return;
+        }
+        Instant now = Instant.now(clock);
+        synchronized (configurationLock) {
+            if (!running.get() || activeConfig.get() != previous) {
+                return;
+            }
+            reinstateReappearedUpstreams(candidate);
+            configureHealthProber(candidate);
+            prepareResilienceStates(candidate, now);
+            beginDrainingRemovedUpstreams(previous, candidate, now);
+            activeConfig.set(candidate);
+            metrics.activateConfiguration(candidate.routes());
+        }
+        sweepDrainingUpstreamsSafely();
+        scheduleDrainSweep();
+    }
+
+    private void reinstateReappearedUpstreams(ActiveProxyConfig candidate) {
+        for (String upstreamId : configuredUpstreamIds(candidate)) {
+            drainingUpstreams.remove(upstreamId);
+        }
+    }
+
+    private static ReverseProxyProperties.DnsDiscovery copyDnsDiscovery(
+            ReverseProxyProperties.DnsDiscovery source) {
+        ReverseProxyProperties.DnsDiscovery copy = new ReverseProxyProperties.DnsDiscovery();
+        if (source != null) {
+            copy.setTtlFloor(source.getTtlFloor());
+            copy.setStaleAfter(source.getStaleAfter());
+            copy.setResolutionTimeout(source.getResolutionTimeout());
+            copy.setLookupThreads(source.getLookupThreads());
         }
         return copy;
     }
@@ -2444,6 +2712,9 @@ public class ReverseProxyService implements SmartLifecycle {
             ProxyAdmissionControl.Policy admissionPolicy,
             ProxyRetryPolicy retryPolicy,
             long generation,
+            ProxyDnsDiscoveryRuntime.Snapshot discoverySnapshot,
+            Map<String, List<String>> effectiveIdsByLogicalId,
+            Map<String, String> logicalIdByEffectiveId,
             AtomicInteger activeRequests,
             Set<String> retiredUpstreamIds) {
         private ActiveProxyConfig(
@@ -2452,9 +2723,13 @@ public class ReverseProxyService implements SmartLifecycle {
                 ProxyRequestHeaders.ForwardedPolicy forwardedPolicy,
                 ProxyAdmissionControl.Policy admissionPolicy,
                 ProxyRetryPolicy retryPolicy,
-                long generation) {
+                long generation,
+                ProxyDnsDiscoveryRuntime.Snapshot discoverySnapshot,
+                Map<String, List<String>> effectiveIdsByLogicalId,
+                Map<String, String> logicalIdByEffectiveId) {
             this(properties, routes, forwardedPolicy, admissionPolicy, retryPolicy,
-                    generation, new AtomicInteger(), ConcurrentHashMap.newKeySet());
+                    generation, discoverySnapshot, effectiveIdsByLogicalId, logicalIdByEffectiveId,
+                    new AtomicInteger(), ConcurrentHashMap.newKeySet());
         }
 
         void requestStarted() {

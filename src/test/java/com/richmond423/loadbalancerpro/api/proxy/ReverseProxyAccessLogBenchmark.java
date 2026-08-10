@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Duration;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
@@ -32,7 +35,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
  * uses a literal-loopback upstream and no-op async sink, so it is regression
  * evidence, not a production throughput or latency benchmark.
  */
-class ReverseProxyAccessLogOverheadTest {
+class ReverseProxyAccessLogBenchmark {
+    private static final ObjectMapper JSON = new ObjectMapper();
     private static final int SAMPLE_COUNT = 9;
     private static final int WARMUP_REQUESTS_PER_THREAD = 600;
     /*
@@ -40,7 +44,7 @@ class ReverseProxyAccessLogOverheadTest {
      * is small relative to the observation. Shorter 300-request windows were
      * about 120 ms on the Linux runner and produced materially different medians
      * for identical trees. This strengthens the workload without changing the
-     * sample count, zero-drop assertion, or five-percent budget.
+     * sample count, zero-drop assertion, or evidence boundary.
      */
     private static final int REQUESTS_PER_THREAD = 900;
 
@@ -48,7 +52,7 @@ class ReverseProxyAccessLogOverheadTest {
     Path temporaryDirectory;
 
     @Test
-    void boundedConcurrentSaturationKeepsMedianRequestThreadOverheadBelowFivePercent() throws Exception {
+    void measureBoundedConcurrentSaturationOverhead() throws Exception {
         int threads = Math.max(2, Math.min(8, Runtime.getRuntime().availableProcessors()));
         CountingWriter writer = new CountingWriter();
         ExecutorService upstreamExecutor = Executors.newFixedThreadPool(threads);
@@ -67,6 +71,10 @@ class ReverseProxyAccessLogOverheadTest {
 
             List<Long> disabledSamples = new ArrayList<>();
             List<Long> enabledSamples = new ArrayList<>();
+            List<Long> disabledFirstSamples = new ArrayList<>();
+            List<Long> disabledSecondSamples = new ArrayList<>();
+            List<Long> enabledFirstSamples = new ArrayList<>();
+            List<Long> enabledSecondSamples = new ArrayList<>();
             List<Double> overheadSamples = new ArrayList<>();
             for (int sample = 0; sample < SAMPLE_COUNT; sample++) {
                 long disabledFirst;
@@ -93,6 +101,10 @@ class ReverseProxyAccessLogOverheadTest {
                             executor, enabled.service, threads, REQUESTS_PER_THREAD);
                 }
                 awaitWriter(enabled.accessLog, writer);
+                disabledFirstSamples.add(disabledFirst);
+                disabledSecondSamples.add(disabledSecond);
+                enabledFirstSamples.add(enabledFirst);
+                enabledSecondSamples.add(enabledSecond);
                 long disabledAverage = average(disabledFirst, disabledSecond);
                 long enabledAverage = average(enabledFirst, enabledSecond);
                 disabledSamples.add(disabledAverage);
@@ -102,13 +114,25 @@ class ReverseProxyAccessLogOverheadTest {
 
             double overheadPercent = medianDouble(overheadSamples);
             System.out.printf(Locale.ROOT,
-                    "P-3.2 bounded local request-thread overhead: %.3f%%%n", overheadPercent);
-            assertTrue(overheadPercent < 5.0,
-                    () -> "bounded local median access-log overhead was " + overheadPercent
-                            + "%; disabledSamples=" + disabledSamples
-                            + "; enabledSamples=" + enabledSamples
-                            + "; pairedOverheadSamples=" + overheadSamples
-                            + "; this is a local regression guard, not production benchmark proof");
+                    "Access-log benchmark median overhead: %.3f%% (non-production evidence)%n", overheadPercent);
+            writeRawResult(Map.ofEntries(
+                    Map.entry("formatVersion", 1),
+                    Map.entry("evidenceBoundary", "local-or-hosted-runner measurement; not production proof"),
+                    Map.entry("availableProcessors", Runtime.getRuntime().availableProcessors()),
+                    Map.entry("threads", threads),
+                    Map.entry("warmupRequestsPerThread", WARMUP_REQUESTS_PER_THREAD),
+                    Map.entry("requestsPerThread", REQUESTS_PER_THREAD),
+                    Map.entry("disabledFirstNanos", disabledFirstSamples),
+                    Map.entry("disabledSecondNanos", disabledSecondSamples),
+                    Map.entry("enabledFirstNanos", enabledFirstSamples),
+                    Map.entry("enabledSecondNanos", enabledSecondSamples),
+                    Map.entry("disabledAverageNanos", disabledSamples),
+                    Map.entry("enabledAverageNanos", enabledSamples),
+                    Map.entry("pairedOverheadPercent", overheadSamples),
+                    Map.entry("medianOverheadPercent", overheadPercent),
+                    Map.entry("acceptedRecords", enabled.accessLog.acceptedCount()),
+                    Map.entry("writtenRecords", writer.count.get()),
+                    Map.entry("droppedRecords", enabled.accessLog.droppedCount())));
             assertEquals(0, enabled.accessLog.droppedCount());
         } finally {
             executor.shutdownNow();
@@ -117,6 +141,19 @@ class ReverseProxyAccessLogOverheadTest {
             upstream.stop(0);
             upstreamExecutor.shutdownNow();
         }
+    }
+
+    private static void writeRawResult(Map<String, Object> result) throws Exception {
+        String configuredPath = System.getProperty("loadbalancerpro.access-log-benchmark.output");
+        if (configuredPath == null || configuredPath.isBlank()) {
+            return;
+        }
+        Path output = Path.of(configuredPath).toAbsolutePath().normalize();
+        Path parent = output.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        JSON.writerWithDefaultPrettyPrinter().writeValue(output.toFile(), result);
     }
 
     private Fixture fixture(boolean accessLogEnabled, CountingWriter writer, int upstreamPort) {

@@ -175,6 +175,8 @@ final class ProxyDnsDiscoveryRuntime implements AutoCloseable {
             expireConsumers(state, scheduler.nanoTime());
             publishSnapshot();
             scheduleNextAttempt(state);
+        } else {
+            publishSnapshot();
         }
     }
 

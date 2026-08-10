@@ -813,12 +813,46 @@ public class ReverseProxyService implements SmartLifecycle {
                         admissionStatus.retryAfterSeconds()),
                 routeStatuses,
                 upstreamStatuses,
+                dnsDiscoveryStatuses(config),
                 metricsSnapshot,
                 ReverseProxyStatusSummaries.observability(properties.isEnabled(), routeStatuses, upstreamStatuses,
                         metricsSnapshot),
                 ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary(),
                 PrivateNetworkLiveValidationStatusResponse.from(properties),
                 reloadStatusSnapshot(config));
+    }
+
+    private List<ReverseProxyStatusResponse.DnsDiscoveryStatus> dnsDiscoveryStatuses(
+            ActiveProxyConfig config) {
+        ProxyDnsDiscoveryRuntime.Snapshot snapshot = config.discoverySnapshot();
+        ProxyDnsDiscoveryRuntime runtime = dnsDiscoveryRuntime;
+        if (runtime != null && runtime.snapshot().generation() == config.generation()) {
+            snapshot = runtime.snapshot();
+        }
+        ProxyDnsDiscoveryRuntime.Snapshot current = snapshot;
+        return current.statusByLogicalId().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    String logicalId = entry.getKey();
+                    ProxyDnsDiscoveryRuntime.Status status = entry.getValue();
+                    List<ReverseProxyStatusResponse.DnsMemberStatus> members = current.membersByLogicalId()
+                            .getOrDefault(logicalId, List.of()).stream()
+                            .map(member -> new ReverseProxyStatusResponse.DnsMemberStatus(
+                                    member.id(), member.address()))
+                            .toList();
+                    return new ReverseProxyStatusResponse.DnsDiscoveryStatus(
+                            logicalId,
+                            status.name(),
+                            status.port(),
+                            status.authorityMode(),
+                            status.outcome().name(),
+                            status.lookupInFlight(),
+                            status.memberCount(),
+                            status.lastSuccessAgeMillis(),
+                            status.staleRemainingMillis(),
+                            members);
+                })
+                .toList();
     }
 
     RecentProxyDecisionsResponse recentDecisionsSnapshot() {
@@ -1030,30 +1064,77 @@ public class ReverseProxyService implements SmartLifecycle {
     }
 
     private ReverseProxyAdminConfigResponse adminConfigResponse(ActiveProxyConfig config) {
-        List<ReverseProxyAdminConfigResponse.RouteConfig> routes = config.routes().stream()
-                .map(route -> new ReverseProxyAdminConfigResponse.RouteConfig(
-                        route.name(),
-                        route.pathPrefix(),
-                        route.match().host(),
-                        route.match().headerNames(),
-                        route.splits().stream()
-                                .map(split -> new ReverseProxyAdminConfigResponse.SplitConfig(
-                                        split.name(), split.percentage(),
-                                        split.targetIds().stream().sorted().toList()))
-                                .toList(),
-                        route.strategyId().externalName(),
-                        route.targets().stream()
-                                .map(target -> new ReverseProxyAdminConfigResponse.UpstreamConfig(
-                                        target.getId().trim(),
-                                        target.isHealthy(),
-                                        target.getWeight(),
-                                        Math.max(0, target.getMaxInFlight()),
-                                        Double.compare(target.getWeight(), 0.0) == 0))
-                                .toList()))
-                .toList();
+        List<ReverseProxyAdminConfigResponse.RouteConfig> routes = logicalAdminRoutes(config);
         List<String> drainingIds = drainingUpstreams.keySet().stream().sorted().toList();
         return new ReverseProxyAdminConfigResponse(
-                config.generation(), config.routeCount(), config.backendTargetCount(), routes, drainingIds);
+                config.generation(),
+                routes.size(),
+                configuredTargets(config.properties()).size(),
+                config.backendTargetCount(),
+                routes,
+                dnsDiscoveryStatuses(config),
+                drainingIds);
+    }
+
+    private List<ReverseProxyAdminConfigResponse.RouteConfig> logicalAdminRoutes(ActiveProxyConfig config) {
+        ReverseProxyProperties properties = config.properties();
+        Map<String, ReverseProxyRoutePlanner.ConfiguredRoute> plannedRoutes = config.routes().stream()
+                .collect(Collectors.toMap(
+                        ReverseProxyRoutePlanner.ConfiguredRoute::name,
+                        Function.identity()));
+        if (properties.getRoutes().isEmpty()) {
+            ReverseProxyRoutePlanner.ConfiguredRoute planned =
+                    plannedRoutes.get(ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME);
+            return List.of(new ReverseProxyAdminConfigResponse.RouteConfig(
+                    ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME,
+                    planned.pathPrefix(),
+                    planned.match().host(),
+                    planned.match().headerNames(),
+                    List.of(),
+                    planned.strategyId().externalName(),
+                    logicalAdminUpstreams(config, properties.getUpstreams())));
+        }
+        return properties.getRoutes().entrySet().stream()
+                .map(entry -> {
+                    String routeName = entry.getKey();
+                    ReverseProxyProperties.Route route = entry.getValue();
+                    ReverseProxyRoutePlanner.ConfiguredRoute planned = plannedRoutes.get(routeName);
+                    List<ReverseProxyAdminConfigResponse.SplitConfig> splits = route.getSplit().entrySet().stream()
+                            .sorted(Map.Entry.comparingByKey())
+                            .map(split -> new ReverseProxyAdminConfigResponse.SplitConfig(
+                                    split.getKey(),
+                                    split.getValue().getPercentage(),
+                                    split.getValue().getTargetIds().stream().sorted().toList()))
+                            .toList();
+                    return new ReverseProxyAdminConfigResponse.RouteConfig(
+                            routeName,
+                            planned.pathPrefix(),
+                            planned.match().host(),
+                            planned.match().headerNames(),
+                            splits,
+                            planned.strategyId().externalName(),
+                            logicalAdminUpstreams(config, route.getTargets()));
+                })
+                .toList();
+    }
+
+    private List<ReverseProxyAdminConfigResponse.UpstreamConfig> logicalAdminUpstreams(
+            ActiveProxyConfig config,
+            List<ReverseProxyProperties.Upstream> targets) {
+        return targets.stream()
+                .map(target -> {
+                    String id = target.getId().trim();
+                    return new ReverseProxyAdminConfigResponse.UpstreamConfig(
+                            id,
+                            target.isHealthy(),
+                            target.getWeight(),
+                            Math.max(0, target.getMaxInFlight()),
+                            Double.compare(target.getWeight(), 0.0) == 0,
+                            Objects.requireNonNullElse(target.getDiscovery(), ""),
+                            Objects.requireNonNullElse(target.getDiscoveryAuthority(), ""),
+                            config.effectiveIdsByLogicalId().getOrDefault(id, List.of()));
+                })
+                .toList();
     }
 
     private static List<ReverseProxyProperties.Upstream> configuredTargets(ReverseProxyProperties properties) {

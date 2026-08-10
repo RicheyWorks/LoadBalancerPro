@@ -6,7 +6,9 @@ public record ReverseProxyAdminConfigResponse(
         long generation,
         int routeCount,
         int backendTargetCount,
+        int effectiveBackendTargetCount,
         List<RouteConfig> routes,
+        List<ReverseProxyStatusResponse.DnsDiscoveryStatus> dnsDiscovery,
         List<String> drainingUpstreamIds) {
 
     public record RouteConfig(
@@ -37,6 +39,9 @@ public record ReverseProxyAdminConfigResponse(
             boolean healthy,
             double weight,
             int maxInFlight,
-            boolean draining) {
+            boolean draining,
+            String discovery,
+            String discoveryAuthority,
+            List<String> effectiveMemberIds) {
     }
 }

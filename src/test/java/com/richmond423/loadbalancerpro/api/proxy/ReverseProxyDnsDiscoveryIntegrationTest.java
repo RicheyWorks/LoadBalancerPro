@@ -17,6 +17,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.sun.net.httpserver.HttpServer;
@@ -160,6 +161,79 @@ class ReverseProxyDnsDiscoveryIntegrationTest {
             requests.shutdownNow();
             service.stop();
             backend.stop(0);
+        }
+    }
+
+    @Test
+    void adminDrainAndDeleteApplyToEveryEffectiveMemberWhileShowingLogicalConfiguration() throws Exception {
+        HttpServer backend = backend(exchange -> {
+            exchange.sendResponseHeaders(204, -1);
+            exchange.close();
+        });
+        ReverseProxyProperties properties = discoveredProperties(backend.getAddress().getPort(), "");
+        ReverseProxyProperties.Upstream staticTarget = new ReverseProxyProperties.Upstream();
+        staticTarget.setId("static");
+        staticTarget.setUrl("http://127.0.0.1:" + backend.getAddress().getPort());
+        properties.setUpstreams(List.of(properties.getUpstreams().get(0), staticTarget));
+        ReverseProxyService service = service(properties, name -> List.of(
+                literal(127, 0, 0, 1), literal(127, 0, 0, 2)));
+        try {
+            assertTrue(waitUntil(() -> service.statusSnapshot().upstreams().size() == 3,
+                    Duration.ofSeconds(3)));
+            ReverseProxyAdminConfigResponse initial = service.adminConfigSnapshot();
+            assertEquals(2, initial.backendTargetCount());
+            assertEquals(3, initial.effectiveBackendTargetCount());
+            ReverseProxyAdminConfigResponse.UpstreamConfig logical = initial.routes().get(0).upstreams().stream()
+                    .filter(upstream -> upstream.id().equals("backend"))
+                    .findFirst().orElseThrow();
+            assertEquals("dns:service.example:" + backend.getAddress().getPort(), logical.discovery());
+            assertEquals("address", logical.discoveryAuthority());
+            assertEquals(2, logical.effectiveMemberIds().size());
+            assertEquals(1, initial.dnsDiscovery().size());
+
+            ReverseProxyAdminMutationResponse drained = service.patchUpstream(
+                    "backend", new ReverseProxyUpstreamPatchRequest(initial.generation(), null, null, true));
+            assertTrue(drained.success());
+            assertEquals(2, service.statusSnapshot().upstreams().stream()
+                    .filter(status -> status.id().startsWith("backend-dns-"))
+                    .filter(status -> Double.compare(status.configuredWeight(), 0.0) == 0)
+                    .count());
+
+            ReverseProxyAdminMutationResponse deleted = service.deleteUpstream(
+                    "backend", drained.generation());
+            assertTrue(deleted.success());
+            assertEquals(1, deleted.config().backendTargetCount());
+            assertEquals(1, deleted.config().effectiveBackendTargetCount());
+            assertTrue(deleted.config().dnsDiscovery().isEmpty());
+            assertEquals(List.of("static"), service.statusSnapshot().upstreams().stream()
+                    .map(ReverseProxyStatusResponse.UpstreamStatus::id).toList());
+        } finally {
+            service.stop();
+            backend.stop(0);
+        }
+    }
+
+    @Test
+    void protectedStatusBoundsDiscoveryDataAndNeverExposesResolverFailureText() throws Exception {
+        ReverseProxyProperties properties = discoveredProperties(8080, "");
+        ReverseProxyService service = service(properties, name -> {
+            throw new IllegalStateException("secret-resolver-token");
+        });
+        try {
+            assertTrue(waitUntil(() -> !service.statusSnapshot().dnsDiscovery().isEmpty()
+                            && service.statusSnapshot().dnsDiscovery().get(0).outcome().equals("FAILURE"),
+                    Duration.ofSeconds(3)));
+            ReverseProxyStatusResponse.DnsDiscoveryStatus status =
+                    service.statusSnapshot().dnsDiscovery().get(0);
+            assertEquals("backend", status.logicalUpstreamId());
+            assertEquals("service.example", status.name());
+            assertEquals("address", status.authorityMode());
+            assertTrue(status.members().isEmpty());
+            String json = new ObjectMapper().writeValueAsString(service.statusSnapshot());
+            assertFalse(json.contains("secret-resolver-token"));
+            assertFalse(json.toLowerCase().contains("exception"));
+        } finally {
+            service.stop();
         }
     }
 

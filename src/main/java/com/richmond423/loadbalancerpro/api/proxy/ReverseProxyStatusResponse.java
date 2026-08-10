@@ -12,6 +12,7 @@ public record ReverseProxyStatusResponse(
         LoadSheddingStatus shedding,
         List<RouteStatus> routes,
         List<UpstreamStatus> upstreams,
+        List<DnsDiscoveryStatus> dnsDiscovery,
         ReverseProxyMetricsSnapshot metrics,
         ObservabilitySummary observability,
         SecurityBoundaryStatus securityBoundary,
@@ -133,6 +134,24 @@ public record ReverseProxyStatusResponse(
             long recentFailureCount,
             double recentErrorRate,
             String lastUpdatedAt) {
+    }
+
+    public record DnsDiscoveryStatus(
+            String logicalUpstreamId,
+            String name,
+            int port,
+            String authorityMode,
+            String outcome,
+            boolean lookupInFlight,
+            int memberCount,
+            long lastSuccessAgeMillis,
+            long staleRemainingMillis,
+            List<DnsMemberStatus> members) {
+    }
+
+    public record DnsMemberStatus(
+            String id,
+            String address) {
     }
 
     public record ObservabilitySummary(

@@ -10,12 +10,15 @@ import java.net.http.HttpClient;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
@@ -234,6 +237,75 @@ class ReverseProxyDnsDiscoveryIntegrationTest {
             assertFalse(json.toLowerCase().contains("exception"));
         } finally {
             service.stop();
+        }
+    }
+
+    @Test
+    void reloadRejectsDiscoverySettingChangesAtomicallyAndKeepsTheActiveMembers() throws Exception {
+        HttpServer backend = backend(exchange -> {
+            exchange.sendResponseHeaders(204, -1);
+            exchange.close();
+        });
+        ReverseProxyProperties properties = discoveredProperties(backend.getAddress().getPort(), "");
+        ReverseProxyService service = service(properties, name -> List.of(literal(127, 0, 0, 1)));
+        try {
+            assertTrue(waitUntil(() -> service.statusSnapshot().upstreams().size() == 1,
+                    Duration.ofSeconds(3)));
+            long generation = service.adminConfigSnapshot().generation();
+            String memberId = service.statusSnapshot().upstreams().get(0).id();
+            ReverseProxyProperties candidate = ReverseProxyService.copyProperties(properties);
+            candidate.getDnsDiscovery().setTtlFloor(Duration.ofSeconds(2));
+
+            ReverseProxyReloadResponse rejected = service.reload(candidate);
+
+            assertFalse(rejected.success());
+            assertTrue(rejected.validationErrors().stream()
+                    .anyMatch(error -> error.contains("dns-discovery settings require application restart")));
+            assertEquals(generation, service.adminConfigSnapshot().generation());
+            assertEquals(List.of(memberId), service.statusSnapshot().upstreams().stream()
+                    .map(ReverseProxyStatusResponse.UpstreamStatus::id).toList());
+            assertEquals(204, service.forward(request("/proxy/still-active"), new byte[0]).statusCode());
+        } finally {
+            service.stop();
+            backend.stop(0);
+        }
+    }
+
+    @Test
+    void activeHealthIsIsolatedForEachResolvedAddress() throws Exception {
+        HttpServer healthyBackend = backend(exchange -> {
+            exchange.sendResponseHeaders(204, -1);
+            exchange.close();
+        });
+        ReverseProxyProperties properties = discoveredProperties(healthyBackend.getAddress().getPort(), "");
+        properties.getHealthCheck().setEnabled(true);
+        properties.getHealthCheck().setPath("/health");
+        properties.getHealthCheck().setInterval(Duration.ofMillis(20));
+        properties.getHealthCheck().setTimeout(Duration.ofMillis(100));
+        properties.getHealthCheck().setHealthyThreshold(1);
+        properties.getHealthCheck().setUnhealthyThreshold(1);
+        ReverseProxyService service = service(properties, name -> List.of(
+                literal(127, 0, 0, 1), literal(127, 0, 0, 2)));
+        try {
+            assertTrue(waitUntil(() -> service.statusSnapshot().upstreams().size() == 2
+                            && service.statusSnapshot().upstreams().stream()
+                                    .allMatch(status -> !"awaiting first background probe"
+                                            .equals(status.lastProbeOutcome())),
+                    Duration.ofSeconds(4)));
+            Map<String, String> idByAddress = service.statusSnapshot().dnsDiscovery().get(0).members().stream()
+                    .collect(Collectors.toMap(
+                            ReverseProxyStatusResponse.DnsMemberStatus::address,
+                            ReverseProxyStatusResponse.DnsMemberStatus::id));
+            Map<String, ReverseProxyStatusResponse.UpstreamStatus> statusById =
+                    service.statusSnapshot().upstreams().stream().collect(Collectors.toMap(
+                            ReverseProxyStatusResponse.UpstreamStatus::id,
+                            Function.identity()));
+
+            assertTrue(statusById.get(idByAddress.get("127.0.0.1")).effectiveHealthy());
+            assertFalse(statusById.get(idByAddress.get("127.0.0.2")).effectiveHealthy());
+        } finally {
+            service.stop();
+            healthyBackend.stop(0);
         }
     }
 

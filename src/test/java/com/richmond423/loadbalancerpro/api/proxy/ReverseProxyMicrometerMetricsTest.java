@@ -153,6 +153,23 @@ class ReverseProxyMicrometerMetricsTest {
     }
 
     @Test
+    void retiredConfigurationAlsoBoundsStatusCounterCardinality() {
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        ReverseProxyMetrics metrics = configuredMetrics(registry, "alpha");
+        metrics.recordForwarded("alpha", 200);
+
+        metrics.activateConfiguration(routes("beta"));
+        metrics.recordForwarded("alpha", 200);
+        metrics.recordForwarded("beta", 200);
+        ReverseProxyMetricsSnapshot snapshot = metrics.snapshot(List.of("beta"));
+
+        assertEquals(List.of("beta"), snapshot.upstreams().stream()
+                .map(ReverseProxyMetricsSnapshot.UpstreamCounters::upstreamId).toList());
+        assertEquals(1, snapshot.upstreams().get(0).forwarded());
+        assertEquals(3, snapshot.totalForwarded());
+    }
+
+    @Test
     void meterRegistryFailureCannotEscapeInstrumentationBoundary() {
         SimpleMeterRegistry failing = new SimpleMeterRegistry();
         failing.config().onMeterAdded(meter -> {

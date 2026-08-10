@@ -71,6 +71,7 @@ public class ReverseProxyMetrics {
     private final ConcurrentMap<SeriesKey, MeterSeries> meterSeries = new ConcurrentHashMap<>();
     private final MeterSeries unmatchedSeries;
     private volatile Map<String, List<MeterSeries>> activeSeriesByUpstream = Map.of();
+    private volatile Set<String> activeCounterUpstreamIds = Set.of();
 
     public ReverseProxyMetrics() {
         this(new SimpleMeterRegistry());
@@ -123,6 +124,9 @@ public class ReverseProxyMetrics {
         }
         Map<String, List<MeterSeries>> immutable = new LinkedHashMap<>();
         byUpstream.forEach((id, series) -> immutable.put(id, List.copyOf(series)));
+        Set<String> activeUpstreamIds = Set.copyOf(immutable.keySet());
+        activeCounterUpstreamIds = activeUpstreamIds;
+        upstreamCounters.keySet().removeIf(id -> !activeUpstreamIds.contains(id));
         activeSeriesByUpstream = Map.copyOf(immutable);
     }
 
@@ -137,7 +141,9 @@ public class ReverseProxyMetrics {
     void recordForwarded(String upstreamId, int statusCode) {
         String normalizedUpstreamId = normalizeUpstreamId(upstreamId);
         totalForwarded.increment();
-        countersFor(normalizedUpstreamId).forwarded.increment();
+        if (activeCounterUpstreamIds.contains(normalizedUpstreamId)) {
+            countersFor(normalizedUpstreamId).forwarded.increment();
+        }
         statusClassCounters.computeIfAbsent(statusClass(statusCode), ignored -> new LongAdder()).increment();
         lastSelectedUpstream.set(normalizedUpstreamId);
     }
@@ -146,7 +152,9 @@ public class ReverseProxyMetrics {
         String normalizedUpstreamId = normalizeUpstreamId(upstreamId);
         totalFailures.increment();
         if (!normalizedUpstreamId.isEmpty()) {
-            countersFor(normalizedUpstreamId).failures.increment();
+            if (activeCounterUpstreamIds.contains(normalizedUpstreamId)) {
+                countersFor(normalizedUpstreamId).failures.increment();
+            }
             lastSelectedUpstream.set(normalizedUpstreamId);
         }
         statusClassCounters.computeIfAbsent(statusClass(statusCode), ignored -> new LongAdder()).increment();
@@ -155,7 +163,7 @@ public class ReverseProxyMetrics {
     void recordRetryAttempt(String upstreamId) {
         String normalizedUpstreamId = normalizeUpstreamId(upstreamId);
         totalRetryAttempts.increment();
-        if (!normalizedUpstreamId.isEmpty()) {
+        if (activeCounterUpstreamIds.contains(normalizedUpstreamId)) {
             countersFor(normalizedUpstreamId).retryAttempts.increment();
         }
     }
@@ -164,7 +172,9 @@ public class ReverseProxyMetrics {
         String normalizedUpstreamId = normalizeUpstreamId(upstreamId);
         totalCooldownActivations.increment();
         if (!normalizedUpstreamId.isEmpty()) {
-            countersFor(normalizedUpstreamId).cooldownActivations.increment();
+            if (activeCounterUpstreamIds.contains(normalizedUpstreamId)) {
+                countersFor(normalizedUpstreamId).cooldownActivations.increment();
+            }
             activeSeriesByUpstream.getOrDefault(normalizedUpstreamId, List.of())
                     .forEach(series -> safeIncrement(series.cooldownTrips));
         }

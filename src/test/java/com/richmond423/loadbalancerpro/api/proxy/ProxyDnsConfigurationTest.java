@@ -9,13 +9,48 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 
 class ProxyDnsConfigurationTest {
+    @Test
+    void springBindingParsesDiscoveryContractAndBoundedGlobalSettings() {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("loadbalancerpro.proxy.enabled", "true");
+        values.put("loadbalancerpro.proxy.private-network-validation.enabled", "true");
+        values.put("loadbalancerpro.proxy.dns-discovery.ttl-floor", "12s");
+        values.put("loadbalancerpro.proxy.dns-discovery.stale-after", "45s");
+        values.put("loadbalancerpro.proxy.dns-discovery.resolution-timeout", "750ms");
+        values.put("loadbalancerpro.proxy.dns-discovery.lookup-threads", "3");
+        values.put("loadbalancerpro.proxy.upstreams[0].id", "orders");
+        values.put("loadbalancerpro.proxy.upstreams[0].url", "http://orders.internal:8080/base%2Fv1");
+        values.put("loadbalancerpro.proxy.upstreams[0].discovery", "dns:orders.internal:8080");
+        values.put("loadbalancerpro.proxy.upstreams[0].discovery-authority", "address");
+
+        ReverseProxyProperties bound = new Binder(new MapConfigurationPropertySource(values))
+                .bind("loadbalancerpro.proxy", Bindable.of(ReverseProxyProperties.class))
+                .orElseThrow(() -> new AssertionError("proxy properties did not bind"));
+        ProxyDnsDiscoverySettings settings = ProxyDnsDiscoverySettings.compile(bound.getDnsDiscovery());
+
+        assertTrue(bound.isEnabled());
+        assertTrue(bound.getPrivateNetworkValidation().isEnabled());
+        assertEquals(Duration.ofSeconds(12), settings.ttlFloor());
+        assertEquals(Duration.ofSeconds(45), settings.staleAfter());
+        assertEquals(Duration.ofMillis(750), settings.resolutionTimeout());
+        assertEquals(3, settings.lookupThreads());
+        assertEquals("dns:orders.internal:8080", bound.getUpstreams().get(0).getDiscovery());
+        assertEquals("address", bound.getUpstreams().get(0).getDiscoveryAuthority());
+        assertEquals("/base%2Fv1", ProxyDnsEffectiveConfig.registrations(bound).get(0).spec().template().getRawPath());
+    }
+
     @Test
     void acceptsExplicitAddressAuthorityWithoutResolvingTheConfiguredName() {
         ReverseProxyProperties properties = properties(discovered("service.example"));

@@ -22,6 +22,7 @@ class CheckedInSecurityDefaultsTest {
 
         assertTrue(defaults.contains("loadbalancerpro.auth.mode=api-key"));
         assertTrue(defaults.contains("loadbalancerpro.proxy.enabled=false"));
+        assertTrue(defaults.contains("loadbalancerpro.proxy.websocket.enabled=false"));
         assertFalse(defaults.contains("loadbalancerpro.proxy.enabled=true"));
         assertTrue(security.contains("requestMatchers(\"/api/proxy/**\").hasRole(allocationRole)"));
         assertTrue(security.contains("requestMatchers(\"/api/**\").denyAll()"));

@@ -2,7 +2,7 @@
 
 LoadBalancerPro includes an optional Spring MVC reverse proxy path for local and simulated upstreams. It forwards real HTTP requests through existing request-level routing strategy concepts so reviewers can validate practical forwarding behavior without cloud mutation.
 
-This mode is disabled by default and is intentionally small. It is not an internet-edge gateway, benchmark harness, TLS terminator, WebSocket proxy, WAF, distributed rate limiter, or identity system.
+This mode is disabled by default and is intentionally small. It can terminate configured inbound TLS, accept ordinary HTTP traffic over HTTP/2, and opt in to bounded WebSocket passthrough, but it is not an internet-edge gateway, benchmark harness, WAF, distributed rate limiter, or identity system.
 
 For copyable run profiles that combine local demo, prod API-key, cloud-sandbox API-key, OAuth2, and proxy-loopback validation, see [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md).
 
@@ -34,6 +34,13 @@ loadbalancerpro.proxy.request-timeout=2s
 loadbalancerpro.proxy.max-request-bytes=65536
 loadbalancerpro.proxy.max-response-bytes=0
 loadbalancerpro.proxy.forwarded.mode=strip-and-set
+loadbalancerpro.proxy.websocket.enabled=false
+loadbalancerpro.proxy.websocket.connect-timeout=5s
+loadbalancerpro.proxy.websocket.idle-timeout=5m
+loadbalancerpro.proxy.websocket.send-timeout=10s
+loadbalancerpro.proxy.websocket.max-text-message-bytes=65536
+loadbalancerpro.proxy.websocket.max-binary-message-bytes=65536
+loadbalancerpro.proxy.websocket.send-buffer-bytes=262144
 loadbalancerpro.proxy.limits.max-in-flight=0
 loadbalancerpro.proxy.limits.adaptive=false
 loadbalancerpro.proxy.shedding.enabled=false
@@ -356,6 +363,32 @@ docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
 
 The examples target loopback placeholders `http://localhost:9001` and `http://localhost:9002`, include explicit proxy strategy, health-check, retry, and cooldown settings, and are not active unless imported or copied into a local run configuration. See [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) for the copy/adapt walkthrough and [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) for packaged-jar and Maven exec recipes.
 
+## HTTP/2 And WebSocket Transport
+
+Set `server.http2.enabled=true` to enable Tomcat's inbound HTTP/2 support. A TLS listener negotiates HTTP/2 with ALPN;
+Tomcat can also negotiate h2c on a cleartext development listener. This does not make gRPC or WebSocket-over-HTTP/2
+extended CONNECT part of the proxy contract.
+
+WebSocket passthrough requires both proxy mode and `loadbalancerpro.proxy.websocket.enabled=true`. The proxy selects one
+upstream with the same route, split, affinity, health, DNS-discovery, admission, and concurrency rules as HTTP traffic,
+then converts the configured target scheme to `ws` or `wss` while preserving authority, raw path, and query. Configure
+accepted subprotocols with `loadbalancerpro.proxy.websocket.subprotocols[...]` and exact browser origins with
+`loadbalancerpro.proxy.websocket.allowed-origins[...]`; an empty origin list retains Spring's same-origin policy.
+
+Text and binary messages, the downstream send queue, connect time, send time, and idle time are bounded by the
+`websocket.*` settings above. Oversized messages close with status 1009, send/connect failures close the tunnel, and
+shutdown closes active tunnels. WebSocket connections are not retried. Hop-by-hop and handshake headers are rebuilt;
+ordinary application headers still follow route header-removal/set/add policy. In API-key mode, configure the route to
+remove the proxy credential when the upstream must not receive it:
+
+```properties
+loadbalancerpro.proxy.routes.chat.headers.remove.x-api-key=true
+```
+
+Changing WebSocket transport limits or allow-lists requires application restart. Existing tunnels retain their route
+snapshot until close; removed upstreams drain under the same bounded reload lifecycle. See
+[`adr/ADR-streaming-stack.md`](adr/ADR-streaming-stack.md) for the transport decision and explicit non-goals.
+
 ## Safety Boundaries
 
 - Disabled by default: `loadbalancerpro.proxy.enabled=false`.
@@ -369,7 +402,7 @@ The examples target loopback placeholders `http://localhost:9001` and `http://lo
 - No distributed/global-across-replicas concurrency enforcement or persistent adaptive state.
 - No external or distributed config backend.
 - No hot-reload production-readiness claim.
-- No TLS termination, WebSocket support, WAF, distributed rate limiting, credential rotation, or production gateway guarantee.
+- No WAF, distributed rate limiting, credential rotation, RFC 8441 extended CONNECT, or production gateway guarantee.
 - No benchmark, certification, legal compliance, identity, or production-readiness claim.
 
 ## Auth And TLS Boundary
@@ -378,13 +411,13 @@ Checked-in loopback proxy demos explicitly select warned `auth.mode=none` and ar
 
 In API-key mode, `/proxy/**`, `GET /api/proxy/status`, and `GET /api/proxy/decisions/recent` require the configured `X-API-Key` regardless of profile. In OAuth2 mode, the same proxy surfaces require the configured allocation role, which defaults to `operator`. `/proxy-status.html` is a static same-origin page, so expose it only where callers are allowed to read the status JSON it uses.
 
-LoadBalancerPro does not terminate TLS for proxy traffic and does not provide end-to-end encryption between clients, this app, and upstreams. Terminate TLS at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh before exposing proxy mode beyond a private review environment. Configure forwarded headers only when the deployment owns that trust boundary.
+LoadBalancerPro can terminate inbound TLS and validate TLS or mTLS to configured upstreams through named Spring SSL bundles. Certificate issuance, secret delivery, network policy, rate limiting, and public-edge hardening remain deployment responsibilities. Configure forwarded headers only when the deployment owns that trust boundary.
 
 Do not expose `/proxy/**`, `GET /api/proxy/status`, `GET /api/proxy/decisions/recent`, `/proxy-status.html`, or Actuator endpoints publicly without deployment-level authentication, TLS termination, network policy, and rate limiting appropriate to the environment.
 
 ## Test Evidence
 
-`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyLiveDecisionCaptureTest`, `LiveRoutingDecisionStoreTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ReverseProxyStrategyDemoLabTest`, `ProxyDemoFixtureLauncherTest`, `ProdApiKeyProtectionTest`, `OAuth2AuthorizationTest`, and `OperatorAuthTlsBoundaryDocumentationTest` use local in-process JDK `HttpServer` fixtures, unused loopback ports, MockMvc requests, or static docs assertions. They prove:
+`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHttp2IntegrationTest`, `ReverseProxyWebSocketIntegrationTest`, `ReverseProxyLiveDecisionCaptureTest`, `LiveRoutingDecisionStoreTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ReverseProxyStrategyDemoLabTest`, `ProxyDemoFixtureLauncherTest`, `ProdApiKeyProtectionTest`, `OAuth2AuthorizationTest`, and `OperatorAuthTlsBoundaryDocumentationTest` use local in-process servers, unused loopback ports, MockMvc requests, or static docs assertions. They prove:
 
 - proxy mode is disabled by default
 - GET requests are forwarded to local upstreams
@@ -408,10 +441,12 @@ Do not expose `/proxy/**`, `GET /api/proxy/status`, `GET /api/proxy/decisions/re
 - unreachable upstreams return controlled HTTP 502
 - prod API-key mode protects proxy forwarding/status surfaces with `X-API-Key`
 - OAuth2 mode requires the configured operator/allocation role for proxy forwarding/status surfaces
+- a real Tomcat listener negotiates an inbound HTTP/2 request
+- an authenticated WebSocket tunnel forwards bounded text/binary messages, headers, query, and subprotocol while rejecting unauthenticated handshakes and oversized messages
 - TLS termination and public exposure controls are documented as deployment responsibilities
 - proxy requests do not construct `CloudManager`
 
-These are local/no-cloud integration tests. They reduce the simulator-only gap, but they do not prove production throughput, public internet safety, TLS behavior, WebSocket behavior, or end-to-end identity-provider operation.
+These are local/no-cloud integration tests. They reduce the simulator-only gap, but they do not prove production throughput, public internet safety, RFC 8441, browser-fleet compatibility, live certificate operations, or end-to-end identity-provider operation.
 
 ## Next Steps
 

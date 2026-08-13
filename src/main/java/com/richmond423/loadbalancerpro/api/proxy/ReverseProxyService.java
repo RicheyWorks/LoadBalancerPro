@@ -71,6 +71,9 @@ public class ReverseProxyService implements SmartLifecycle {
     private static final int RESPONSE_COPY_BUFFER_BYTES = 16 * 1024;
     private static final Duration MAXIMUM_SLOW_START_DURATION = Duration.ofHours(24);
     private static final Duration MAXIMUM_DRAIN_TIMEOUT = Duration.ofMinutes(10);
+    private static final Duration MAXIMUM_WEBSOCKET_CONNECT_TIMEOUT = Duration.ofMinutes(5);
+    private static final Duration MAXIMUM_WEBSOCKET_IDLE_TIMEOUT = Duration.ofHours(24);
+    private static final Duration MAXIMUM_WEBSOCKET_SEND_TIMEOUT = Duration.ofMinutes(5);
     private static final long DRAIN_SWEEP_INTERVAL_MILLIS = 25;
     static final String DRAIN_THREAD_NAME = "loadbalancerpro-reload-drain";
     private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
@@ -365,6 +368,222 @@ public class ReverseProxyService implements SmartLifecycle {
             config.requestStarted();
             return config;
         }
+    }
+
+    @SuppressWarnings("java/ssrf")
+    ReverseProxyWebSocketPlan planWebSocket(HttpServletRequest request) {
+        Objects.requireNonNull(request, "request cannot be null");
+        ActiveProxyConfig config = acquireActiveConfig();
+        ReverseProxyMetrics.RequestObservation metricObservation = metrics.beginRequest();
+        ProxyRequestObservation observation = new ProxyRequestObservation(
+                metricObservation,
+                accessLog.begin(request.getMethod(), metricObservation.startedAtNanos()));
+        long startedAtNanos = System.nanoTime();
+        boolean admitted = false;
+        UpstreamRuntimeStats selectedRuntimeStats = null;
+        String selectedUpstreamId = null;
+        try {
+            ReverseProxyProperties properties = config.properties();
+            if (!properties.getWebsocket().isEnabled()) {
+                throw webSocketPlanningFailure(
+                        HttpStatus.NOT_FOUND, "proxy_websocket_disabled", "WebSocket proxying is disabled.");
+            }
+            String proxyPathSuffix;
+            try {
+                proxyPathSuffix = validatedProxyPathSuffix(request);
+            } catch (IllegalArgumentException exception) {
+                throw webSocketPlanningFailure(
+                        HttpStatus.BAD_REQUEST, "proxy_path_invalid", "Proxy request path is invalid.");
+            }
+            ReverseProxyRoutePlanner.ConfiguredRoute route = routeFor(config.routes(), request, proxyPathSuffix)
+                    .orElseThrow(() -> webSocketPlanningFailure(
+                            HttpStatus.NOT_FOUND,
+                            "proxy_route_not_found",
+                            "No configured proxy route matches the requested path."));
+            observation.bindRoute(route.name());
+            ProxyAdmissionControl.Admission admission =
+                    config.admissionPolicy().tryAcquire(request, globalRuntimeStats);
+            if (!admission.acquired()) {
+                throw new ReverseProxyWebSocketPlanningException(
+                        HttpStatus.SERVICE_UNAVAILABLE,
+                        admission.errorCode(),
+                        admission.message(),
+                        admission.retryAfterSeconds());
+            }
+            admitted = true;
+
+            String routingKey = route.selectionPolicy().routingKey(request);
+            Optional<ReverseProxyRoutePlanner.ConfiguredSplit> selectedSplit = route.splitFor(routingKey);
+            Set<String> splitTargetIds = selectedSplit
+                    .map(ReverseProxyRoutePlanner.ConfiguredSplit::targetIds)
+                    .orElse(null);
+            RoutingStrategy selectionStrategy = selectedSplit
+                    .map(ReverseProxyRoutePlanner.ConfiguredSplit::strategy)
+                    .orElse(route.strategy());
+            Set<String> capacityExcludedIds = new LinkedHashSet<>();
+
+            while (true) {
+                List<UpstreamCandidate> upstreams = configuredUpstreams(
+                        config, route, splitTargetIds, capacityExcludedIds);
+                if (upstreams.isEmpty()) {
+                    String code = capacityExcludedIds.isEmpty()
+                            ? "proxy_unavailable"
+                            : "proxy_upstream_concurrency_limit";
+                    String message = capacityExcludedIds.isEmpty()
+                            ? "No healthy proxy upstreams are available."
+                            : "All eligible proxy upstreams are at their in-flight limits.";
+                    throw new ReverseProxyWebSocketPlanningException(
+                            HttpStatus.SERVICE_UNAVAILABLE, code, message, admission.retryAfterSeconds());
+                }
+
+                List<ServerStateVector> candidateStates = upstreams.stream()
+                        .map(UpstreamCandidate::state)
+                        .toList();
+                Optional<String> selectedServerId = route.selectionPolicy()
+                        .affinityTarget(request, candidateStates);
+                if (selectedServerId.isEmpty()) {
+                    selectedServerId = chooseForKey(selectionStrategy, candidateStates, routingKey)
+                            .explanation()
+                            .chosenServerId();
+                }
+                if (selectedServerId.isEmpty()) {
+                    throw new ReverseProxyWebSocketPlanningException(
+                            HttpStatus.SERVICE_UNAVAILABLE,
+                            "proxy_unavailable",
+                            "No healthy proxy upstreams are available.",
+                            admission.retryAfterSeconds());
+                }
+                String upstreamId = selectedServerId.get();
+                UpstreamCandidate upstream = upstreams.stream()
+                        .filter(candidate -> upstreamId.equals(candidate.state().serverId()))
+                        .findFirst()
+                        .orElseThrow(() -> webSocketPlanningFailure(
+                                HttpStatus.SERVICE_UNAVAILABLE,
+                                "proxy_unavailable",
+                                "Selected proxy upstream is not configured."));
+                UpstreamRuntimeStats runtimeStats = runtimeStatsFor(upstreamId);
+                if (!runtimeStats.tryRequestStarted(upstream.maxInFlight(), ignored -> true)) {
+                    capacityExcludedIds.add(upstreamId);
+                    continue;
+                }
+                selectedRuntimeStats = runtimeStats;
+                selectedUpstreamId = upstreamId;
+                observation.bindUpstream(route.name(), upstreamId);
+                observation.recordDispatch(false, ReverseProxyMetrics.RetryReason.INITIAL);
+                URI targetUri = webSocketTargetUri(targetUri(request, upstream, proxyPathSuffix));
+                Map<String, List<String>> headers = ProxyRequestHeaders.webSocketHeaders(
+                        request, config.forwardedPolicy(), route.headerRewrites());
+                UpstreamRuntimeStats reservedRuntimeStats = runtimeStats;
+                return new ReverseProxyWebSocketPlan(
+                        route.name(),
+                        upstreamId,
+                        route.strategyId().externalName(),
+                        targetUri,
+                        upstream.httpClient(),
+                        headers,
+                        properties.getWebsocket().getConnectTimeout(),
+                        properties.getWebsocket().getSendTimeout(),
+                        properties.getWebsocket().getSendBufferBytes(),
+                        (connected, successful, upstreamFailure, outcome, elapsed) -> completeWebSocket(
+                                config,
+                                upstreamId,
+                                upstream.resilienceState(),
+                                reservedRuntimeStats,
+                                observation,
+                                connected,
+                                successful,
+                                upstreamFailure,
+                                outcome,
+                                elapsed));
+            }
+        } catch (RuntimeException | Error exception) {
+            if (selectedRuntimeStats != null) {
+                selectedRuntimeStats.requestAborted();
+            }
+            if (admitted) {
+                Duration elapsed = Duration.ofNanos(Math.max(0, System.nanoTime() - startedAtNanos));
+                globalRuntimeStats.requestCompleted(elapsed, false);
+                config.admissionPolicy().requestCompleted(globalRuntimeStats);
+            }
+            int statusCode = exception instanceof ReverseProxyWebSocketPlanningException planning
+                    ? planning.status().value()
+                    : HttpStatus.INTERNAL_SERVER_ERROR.value();
+            metrics.recordFailure(
+                    selectedUpstreamId,
+                    statusCode);
+            observation.terminal(statusCode, webSocketPlanningOutcome(exception));
+            observation.complete(0);
+            config.requestCompleted();
+            sweepDrainingUpstreamsSafely();
+            throw exception;
+        }
+    }
+
+    private void completeWebSocket(
+            ActiveProxyConfig config,
+            String upstreamId,
+            ResilienceState resilienceState,
+            UpstreamRuntimeStats runtimeStats,
+            ProxyRequestObservation observation,
+            boolean connected,
+            boolean successful,
+            boolean upstreamFailure,
+            ReverseProxyMetrics.TerminalOutcome outcome,
+            Duration elapsed) {
+        try {
+            boolean healthyCompletion = !upstreamFailure;
+            runtimeStats.requestCompleted(elapsed, healthyCompletion);
+            globalRuntimeStats.requestCompleted(elapsed, healthyCompletion);
+            if (successful) {
+                metrics.recordForwarded(upstreamId, HttpStatus.SWITCHING_PROTOCOLS.value());
+            } else {
+                metrics.recordFailure(
+                        upstreamFailure ? upstreamId : null,
+                        upstreamFailure ? HttpStatus.BAD_GATEWAY.value() : 0);
+            }
+            if (upstreamFailure) {
+                if (recordResilienceFailure(config.properties(), upstreamId, resilienceState)) {
+                    metrics.recordCooldownActivation(upstreamId);
+                    observation.cooldownActivated();
+                }
+            } else if (connected) {
+                recordResilienceSuccess(upstreamId, resilienceState);
+            }
+            observation.terminal(
+                    successful
+                            ? HttpStatus.SWITCHING_PROTOCOLS.value()
+                            : upstreamFailure ? HttpStatus.BAD_GATEWAY.value() : 0,
+                    outcome);
+            observation.complete(0);
+        } finally {
+            try {
+                config.admissionPolicy().requestCompleted(globalRuntimeStats);
+            } finally {
+                config.requestCompleted();
+                sweepDrainingUpstreamsSafely();
+            }
+        }
+    }
+
+    private static ReverseProxyWebSocketPlanningException webSocketPlanningFailure(
+            HttpStatus status, String code, String message) {
+        return new ReverseProxyWebSocketPlanningException(status, code, message);
+    }
+
+    private static ReverseProxyMetrics.TerminalOutcome webSocketPlanningOutcome(Throwable exception) {
+        if (!(exception instanceof ReverseProxyWebSocketPlanningException planning)) {
+            return ReverseProxyMetrics.TerminalOutcome.INTERNAL_ERROR;
+        }
+        return switch (planning.errorCode()) {
+            case "proxy_path_invalid" -> ReverseProxyMetrics.TerminalOutcome.INVALID_PATH;
+            case "proxy_route_not_found" -> ReverseProxyMetrics.TerminalOutcome.ROUTE_NOT_FOUND;
+            case "proxy_load_shed" -> ReverseProxyMetrics.TerminalOutcome.LOAD_SHED;
+            case "proxy_concurrency_limit" -> ReverseProxyMetrics.TerminalOutcome.GLOBAL_CONCURRENCY_LIMIT;
+            case "proxy_upstream_concurrency_limit" ->
+                    ReverseProxyMetrics.TerminalOutcome.UPSTREAM_CONCURRENCY_LIMIT;
+            case "proxy_unavailable" -> ReverseProxyMetrics.TerminalOutcome.NO_UPSTREAM;
+            default -> ReverseProxyMetrics.TerminalOutcome.fromStatus(planning.status().value());
+        };
     }
 
     private ReverseProxyResponse forwardAdmitted(
@@ -1269,6 +1488,13 @@ public class ReverseProxyService implements SmartLifecycle {
                     "loadbalancerpro.proxy.dns-discovery settings require application restart"
                             + " and cannot change by reload");
         }
+        if (!sameWebSocketConfiguration(
+                candidateProperties.getWebsocket(),
+                previousConfig.properties().getWebsocket())) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.websocket configuration requires application restart"
+                            + " and cannot change by reload");
+        }
         long generation = nextGeneration.get();
         ProxyDnsDiscoveryRuntime.Snapshot carried = ProxyDnsEffectiveConfig.carryForward(
                 candidateProperties,
@@ -1354,6 +1580,7 @@ public class ReverseProxyService implements SmartLifecycle {
         }
         ReverseProxyAccessLog.validateConfiguration(properties.getAccessLog());
         ProxyDnsDiscoverySettings.compile(properties.getDnsDiscovery());
+        validateWebSocketConfiguration(properties.getWebsocket());
         normalizedHealthCheckPath(properties.getHealthCheck().getPath());
         positiveDuration(properties.getHealthCheck().getTimeout(),
                 "loadbalancerpro.proxy.health-check.timeout");
@@ -1590,6 +1817,120 @@ public class ReverseProxyService implements SmartLifecycle {
             throw new IllegalArgumentException("Proxy target URI could not be constructed for configured upstream.",
                     exception);
         }
+    }
+
+    private static void validateWebSocketConfiguration(ReverseProxyProperties.WebSocket websocket) {
+        Objects.requireNonNull(websocket, "loadbalancerpro.proxy.websocket cannot be null");
+        boundedPositiveDuration(websocket.getConnectTimeout(), MAXIMUM_WEBSOCKET_CONNECT_TIMEOUT,
+                "loadbalancerpro.proxy.websocket.connect-timeout");
+        boundedPositiveDuration(websocket.getIdleTimeout(), MAXIMUM_WEBSOCKET_IDLE_TIMEOUT,
+                "loadbalancerpro.proxy.websocket.idle-timeout");
+        boundedPositiveDuration(websocket.getSendTimeout(), MAXIMUM_WEBSOCKET_SEND_TIMEOUT,
+                "loadbalancerpro.proxy.websocket.send-timeout");
+        positiveInt(websocket.getMaxTextMessageBytes(),
+                "loadbalancerpro.proxy.websocket.max-text-message-bytes");
+        positiveInt(websocket.getMaxBinaryMessageBytes(),
+                "loadbalancerpro.proxy.websocket.max-binary-message-bytes");
+        positiveInt(websocket.getSendBufferBytes(),
+                "loadbalancerpro.proxy.websocket.send-buffer-bytes");
+        if (websocket.getAllowedOrigins().size() > 64) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.websocket.allowed-origins must contain at most 64 entries");
+        }
+        Set<String> normalizedOrigins = new LinkedHashSet<>();
+        for (String origin : websocket.getAllowedOrigins()) {
+            String normalized = validateWebSocketOrigin(origin);
+            if (!normalizedOrigins.add(normalized)) {
+                throw new IllegalStateException(
+                        "loadbalancerpro.proxy.websocket.allowed-origins must contain unique exact origins");
+            }
+        }
+        if (websocket.getSubprotocols().size() > 32) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.websocket.subprotocols must contain at most 32 entries");
+        }
+        Set<String> normalizedSubprotocols = new LinkedHashSet<>();
+        for (String subprotocol : websocket.getSubprotocols()) {
+            String normalized = subprotocol == null ? "" : subprotocol.trim();
+            if (normalized.isEmpty() || normalized.length() > 128
+                    || !normalized.matches("[!#$%&'*+.^_`|~0-9A-Za-z-]+")
+                    || !normalizedSubprotocols.add(normalized)) {
+                throw new IllegalStateException(
+                        "loadbalancerpro.proxy.websocket.subprotocols must contain unique HTTP tokens");
+            }
+        }
+    }
+
+    private static String validateWebSocketOrigin(String origin) {
+        String normalized = origin == null ? "" : origin.trim();
+        if (normalized.isEmpty()
+                || !normalized.equals(origin)
+                || normalized.length() > 2_048
+                || containsControlCharacter(normalized)) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.websocket.allowed-origins must contain bounded exact http(s) origins");
+        }
+        try {
+            URI parsed = URI.create(normalized);
+            String scheme = parsed.getScheme() == null
+                    ? ""
+                    : parsed.getScheme().toLowerCase(Locale.ROOT);
+            if (!("http".equals(scheme) || "https".equals(scheme))
+                    || parsed.getHost() == null
+                    || parsed.getPort() == 0
+                    || parsed.getPort() > 65_535
+                    || parsed.getRawUserInfo() != null
+                    || (parsed.getRawPath() != null && !parsed.getRawPath().isEmpty())
+                    || parsed.getRawQuery() != null
+                    || parsed.getRawFragment() != null) {
+                throw new IllegalStateException(
+                        "loadbalancerpro.proxy.websocket.allowed-origins must contain exact http(s) origins");
+            }
+            return scheme + "://" + parsed.getRawAuthority().toLowerCase(Locale.ROOT);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalStateException(
+                    "loadbalancerpro.proxy.websocket.allowed-origins must contain exact http(s) origins",
+                    exception);
+        }
+    }
+
+    private static boolean sameWebSocketConfiguration(
+            ReverseProxyProperties.WebSocket left, ReverseProxyProperties.WebSocket right) {
+        return left.isEnabled() == right.isEnabled()
+                && Objects.equals(left.getConnectTimeout(), right.getConnectTimeout())
+                && Objects.equals(left.getIdleTimeout(), right.getIdleTimeout())
+                && Objects.equals(left.getSendTimeout(), right.getSendTimeout())
+                && left.getMaxTextMessageBytes() == right.getMaxTextMessageBytes()
+                && left.getMaxBinaryMessageBytes() == right.getMaxBinaryMessageBytes()
+                && left.getSendBufferBytes() == right.getSendBufferBytes()
+                && Objects.equals(left.getAllowedOrigins(), right.getAllowedOrigins())
+                && Objects.equals(left.getSubprotocols(), right.getSubprotocols());
+    }
+
+    private static URI webSocketTargetUri(URI httpTarget) {
+        String scheme = switch (httpTarget.getScheme().toLowerCase(Locale.ROOT)) {
+            case "http" -> "ws";
+            case "https" -> "wss";
+            default -> throw new IllegalArgumentException(
+                    "WebSocket upstream must use an http or https configured base URL.");
+        };
+        StringBuilder rawTarget = new StringBuilder()
+                .append(scheme)
+                .append("://")
+                .append(httpTarget.getRawAuthority())
+                .append(httpTarget.getRawPath());
+        if (httpTarget.getRawQuery() != null) {
+            rawTarget.append('?').append(httpTarget.getRawQuery());
+        }
+        URI target = URI.create(rawTarget.toString());
+        if (!Objects.equals(target.getHost(), httpTarget.getHost())
+                || target.getPort() != httpTarget.getPort()
+                || !Objects.equals(target.getRawPath(), httpTarget.getRawPath())
+                || !Objects.equals(target.getRawQuery(), httpTarget.getRawQuery())
+                || target.getRawFragment() != null) {
+            throw new IllegalArgumentException("WebSocket target escaped configured upstream authority.");
+        }
+        return target;
     }
 
     private static String validatedProxyPathSuffix(HttpServletRequest request) {
@@ -2396,6 +2737,7 @@ public class ReverseProxyService implements SmartLifecycle {
         copy.setBackendTls(copyBackendTls(source.getBackendTls()));
         copy.setAccessLog(copyAccessLog(source.getAccessLog()));
         copy.setDnsDiscovery(copyDnsDiscovery(source.getDnsDiscovery()));
+        copy.setWebsocket(copyWebSocket(source.getWebsocket()));
         copy.setUpstreams(source.getUpstreams().stream()
                 .map(ReverseProxyService::copyUpstream)
                 .toList());
@@ -2598,6 +2940,23 @@ public class ReverseProxyService implements SmartLifecycle {
             copy.setStaleAfter(source.getStaleAfter());
             copy.setResolutionTimeout(source.getResolutionTimeout());
             copy.setLookupThreads(source.getLookupThreads());
+        }
+        return copy;
+    }
+
+    private static ReverseProxyProperties.WebSocket copyWebSocket(
+            ReverseProxyProperties.WebSocket source) {
+        ReverseProxyProperties.WebSocket copy = new ReverseProxyProperties.WebSocket();
+        if (source != null) {
+            copy.setEnabled(source.isEnabled());
+            copy.setConnectTimeout(source.getConnectTimeout());
+            copy.setIdleTimeout(source.getIdleTimeout());
+            copy.setSendTimeout(source.getSendTimeout());
+            copy.setMaxTextMessageBytes(source.getMaxTextMessageBytes());
+            copy.setMaxBinaryMessageBytes(source.getMaxBinaryMessageBytes());
+            copy.setSendBufferBytes(source.getSendBufferBytes());
+            copy.setAllowedOrigins(source.getAllowedOrigins());
+            copy.setSubprotocols(source.getSubprotocols());
         }
         return copy;
     }

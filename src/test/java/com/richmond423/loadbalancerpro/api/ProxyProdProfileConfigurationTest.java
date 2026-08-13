@@ -41,6 +41,8 @@ class ProxyProdProfileConfigurationTest {
         assertEquals("api-key", environment.getProperty("loadbalancerpro.auth.mode"));
         assertEquals("true", environment.getProperty("loadbalancerpro.auth.protect-actuator"));
         assertEquals("true", environment.getProperty("loadbalancerpro.proxy.enabled"));
+        assertEquals("true", environment.getProperty("server.http2.enabled"));
+        assertEquals("false", environment.getProperty("loadbalancerpro.proxy.websocket.enabled"));
         assertEquals("true", environment.getProperty("loadbalancerpro.proxy.health-check.enabled"));
         assertEquals("true", environment.getProperty("loadbalancerpro.proxy.cooldown.enabled"));
         assertEquals("100", environment.getProperty("loadbalancerpro.proxy.limits.max-in-flight"));

@@ -20,8 +20,10 @@ import java.util.Map;
 
 import com.richmond423.loadbalancerpro.core.RoundRobinRoutingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
+import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
 import com.richmond423.loadbalancerpro.core.RoutingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
+import com.richmond423.loadbalancerpro.core.RoutingStrategyIdentifier;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import jakarta.servlet.http.HttpServletRequest;
@@ -73,10 +75,41 @@ class ReverseProxyLiveTelemetryRoutingTest {
         assertEquals(0, live.queueDepth().orElseThrow());
     }
 
+    @Test
+    void liveProxyExecutesARegisteredExternalStrategy() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse<InputStream> upstreamResponse = mock(HttpResponse.class);
+        when(upstreamResponse.statusCode()).thenReturn(200);
+        when(upstreamResponse.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
+        when(upstreamResponse.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
+        when(httpClient.send(
+                any(),
+                org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<InputStream>>any()))
+                .thenReturn(upstreamResponse);
+        RecordingStrategy strategy = new RecordingStrategy(
+                RoutingStrategyIdentifier.of("daedalus-topology"));
+        ReverseProxyService service = new ReverseProxyService(
+                seededProperties("daedalus-topology"),
+                httpClient,
+                new ReverseProxyMetrics(),
+                new RoutingStrategyRegistry(List.of(strategy)),
+                Clock.fixed(TIMESTAMP, ZoneOffset.UTC));
+
+        ReverseProxyResponse response = service.forward(request(), new byte[0]);
+
+        assertEquals(200, response.statusCode());
+        assertEquals("seeded", response.headers().getFirst("X-LoadBalancerPro-Upstream"));
+        assertEquals(1, strategy.candidates().size());
+    }
+
     private static ReverseProxyProperties seededProperties() {
+        return seededProperties("ROUND_ROBIN");
+    }
+
+    private static ReverseProxyProperties seededProperties(String strategy) {
         ReverseProxyProperties properties = new ReverseProxyProperties();
         properties.setEnabled(true);
-        properties.setStrategy("ROUND_ROBIN");
+        properties.setStrategy(strategy);
         ReverseProxyProperties.Upstream upstream = new ReverseProxyProperties.Upstream();
         upstream.setId("seeded");
         upstream.setUrl("http://127.0.0.1:18081");
@@ -103,16 +136,36 @@ class ReverseProxyLiveTelemetryRoutingTest {
     private static final class RecordingStrategy implements RoutingStrategy {
         private final RoundRobinRoutingStrategy delegate = new RoundRobinRoutingStrategy();
         private final List<List<ServerStateVector>> candidates = new ArrayList<>();
+        private final RoutingStrategyIdentifier id;
+
+        private RecordingStrategy() {
+            this(RoutingStrategyId.ROUND_ROBIN);
+        }
+
+        private RecordingStrategy(RoutingStrategyIdentifier id) {
+            this.id = id;
+        }
 
         @Override
-        public RoutingStrategyId id() {
-            return RoutingStrategyId.ROUND_ROBIN;
+        public RoutingStrategyIdentifier id() {
+            return id;
         }
 
         @Override
         public RoutingDecision choose(List<ServerStateVector> servers) {
             candidates.add(List.copyOf(servers));
-            return delegate.choose(servers);
+            RoutingDecision delegated = delegate.choose(servers);
+            RoutingDecisionExplanation explanation = delegated.explanation();
+            return new RoutingDecision(
+                    delegated.chosenServer(),
+                    new RoutingDecisionExplanation(
+                            id.externalName(),
+                            explanation.candidateServersConsidered(),
+                            explanation.chosenServerId(),
+                            explanation.scores(),
+                            explanation.factorContributions(),
+                            explanation.reason(),
+                            explanation.timestamp()));
         }
 
         private List<List<ServerStateVector>> candidates() {

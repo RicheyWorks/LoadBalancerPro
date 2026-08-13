@@ -4,12 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.List;
 
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyAccessLog;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyConfiguration;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyMetrics;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyProperties;
 import com.richmond423.loadbalancerpro.api.proxy.ReverseProxyService;
+import com.richmond423.loadbalancerpro.core.RoundRobinRoutingStrategy;
+import com.richmond423.loadbalancerpro.core.RoutingDecision;
+import com.richmond423.loadbalancerpro.core.RoutingStrategy;
+import com.richmond423.loadbalancerpro.core.RoutingStrategyIdentifier;
+import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
+import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -76,6 +83,27 @@ class EnterpriseProxyConfigurationTest {
                     assertThat(properties.getRoutes().get("api").getTargets()).hasSize(2);
                     assertThat(context.getBean(HttpClient.class).connectTimeout())
                             .contains(Duration.ofMillis(275));
+                });
+    }
+
+    @Test
+    void customRegistryBeanEnablesAnExternalProxyStrategy() {
+        RoutingStrategyIdentifier externalId = RoutingStrategyIdentifier.of("daedalus-topology");
+        RoutingStrategyRegistry registry = RoutingStrategyRegistry.defaultRegistry().withFactory(
+                externalId, () -> externalStrategy(externalId));
+
+        contextRunner.withBean(RoutingStrategyRegistry.class, () -> registry)
+                .withPropertyValues(
+                        "loadbalancerpro.proxy.enabled=true",
+                        "loadbalancerpro.proxy.strategy=daedalus-topology",
+                        "loadbalancerpro.proxy.upstreams[0].id=local-a",
+                        "loadbalancerpro.proxy.upstreams[0].url=http://127.0.0.1:18081",
+                        "loadbalancerpro.proxy.upstreams[0].weight=1")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasSingleBean(ReverseProxyService.class);
+                    assertThat(context.getBean(RoutingStrategyRegistry.class)).isSameAs(registry);
+                    assertThat(registry.registeredIds()).isNotEmpty();
                 });
     }
 
@@ -338,6 +366,22 @@ class EnterpriseProxyConfigurationTest {
                 "loadbalancerpro.proxy.routes.api.targets[1].id=local-b",
                 "loadbalancerpro.proxy.routes.api.targets[1].url=http://127.0.0.1:18082",
                 "loadbalancerpro.proxy.routes.api.targets[1].weight=1"
+        };
+    }
+
+    private static RoutingStrategy externalStrategy(RoutingStrategyIdentifier id) {
+        return new RoutingStrategy() {
+            private final RoundRobinRoutingStrategy delegate = new RoundRobinRoutingStrategy();
+
+            @Override
+            public RoutingStrategyIdentifier id() {
+                return id;
+            }
+
+            @Override
+            public RoutingDecision choose(List<ServerStateVector> servers) {
+                return delegate.choose(servers);
+            }
         };
     }
 

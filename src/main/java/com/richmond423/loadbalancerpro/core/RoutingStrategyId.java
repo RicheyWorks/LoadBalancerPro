@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 
-public enum RoutingStrategyId {
+public enum RoutingStrategyId implements RoutingStrategyIdentifier {
     TAIL_LATENCY_POWER_OF_TWO("TAIL_LATENCY_POWER_OF_TWO"),
     WEIGHTED_LEAST_LOAD("WEIGHTED_LEAST_LOAD"),
     WEIGHTED_LEAST_CONNECTIONS("WEIGHTED_LEAST_CONNECTIONS"),
@@ -18,6 +18,7 @@ public enum RoutingStrategyId {
         this.externalName = externalName;
     }
 
+    @Override
     public String externalName() {
         return externalName;
     }

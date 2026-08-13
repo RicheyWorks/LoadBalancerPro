@@ -115,9 +115,11 @@ public class ReverseProxyService implements SmartLifecycle {
                                ReverseProxyHttpClientProvider httpClientProvider,
                                ReverseProxyMetrics metrics,
                                ReverseProxyAccessLog accessLog,
-                               ObjectProvider<LaseShadowRuntime> laseShadowRuntimeProvider) {
+                               ObjectProvider<LaseShadowRuntime> laseShadowRuntimeProvider,
+                               ObjectProvider<RoutingStrategyRegistry> routingStrategyRegistryProvider) {
         this(properties, httpClient, httpClientProvider, metrics, accessLog,
-                RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(),
+                routingStrategyRegistryProvider.getIfAvailable(RoutingStrategyRegistry::defaultRegistry),
+                Clock.systemUTC(),
                 laseShadowRuntimeProvider.getIfAvailable(LaseShadowRuntime::disabled),
                 ProxyDnsDiscoveryRuntime.Resolver.system());
     }

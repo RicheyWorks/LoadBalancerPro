@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.core;
 
 import java.util.List;
 
+/** List-based routing strategy contract; see {@link StatefulRoutingStrategy} for retained state. */
 public interface RoutingStrategy {
     RoutingStrategyIdentifier id();
 

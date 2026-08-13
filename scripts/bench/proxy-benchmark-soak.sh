@@ -197,7 +197,7 @@ jq -n '{
   requestTimeout: "PT5S",
   maxRequestBytes: 65536,
   maxResponseBytes: 0,
-  healthCheck: {enabled: true, path: "/health", timeout: "PT1S", interval: "PT1S", healthyThreshold: 1, unhealthyThreshold: 1},
+  healthCheck: {enabled: true, path: "/health", timeout: "PT1S", interval: "PT1S", healthyThreshold: 1, unhealthyThreshold: 2},
   retry: {enabled: true, maxAttempts: 2, budgetPercent: 100, backoff: {base: "PT0.01S", max: "PT0.05S"}, retryNonIdempotent: false, methods: ["GET", "HEAD"], retryStatuses: [502, 503, 504]},
   reload: {drainTimeout: "PT10S"},
   cooldown: {enabled: true, consecutiveFailureThreshold: 2, duration: "PT1S", recoverOnSuccessfulHealthCheck: true},

@@ -44,6 +44,8 @@ class ProxyBenchmarkSoakHarnessTest {
         assertTrue(script.contains("zero_failure_required"));
         assertTrue(script.contains("^5[0-9][0-9]$"));
         assertTrue(script.contains("require_zero_failures"));
+        assertTrue(script.contains("healthyThreshold: 1, unhealthyThreshold: 2"),
+                "the soak reload must tolerate one transient failed health probe");
         assertTrue(script.contains("Soak mode requires at least 3600 seconds"));
         assertTrue(heapAnalyzer.contains("Heap post-GC floor trend exceeded the local growth budget"));
         assertTrue(script.contains("Refusing to remove unexpected temporary path"));
@@ -56,6 +58,8 @@ class ProxyBenchmarkSoakHarnessTest {
         assertTrue(override.contains("services:"));
         assertTrue(override.contains("loadbalancerpro:"));
         assertTrue(override.contains("LBP_HEALTH_CHECK_INTERVAL: 1s"));
+        assertTrue(override.contains("LBP_UNHEALTHY_THRESHOLD: 2"),
+                "the startup and reloaded benchmark configurations must use the same hysteresis");
         assertTrue(override.contains("LOADBALANCERPRO_PROXY_RETRY_ENABLED: \"true\""));
         assertFalse(override.contains("ports:"));
         assertFalse(override.contains("http://"));

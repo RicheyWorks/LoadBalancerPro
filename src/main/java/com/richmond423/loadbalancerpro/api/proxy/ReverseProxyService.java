@@ -46,6 +46,7 @@ import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
 import com.richmond423.loadbalancerpro.core.RoutingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
+import com.richmond423.loadbalancerpro.core.StatefulRoutingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -433,7 +434,8 @@ public class ReverseProxyService implements SmartLifecycle {
                     String selectionSource = selectedServerId.isPresent() ? "affinity" : "strategy";
                     RoutingDecisionExplanation selectionExplanation = null;
                     if (selectedServerId.isEmpty()) {
-                        RoutingDecision decision = selectionStrategy.chooseForKey(candidateStates, routingKey);
+                        RoutingDecision decision = chooseForKey(
+                                selectionStrategy, candidateStates, routingKey);
                         selectionExplanation = decision.explanation();
                         selectedServerId = selectionExplanation.chosenServerId();
                     }
@@ -550,6 +552,19 @@ public class ReverseProxyService implements SmartLifecycle {
                 pendingAttempt.abortWithoutHealthPenalty();
             }
         }
+    }
+
+    private static RoutingDecision chooseForKey(
+            RoutingStrategy strategy,
+            List<ServerStateVector> currentCandidates,
+            String routingKey) {
+        if (strategy instanceof StatefulRoutingStrategy statefulStrategy) {
+            synchronized (statefulStrategy) {
+                statefulStrategy.onServerStates(currentCandidates);
+                return statefulStrategy.chooseForKey(routingKey);
+            }
+        }
+        return strategy.chooseForKey(currentCandidates, routingKey);
     }
 
     private void recordAttemptDecision(

@@ -226,6 +226,14 @@ Each factory invocation must return a strategy with the registered identifier an
 has mutable route state. External identifiers accept letters, digits, `_`, and `.`, with `-` normalized to `_`; lookup
 is case-insensitive. The enum-based routing comparison API continues to report built-in strategies only.
 
+An external strategy that maintains an incremental index can implement `StatefulRoutingStrategy`. Before each
+selection, proxy mode supplies the complete currently eligible candidate snapshot and then invokes the no-list keyed
+selection hook. The same route-owned instance is retained across requests and compatible reloads while its strategy
+identifier and configured target set are unchanged. Implementations must be thread-safe and should override the batch
+snapshot hook when they need to remove candidates that are no longer eligible; the one-at-a-time default is intended
+for stable-membership indexes. Proxy mode serializes each snapshot-and-selection cycle on the route-owned strategy
+instance so concurrent requests cannot select from each other's partially applied snapshots.
+
 `CONSISTENT_HASH` uses a process-local 128-virtual-node ring per configured route. The same key maps to the same healthy ring member while route membership is unchanged; when one member is removed, only keys that belonged to that member are remapped. Unhealthy, drained, retry-excluded, and capacity-excluded members are skipped clockwise without granting them traffic. Ring and affinity state are not shared across processes or replicas, and this local deterministic behavior is not multi-node consistency, distributed session storage, benchmark evidence, or production certification.
 
 Configured upstreams with `healthy=false` are skipped before forwarding because the existing routing strategies consider only healthy candidates. This manual flag remains a hard disabled signal even when active health checks are enabled.

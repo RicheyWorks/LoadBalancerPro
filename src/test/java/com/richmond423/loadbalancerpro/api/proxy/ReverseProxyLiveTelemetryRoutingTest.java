@@ -26,6 +26,7 @@ import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyIdentifier;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
+import com.richmond423.loadbalancerpro.core.StatefulRoutingStrategy;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +103,37 @@ class ReverseProxyLiveTelemetryRoutingTest {
         assertEquals(1, strategy.candidates().size());
     }
 
+    @Test
+    void liveProxyUsesTheStatefulNoListKeyedPath() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse<InputStream> upstreamResponse = mock(HttpResponse.class);
+        when(upstreamResponse.statusCode()).thenReturn(200);
+        when(upstreamResponse.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
+        when(upstreamResponse.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
+        when(httpClient.send(
+                any(),
+                org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<InputStream>>any()))
+                .thenReturn(upstreamResponse);
+        StatefulRecordingStrategy strategy = new StatefulRecordingStrategy(
+                RoutingStrategyIdentifier.of("daedalus-stateful"));
+        ReverseProxyService service = new ReverseProxyService(
+                seededProperties("daedalus-stateful"),
+                httpClient,
+                new ReverseProxyMetrics(),
+                new RoutingStrategyRegistry(List.of(strategy)),
+                Clock.fixed(TIMESTAMP, ZoneOffset.UTC));
+
+        ReverseProxyResponse response = service.forward(request(), new byte[0]);
+        ReverseProxyResponse secondResponse = service.forward(request(), new byte[0]);
+
+        assertEquals(200, response.statusCode());
+        assertEquals(200, secondResponse.statusCode());
+        assertEquals("seeded", response.headers().getFirst("X-LoadBalancerPro-Upstream"));
+        assertEquals(2, strategy.snapshotCount());
+        assertEquals(2, strategy.chooseCount());
+        assertEquals("unknown-immediate-client", strategy.lastKey());
+    }
+
     private static ReverseProxyProperties seededProperties() {
         return seededProperties("ROUND_ROBIN");
     }
@@ -170,6 +202,82 @@ class ReverseProxyLiveTelemetryRoutingTest {
 
         private List<List<ServerStateVector>> candidates() {
             return List.copyOf(candidates);
+        }
+    }
+
+    private static final class StatefulRecordingStrategy implements StatefulRoutingStrategy {
+        private final RoundRobinRoutingStrategy delegate = new RoundRobinRoutingStrategy();
+        private final List<ServerStateVector> currentCandidates = new ArrayList<>();
+        private final RoutingStrategyIdentifier id;
+        private int snapshotCount;
+        private int chooseCount;
+        private String lastKey;
+
+        private StatefulRecordingStrategy(RoutingStrategyIdentifier id) {
+            this.id = id;
+        }
+
+        @Override
+        public RoutingStrategyIdentifier id() {
+            return id;
+        }
+
+        @Override
+        public void onServerState(ServerStateVector updated) {
+            currentCandidates.add(updated);
+        }
+
+        @Override
+        public void onServerStates(List<ServerStateVector> currentServers) {
+            if (!Thread.holdsLock(this)) {
+                throw new AssertionError("proxy did not serialize the stateful selection cycle");
+            }
+            snapshotCount++;
+            currentCandidates.clear();
+            StatefulRoutingStrategy.super.onServerStates(currentServers);
+        }
+
+        @Override
+        public RoutingDecision choose() {
+            chooseCount++;
+            RoutingDecision delegated = delegate.choose(currentCandidates);
+            RoutingDecisionExplanation explanation = delegated.explanation();
+            return new RoutingDecision(
+                    delegated.chosenServer(),
+                    new RoutingDecisionExplanation(
+                            id.externalName(),
+                            explanation.candidateServersConsidered(),
+                            explanation.chosenServerId(),
+                            explanation.scores(),
+                            explanation.factorContributions(),
+                            explanation.reason(),
+                            explanation.timestamp()));
+        }
+
+        @Override
+        public RoutingDecision chooseForKey(String key) {
+            if (!Thread.holdsLock(this)) {
+                throw new AssertionError("proxy did not serialize the stateful selection cycle");
+            }
+            lastKey = key;
+            return choose();
+        }
+
+        @Override
+        public RoutingDecision choose(List<ServerStateVector> servers) {
+            throw new AssertionError("proxy used the list compatibility path");
+        }
+
+        int snapshotCount() {
+            return snapshotCount;
+        }
+
+        int chooseCount() {
+            return chooseCount;
+        }
+
+        String lastKey() {
+            return lastKey;
         }
     }
 }

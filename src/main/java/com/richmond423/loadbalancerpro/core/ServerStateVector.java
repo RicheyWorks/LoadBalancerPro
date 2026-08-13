@@ -2,11 +2,19 @@ package com.richmond423.loadbalancerpro.core;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
+/**
+ * Immutable routing snapshot for one server.
+ *
+ * <p>{@code topologyNodeId} is an optional opaque join key supplied by a topology owner. It is
+ * deliberately independent from {@code serverId} and has no routing semantics in this model.</p>
+ */
 public record ServerStateVector(
         String serverId,
+        Optional<String> topologyNodeId,
         boolean healthy,
         int inFlightRequestCount,
         OptionalDouble configuredCapacity,
@@ -25,6 +33,8 @@ public record ServerStateVector(
 
     public ServerStateVector {
         serverId = requireNonBlank(serverId, "serverId");
+        Objects.requireNonNull(topologyNodeId, "topologyNodeId cannot be null");
+        topologyNodeId.ifPresent(value -> requireNonBlank(value, "topologyNodeId"));
         Objects.requireNonNull(configuredCapacity, "configuredCapacity cannot be null");
         Objects.requireNonNull(estimatedConcurrencyLimit, "estimatedConcurrencyLimit cannot be null");
         Objects.requireNonNull(queueDepth, "queueDepth cannot be null");
@@ -40,6 +50,29 @@ public record ServerStateVector(
         requireNonNegative(p99LatencyMillis, "p99LatencyMillis");
         requireRate(recentErrorRate, "recentErrorRate");
         queueDepth.ifPresent(value -> requireNonNegative(value, "queueDepth"));
+    }
+
+    /**
+     * Compatibility constructor for callers using the full pre-topology state vector.
+     */
+    public ServerStateVector(String serverId,
+                             boolean healthy,
+                             int inFlightRequestCount,
+                             OptionalDouble configuredCapacity,
+                             OptionalDouble estimatedConcurrencyLimit,
+                             double weight,
+                             double averageLatencyMillis,
+                             double p95LatencyMillis,
+                             double p99LatencyMillis,
+                             double recentErrorRate,
+                             OptionalInt queueDepth,
+                             NetworkAwarenessSignal networkAwarenessSignal,
+                             LatencyWindowSignal latencyWindowSignal,
+                             Instant timestamp) {
+        this(serverId, Optional.empty(), healthy, inFlightRequestCount, configuredCapacity,
+                estimatedConcurrencyLimit, weight, averageLatencyMillis, p95LatencyMillis,
+                p99LatencyMillis, recentErrorRate, queueDepth, networkAwarenessSignal,
+                latencyWindowSignal, timestamp);
     }
 
     public ServerStateVector(String serverId,

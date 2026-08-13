@@ -187,6 +187,23 @@ class ReverseProxyConfigReloadTest {
     }
 
     @Test
+    void webSocketTransportChangeRequiresRestartAndPreservesLastKnownGoodConfig() throws Exception {
+        mockMvc.perform(post("/api/proxy/reload")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(webSocketChangeBody()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.activeConfigGeneration").value(1))
+                .andExpect(jsonPath("$.validationErrors[0]")
+                        .value(containsString("websocket configuration requires application restart")));
+
+        mockMvc.perform(get("/proxy/startup?step=after-websocket-reload"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-LoadBalancerPro-Upstream", "startup-backend"));
+    }
+
+    @Test
     void runtimeStatsSurviveReloadForAnUnchangedUpstreamId() throws Exception {
         mockMvc.perform(get("/proxy/startup?step=before-same-id-reload"))
                 .andExpect(status().isOk())
@@ -279,6 +296,26 @@ class ReverseProxyConfigReloadTest {
                   "enabled": true,
                   "strategy": "ROUND_ROBIN",
                   "connectTimeout": "PT2S",
+                  "upstreams": [
+                    {
+                      "id": "reloaded-backend",
+                      "url": "%s",
+                      "healthy": true,
+                      "weight": 1.0
+                    }
+                  ]
+                }
+                """.formatted(RELOADED_BACKEND.baseUrl());
+    }
+
+    private static String webSocketChangeBody() {
+        return """
+                {
+                  "enabled": true,
+                  "strategy": "ROUND_ROBIN",
+                  "websocket": {
+                    "enabled": true
+                  },
                   "upstreams": [
                     {
                       "id": "reloaded-backend",

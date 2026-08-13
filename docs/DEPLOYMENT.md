@@ -58,6 +58,14 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 | `LBP_UPSTREAM_0_URL` | `loadbalancerpro.proxy.upstreams[0].url` | required |
 | `LBP_UPSTREAM_1_URL` | `loadbalancerpro.proxy.upstreams[1].url` | required |
 | `LBP_PROXY_STRATEGY` | `loadbalancerpro.proxy.strategy` | `ROUND_ROBIN` |
+| `LBP_HTTP2_ENABLED` | `server.http2.enabled` | `true` |
+| `LBP_WEBSOCKET_ENABLED` | `loadbalancerpro.proxy.websocket.enabled` | `false` |
+| `LBP_WEBSOCKET_CONNECT_TIMEOUT` | `loadbalancerpro.proxy.websocket.connect-timeout` | `5s` |
+| `LBP_WEBSOCKET_IDLE_TIMEOUT` | `loadbalancerpro.proxy.websocket.idle-timeout` | `5m` |
+| `LBP_WEBSOCKET_SEND_TIMEOUT` | `loadbalancerpro.proxy.websocket.send-timeout` | `10s` |
+| `LBP_WEBSOCKET_MAX_TEXT_MESSAGE_BYTES` | `loadbalancerpro.proxy.websocket.max-text-message-bytes` | `65536` |
+| `LBP_WEBSOCKET_MAX_BINARY_MESSAGE_BYTES` | `loadbalancerpro.proxy.websocket.max-binary-message-bytes` | `65536` |
+| `LBP_WEBSOCKET_SEND_BUFFER_BYTES` | `loadbalancerpro.proxy.websocket.send-buffer-bytes` | `262144` |
 | `LBP_CONNECT_TIMEOUT` | `loadbalancerpro.proxy.connect-timeout` | `1s` |
 | `LBP_REQUEST_TIMEOUT` | `loadbalancerpro.proxy.request-timeout` | `30s` |
 | `LBP_MAX_REQUEST_BYTES` | `loadbalancerpro.proxy.max-request-bytes` | `65536` |
@@ -72,6 +80,13 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 | `LBP_UPSTREAM_0_CLIENT_CERT_BUNDLE` | `loadbalancerpro.proxy.upstreams[0].tls.client-cert` | blank |
 
 [`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical static manifest sketch. It shows `/api/health` readiness/liveness, a five-second preStop delay, a 40-second pod termination window, non-root/capability-dropped/read-only execution, and external Secret/ConfigMap mounts. It has not been applied to a cluster and does not establish Kubernetes, multi-host, capacity, or production-readiness evidence.
+
+HTTP/2 applies to ordinary inbound HTTP traffic. WebSocket passthrough uses an HTTP/1.1 Upgrade handshake, shares the
+proxy's routing/concurrency/drain controls, and does not implement RFC 8441 extended CONNECT. Browser origin and
+subprotocol allow-lists use indexed `loadbalancerpro.proxy.websocket.allowed-origins[...]` and
+`loadbalancerpro.proxy.websocket.subprotocols[...]` properties. Remove inbound proxy credentials through route header
+policy when they are not upstream credentials. See [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md) for the bounded
+message, timeout, header, reload, and retry behavior.
 
 ## TLS Deployment
 

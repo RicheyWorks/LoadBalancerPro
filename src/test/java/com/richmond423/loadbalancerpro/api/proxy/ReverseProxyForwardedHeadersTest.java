@@ -192,6 +192,36 @@ class ReverseProxyForwardedHeadersTest {
     }
 
     @Test
+    void webSocketHandshakeCopyStripsTransportAndAppliesForwardingAndRoutePolicy() {
+        MockHttpServletRequest request = request("203.0.113.14", "https", "socket.example", 443);
+        request.addHeader("Connection", "Upgrade, X-Connection-Only");
+        request.addHeader("Upgrade", "websocket");
+        request.addHeader("Sec-WebSocket-Key", "caller-handshake-key");
+        request.addHeader("X-Connection-Only", "must-not-forward");
+        request.addHeader("X-API-Key", "proxy-credential");
+        request.addHeader("X-Application", "kept");
+
+        ReverseProxyProperties.Headers configuredRewrites = new ReverseProxyProperties.Headers();
+        configuredRewrites.setRemove(Map.of("X-API-Key", true));
+        configuredRewrites.setSet(Map.of("X-Route", "socket"));
+        ProxyRequestHeaders.HeaderRewrites rewrites = ProxyRequestHeaders.compileRewrites(
+                configuredRewrites, "loadbalancerpro.proxy.routes.socket.headers");
+        Map<String, List<String>> headers = ProxyRequestHeaders.webSocketHeaders(
+                request,
+                ProxyRequestHeaders.compileForwarded(new ReverseProxyProperties.Forwarded()),
+                rewrites);
+
+        assertFalse(headers.containsKey("Connection"));
+        assertFalse(headers.containsKey("Upgrade"));
+        assertFalse(headers.containsKey("Sec-WebSocket-Key"));
+        assertFalse(headers.containsKey("X-Connection-Only"));
+        assertFalse(headers.containsKey("X-API-Key"));
+        assertEquals(List.of("kept"), headers.get("X-Application"));
+        assertEquals(List.of("socket"), headers.get("X-Route"));
+        assertEquals(List.of("203.0.113.14"), headers.get("X-Forwarded-For"));
+    }
+
+    @Test
     void invalidModeCidrsAndRewriteValuesFailClosed() {
         ReverseProxyProperties invalidMode = legacyProperties("http://127.0.0.1:18081");
         invalidMode.getForwarded().setMode("passthrough");
@@ -208,6 +238,11 @@ class ReverseProxyForwardedHeadersTest {
         ReverseProxyProperties controlCharacter = routeProperties("http://127.0.0.1:18081");
         controlCharacter.getRoutes().get("api").getHeaders().setAdd(Map.of("X-Test", "bad\rvalue"));
         assertThrows(IllegalStateException.class, () -> service(controlCharacter));
+
+        ReverseProxyProperties handshakeRewrite = routeProperties("http://127.0.0.1:18081");
+        handshakeRewrite.getRoutes().get("api").getHeaders()
+                .setSet(Map.of("Sec-WebSocket-Protocol", "forbidden"));
+        assertThrows(IllegalStateException.class, () -> service(handshakeRewrite));
     }
 
     @Test

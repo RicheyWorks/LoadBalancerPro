@@ -168,6 +168,29 @@ class EnterpriseProxyConfigurationTest {
     }
 
     @Test
+    void webSocketTimeoutsArePositiveAndBounded() {
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.websocket.connect-timeout=0ms")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "websocket.connect-timeout must be greater than zero"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.websocket.send-timeout=6m")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "websocket.send-timeout must be no greater than 5m"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.websocket.idle-timeout=25h")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "websocket.idle-timeout must be no greater than 1440m"));
+
+        contextRunner.withPropertyValues(validOperatorRouteProperties())
+                .withPropertyValues("loadbalancerpro.proxy.websocket.allowed-origins[0]=*")
+                .run(context -> assertStartupFailureContains(
+                        context.getStartupFailure(), "allowed-origins must contain exact http(s) origins"));
+    }
+
+    @Test
     void backendTlsDefaultsToVerificationAndRejectsUnsafeOrCleartextTlsConfiguration() {
         contextRunner.withPropertyValues(validSingleTargetRouteProperties("https://127.0.0.1"))
                 .withPropertyValues("loadbalancerpro.proxy.routes.api.targets[0].tls.verify=false")

@@ -102,5 +102,5 @@ These are deterministic local loopback tests. They do not require public interne
 - No persistent metrics.
 - No retry budget shared across app instances.
 - No service discovery.
-- No TLS termination or WebSocket support.
+- No WebSocket retry/resume or RFC 8441 extended CONNECT guarantee; inbound TLS and bounded RFC 6455 passthrough are configured separately.
 - No public internet dependency in tests.

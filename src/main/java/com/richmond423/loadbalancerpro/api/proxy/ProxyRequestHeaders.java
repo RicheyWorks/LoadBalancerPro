@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ final class ProxyRequestHeaders {
     private static final Pattern IPV6_LITERAL = Pattern.compile("[0-9A-Fa-f:]+");
     private static final Set<String> SPOOFABLE_HEADERS = Set.of(
             "forwarded", "x-forwarded-for", "x-forwarded-host", "x-forwarded-proto");
+    private static final String WEBSOCKET_HANDSHAKE_PREFIX = "sec-websocket-";
 
     private ProxyRequestHeaders() {
     }
@@ -65,6 +67,48 @@ final class ProxyRequestHeaders {
         return headerName != null && SPOOFABLE_HEADERS.contains(headerName.toLowerCase(Locale.ROOT));
     }
 
+    static Map<String, List<String>> webSocketHeaders(
+            HttpServletRequest request, ForwardedPolicy forwardedPolicy, HeaderRewrites rewrites) {
+        Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Set<String> connectionTokens = connectionHeaderTokens(request);
+        Collections.list(request.getHeaderNames()).forEach(headerName -> {
+            String normalized = headerName.toLowerCase(Locale.ROOT);
+            if (!ReverseProxyService.isHopByHopHeader(headerName)
+                    && !normalized.startsWith(WEBSOCKET_HANDSHAKE_PREFIX)
+                    && !connectionTokens.contains(normalized)
+                    && !isSpoofable(headerName)
+                    && !rewrites.removes(headerName)) {
+                List<String> values = Collections.list(request.getHeaders(headerName)).stream()
+                        .filter(value -> value != null && !containsControlCharacter(value))
+                        .toList();
+                if (!values.isEmpty()) {
+                    headers.put(headerName, new ArrayList<>(values));
+                }
+            }
+        });
+        forwardedPolicy.apply(headers, request, rewrites);
+        rewrites.apply(headers);
+        Map<String, List<String>> immutable = new LinkedHashMap<>();
+        headers.forEach((name, values) -> immutable.put(name, List.copyOf(values)));
+        return Map.copyOf(immutable);
+    }
+
+    private static Set<String> connectionHeaderTokens(HttpServletRequest request) {
+        Set<String> tokens = new LinkedHashSet<>();
+        Collections.list(request.getHeaders("Connection")).forEach(value -> {
+            if (value == null) {
+                return;
+            }
+            for (String token : value.split(",")) {
+                String normalized = token.trim().toLowerCase(Locale.ROOT);
+                if (TOKEN.matcher(normalized).matches()) {
+                    tokens.add(normalized);
+                }
+            }
+        });
+        return Set.copyOf(tokens);
+    }
+
     private static Map<String, String> validatedValues(Map<String, String> values, String fieldPrefix) {
         Map<String, String> validated = new LinkedHashMap<>();
         Set<String> normalizedNames = new LinkedHashSet<>();
@@ -89,6 +133,9 @@ final class ProxyRequestHeaders {
         }
         if (ReverseProxyService.isHopByHopHeader(name)) {
             throw new IllegalStateException(fieldPrefix + " cannot rewrite hop-by-hop header: " + name);
+        }
+        if (name.toLowerCase(Locale.ROOT).startsWith(WEBSOCKET_HANDSHAKE_PREFIX)) {
+            throw new IllegalStateException(fieldPrefix + " cannot rewrite WebSocket handshake header: " + name);
         }
         return name;
     }
@@ -134,6 +181,25 @@ final class ProxyRequestHeaders {
                     appendTrusted ? request.getHeaders("Forwarded") : null);
         }
 
+        void apply(Map<String, List<String>> headers, HttpServletRequest request, HeaderRewrites rewrites) {
+            if (mode == Mode.OFF) {
+                return;
+            }
+            String remoteAddress = safeRemoteAddress(request.getRemoteAddr());
+            String scheme = safeScheme(request.getScheme());
+            String host = safeHost(request);
+            boolean appendTrusted = mode == Mode.APPEND && isTrusted(request.getRemoteAddr());
+
+            setOrAppendUnlessRemoved(headers, rewrites, "X-Forwarded-For", remoteAddress,
+                    appendTrusted ? request.getHeaders("X-Forwarded-For") : null);
+            setOrAppendUnlessRemoved(headers, rewrites, "X-Forwarded-Proto", scheme,
+                    appendTrusted ? request.getHeaders("X-Forwarded-Proto") : null);
+            setOrAppendUnlessRemoved(headers, rewrites, "X-Forwarded-Host", host,
+                    appendTrusted ? request.getHeaders("X-Forwarded-Host") : null);
+            setOrAppendUnlessRemoved(headers, rewrites, "Forwarded", forwardedElement(remoteAddress, scheme, host),
+                    appendTrusted ? request.getHeaders("Forwarded") : null);
+        }
+
         private boolean isTrusted(String remoteAddress) {
             byte[] address = literalAddress(remoteAddress, null);
             if (address == null) {
@@ -157,6 +223,23 @@ final class ProxyRequestHeaders {
                             .collect(Collectors.toCollection(ArrayList::new));
             chain.add(currentValue);
             builder.setHeader(name, String.join(", ", chain));
+        }
+
+        private static void setOrAppendUnlessRemoved(Map<String, List<String>> headers,
+                                                     HeaderRewrites rewrites,
+                                                     String name,
+                                                     String currentValue,
+                                                     java.util.Enumeration<String> inboundValues) {
+            if (rewrites.removes(name)) {
+                return;
+            }
+            List<String> chain = inboundValues == null
+                    ? new ArrayList<>()
+                    : Collections.list(inboundValues).stream()
+                            .filter(value -> value != null && !value.isBlank() && !containsControlCharacter(value))
+                            .collect(Collectors.toCollection(ArrayList::new));
+            chain.add(currentValue);
+            headers.put(name, new ArrayList<>(List.of(String.join(", ", chain))));
         }
 
         private static String safeRemoteAddress(String value) {
@@ -207,6 +290,11 @@ final class ProxyRequestHeaders {
         void apply(HttpRequest.Builder builder) {
             set.forEach(builder::setHeader);
             add.forEach(builder::header);
+        }
+
+        void apply(Map<String, List<String>> headers) {
+            set.forEach((name, value) -> headers.put(name, new ArrayList<>(List.of(value))));
+            add.forEach((name, value) -> headers.computeIfAbsent(name, ignored -> new ArrayList<>()).add(value));
         }
 
         boolean removes(String name) {

@@ -31,6 +31,7 @@ public class ReverseProxyProperties {
     private BackendTls backendTls = new BackendTls();
     private AccessLog accessLog = new AccessLog();
     private DnsDiscovery dnsDiscovery = new DnsDiscovery();
+    private WebSocket websocket = new WebSocket();
     private List<Upstream> upstreams = new ArrayList<>();
     private Map<String, Route> routes = new LinkedHashMap<>();
 
@@ -188,6 +189,14 @@ public class ReverseProxyProperties {
 
     public void setDnsDiscovery(DnsDiscovery dnsDiscovery) {
         this.dnsDiscovery = dnsDiscovery == null ? new DnsDiscovery() : dnsDiscovery;
+    }
+
+    public WebSocket getWebsocket() {
+        return websocket;
+    }
+
+    public void setWebsocket(WebSocket websocket) {
+        this.websocket = websocket == null ? new WebSocket() : websocket;
     }
 
     public List<Upstream> getUpstreams() {
@@ -1018,6 +1027,90 @@ public class ReverseProxyProperties {
 
         public void setLookupThreads(int lookupThreads) {
             this.lookupThreads = lookupThreads;
+        }
+    }
+
+    public static final class WebSocket {
+        private boolean enabled = false;
+        private Duration connectTimeout = Duration.ofSeconds(5);
+        private Duration idleTimeout = Duration.ofMinutes(5);
+        private Duration sendTimeout = Duration.ofSeconds(10);
+        private int maxTextMessageBytes = 65_536;
+        private int maxBinaryMessageBytes = 65_536;
+        private int sendBufferBytes = 262_144;
+        private List<String> allowedOrigins = new ArrayList<>();
+        private List<String> subprotocols = new ArrayList<>();
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public Duration getConnectTimeout() {
+            return connectTimeout;
+        }
+
+        public void setConnectTimeout(Duration connectTimeout) {
+            this.connectTimeout = connectTimeout == null ? Duration.ofSeconds(5) : connectTimeout;
+        }
+
+        public Duration getIdleTimeout() {
+            return idleTimeout;
+        }
+
+        public void setIdleTimeout(Duration idleTimeout) {
+            this.idleTimeout = idleTimeout == null ? Duration.ofMinutes(5) : idleTimeout;
+        }
+
+        public Duration getSendTimeout() {
+            return sendTimeout;
+        }
+
+        public void setSendTimeout(Duration sendTimeout) {
+            this.sendTimeout = sendTimeout == null ? Duration.ofSeconds(10) : sendTimeout;
+        }
+
+        public int getMaxTextMessageBytes() {
+            return maxTextMessageBytes;
+        }
+
+        public void setMaxTextMessageBytes(int maxTextMessageBytes) {
+            this.maxTextMessageBytes = maxTextMessageBytes;
+        }
+
+        public int getMaxBinaryMessageBytes() {
+            return maxBinaryMessageBytes;
+        }
+
+        public void setMaxBinaryMessageBytes(int maxBinaryMessageBytes) {
+            this.maxBinaryMessageBytes = maxBinaryMessageBytes;
+        }
+
+        public int getSendBufferBytes() {
+            return sendBufferBytes;
+        }
+
+        public void setSendBufferBytes(int sendBufferBytes) {
+            this.sendBufferBytes = sendBufferBytes;
+        }
+
+        public List<String> getAllowedOrigins() {
+            return allowedOrigins;
+        }
+
+        public void setAllowedOrigins(List<String> allowedOrigins) {
+            this.allowedOrigins = allowedOrigins == null ? new ArrayList<>() : new ArrayList<>(allowedOrigins);
+        }
+
+        public List<String> getSubprotocols() {
+            return subprotocols;
+        }
+
+        public void setSubprotocols(List<String> subprotocols) {
+            this.subprotocols = subprotocols == null ? new ArrayList<>() : new ArrayList<>(subprotocols);
         }
     }
 }

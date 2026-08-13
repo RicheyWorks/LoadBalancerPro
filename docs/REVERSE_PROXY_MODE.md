@@ -209,6 +209,23 @@ Proxy mode reuses the request-level routing strategy registry. Supported configu
 - `WEIGHTED_ROUND_ROBIN`
 - `CONSISTENT_HASH`
 
+Applications can register an external strategy without modifying the built-in `RoutingStrategyId` enum. Give the
+strategy a stable `RoutingStrategyIdentifier`, register a factory as a Spring bean, and use that identifier in the
+same proxy strategy property:
+
+```java
+@Bean
+RoutingStrategyRegistry routingStrategyRegistry() {
+    RoutingStrategyIdentifier id = RoutingStrategyIdentifier.of("DAEDALUS_TOPOLOGY");
+    return RoutingStrategyRegistry.defaultRegistry()
+            .withFactory(id, () -> new DaedalusTopologyStrategy(id));
+}
+```
+
+Each factory invocation must return a strategy with the registered identifier and a fresh instance when the strategy
+has mutable route state. External identifiers accept letters, digits, `_`, and `.`, with `-` normalized to `_`; lookup
+is case-insensitive. The enum-based routing comparison API continues to report built-in strategies only.
+
 `CONSISTENT_HASH` uses a process-local 128-virtual-node ring per configured route. The same key maps to the same healthy ring member while route membership is unchanged; when one member is removed, only keys that belonged to that member are remapped. Unhealthy, drained, retry-excluded, and capacity-excluded members are skipped clockwise without granting them traffic. Ring and affinity state are not shared across processes or replicas, and this local deterministic behavior is not multi-node consistency, distributed session storage, benchmark evidence, or production certification.
 
 Configured upstreams with `healthy=false` are skipped before forwarding because the existing routing strategies consider only healthy candidates. This manual flag remains a hard disabled signal even when active health checks are enabled.

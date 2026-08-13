@@ -26,6 +26,8 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
+import com.richmond423.loadbalancerpro.core.RoutingStrategy;
+import com.richmond423.loadbalancerpro.core.RoutingStrategyIdentifier;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import com.richmond423.loadbalancerpro.core.WeightedRoundRobinRoutingStrategy;
@@ -157,6 +159,25 @@ class ReverseProxyRouteStrategyIsolationTest {
                 () -> ReverseProxyRoutePlanner.buildEnabledRoutes(twoWeightedRoutes(), singletonRegistry));
     }
 
+    @Test
+    void plannerAcceptsRegisteredExternalStrategyIdentifiers() {
+        RoutingStrategyIdentifier externalId = RoutingStrategyIdentifier.of("daedalus-topology");
+        RoutingStrategyRegistry registry = RoutingStrategyRegistry.fromFactories(Map.of(
+                externalId,
+                (RoutingStrategyRegistry.RoutingStrategyFactory) () -> externalStrategy(externalId)));
+        ReverseProxyProperties properties = twoWeightedRoutes();
+        properties.setStrategy("daedalus-topology");
+        properties.getRoutes().values().forEach(route -> route.setStrategy("DAEDALUS_TOPOLOGY"));
+
+        List<ReverseProxyRoutePlanner.ConfiguredRoute> planned =
+                ReverseProxyRoutePlanner.buildEnabledRoutes(properties, registry);
+
+        assertEquals(2, planned.size());
+        assertTrue(planned.stream().allMatch(route -> route.strategyId().sameIdentifierAs(externalId)));
+        assertNotSame(planned.get(0).strategy(), planned.get(1).strategy(),
+                "external factories must preserve per-route strategy ownership");
+    }
+
     private static ReverseProxyProperties twoWeightedRoutes() {
         ReverseProxyProperties properties = new ReverseProxyProperties();
         properties.setEnabled(true);
@@ -234,5 +255,19 @@ class ReverseProxyRouteStrategyIsolationTest {
         assertTrue(Math.abs(250 - secondary) <= MAX_PRIMARY_DEVIATION,
                 () -> routeName + " secondary selections must remain within five percentage points of 25%: "
                         + selections);
+    }
+
+    private static RoutingStrategy externalStrategy(RoutingStrategyIdentifier id) {
+        return new RoutingStrategy() {
+            @Override
+            public RoutingStrategyIdentifier id() {
+                return id;
+            }
+
+            @Override
+            public RoutingDecision choose(List<ServerStateVector> servers) {
+                throw new UnsupportedOperationException("not used by route planning contract test");
+            }
+        };
     }
 }

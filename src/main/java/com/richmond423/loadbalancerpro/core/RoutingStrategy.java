@@ -3,7 +3,7 @@ package com.richmond423.loadbalancerpro.core;
 import java.util.List;
 
 public interface RoutingStrategy {
-    RoutingStrategyId id();
+    RoutingStrategyIdentifier id();
 
     RoutingDecision choose(List<ServerStateVector> servers);
 

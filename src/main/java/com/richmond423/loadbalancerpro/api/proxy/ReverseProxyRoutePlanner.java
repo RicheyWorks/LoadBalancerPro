@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 import com.richmond423.loadbalancerpro.core.ConsistentHashRingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingStrategy;
-import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
+import com.richmond423.loadbalancerpro.core.RoutingStrategyIdentifier;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -90,8 +90,10 @@ final class ReverseProxyRoutePlanner {
                 Duration requestTimeout = route.getRequestTimeout() == null
                         ? properties.getRequestTimeout()
                         : route.getRequestTimeout();
-                RoutingStrategyId strategyId = strategyId(strategyName,
-                        "loadbalancerpro.proxy.routes." + routeName + ".strategy");
+                RoutingStrategyIdentifier strategyId = strategyId(
+                        strategyName,
+                        "loadbalancerpro.proxy.routes." + routeName + ".strategy",
+                        registry);
                 List<ReverseProxyProperties.Upstream> targets = route.getTargets();
                 if (targets.isEmpty() && (discoveryExpansion == null
                         || !discoveryExpansion.allowsEmptyRoute(routeName))) {
@@ -127,7 +129,8 @@ final class ReverseProxyRoutePlanner {
                     "loadbalancerpro.proxy.enabled=true requires at least one configured route or upstream target");
         }
         boundedTargetCount(0, upstreams.size());
-        RoutingStrategyId strategyId = strategyId(properties.getStrategy(), "loadbalancerpro.proxy.strategy");
+        RoutingStrategyIdentifier strategyId = strategyId(
+                properties.getStrategy(), "loadbalancerpro.proxy.strategy", registry);
         validateTargets(upstreams, "loadbalancerpro.proxy.upstreams", privateNetworkValidationEnabled);
         RoutingStrategy strategy = routeStrategy(
                 registry, strategyId, LEGACY_ROUTE_NAME, upstreams, previousRoutesByName);
@@ -192,22 +195,25 @@ final class ReverseProxyRoutePlanner {
         return id;
     }
 
-    private static RoutingStrategyId strategyId(String value, String fieldName) {
+    private static RoutingStrategyIdentifier strategyId(
+            String value,
+            String fieldName,
+            RoutingStrategyRegistry registry) {
         String strategyName = value == null || value.isBlank() ? "" : value.trim();
-        return RoutingStrategyId.fromName(strategyName)
+        return registry.findIdentifier(strategyName)
                 .orElseThrow(() -> new IllegalStateException(fieldName
-                        + " must be a supported strategy id; received: " + strategyName));
+                        + " must be a registered strategy id; received: " + strategyName));
     }
 
     private static RoutingStrategy routeStrategy(
             RoutingStrategyRegistry registry,
-            RoutingStrategyId strategyId,
+            RoutingStrategyIdentifier strategyId,
             String routeName,
             List<ReverseProxyProperties.Upstream> targets,
             Map<String, ConfiguredRoute> previousRoutesByName) {
         ConfiguredRoute previousRoute = previousRoutesByName.get(routeName);
         if (previousRoute != null
-                && previousRoute.strategyId() == strategyId
+                && previousRoute.strategyId().sameIdentifierAs(strategyId)
                 && upstreamIds(previousRoute.targets()).equals(upstreamIds(targets))) {
             return previousRoute.strategy();
         }
@@ -270,7 +276,7 @@ final class ReverseProxyRoutePlanner {
             String routeName,
             Map<String, ReverseProxyProperties.SplitGroup> configuredSplits,
             List<ReverseProxyProperties.Upstream> targets,
-            RoutingStrategyId strategyId,
+            RoutingStrategyIdentifier strategyId,
             RoutingStrategyRegistry registry,
             ConfiguredRoute previousRoute,
             List<RoutingStrategy> ownedStrategies,
@@ -347,13 +353,13 @@ final class ReverseProxyRoutePlanner {
 
     private static RoutingStrategy splitStrategy(
             RoutingStrategyRegistry registry,
-            RoutingStrategyId strategyId,
+            RoutingStrategyIdentifier strategyId,
             String routeName,
             String groupName,
             List<ReverseProxyProperties.Upstream> targets,
             ConfiguredRoute previousRoute) {
         Set<String> targetIds = upstreamIds(targets);
-        if (previousRoute != null && previousRoute.strategyId() == strategyId) {
+        if (previousRoute != null && previousRoute.strategyId().sameIdentifierAs(strategyId)) {
             Optional<ConfiguredSplit> previousSplit = previousRoute.splits().stream()
                     .filter(split -> split.name().equals(groupName))
                     .filter(split -> split.targetIds().equals(targetIds))
@@ -580,7 +586,7 @@ final class ReverseProxyRoutePlanner {
             String name,
             String pathPrefix,
             ConfiguredMatch match,
-            RoutingStrategyId strategyId,
+            RoutingStrategyIdentifier strategyId,
             RoutingStrategy strategy,
             List<ConfiguredSplit> splits,
             Duration requestTimeout,

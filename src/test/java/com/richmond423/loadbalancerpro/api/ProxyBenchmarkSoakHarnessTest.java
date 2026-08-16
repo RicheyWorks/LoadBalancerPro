@@ -30,6 +30,9 @@ class ProxyBenchmarkSoakHarnessTest {
             assertTrue(script.contains(scenario), "missing scenario " + scenario);
         }
         assertTrue(script.contains("base_url=\"https://127.0.0.1:$proxy_port\""));
+        assertTrue(script.contains("$base_url/actuator/health"));
+        assertTrue(script.contains("X-API-Key: $api_key"));
+        assertFalse(script.contains("$base_url/api/health"));
         assertFalse(script.contains("LBP_BENCH_BASE_URL"));
         assertTrue(script.contains("lbp_proxy_inflight"));
         assertTrue(script.contains("jvm_memory_used_bytes"));

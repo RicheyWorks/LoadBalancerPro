@@ -2,6 +2,8 @@
 
 The operator scenario gallery extends the unified browser cockpit at:
 
+Run it from source or the Lab Tools artifact built with `mvn -B -P lab -DskipTests package`; the production proxy JAR does not contain simulation cockpits.
+
 ```text
 http://localhost:8080/load-balancing-cockpit.html
 ```
@@ -19,7 +21,7 @@ mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"
 Or run the packaged JAR on the Postman default port:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
 Then verify:

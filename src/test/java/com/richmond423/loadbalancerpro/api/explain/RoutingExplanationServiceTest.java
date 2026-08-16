@@ -33,6 +33,7 @@ class RoutingExplanationServiceTest {
             Path.of("src/test/resources/api/routing-explanation-v2-golden.json");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final RoutingExplanationService service = new RoutingExplanationService();
+    private final LiveRoutingExplanationService liveService = new LiveRoutingExplanationService();
 
     @Test
     void carriesCandidateFactorsAndDominantDeltaAnalysisWithoutParallelRestatements() {
@@ -124,7 +125,7 @@ class RoutingExplanationServiceTest {
 
     @Test
     void explainsCapturedActualDecisionWithoutRerunningTheStrategy() {
-        LiveRoutingDecisionExplanation live = service.explain(liveDecision(
+        LiveRoutingDecisionExplanation live = liveService.explain(liveDecision(
                 "strategy",
                 new LiveRoutingDecisionRecord.SelectionEvidence(
                         "CAPTURED",
@@ -170,7 +171,7 @@ class RoutingExplanationServiceTest {
 
     @Test
     void affinityDecisionDoesNotInventAHiddenStrategyScore() {
-        LiveRoutingDecisionExplanation live = service.explain(liveDecision(
+        LiveRoutingDecisionExplanation live = liveService.explain(liveDecision(
                 "affinity",
                 new LiveRoutingDecisionRecord.SelectionEvidence(
                         "NOT_APPLICABLE",
@@ -190,7 +191,7 @@ class RoutingExplanationServiceTest {
 
     @Test
     void dominantFactorsHonorTheStrategyDirectionForStatefulWeightedRoundRobinCarry() {
-        LiveRoutingDecisionExplanation live = service.explain(liveDecision(
+        LiveRoutingDecisionExplanation live = liveService.explain(liveDecision(
                 "strategy",
                 new LiveRoutingDecisionRecord.SelectionEvidence(
                         "CAPTURED",

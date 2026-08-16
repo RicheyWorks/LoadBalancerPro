@@ -107,12 +107,10 @@ echo "Required jar entries:"
 required_entries=(
   "META-INF/MANIFEST.MF"
   "BOOT-INF/classes/static/proxy-status.html"
-  "BOOT-INF/classes/static/load-balancing-cockpit.html"
-  "BOOT-INF/classes/application-proxy-demo-round-robin.properties"
-  "BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"
-  "BOOT-INF/classes/application-proxy-demo-failover.properties"
   "BOOT-INF/classes/application-proxy-prod.properties"
-  "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
+  "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/LoadBalancerApiApplication.class"
+  "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.class"
+  "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyStatusController.class"
 )
 
 for entry in "${required_entries[@]}"; do
@@ -121,6 +119,11 @@ done
 
 echo
 echo "Forbidden jar entries:"
+assert_absent "$ENTRY_FILE" '^BOOT-INF/classes/com/richmond423/loadbalancerpro/(cli|demo|gui|lab)/' "lab, demo, GUI, or CLI application classes"
+assert_absent "$ENTRY_FILE" '^BOOT-INF/classes/com/richmond423/loadbalancerpro/api/(AllocatorController|DecisionExplorer|EnterpriseLab|Evidence|Lase|Remediation|RoutingController|ScenarioReplay)' "simulation API controllers and services"
+assert_absent "$ENTRY_FILE" '^BOOT-INF/classes/com/richmond423/loadbalancerpro/core/(CloudManager|LoadBalancer|ServerMonitor)' "simulation, cloud-manager, or synthetic-monitor core"
+assert_absent "$ENTRY_FILE" '^BOOT-INF/classes/static/(adaptive-routing|ci-evidence|decision-explorer|enterprise-lab|evidence-|index\.html|load-balancing|operator-evidence|routing-demo)' "simulation and cockpit web pages"
+assert_absent "$ENTRY_FILE" '^BOOT-INF/lib/(autoscaling|cloudwatch|ec2|aws-|sdk-core|reactor-core|gson)-' "lab-only cloud, reactive, or JSON libraries"
 assert_absent "$ENTRY_FILE" '^BOOT-INF/classes/.*(Test|Tests)\.class$' "test classes"
 assert_absent "$ENTRY_FILE" '\.(exe|dll|msi|dmg|pkg|deb|rpm|appimage)$' "unexpected native installers or executables"
 assert_absent "$ENTRY_FILE" '\.(pem|p12|pfx|jks|keystore|key)$' "embedded key, certificate, or trust material"
@@ -131,13 +134,13 @@ Packaged jar startup:
   java -jar $JAR_PATH --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 
 Status and static page checks:
-  curl -fsS http://127.0.0.1:8080/api/health
+  curl -fsS http://127.0.0.1:8080/actuator/health
   curl -fsS http://127.0.0.1:8080/proxy-status.html
-  curl -fsS http://127.0.0.1:8080/load-balancing-cockpit.html
   curl -fsS http://127.0.0.1:8080/api/proxy/status
 
-Maven exec fixture launcher:
-  mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+Optional Lab Tools artifact:
+  mvn -B -P lab -DskipTests package
+  bash scripts/resolve-executable-jar.sh --lab
 
 GitHub Actions artifact:
   packaged-artifact-smoke

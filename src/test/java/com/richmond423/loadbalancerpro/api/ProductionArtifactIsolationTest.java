@@ -70,10 +70,14 @@ class ProductionArtifactIsolationTest {
         assertFalse(pom.contains("<javafx.version>"));
         assertFalse(pom.contains("<groupId>org.openjfx</groupId>"));
         assertFalse(pom.contains("<artifactId>javafx-controls</artifactId>"));
+        assertTrue(pom.contains("<id>lab</id>"));
+        assertTrue(pom.contains("<finalName>${project.artifactId}-${project.version}-lab</finalName>"));
         assertTrue(pom.contains(
-                "<exclude>com/richmond423/loadbalancerpro/cli/EnterpriseLab*Proof*.class</exclude>"));
+                "<mainClass>com.richmond423.loadbalancerpro.cli.LabToolsApplication</mainClass>"));
         assertTrue(pom.contains(
-                "<exclude>com/richmond423/loadbalancerpro/lab/EnterpriseLab*Proof*.class</exclude>"));
+                "<include>com/richmond423/loadbalancerpro/api/proxy/**</include>"));
+        assertTrue(pom.contains(
+                "<excludeGroupIds>software.amazon.awssdk,com.google.code.gson,io.projectreactor</excludeGroupIds>"));
         assertFalse(pom.contains("com/richmond423/loadbalancerpro/gui/LoadBalancerGUI"));
         assertFalse(pom.contains("com/richmond423/loadbalancerpro/gui/ServerTableRow"));
         assertFalse(pom.contains("<excludeGroupIds>org.openjfx</excludeGroupIds>"));
@@ -123,10 +127,14 @@ class ProductionArtifactIsolationTest {
         assertTrue(workflow.contains("EnterpriseLabExperimentProofRunnerTest"));
         assertTrue(workflow.contains("EnterpriseLabEvidenceOwnershipProofCommandTest"));
         assertTrue(workflow.contains("EnterpriseLabDurableRecoveryProofCommandTest"));
-        assertTrue(workflow.contains("EnterpriseLab.*Proof"));
         assertTrue(workflow.contains("BOOT-INF/lib/javafx"));
+        assertTrue(workflow.contains("(cli|demo|gui|lab)"));
+        assertTrue(workflow.contains("ServerMonitor"));
+        assertTrue(workflow.contains("mvn -B -P lab -DskipTests package"));
+        assertTrue(workflow.contains("resolve-executable-jar.sh --lab"));
         assertTrue(workflow.contains("-DincludeProvidedScope=false"));
         assertTrue(workflow.contains("mvn -B -DskipTests package"));
+        assertTrue(releaseWorkflow.contains("Release artifact contains lab-only classes or dependencies."));
         assertTrue(releaseWorkflow.contains("-DincludeProvidedScope=false"));
     }
 

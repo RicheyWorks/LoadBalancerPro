@@ -11,9 +11,9 @@ For the current no-registry-publish posture and the future decision gate for reg
 - The checked-in `Dockerfile` can build a local image from the repository.
 - The image starts the packaged application as a non-root user.
 - The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod` for protected container startup.
-- Container/default deployment mode is protected by the prod API-key profile for `/api/**`, proxy, OpenAPI, and Swagger routes. The explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests.
+- Container/default deployment mode is protected by the prod API-key profile for `/api/**`, proxy, OpenAPI, and Swagger routes.
 - The default container command keeps proxy mode disabled unless explicitly overridden.
-- A loopback-bound published port can answer `/api/health` and the root landing page.
+- A loopback-bound published port can answer `/actuator/health` and the production proxy status page.
 - Prod API-key mode can be exercised with placeholder local secrets passed at run time.
 - Local developer mode is intentionally permissive when selected explicitly; do not expose local/demo mode on public interfaces.
 
@@ -59,8 +59,8 @@ docker run --rm --name loadbalancerpro-demo \
 Verify:
 
 ```bash
-curl -fsS http://127.0.0.1:8080/api/health
-curl -fsS http://127.0.0.1:8080/
+curl -fsS http://127.0.0.1:8080/actuator/health
+curl -fsS http://127.0.0.1:8080/proxy-status.html
 ```
 
 The process binds to `0.0.0.0` inside the container so Docker port publishing works. The host publishing example binds to `127.0.0.1` so the smoke path stays local to the workstation.

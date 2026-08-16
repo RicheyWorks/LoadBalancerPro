@@ -37,7 +37,7 @@ docker compose -f lab/docker-compose/local-lab-compose.yml up toxiproxy
 If a reviewer deliberately chooses to run the gated app service manually, first package the app manually:
 
 ```powershell
-mvn -q "-DskipTests" package
+mvn -q -P lab "-DskipTests" package
 ```
 
 Then start only the optional app service:

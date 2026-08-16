@@ -362,9 +362,7 @@ function Invoke-DryRun {
         "docs/examples/operator-run-profiles/cloud-sandbox-api-key.properties",
         "docs/examples/operator-run-profiles/proxy-loopback.properties",
         "src/main/resources/application.properties",
-        "src/main/resources/static/index.html",
-        "src/main/resources/static/load-balancing-cockpit.html",
-        "src/main/resources/static/routing-demo.html"
+        "src/main/resources/static/proxy-status.html"
     )
 
     foreach ($path in $requiredPaths) {
@@ -380,7 +378,7 @@ function Invoke-DryRun {
     Write-Host "  pwsh ./scripts/smoke/operator-run-profiles-smoke.ps1 -Package"
     Write-Host ""
     Write-Host "Checks covered by live mode:"
-    Write-Host "  local demo /api/health and root landing page"
+    Write-Host "  production artifact /actuator/health and proxy status page"
     Write-Host "  prod API-key HTTP 401 without X-API-Key"
     Write-Host "  prod API-key HTTP 200 with X-API-Key"
     Write-Host "  proxy-loopback forwarding to 127.0.0.1:$BackendAPort and 127.0.0.1:$BackendBPort"
@@ -407,8 +405,8 @@ function Invoke-LiveSmoke {
         "--spring.profiles.active=local"
     )
     try {
-        Wait-ForStatus -Url "http://127.0.0.1:$LocalPort/api/health" -Process $localApp -ProcessName "local-demo" | Out-Null
-        Wait-ForStatus -Url "http://127.0.0.1:$LocalPort/" -Process $localApp -ProcessName "local-demo" | Out-Null
+        Wait-ForStatus -Url "http://127.0.0.1:$LocalPort/actuator/health" -Process $localApp -ProcessName "local-demo" | Out-Null
+        Wait-ForStatus -Url "http://127.0.0.1:$LocalPort/proxy-status.html" -Process $localApp -ProcessName "local-demo" | Out-Null
     } finally {
         Stop-SmokeApp -Process $localApp -Name "local-demo"
     }
@@ -421,7 +419,7 @@ function Invoke-LiveSmoke {
         "--loadbalancerpro.api.key=$ApiKey"
     )
     try {
-        Wait-ForStatus -Url "http://127.0.0.1:$ApiKeyPort/api/health" -Process $apiKeyApp -ProcessName "prod-api-key" | Out-Null
+        Wait-ForStatus -Url "http://127.0.0.1:$ApiKeyPort/actuator/health" -Process $apiKeyApp -ProcessName "prod-api-key" | Out-Null
         Assert-HttpStatus -Url "http://127.0.0.1:$ApiKeyPort/api/proxy/status" -ExpectedStatus 401 | Out-Null
         Assert-HttpStatus -Url "http://127.0.0.1:$ApiKeyPort/api/proxy/status" -ExpectedStatus 200 `
             -Headers @{ "X-API-Key" = $ApiKey } | Out-Null
@@ -447,7 +445,7 @@ function Invoke-LiveSmoke {
         "--loadbalancerpro.proxy.routes.api.targets[1].weight=1"
     )
     try {
-        Wait-ForStatus -Url "http://127.0.0.1:$ProxyPort/api/health" -Process $proxyApp -ProcessName "proxy-loopback" | Out-Null
+        Wait-ForStatus -Url "http://127.0.0.1:$ProxyPort/actuator/health" -Process $proxyApp -ProcessName "proxy-loopback" | Out-Null
         $proxyResult = Assert-HttpStatus -Url "http://127.0.0.1:$ProxyPort/proxy/api/smoke?step=1" -ExpectedStatus 200
         if ($proxyResult.Body -notmatch "local-[ab] handled") {
             throw "Proxy-loopback response did not include the expected loopback backend body."

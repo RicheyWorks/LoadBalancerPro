@@ -53,7 +53,7 @@ This path requires no Docker execution, no Compose execution, no server startup,
 Use this only if a reviewer chooses to run the existing local-lab app service manually. It is optional, manual-only, and local-lab-only.
 
 ```powershell
-mvn -q "-DskipTests" package
+mvn -q -P lab "-DskipTests" package
 ```
 
 This command is a manual prerequisite only. It is not CI-gating. It is not Maven wiring. It is not a production packaging change. It does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, platform implementation, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, p95 evidence, or p99 evidence.

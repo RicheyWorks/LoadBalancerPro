@@ -57,7 +57,7 @@ docker compose -f lab/docker-compose/local-lab-compose.yml up toxiproxy
 Optionally start the gated app service skeleton by hand after packaging first:
 
 ```powershell
-mvn -q "-DskipTests" package
+mvn -q -P lab "-DskipTests" package
 docker compose -f lab/docker-compose/local-lab-compose.yml up app-under-test
 ```
 

@@ -6,7 +6,7 @@ services:
   app-under-test:
     image: eclipse-temurin:21-jre
     working_dir: /opt/loadbalancerpro
-    command: ["java", "-jar", "/opt/loadbalancerpro/LoadBalancerPro-2.5.0.jar"]
+    command: ["java", "-jar", "/opt/loadbalancerpro/LoadBalancerPro-2.5.0-lab.jar"]
     environment:
       LOADBALANCERPRO_AUTH_MODE: none
     ports:

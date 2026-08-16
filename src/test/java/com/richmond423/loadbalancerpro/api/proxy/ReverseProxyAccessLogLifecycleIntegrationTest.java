@@ -21,7 +21,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -143,7 +142,7 @@ class ReverseProxyAccessLogLifecycleIntegrationTest {
                 metrics,
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),
-                LaseShadowRuntime.disabled(),
+                LiveRoutingObservationSink.disabled(),
                 accessLog);
         return new Fixture(service, accessLog, registry);
     }

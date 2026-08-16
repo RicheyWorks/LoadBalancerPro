@@ -75,6 +75,7 @@ class ServerMonitorTest {
             .withThreshold(80.0)
             .withInterval(MONITOR_CYCLE_MS)
             .withFluctuation(10.0)
+            .withSyntheticLocalMetrics(true)
             .withAlertCooldownMs(0),
             balancer,
             null);
@@ -209,6 +210,23 @@ class ServerMonitorTest {
     }
 
     @Test
+    void stopBeforeExternalThreadRunsPreventsLateStartup() throws InterruptedException {
+        stopCurrentMonitor();
+        ServerMonitor neverStartedMonitor = new ServerMonitor(new ServerMonitor.Config()
+            .withInterval(MONITOR_CYCLE_MS),
+            balancer,
+            null);
+        Thread delayedThread = new Thread(neverStartedMonitor);
+
+        neverStartedMonitor.stop();
+        delayedThread.start();
+        delayedThread.join(5000);
+
+        assertFalse(delayedThread.isAlive(), "A monitor stopped before scheduling must not start later.");
+        assertFalse(neverStartedMonitor.isRunning(), "The stopped monitor must remain stopped.");
+    }
+
+    @Test
     void publicStartAndRepeatedStopUpdateRunningState() throws InterruptedException {
         stopCurrentMonitor();
         ServerMonitor startedMonitor = new ServerMonitor(new ServerMonitor.Config()
@@ -258,6 +276,32 @@ class ServerMonitorTest {
         assertDoesNotThrow(neverStartedMonitor::stop);
         assertTrue(shutdownHooks.removedHooks.isEmpty(),
                 "Stopping a never-started monitor must not attempt hook removal.");
+    }
+
+    @Test
+    void defaultMonitorPreservesExternallySuppliedLocalMetrics() throws InterruptedException {
+        stopCurrentMonitor();
+        Server server = new Server("OBSERVED-METRICS", 21.0, 34.0, 55.0);
+        balancer.addServer(server);
+        ServerMonitor observedMonitor = new ServerMonitor(
+                new ServerMonitor.Config().withInterval(MONITOR_CYCLE_MS),
+                balancer,
+                null);
+        Thread observedThread = new Thread(observedMonitor);
+
+        try {
+            observedThread.start();
+            waitUntil(observedMonitor::isRunning, 1000, "Monitor should enter running state.");
+            TimeUnit.MILLISECONDS.sleep(MONITOR_CYCLE_MS * 3);
+
+            assertEquals(21.0, server.getCpuUsage());
+            assertEquals(34.0, server.getMemoryUsage());
+            assertEquals(55.0, server.getDiskUsage());
+        } finally {
+            observedMonitor.stop();
+            observedThread.interrupt();
+            observedThread.join(5000);
+        }
     }
 
     @Test
@@ -863,6 +907,7 @@ class ServerMonitorTest {
     @Timeout(value = 30)
     void testInterruptedSetup() throws InterruptedException {
         logger.info("=== TESTING INTERRUPTED SETUP ===");
+        stopCurrentMonitor();
         Thread.currentThread().interrupt(); // Simulate interruption before setup completes
         try {
             setup(); // Re-run setup with interruption

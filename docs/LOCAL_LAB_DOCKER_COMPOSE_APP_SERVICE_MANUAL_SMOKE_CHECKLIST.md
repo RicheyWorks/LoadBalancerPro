@@ -41,7 +41,7 @@ These commands are optional and manual. They are local-lab-only. They are not pa
 Manually package first if a reviewer chooses to run the app service:
 
 ```powershell
-mvn -q "-DskipTests" package
+mvn -q -P lab "-DskipTests" package
 ```
 
 Inspect the rendered Compose configuration:

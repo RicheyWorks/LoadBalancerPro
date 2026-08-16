@@ -34,13 +34,13 @@ function Assert-RequiredFile {
 }
 
 function Find-ExecutableJar {
-    $expectedJarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
+    $expectedJarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -Lab -ExpectedOnly
     if (-not (Test-Path -LiteralPath $expectedJarPath -PathType Leaf)) {
         Write-Host "No packaged jar found; running mvn package."
-        & mvn -q -DskipTests package
+        & mvn -q -P lab -DskipTests package
     }
 
-    return & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1")
+    return & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -Lab
 }
 
 function Invoke-SmokeRequest {

@@ -56,7 +56,7 @@ function Write-EvidenceFile {
 }
 
 function Find-ExecutableJar {
-    $jarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
+    $jarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -Lab -ExpectedOnly
     if (Test-Path -LiteralPath $jarPath -PathType Leaf) {
         return (Resolve-Path -LiteralPath $jarPath).Path
     }
@@ -185,7 +185,7 @@ try {
     $fixture = Get-Content -LiteralPath $FixturePath -Raw | ConvertFrom-Json
     $jarPath = Find-ExecutableJar
     if ($Package -or $null -eq $jarPath) {
-        & mvn -q -DskipTests package
+        & mvn -q -P lab -DskipTests package
         if ($LASTEXITCODE -ne 0) {
             throw "mvn package failed with exit code $LASTEXITCODE"
         }

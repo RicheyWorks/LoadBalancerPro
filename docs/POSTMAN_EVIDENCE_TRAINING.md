@@ -2,6 +2,8 @@
 
 LoadBalancerPro exposes read-only evidence training onboarding routes for local API demos, GUI-facing clients, and Postman walkthroughs. The routes surface the packaged evidence policy templates, examples, scorecards, and scorecard answer JSON shape without replacing the offline CLI.
 
+Run this lab surface from source or build the Lab Tools artifact with `mvn -B -P lab -DskipTests package`. The default production JAR intentionally omits evidence-training controllers, pages, and CLIs.
+
 The same local demo flow is available in the first-party browser cockpit:
 
 ```text
@@ -100,10 +102,10 @@ The grade response includes `scorecardVersion`, `totalExercises`, `totalScore`, 
 The API server is optional for CLI workflows. Operators can still use:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-templates
-java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-examples
-java -jar target/LoadBalancerPro-2.5.0.jar --list-training-scorecards
-java -jar target/LoadBalancerPro-2.5.0.jar --grade-training-scorecard scorecard-answers.json
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-policy-templates
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-policy-examples
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-training-scorecards
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --grade-training-scorecard scorecard-answers.json
 ```
 
 ## Browser Parity

@@ -2,6 +2,8 @@
 
 This runbook is for degraded allocation, load-shedding, validation-failure, and observability incidents in LoadBalancerPro. It assumes the service is running in a trusted environment and that release and cloud-safety guardrails remain enabled.
 
+Offline remediation, evidence-policy, and training CLI commands below require the Lab Tools artifact built with `mvn -B -P lab -DskipTests package`. The default production JAR contains only the proxy runtime.
+
 Start reviewer evidence navigation with the LoadBalancerPro Enterprise Lab identity in [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), the P0/P1/P2/P3 product roadmap in [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), the controlled active LASE policy gate in [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), measured local performance evidence in [`../evidence/PERFORMANCE_BASELINE.md`](../evidence/PERFORMANCE_BASELINE.md), the mocked IdP/JWKS proof lane in [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), paste-ready follow-up goals in [`NEXT_GOAL_PROMPTS.md`](archive/project-history/NEXT_GOAL_PROMPTS.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), the concise production-candidate snapshot in [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md), the verified `v2.5.0` release note in [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md), the release-free current-main packet in [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), the human decision packet in [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md), the v2.5.0 notes in [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), and the historical exact-version hard stop in [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). Use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when you need copyable local, API-key, OAuth2, proxy-loopback, or container startup recipes, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for local-only Docker build/run guidance, then use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar and proxy-loopback smoke path.
 
 For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](ANTIVIRUS_SAFE_DEVELOPMENT.md). For live/proxy validation containment, use [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md) before expanding beyond localhost or private-network backends. For the future private-network profile path, use [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md), the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe, and [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md) before any live private-network execution.
@@ -124,7 +126,7 @@ The report exporter formats an existing evaluation or scenario replay response. 
 For offline handoff or post-incident analysis, save the evaluation or replay JSON and run the remediation report CLI without starting the API server:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --remediation-report \
   --input saved-evaluation.json \
   --format markdown \
@@ -136,7 +138,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 Attach both `incident-report.md` and `incident-report.manifest.json` to the incident ticket when integrity evidence is needed. Re-verify the bundle offline with:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --verify-manifest incident-report.manifest.json
 ```
 
@@ -145,7 +147,7 @@ The manifest is SHA-256 checksum evidence only. It detects missing or changed fi
 For a portable ticket attachment, export a ZIP bundle instead:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --input saved-evaluation.json \
   --format markdown \
   --bundle incident-bundle.zip \
@@ -160,7 +162,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 Verify the bundle later without starting the API server:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --verify-bundle incident-bundle.zip
 ```
 
@@ -171,7 +173,7 @@ Use `--redact` or `--redact-file` before sharing incident evidence outside the i
 Use `--audit-log` when the offline CLI action should be chained into a local operator evidence trail. Audit entries are JSON Lines with SHA-256 `entryHash` and `previousEntryHash` fields. Verify the chain later with:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --verify-audit-log incident-audit.jsonl
 ```
 
@@ -180,7 +182,7 @@ The local audit log detects changed entries, malformed entries, sequence gaps, d
 Inventory the local evidence directory before handoff:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --inventory incident-evidence \
   --inventory-format markdown \
   --verify-inventory \
@@ -194,7 +196,7 @@ The inventory detects bundles, manifests, audit logs, redaction summaries, repor
 Compare sender and receiver inventories during handoff:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --diff-format markdown \
   --fail-on-drift \
@@ -206,7 +208,7 @@ The diff reports added, removed, checksum-changed, verification-status-drifted, 
 Evaluate the handoff delta against a local policy when some drift is expected:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --policy-template regulated-handoff \
   --policy-report-format markdown \
@@ -221,9 +223,9 @@ Use `STRICT` policies for zero-drift handoffs and `ALLOWLIST` policies when expe
 For operator training or a dry-run before a real handoff, list and export packaged examples:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-examples
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-policy-examples
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --walkthrough-policy-example receiver-redaction-warn \
   --example-output-dir walkthrough/receiver-redaction \
   --policy-report-format markdown
@@ -234,7 +236,7 @@ The walkthrough exports synthetic `before.json`, `after.json`, and `expected-dec
 To practice the entire packaged policy matrix in one offline command:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --run-policy-training-lab \
   --training-lab-format markdown \
   --training-lab-output evidence-policy-training-lab.md
@@ -245,12 +247,12 @@ Use `--training-lab-export-dir walkthrough/all-examples` when the operator also 
 To grade an operator's decision, reason, action, and optional remediation note against packaged answer keys:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --list-training-scorecards
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-training-scorecards
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --print-training-scorecard regulated-handoff-fail
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --grade-training-scorecard scorecard-answers.json \
   --scorecard-format markdown \
   --scorecard-output scorecard-report.md \

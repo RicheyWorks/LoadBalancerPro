@@ -1,20 +1,19 @@
 # LoadBalancerPro
 
-LoadBalancerPro is a Java 17 / Spring Boot adaptive-routing service and controlled enterprise lab. It combines a calculation API, deterministic routing comparison, an opt-in HTTP reverse proxy, operator status surfaces, durable local experiment evidence, and guarded cloud-management code.
+LoadBalancerPro is a Java 17 / Spring Boot reverse proxy plus a controlled, opt-in enterprise lab. The default deployable artifact contains the real proxy runtime and its operator status surface; calculation, simulation, experiment evidence, demos, and guarded cloud-management tools are isolated in a Maven `lab` profile.
 
 The default posture is conservative: API-key authentication is selected, proxying and LASE shadow mode are disabled, cloud mutation is dry-run, telemetry export is off, and only health/info Actuator endpoints are exposed.
 
 ## Current capabilities
 
-- Capacity-aware, predictive, and evaluation-only allocation APIs.
-- Deterministic request-level comparison for round-robin, weighted round-robin, weighted least-load, weighted least-connections, and tail-latency-aware strategies.
-- Read-only Decision Explorer and browser cockpit surfaces for local review.
+- Capacity-aware, predictive, and evaluation-only allocation APIs in the source/Lab Tools runtime.
+- Deterministic request-level comparison and Decision Explorer/browser cockpit surfaces in the source/Lab Tools runtime.
 - Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, bounded recent-decision records and read-only per-decision explanations, opt-in asynchronous LASE shadow evaluation, active health checks, retry budgets/backoff, cooldown/slow-start recovery, process-local concurrency/load-shedding controls, status, and guarded reload.
-- Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools.
+- Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools in the opt-in Lab Tools artifact.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
 - A guarded AWS `CloudManager` boundary using AWS SDK v2; live mutation requires explicit operator and account/region/capacity gates.
-- Executable Spring Boot JAR, non-root Docker image, CycloneDX SBOM generation, and local smoke helpers.
+- Production-boundary executable Spring Boot JAR, separate opt-in Lab Tools JAR, non-root proxy Docker image, CycloneDX SBOM generation, and local smoke helpers.
 
 ## Engineering Trust Interface
 
@@ -71,6 +70,13 @@ java -jar "$(bash scripts/resolve-executable-jar.sh)" \
   --spring.profiles.active=local
 ```
 
+This default JAR is the production proxy artifact. It serves `/proxy-status.html` and omits lab, CLI, demo, GUI, Decision Explorer/replay/evidence-training services, `ServerMonitor`, and lab-only dependencies. Build simulation and CLI tooling explicitly:
+
+```bash
+mvn -B -P lab -DskipTests package
+java -jar "$(bash scripts/resolve-executable-jar.sh --lab)" --lase-demo=healthy
+```
+
 PowerShell resolves the same Maven `project.build.finalName`:
 
 ```powershell
@@ -88,6 +94,8 @@ java -jar $jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.
 | `cloud-sandbox` | Guarded sandbox configuration | API key; cloud dry-run and mutation disabled | Disabled |
 | OAuth2 configuration | Trusted issuer/JWK deployment | JWT roles | Disabled unless explicitly enabled |
 | `proxy-demo-*` | Scripted loopback proxy fixtures | Disabled; loopback only | Explicitly enabled |
+
+`cloud-sandbox` and `proxy-demo-*` are source/Lab Tools profiles and are not packaged in the default production JAR.
 
 Copyable profile examples are under [`docs/examples/operator-run-profiles`](docs/examples/operator-run-profiles). See [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) for the full run matrix.
 
@@ -125,7 +133,7 @@ Important defaults in `application.properties`:
 | `management.otlp.metrics.export.enabled` | `false` | No default OTLP export |
 | `management.endpoints.web.exposure.include` | `health,info` | Minimal Actuator exposure |
 
-In API-key mode, `GET /api/health` and unauthenticated `OPTIONS` are the public API exceptions. Other `/api/**` routes, `/proxy/**`, OpenAPI, and Swagger require the configured key. Use:
+In the source/Lab Tools API runtime, `GET /api/health` and unauthenticated `OPTIONS` are the public API exceptions. Other `/api/**` routes, `/proxy/**`, OpenAPI, and Swagger require the configured key. The production artifact uses `/actuator/health` for health checks. Use:
 
 ```bash
 export LOADBALANCERPRO_API_KEY='supply-from-a-secret-manager'
@@ -150,7 +158,7 @@ Proxy mode requires explicit routes or upstreams. Start with the loopback smoke 
 pwsh ./scripts/smoke/operator-run-profiles-smoke.ps1 -Package
 ```
 
-The proxy exposes forwarding under `/proxy/**`, read-only state at `GET /api/proxy/status`, the newest 100 process-local forwarding decisions at `GET /api/proxy/decisions/recent`, read-only analysis for a retained attempt at `GET /api/proxy/decisions/{decisionId}/explain`, opt-in live shadow results and bounded dispatch counters at `GET /api/lase/shadow`, and guarded configuration reload at `POST /api/proxy/reload`. Named routes support exact host/header predicates and deterministic percentage split groups in addition to path prefixes. The explanation uses score and factor evidence captured with the actual selection; it does not rerun a stateful, sampled, keyed, positional, or affinity strategy later. With `loadbalancerpro.lase.shadow.enabled=true`, each completed forwarding attempt offers its privacy-bounded candidate snapshot to a single-worker queue of 100; evaluation is never awaited by the forwarding request, and queue saturation drops shadow work rather than blocking traffic. Operator configuration examples are under [`docs/examples/proxy`](docs/examples/proxy).
+The production proxy exposes forwarding under `/proxy/**`, read-only state at `GET /api/proxy/status`, the newest 100 process-local forwarding decisions at `GET /api/proxy/decisions/recent`, read-only analysis for a retained attempt at `GET /api/proxy/decisions/{decisionId}/explain`, and guarded configuration reload at `POST /api/proxy/reload`. Named routes support exact host/header predicates and deterministic percentage split groups in addition to path prefixes. The explanation uses score and factor evidence captured with the actual selection; it does not rerun a stateful, sampled, keyed, positional, or affinity strategy later. Opt-in LASE shadow evaluation and `GET /api/lase/shadow` remain available only in the source/Lab Tools runtime. Operator configuration examples are under [`docs/examples/proxy`](docs/examples/proxy).
 
 Before enabling private-network validation, review:
 
@@ -235,7 +243,7 @@ docker run --rm --name loadbalancerpro-local \
   -p 127.0.0.1:8080:8080 \
   -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY \
   loadbalancerpro:local
-curl -fsS http://127.0.0.1:8080/api/health
+curl -fsS http://127.0.0.1:8080/actuator/health
 ```
 
 The Docker image runs as a non-root user and defaults to the `prod` profile. Keep the host port loopback-bound for local checks. See [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for networking and TLS boundaries.
@@ -246,7 +254,7 @@ The Docker image runs as a non-root user and defaults to the `prod` profile. Kee
 2. Supply secrets through deployment secret management.
 3. Keep proxy, cloud mutation, telemetry export, and expanded Actuator exposure disabled unless required.
 4. Build and verify the exact artifact.
-5. Start on loopback, verify `/api/health` and `/actuator/health`, then test protected routes.
+5. Start on loopback, verify `/actuator/health`, then test protected routes.
 6. If proxying is enabled, validate route targets, health behavior, retry budget/backoff, cooldown/slow-start recovery, status, and reload before widening access.
 7. Review logs and metrics for sanitized configuration summaries and failures.
 8. Apply deployment-specific TLS, network policy, authentication, rate limits, resource limits, monitoring, backup, and rollback controls.

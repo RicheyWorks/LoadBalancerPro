@@ -178,7 +178,8 @@ fi
 base_url="https://127.0.0.1:$proxy_port"
 curl_tls=(--silent --show-error --cacert "$tls_dir/ca.pem" --connect-timeout 3 --max-time 10)
 for attempt in $(seq 1 120); do
-    if curl "${curl_tls[@]}" --fail --output /dev/null "$base_url/api/health"; then
+    if curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
+        --output /dev/null "$base_url/actuator/health"; then
         break
     fi
     if [[ "$attempt" -eq 120 ]]; then
@@ -414,7 +415,8 @@ run_scenario_set
 if [[ "$mode" == "soak" ]]; then
     "${compose[@]}" restart loadbalancerpro backend-a backend-b
     for attempt in $(seq 1 120); do
-        if curl "${curl_tls[@]}" --fail --output /dev/null "$base_url/api/health"; then
+        if curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
+            --output /dev/null "$base_url/actuator/health"; then
             break
         fi
         [[ "$attempt" -lt 120 ]] || { echo "Stack did not recover before soak" >&2; exit 1; }

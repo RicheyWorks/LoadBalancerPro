@@ -1,6 +1,6 @@
 # Operator Packaging
 
-This page collects the shortest operator commands for local API/proxy review, the Java fixture launcher, real-backend examples, and packaging caveats. Default application behavior remains unchanged: `src/main/resources/application.properties` keeps `loadbalancerpro.proxy.enabled=false`.
+This page collects the shortest operator commands for the production proxy artifact, the opt-in Lab Tools artifact, local fixtures, and real-backend examples. Default application behavior remains unchanged: `src/main/resources/application.properties` keeps `loadbalancerpro.proxy.enabled=false`.
 
 Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md). Use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) for the concise profile matrix and copyable startup recipes before drilling into packaging details here.
 
@@ -28,38 +28,45 @@ java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLau
 
 The Maven exec plugin is declared without lifecycle bindings, so it does not replace the Spring Boot main class and does not change normal `mvn test`, `mvn package`, or `java -jar` behavior.
 
-For a local-only packaged-jar, prod API-key boundary, and proxy-loopback smoke path, see [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md). For local-only Docker build/run recipes and container-specific safety boundaries, see [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md). For the older release-free packaged-jar and status-page helper, see [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md). For local SHA-256, manifest, `jar tf`, static page, demo profile, and fixture launcher class inspection, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md). CI also uploads the same packaged-jar inspection output as the `packaged-artifact-smoke` workflow artifact; [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md) explains how reviewers download that artifact, compare checksum evidence, and inspect the JaCoCo/SBOM workflow artifacts without publishing a release.
+For a local-only packaged-jar, prod API-key boundary, and proxy-loopback smoke path, see [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md). For local-only Docker build/run recipes and container-specific safety boundaries, see [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md). For the release-free production package and status-page helper, see [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md). For local SHA-256, manifest, `jar tf`, and production-boundary inspection, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md). CI also uploads the same packaged-jar inspection output as the `packaged-artifact-smoke` workflow artifact; [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md) explains how reviewers download that artifact, compare checksum evidence, and inspect the JaCoCo/SBOM workflow artifacts without publishing a release.
 
 When preparing a release-free go/no-go operator packet, use [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) to cite these packaging commands alongside CI artifacts and demo evidence.
 
 For a side-by-side Windows/Unix install/run matrix covering packaged jar, Maven exec, Spring profiles, proxy demos, status pages, CI artifacts, local verification, and smoke helpers, see [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). Before any future release process is intentionally invoked, complete [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
 
-## Packaged API Jar
+## Artifact Profiles
 
-Build the normal Spring Boot application jar:
+The default build produces the deployable proxy artifact. It contains the proxy runtime, health/status APIs, security filters, production configuration, and `proxy-status.html`. It excludes lab, CLI, demo, GUI, Decision Explorer, replay/evidence-training services, `ServerMonitor`, and lab-only AWS, Reactor, and Gson dependencies.
 
 ```bash
 mvn -B -DskipTests package
 ```
 
-Run the API with the packaged jar:
+Build the opt-in Lab Tools artifact when simulation, evidence, demo, or enterprise-lab commands are required:
+
+```bash
+mvn -B -P lab -DskipTests package
+```
+
+The Lab Tools artifact is named with a `-lab` suffix and starts `com.richmond423.loadbalancerpro.cli.LabToolsApplication`. It is not the release or container artifact.
+
+## Packaged Proxy Jar
+
+Run the default production-boundary artifact:
 
 ```bash
 JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
 java -jar "$JAR_PATH" --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
-Run the proxy demo profile with the packaged jar after the fixture launcher is running:
+Run a proxy demo profile from the Lab Tools artifact after the fixture launcher is running:
 
 ```bash
-JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh --lab)"
 java -jar "$JAR_PATH" --spring.profiles.active=proxy-demo-round-robin
 ```
 
-The resolver uses Maven's effective `project.build.finalName`, requires that exact jar, and does not select stale
-artifacts by filename or modification time. The executable jar main class remains
-`com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`. Use Maven exec or the classpath fallback for
-`com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`.
+The resolver uses Maven's effective `project.build.finalName`, requires that exact jar, and does not select stale artifacts by filename or modification time. Without `--lab` (or PowerShell `-Lab`) it resolves the production artifact whose main class is `com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`. Use Maven exec, the Lab Tools artifact, or the classpath fallback for demo tooling.
 
 ## Real-Backend Examples
 
@@ -95,7 +102,7 @@ The examples avoid public upstream URLs, secrets, cloud settings, generated runt
 
 ## JavaFX Desktop UI Retired
 
-The JavaFX desktop simulator and its Maven dependency are removed. The API, proxy, offline report CLI, Java fixture launcher, static browser pages, and Maven exec recipes remain the maintained operator paths and do not require JavaFX.
+The JavaFX desktop simulator and its Maven dependency are removed. The proxy runtime remains in the default artifact; offline report CLIs, the Java fixture launcher, and simulation browser pages remain available from source or the Lab Tools artifact and do not require JavaFX.
 
 See [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) for the retirement record, the retained JavaFX-free compatibility contract, and the maintained API/proxy/static browser operator paths.
 

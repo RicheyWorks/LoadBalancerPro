@@ -143,45 +143,19 @@ jobs:
             fi
           }
 
-          assert_not_contains() {
-            local file="$1"
-            local unexpected="$2"
-            if grep -Fq "$unexpected" "$file"; then
-              echo "Unexpected output found: $unexpected"
-              cat "$file"
-              exit 1
-            fi
-          }
-
           VERSION_LOG="$(mktemp)"
-          HEALTHY_LOG="$(mktemp)"
-          INVALID_LOG="$(mktemp)"
+          RESOURCE_LIST="$(mktemp)"
+          LAB_CONTENT_PATTERN='^BOOT-INF/classes/com/richmond423/loadbalancerpro/(cli|demo|gui|lab)/|^BOOT-INF/classes/com/richmond423/loadbalancerpro/api/(AllocatorController|DecisionExplorer|EnterpriseLab|Evidence|Lase|Remediation|RoutingController|ScenarioReplay)|^BOOT-INF/classes/com/richmond423/loadbalancerpro/core/(CloudManager|LoadBalancer|ServerMonitor)|^BOOT-INF/classes/static/(adaptive-routing|ci-evidence|decision-explorer|enterprise-lab|evidence-|index\.html|load-balancing|operator-evidence|routing-demo)|^BOOT-INF/lib/(autoscaling|cloudwatch|ec2|aws-|sdk-core|reactor-core|gson)-'
 
           java -jar "$RELEASE_JAR" --version >"$VERSION_LOG" 2>&1
           assert_contains "$VERSION_LOG" "LoadBalancerPro version $RELEASE_VERSION"
 
-          java -jar "$RELEASE_JAR" --lase-demo=healthy >"$HEALTHY_LOG" 2>&1
-          assert_contains "$HEALTHY_LOG" "=== LoadBalancerPro LASE Synthetic Demo ==="
-          assert_contains "$HEALTHY_LOG" "Evaluation ID: lase-demo-healthy"
-          assert_contains "$HEALTHY_LOG" "recommendation-only"
-          assert_contains "$HEALTHY_LOG" "No live AWS resources touched"
-          assert_contains "$HEALTHY_LOG" "No CloudManager calls"
-
-          set +e
-          java -jar "$RELEASE_JAR" --lase-demo=invalid-name >"$INVALID_LOG" 2>&1
-          invalid_status=$?
-          set -e
-          if [ "$invalid_status" -eq 0 ]; then
-            echo "Invalid LASE demo scenario unexpectedly succeeded."
-            cat "$INVALID_LOG"
+          jar tf "$RELEASE_JAR" | sort > "$RESOURCE_LIST"
+          if grep -Eq "$LAB_CONTENT_PATTERN" "$RESOURCE_LIST"; then
+            echo "Release artifact contains lab-only classes or dependencies."
+            grep -E "$LAB_CONTENT_PATTERN" "$RESOURCE_LIST"
             exit 1
           fi
-          assert_contains "$INVALID_LOG" "Invalid LASE demo scenario"
-          assert_contains "$INVALID_LOG" "Valid values:"
-          assert_contains "$INVALID_LOG" "healthy"
-          assert_contains "$INVALID_LOG" "overloaded"
-          assert_not_contains "$INVALID_LOG" "Exception"
-          assert_not_contains "$INVALID_LOG" "java.lang"
 
       - name: Generate CycloneDX SBOM
         run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -DincludeProvidedScope=false -Dcyclonedx.skipAttach=true

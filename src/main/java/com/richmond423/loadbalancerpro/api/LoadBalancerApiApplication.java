@@ -1,12 +1,5 @@
 package com.richmond423.loadbalancerpro.api;
 
-import com.richmond423.loadbalancerpro.cli.AdaptiveRoutingExperimentCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabStorageRepairCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabSupervisorCommand;
-import com.richmond423.loadbalancerpro.cli.EnterpriseLabWorkflowCommand;
-import com.richmond423.loadbalancerpro.cli.LaseDemoCommand;
-import com.richmond423.loadbalancerpro.cli.LaseReplayCommand;
-import com.richmond423.loadbalancerpro.cli.RemediationReportCli;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -19,74 +12,7 @@ public class LoadBalancerApiApplication {
             System.out.println("LoadBalancerPro version " + version());
             return;
         }
-        if (!shouldStartApi(args)) {
-            RemediationReportCli.Result reportResult =
-                    RemediationReportCli.runIfRequested(args, System.out, System.err);
-            if (reportResult.requested()) {
-                if (reportResult.exitCode() != 0) {
-                    System.exit(reportResult.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabStorageRepairCommand.Result repairResult =
-                    EnterpriseLabStorageRepairCommand.runIfRequested(
-                            args, System.out, System.err);
-            if (repairResult.requested()) {
-                if (repairResult.exitCode() != 0) {
-                    System.exit(repairResult.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabSupervisorCommand.Result supervisorResult =
-                    EnterpriseLabSupervisorCommand.runIfRequested(
-                            args, System.out, System.err);
-            if (supervisorResult.requested()) {
-                if (supervisorResult.exitCode() != 0) {
-                    System.exit(supervisorResult.exitCode());
-                }
-                return;
-            }
-            AdaptiveRoutingExperimentCommand.Result experimentResult =
-                    AdaptiveRoutingExperimentCommand.runIfRequested(args, System.out, System.err);
-            if (experimentResult.requested()) {
-                if (experimentResult.exitCode() != 0) {
-                    System.exit(experimentResult.exitCode());
-                }
-                return;
-            }
-            EnterpriseLabWorkflowCommand.Result labWorkflowResult =
-                    EnterpriseLabWorkflowCommand.runIfRequested(args, System.out, System.err);
-            if (labWorkflowResult.requested()) {
-                if (labWorkflowResult.exitCode() != 0) {
-                    System.exit(labWorkflowResult.exitCode());
-                }
-                return;
-            }
-            LaseReplayCommand.Result replayResult = LaseReplayCommand.runIfRequested(args, System.out, System.err);
-            if (replayResult.requested()) {
-                if (replayResult.exitCode() != 0) {
-                    System.exit(replayResult.exitCode());
-                }
-                return;
-            }
-            LaseDemoCommand.Result demoResult = LaseDemoCommand.runIfRequested(args, System.out, System.err);
-            if (demoResult.exitCode() != 0) {
-                System.exit(demoResult.exitCode());
-            }
-            return;
-        }
         SpringApplication.run(LoadBalancerApiApplication.class, args);
-    }
-
-    static boolean shouldStartApi(String[] args) {
-        return !isVersionRequested(args)
-                && !RemediationReportCli.isRequested(args)
-                && !EnterpriseLabStorageRepairCommand.isRequested(args)
-                && !EnterpriseLabSupervisorCommand.isRequested(args)
-                && !AdaptiveRoutingExperimentCommand.isRequested(args)
-                && !EnterpriseLabWorkflowCommand.isRequested(args)
-                && !LaseDemoCommand.isRequested(args)
-                && !LaseReplayCommand.isRequested(args);
     }
 
     static boolean isVersionRequested(String[] args) {

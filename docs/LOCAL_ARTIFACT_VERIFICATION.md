@@ -1,6 +1,6 @@
 # Local Artifact Verification
 
-This guide verifies a locally built LoadBalancerPro jar without publishing a release. It covers local SHA-256 checksum evidence, Spring Boot jar inspection, packaged static resources, demo profiles, fixture launcher class presence, and local run commands.
+This guide verifies the production-boundary LoadBalancerPro proxy jar without publishing a release. It covers local SHA-256 checksum evidence, Spring Boot jar inspection, required proxy resources, forbidden lab content, and local run commands.
 
 This path is release-free: it creates no tags, no GitHub releases, no release assets, and no canonical release evidence. It does not modify release workflows, does not touch `release-downloads/`, and does not commit generated jars, checksums, manifests, or reports.
 
@@ -85,28 +85,17 @@ jar tf "$JAR_PATH" | grep 'META-INF/MANIFEST.MF'
 jar tf "$JAR_PATH" | grep 'BOOT-INF/classes/'
 ```
 
-Verify packaged static pages:
+Verify required production entries:
 
 ```text
 BOOT-INF/classes/static/proxy-status.html
-BOOT-INF/classes/static/load-balancing-cockpit.html
+BOOT-INF/classes/application-proxy-prod.properties
+BOOT-INF/classes/com/richmond423/loadbalancerpro/api/LoadBalancerApiApplication.class
+BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.class
+BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyStatusController.class
 ```
 
-Verify packaged proxy demo profiles:
-
-```text
-BOOT-INF/classes/application-proxy-demo-round-robin.properties
-BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties
-BOOT-INF/classes/application-proxy-demo-failover.properties
-```
-
-Verify the Java fixture launcher class is packaged:
-
-```text
-BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class
-```
-
-The real-backend example property files under `docs/examples/proxy` are source-tree examples for copy/adapt workflows. They are not required to be packaged into the Spring Boot jar.
+The verification helpers also reject lab, CLI, demo, and GUI packages; Decision Explorer, replay, and evidence-training APIs; the synthetic `ServerMonitor`; simulation browser pages; and lab-only cloud/reactive/JSON libraries. The real-backend example property files under `docs/examples/proxy` remain source-tree copy/adapt examples and are not packaged.
 
 ## Helper Scripts
 
@@ -150,15 +139,13 @@ artifact-sha256.txt
 jar-resource-list.txt
 ```
 
-The CI summary verifies the same required jar entries as the local helpers:
+The CI summary verifies the same production entries and absence rules as the local helpers. Its required application entries are:
 
 ```text
 BOOT-INF/classes/static/proxy-status.html
-BOOT-INF/classes/static/load-balancing-cockpit.html
-BOOT-INF/classes/application-proxy-demo-round-robin.properties
-BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties
-BOOT-INF/classes/application-proxy-demo-failover.properties
-BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class
+BOOT-INF/classes/application-proxy-prod.properties
+BOOT-INF/classes/com/richmond423/loadbalancerpro/api/LoadBalancerApiApplication.class
+BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.class
 ```
 
 Use the artifact checksum as CI evidence for the jar built in that workflow run. It is not a GitHub Release checksum, is not uploaded as a release asset, and should not be copied into `release-downloads/` for this verification path.
@@ -179,26 +166,26 @@ java -jar "$JAR_PATH" --server.address=127.0.0.1 --server.port=8080 --spring.pro
 Then verify:
 
 ```bash
-curl -fsS http://127.0.0.1:8080/api/health
+curl -fsS http://127.0.0.1:8080/actuator/health
 curl -fsS http://127.0.0.1:8080/proxy-status.html
-curl -fsS http://127.0.0.1:8080/load-balancing-cockpit.html
 curl -fsS http://127.0.0.1:8080/api/proxy/status
 ```
 
-Start the fixture launcher with Maven exec:
+Build and resolve the separate Lab Tools artifact when simulation or demo commands are intentionally required:
 
 ```bash
-mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+mvn -B -P lab -DskipTests package
+LAB_JAR_PATH="$(bash scripts/resolve-executable-jar.sh --lab)"
+java -jar "$LAB_JAR_PATH" --lase-demo=healthy
 ```
 
-Classpath fallback after compilation:
+PowerShell uses the equivalent resolver switch:
 
-```bash
-mvn -q -DskipTests compile
-java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
+```powershell
+$labJarPath = .\scripts\resolve-executable-jar.ps1 -Lab
 ```
 
-The packaged Spring Boot executable jar starts `com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`. Use Maven exec or the classpath fallback for the fixture launcher.
+The default executable starts `com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`; the `-P lab` executable starts `com.richmond423.loadbalancerpro.cli.LabToolsApplication`.
 
 ## Cleanup
 
@@ -211,7 +198,8 @@ The packaged Spring Boot executable jar starts `com.richmond423.loadbalancerpro.
 
 - If the version-derived executable jar is missing, run `mvn -B -DskipTests package`, then rerun the resolver.
 - If `jar` is unavailable, confirm the JDK `bin` directory is on `PATH`.
-- If `proxy-status.html` or `load-balancing-cockpit.html` is missing from `jar tf`, rebuild and confirm the source files exist under `src/main/resources/static`.
+- If `proxy-status.html` is missing from `jar tf`, rebuild and confirm the source file exists under `src/main/resources/static`.
+- If a lab command is unavailable, package with `-P lab` and resolve the artifact with `--lab` or `-Lab`; do not add lab classes to the production jar.
 - If `/api/proxy/status` reports proxy disabled during local startup, that is expected for default local runs.
 - If Maven fails with a PKIX trust-chain error, use the GitHub CI package result as the source of truth until the workstation trust store is fixed.
 

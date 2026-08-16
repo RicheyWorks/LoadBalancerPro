@@ -89,8 +89,9 @@ services:
         - CMD-SHELL
         - >-
           curl --fail --silent --show-error --cacert /run/tls/ca.pem
+          --header "X-API-Key: $$(cat /run/secrets/loadbalancerpro.api.key)"
           --resolve "$${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
-          "https://$${LBP_TLS_HOSTNAME}:8080/api/health" > /dev/null
+          "https://$${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
       interval: 5s
       timeout: 3s
       start_period: 30s

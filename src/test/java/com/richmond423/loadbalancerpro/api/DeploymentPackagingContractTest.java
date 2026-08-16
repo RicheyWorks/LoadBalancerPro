@@ -65,6 +65,7 @@ class DeploymentPackagingContractTest {
                 "target: /run/trust",
                 "target: /run/identity",
                 "read_only: true",
+                "X-API-Key: $$(cat /run/secrets/loadbalancerpro.api.key)",
                 "no-new-privileges:true",
                 "stop_signal: SIGTERM",
                 "stop_grace_period: 35s")) {
@@ -103,7 +104,8 @@ class DeploymentPackagingContractTest {
                 "drop: [\"ALL\"]",
                 "terminationGracePeriodSeconds: 40",
                 "sleep 5",
-                "https://${LBP_TLS_HOSTNAME}:8080/api/health",
+                "https://${LBP_TLS_HOSTNAME}:8080/actuator/health",
+                "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)",
                 "secretName: loadbalancerpro-api-key",
                 "secretName: loadbalancerpro-server-tls")) {
             assertTrue(manifest.contains(expected), "missing manifest boundary: " + expected);
@@ -120,6 +122,7 @@ class DeploymentPackagingContractTest {
                 "docker image save",
                 "docker kill --signal=TERM",
                 "effectiveHealthyBackendCount",
+                "$base_url/actuator/health",
                 "actuator/prometheus",
                 "ReadonlyRootfs",
                 "CapDrop")) {

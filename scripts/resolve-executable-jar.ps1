@@ -1,5 +1,6 @@
 param(
-    [switch]$ExpectedOnly
+    [switch]$ExpectedOnly,
+    [switch]$Lab
 )
 
 $ErrorActionPreference = "Stop"
@@ -8,9 +9,15 @@ if (-not (Test-Path -LiteralPath "pom.xml" -PathType Leaf)) {
     throw "pom.xml not found; run the executable-JAR resolver from the repository root."
 }
 
-$mavenOutput = @(
-    & mvn -q '-DforceStdout' '-Dstyle.color=never' help:evaluate '-Dexpression=project.build.finalName'
-)
+$mavenArguments = @('-q', '-DforceStdout', '-Dstyle.color=never')
+if ($Lab) {
+    $mavenArguments += '-P'
+    $mavenArguments += 'lab'
+}
+$mavenArguments += 'help:evaluate'
+$mavenArguments += '-Dexpression=project.build.finalName'
+
+$mavenOutput = @(& mvn @mavenArguments)
 if ($LASTEXITCODE -ne 0) {
     throw "Maven could not resolve project.build.finalName."
 }
@@ -23,7 +30,8 @@ if ([string]::IsNullOrWhiteSpace($finalName) -or $finalName -notmatch '^[A-Za-z0
 
 $jarPath = "target/$finalName.jar"
 if (-not $ExpectedOnly -and -not (Test-Path -LiteralPath $jarPath -PathType Leaf)) {
-    throw "Expected executable jar not found: $jarPath. Run mvn -B -DskipTests package first."
+    $packageCommand = if ($Lab) { "mvn -B -P lab -DskipTests package" } else { "mvn -B -DskipTests package" }
+    throw "Expected executable jar not found: $jarPath. Run $packageCommand first."
 }
 
 Write-Output $jarPath

@@ -23,7 +23,7 @@ function Assert-OutputUnderTarget {
 }
 
 function Find-ExecutableJar {
-    $jarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
+    $jarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -Lab -ExpectedOnly
     if (Test-Path -LiteralPath $jarPath -PathType Leaf) {
         return (Resolve-Path -LiteralPath $jarPath).Path
     }
@@ -51,7 +51,7 @@ $markdownPath = Join-Path $resolvedOutputDir "adaptive-routing-experiment.md"
 $metadataPath = Join-Path $resolvedOutputDir "adaptive-routing-experiment-metadata.json"
 
 if ($DryRun) {
-    $expectedJarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -ExpectedOnly
+    $expectedJarPath = & (Join-Path $PSScriptRoot "..\resolve-executable-jar.ps1") -Lab -ExpectedOnly
     Write-Host "Adaptive-routing experiment dry run."
     Write-Host "Output directory: $OutputDir"
     Write-Host "Planned command: java -jar $expectedJarPath --adaptive-routing-experiment=all"
@@ -61,7 +61,7 @@ if ($DryRun) {
 
 $jarPath = Find-ExecutableJar
 if ($Package -or $null -eq $jarPath) {
-    & mvn -q -DskipTests package
+    & mvn -q -P lab -DskipTests package
     if ($LASTEXITCODE -ne 0) {
         throw "mvn package failed with exit code $LASTEXITCODE"
     }

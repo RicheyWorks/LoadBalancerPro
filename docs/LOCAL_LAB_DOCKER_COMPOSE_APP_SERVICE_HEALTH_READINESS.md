@@ -59,7 +59,7 @@ These examples are optional manual local-only checks. They are not CI steps. The
 Package manually first if choosing to run the app service:
 
 ```powershell
-mvn -q "-DskipTests" package
+mvn -q -P lab "-DskipTests" package
 ```
 
 Inspect rendered local Compose configuration:

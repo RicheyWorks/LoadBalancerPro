@@ -34,6 +34,7 @@ public class ServerMonitor implements Runnable {
     private final LoadBalancer balancer;
     private final ShutdownHookRegistry shutdownHookRegistry;
     private volatile boolean running = false;
+    private volatile boolean stopRequested = false;
     private volatile boolean paused = false;
     private volatile double alertThreshold;
     private volatile long monitorIntervalMs;
@@ -76,6 +77,7 @@ public class ServerMonitor implements Runnable {
         int maxConsecutiveCloudFailures = 5;
         long alertCooldownMs = 60000;
         int metricHistoryWindow = 50;
+        boolean syntheticLocalMetricsEnabled = false;
 
         public Config withThreshold(double value) { this.alertThreshold = value; return this; }
         public Config withInterval(long ms) { this.monitorIntervalMs = ms; return this; }
@@ -90,6 +92,10 @@ public class ServerMonitor implements Runnable {
         public Config withMaxConsecutiveCloudFailures(int failures) { this.maxConsecutiveCloudFailures = failures; return this; }
         public Config withAlertCooldownMs(long ms) { this.alertCooldownMs = ms; return this; }
         public Config withMetricHistoryWindow(int window) { this.metricHistoryWindow = window; return this; }
+        public Config withSyntheticLocalMetrics(boolean enabled) {
+            this.syntheticLocalMetricsEnabled = enabled;
+            return this;
+        }
     }
 
     @FunctionalInterface
@@ -156,6 +162,7 @@ public class ServerMonitor implements Runnable {
             logger.warn("Monitor already running.");
             return;
         }
+        stopRequested = false;
         Thread newShutdownHook = new Thread(this::stop, "ServerMonitorShutdownHook");
         shutdownHookRegistry.addShutdownHook(newShutdownHook);
         shutdownHook = newShutdownHook;
@@ -174,6 +181,7 @@ public class ServerMonitor implements Runnable {
     }
 
     public synchronized void stop() {
+        stopRequested = true;
         if (!running && shutdownHook == null) return;
         running = false;
         try {
@@ -247,9 +255,15 @@ public class ServerMonitor implements Runnable {
 
     @Override
     public void run() {
-        monitorThread = Thread.currentThread();
-        if (!running) {
-            running = true;
+        synchronized (this) {
+            monitorThread = Thread.currentThread();
+            if (stopRequested) {
+                running = false;
+                return;
+            }
+            if (!running) {
+                running = true;
+            }
         }
         if (Thread.currentThread().isInterrupted()) {
             logger.warn("Monitor thread interrupted before starting.");
@@ -325,7 +339,9 @@ public class ServerMonitor implements Runnable {
             fetchCloudMetrics(server);
         } else {
             consecutiveCloudFailures = 0;
-            updateLocalMetrics(server);
+            if (config.syntheticLocalMetricsEnabled) {
+                updateLocalMetrics(server);
+            }
         }
     }
 
@@ -375,7 +391,9 @@ public class ServerMonitor implements Runnable {
                 raiseCriticalAlert(server, "Persistent cloud metric fetch failure");
                 notifyHealthEvent(server.getServerId(), false);
             }
-            updateLocalMetrics(server);
+            if (config.syntheticLocalMetricsEnabled) {
+                updateLocalMetrics(server);
+            }
         }
     }
 

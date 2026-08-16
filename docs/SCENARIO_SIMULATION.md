@@ -2,6 +2,8 @@
 
 LoadBalancerPro provides a read-only scenario replay endpoint for operator review and API-level regression coverage:
 
+Run the simulator from source or the opt-in Lab Tools artifact built with `mvn -B -P lab -DskipTests package`. It is not included in the default production JAR.
+
 ```text
 POST /api/scenarios/replay
 ```
@@ -260,7 +262,7 @@ The exporter is read-only and advisory. It formats supplied results only; it doe
 Saved replay or evaluation responses can also be exported offline with the remediation report CLI:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --remediation-report \
   --input saved-replay.json \
   --format json \

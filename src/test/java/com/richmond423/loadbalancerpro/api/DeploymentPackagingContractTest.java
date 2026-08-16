@@ -103,7 +103,7 @@ class DeploymentPackagingContractTest {
                 "drop: [\"ALL\"]",
                 "terminationGracePeriodSeconds: 40",
                 "sleep 5",
-                "https://${LBP_TLS_HOSTNAME}:8080/api/health",
+                "https://${LBP_TLS_HOSTNAME}:8080/actuator/health",
                 "secretName: loadbalancerpro-api-key",
                 "secretName: loadbalancerpro-server-tls")) {
             assertTrue(manifest.contains(expected), "missing manifest boundary: " + expected);

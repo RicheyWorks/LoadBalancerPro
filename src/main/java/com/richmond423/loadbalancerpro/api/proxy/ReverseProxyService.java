@@ -38,8 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
-import com.richmond423.loadbalancerpro.core.LiveRoutingShadowObservation;
 import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
 import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
@@ -107,7 +105,7 @@ public class ReverseProxyService implements SmartLifecycle {
     private final ConcurrentMap<String, DrainingUpstream> drainingUpstreams = new ConcurrentHashMap<>();
     private final UpstreamRuntimeStats globalRuntimeStats;
     private final LiveRoutingDecisionStore liveRoutingDecisions;
-    private final LaseShadowRuntime laseShadowRuntime;
+    private final LiveRoutingObservationSink liveObservationSink;
     private final ProxyDnsDiscoveryRuntime.Resolver dnsResolver;
     private final UpstreamHealthProber healthProber;
     private final ScheduledExecutorService drainScheduler;
@@ -119,12 +117,12 @@ public class ReverseProxyService implements SmartLifecycle {
                                ReverseProxyHttpClientProvider httpClientProvider,
                                ReverseProxyMetrics metrics,
                                ReverseProxyAccessLog accessLog,
-                               ObjectProvider<LaseShadowRuntime> laseShadowRuntimeProvider,
+                               ObjectProvider<LiveRoutingObservationSink> liveObservationSinkProvider,
                                ObjectProvider<RoutingStrategyRegistry> routingStrategyRegistryProvider) {
         this(properties, httpClient, httpClientProvider, metrics, accessLog,
                 routingStrategyRegistryProvider.getIfAvailable(RoutingStrategyRegistry::defaultRegistry),
                 Clock.systemUTC(),
-                laseShadowRuntimeProvider.getIfAvailable(LaseShadowRuntime::disabled),
+                liveObservationSinkProvider.getIfAvailable(LiveRoutingObservationSink::disabled),
                 ProxyDnsDiscoveryRuntime.Resolver.system());
     }
 
@@ -133,7 +131,7 @@ public class ReverseProxyService implements SmartLifecycle {
                         ReverseProxyMetrics metrics,
                         RoutingStrategyRegistry registry,
                         Clock clock) {
-        this(properties, httpClient, metrics, registry, clock, LaseShadowRuntime.disabled());
+        this(properties, httpClient, metrics, registry, clock, LiveRoutingObservationSink.disabled());
     }
 
     ReverseProxyService(ReverseProxyProperties properties,
@@ -141,10 +139,10 @@ public class ReverseProxyService implements SmartLifecycle {
                         ReverseProxyMetrics metrics,
                         RoutingStrategyRegistry registry,
                         Clock clock,
-                        LaseShadowRuntime laseShadowRuntime) {
+                        LiveRoutingObservationSink liveObservationSink) {
         this(properties, httpClient,
                 ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
-                metrics, ReverseProxyAccessLog.disabled(), registry, clock, laseShadowRuntime,
+                metrics, ReverseProxyAccessLog.disabled(), registry, clock, liveObservationSink,
                 ProxyDnsDiscoveryRuntime.Resolver.system());
     }
 
@@ -153,11 +151,11 @@ public class ReverseProxyService implements SmartLifecycle {
                         ReverseProxyMetrics metrics,
                         RoutingStrategyRegistry registry,
                         Clock clock,
-                        LaseShadowRuntime laseShadowRuntime,
+                        LiveRoutingObservationSink liveObservationSink,
                         ReverseProxyAccessLog accessLog) {
         this(properties, httpClient,
                 ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
-                metrics, accessLog, registry, clock, laseShadowRuntime,
+                metrics, accessLog, registry, clock, liveObservationSink,
                 ProxyDnsDiscoveryRuntime.Resolver.system());
     }
 
@@ -166,12 +164,12 @@ public class ReverseProxyService implements SmartLifecycle {
                         ReverseProxyMetrics metrics,
                         RoutingStrategyRegistry registry,
                         Clock clock,
-                        LaseShadowRuntime laseShadowRuntime,
+                        LiveRoutingObservationSink liveObservationSink,
                         ReverseProxyAccessLog accessLog,
                         ProxyDnsDiscoveryRuntime.Resolver dnsResolver) {
         this(properties, httpClient,
                 ReverseProxyHttpClientProvider.systemDefault(httpClient, properties.getConnectTimeout()),
-                metrics, accessLog, registry, clock, laseShadowRuntime, dnsResolver);
+                metrics, accessLog, registry, clock, liveObservationSink, dnsResolver);
     }
 
     private ReverseProxyService(ReverseProxyProperties properties,
@@ -181,7 +179,7 @@ public class ReverseProxyService implements SmartLifecycle {
                                  ReverseProxyAccessLog accessLog,
                                  RoutingStrategyRegistry registry,
                                  Clock clock,
-                                 LaseShadowRuntime laseShadowRuntime,
+                                 LiveRoutingObservationSink liveObservationSink,
                                  ProxyDnsDiscoveryRuntime.Resolver dnsResolver) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient cannot be null");
         this.httpClientProvider = Objects.requireNonNull(httpClientProvider, "httpClientProvider cannot be null");
@@ -189,7 +187,7 @@ public class ReverseProxyService implements SmartLifecycle {
         this.accessLog = Objects.requireNonNull(accessLog, "accessLog cannot be null");
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
-        this.laseShadowRuntime = Objects.requireNonNull(laseShadowRuntime, "laseShadowRuntime cannot be null");
+        this.liveObservationSink = Objects.requireNonNull(liveObservationSink, "liveObservationSink cannot be null");
         this.dnsResolver = Objects.requireNonNull(dnsResolver, "dnsResolver cannot be null");
         this.globalRuntimeStats = new UpstreamRuntimeStats(clock);
         this.liveRoutingDecisions = new LiveRoutingDecisionStore(clock);
@@ -815,12 +813,12 @@ public class ReverseProxyService implements SmartLifecycle {
                 attemptLatencyMillis,
                 attemptResult.retriable(),
                 attemptResult.outcome());
-        if (laseShadowRuntime.isLiveProxyEnabled()) {
+        if (liveObservationSink.isEnabled()) {
             int telemetrySampleSize = upstreams.stream()
                     .mapToInt(UpstreamCandidate::telemetrySampleSize)
                     .reduce(0, ReverseProxyService::saturatedAdd);
             int initialConcurrencyLimit = liveShadowConcurrencyLimit(config, upstreams, candidateStates);
-            laseShadowRuntime.submitLiveRouting(new LiveRoutingShadowObservation(
+            liveObservationSink.submit(new LiveRoutingObservationSink.Observation(
                     liveDecision.decisionId(),
                     liveDecision.capturedAt(),
                     liveDecision.routeName(),

@@ -10,14 +10,14 @@ The skeleton is optional. It is manual-only. It is local-lab-only. It is not CI-
 - The Compose file now contains one local-lab-only `app-under-test` service.
 - The app service uses the public `eclipse-temurin:21-jre` JRE image.
 - The app service mounts the local `target/` directory read-only at `/opt/loadbalancerpro`.
-- The app service starts `/opt/loadbalancerpro/LoadBalancerPro-2.5.0.jar`.
+- The app service starts `/opt/loadbalancerpro/LoadBalancerPro-2.5.0-lab.jar`.
 - The app service publishes `127.0.0.1:8080:8080` only.
 - The existing Toxiproxy service remains intact.
 
 The user must manually package first before choosing to run the app service:
 
 ```powershell
-mvn -q "-DskipTests" package
+mvn -q -P lab "-DskipTests" package
 ```
 
 That command is a manual prerequisite only. It is not added to Compose, Maven lifecycle automation, CI, scripts, or production packaging.

@@ -247,10 +247,86 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.5.0</version>
                 <configuration>
-                    <excludes>
-                        <exclude>com/richmond423/loadbalancerpro/cli/EnterpriseLab*Proof*.class</exclude>
-                        <exclude>com/richmond423/loadbalancerpro/lab/EnterpriseLab*Proof*.class</exclude>
-                    </excludes>
+                    <!-- The default artifact is the deployable proxy. Simulation and lab tooling are opt-in. -->
+                    <includes>
+                        <include>META-INF/build-info.properties</include>
+                        <include>application.properties</include>
+                        <include>application-local.properties</include>
+                        <include>application-prod.properties</include>
+                        <include>application-proxy-prod.properties</include>
+                        <include>static/proxy-status.html</include>
+                        <include>com/richmond423/loadbalancerpro/api/LoadBalancerApiApplication*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/ApiErrorResponse*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/RestExceptionHandler*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/ApiRateLimit*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/ApiSecurityConfiguration*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/AuthModeConfiguration*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/AuthProperties*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/ProdApiKeyFilter*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/RequestSizeLimitFilter*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/SecurityHeadersFilter*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/Telemetry*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/WebConfig*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/explain/LiveRoutingDecisionExplanation*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/explain/LiveRoutingExplanationService*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/explain/RoutingExplanation.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/explain/RoutingExplanation$*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/proxy/**</include>
+                        <include>com/richmond423/loadbalancerpro/core/AdaptiveConcurrencyConfig*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/AdaptiveConcurrencyLimiter*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/AutoscalingSignal*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/CanonicalDigest*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/CloudMutationSource*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ConcurrencyFeedback*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ConcurrencyLimitDecision*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ConsistentHashRing*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ConsistentHashRingStrategy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/DomainMetrics*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/FailureScenarioConfig*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/FailureScenarioSignal*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/FailureScenarioType*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/IServerType*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/LatencyWindowSignal*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/LoadSheddingConfig*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/LoadSheddingDecision*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/LoadSheddingPolicy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/LoadSheddingSignal*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/NetworkAwarenessSignal*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/PressureClassifier*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RequestPriority*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoundRobinRoutingStrategy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoutingDecision*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoutingDecisionExplanation*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoutingDecisionFingerprint*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoutingStrategy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoutingStrategyId*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoutingStrategyIdentifier*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/RoutingStrategyRegistry*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ScoreFactorContribution*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ScoreFactorDirection*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ScoreFactorExactness*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/Server.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/Server$*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerDegradationState*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerObservation*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerObservationOutcome*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerObservationSource*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerObservationWindowPolicy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerRecommendationScorePolicy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerRollingSignalState*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerScoreBreakdown*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerScoreCalculator*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerSignalConfidence*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerSignalEvidence*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerStateVector*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ServerType*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/ShadowAutoscalerConfig*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/StatefulRoutingStrategy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/TailLatencyPowerOfTwoStrategy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/WeightedLeastConnectionsRoutingStrategy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/WeightedLeastLoadStrategy*.class</include>
+                        <include>com/richmond423/loadbalancerpro/core/WeightedRoundRobinRoutingStrategy*.class</include>
+                    </includes>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -267,6 +343,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication</mainClass>
+                    <excludeGroupIds>software.amazon.awssdk,com.google.code.gson,io.projectreactor</excludeGroupIds>
                 </configuration>
                 <executions>
                     <execution>
@@ -288,5 +365,33 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>lab</id>
+            <build>
+                <finalName>${project.artifactId}-${project.version}-lab</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <includes combine.self="override">
+                                <include>**/*</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <mainClass>com.richmond423.loadbalancerpro.cli.LabToolsApplication</mainClass>
+                            <excludeGroupIds combine.self="override"></excludeGroupIds>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

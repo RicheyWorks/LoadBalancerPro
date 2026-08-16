@@ -3,6 +3,8 @@
 This contract describes the implemented single-process, local-filesystem experiment journal. It is a bounded Enterprise
 Lab recovery mechanism, not a production audit service, signer, distributed log, database, or disaster-recovery guarantee.
 
+Packaged commands in this contract use the opt-in Lab Tools artifact built with `mvn -B -P lab -DskipTests package`; the production proxy JAR excludes Enterprise Lab code.
+
 ## Enablement and ownership
 
 Durable evidence is opt-in through:
@@ -196,7 +198,7 @@ local PowerShell launch can use:
 
 ```powershell
 $journalRoot = (Resolve-Path -LiteralPath 'C:\local-lab\experiment-evidence').Path
-java -jar target\LoadBalancerPro-2.5.0.jar `
+java -jar target\LoadBalancerPro-2.5.0-lab.jar `
   "--loadbalancer.enterprise-lab.experiment-journal-data-directory=$journalRoot"
 ```
 
@@ -283,7 +285,7 @@ For a local change affecting this boundary, verify in this order:
 1. Run focused codec, local journal, verifier, replay, startup reconciler, durable repository, operator, controller, API-key,
    OAuth2, and proof-command tests.
 2. Run `mvn -q test` and confirm Surefire reports zero failures, errors, and skips.
-3. Run `mvn -q clean package` once at the exact candidate head, inspect every Surefire report, then run
+3. Run `mvn -q -P lab clean package` once at the exact candidate head, inspect every Surefire report, then run
    `mvn -q -DskipTests verify` without duplicating the complete suite.
 4. Run the completion/rollback and durable-recovery scripts from their test/tool-only source home.
 5. Verify embedded Tomcat resolution, JaCoCo output, CycloneDX SBOM generation, the executable JAR, and ignored target-only

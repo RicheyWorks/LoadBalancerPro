@@ -7,7 +7,7 @@ This is a local deployment confidence check. It is not production certification,
 ## What It Proves
 
 - The documented packaged-jar command can start the app on `127.0.0.1`.
-- The root landing page and `/api/health` are reachable in local demo mode.
+- `/actuator/health` and the production `/proxy-status.html` page are reachable from the packaged artifact.
 - Prod API-key mode rejects `GET /api/proxy/status` without `X-API-Key`.
 - Prod API-key mode accepts `GET /api/proxy/status` with the configured placeholder `X-API-Key`.
 - The proxy-loopback example can forward a request from `/proxy/api/smoke` to one of two loopback HTTP backends.
@@ -70,8 +70,8 @@ java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.p
 It verifies:
 
 ```text
-http://127.0.0.1:18080/api/health
-http://127.0.0.1:18080/
+http://127.0.0.1:18080/actuator/health
+http://127.0.0.1:18080/proxy-status.html
 ```
 
 ### Prod API-Key Boundary

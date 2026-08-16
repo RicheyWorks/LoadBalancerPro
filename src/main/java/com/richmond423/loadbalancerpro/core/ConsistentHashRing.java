@@ -1,6 +1,9 @@
 package com.richmond423.loadbalancerpro.core;
 
-import com.richmond423.loadbalancerpro.util.Utils;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -83,7 +86,7 @@ final class ConsistentHashRing {
             if (entries.isEmpty()) {
                 return null;
             }
-            Map.Entry<Long, String> entry = entries.ceilingEntry(Utils.hash(key));
+            Map.Entry<Long, String> entry = entries.ceilingEntry(hash(key));
             if (entry == null) {
                 entry = entries.firstEntry();
             }
@@ -102,7 +105,7 @@ final class ConsistentHashRing {
         }
 
         private long replicaHash(String serverId, int replica) {
-            long hash = Utils.hash(serverId + "-" + replica);
+            long hash = hash(serverId + "-" + replica);
             if (hash == Long.MIN_VALUE) {
                 logger.warn("Invalid hash for server {} replica {}; using fallback.", serverId, replica);
                 return replica;
@@ -115,6 +118,16 @@ final class ConsistentHashRing {
                 throw new IllegalArgumentException("serverId cannot be null or blank");
             }
             return serverId.trim();
+        }
+
+        private long hash(String key) {
+            try {
+                MessageDigest digest = MessageDigest.getInstance("MD5");
+                return new BigInteger(1, digest.digest(key.getBytes(StandardCharsets.UTF_8))).longValue();
+            } catch (NoSuchAlgorithmException unavailable) {
+                logger.error("MD5 hash unavailable; using hashCode fallback: {}", unavailable.getMessage());
+                return key.hashCode();
+            }
         }
     }
 }

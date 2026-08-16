@@ -32,12 +32,13 @@ class CiPackagedArtifactSmokeWorkflowTest {
         assertTrue(workflow.contains("jar tf \"$JAR\" | sort > \"$RESOURCE_LIST\""));
         assertTrue(workflow.contains("actions/upload-artifact"));
         assertTrue(workflow.contains("BOOT-INF/classes/static/proxy-status.html"));
-        assertTrue(workflow.contains("BOOT-INF/classes/static/load-balancing-cockpit.html"));
-        assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-demo-round-robin.properties"));
-        assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"));
-        assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-demo-failover.properties"));
         assertTrue(workflow.contains("BOOT-INF/classes/application-proxy-prod.properties"));
-        assertTrue(workflow.contains("BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"));
+        assertTrue(workflow.contains("BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.class"));
+        assertTrue(workflow.contains("(cli|demo|gui|lab)"));
+        assertTrue(workflow.contains("ServerMonitor"));
+        assertTrue(workflow.contains("reactor-core"));
+        assertTrue(workflow.contains("mvn -B -P lab -DskipTests package"));
+        assertTrue(workflow.contains("resolve-executable-jar.sh --lab"));
     }
 
     @Test

@@ -67,11 +67,10 @@ Required files:
 Required jar evidence:
 
 - `BOOT-INF/classes/static/proxy-status.html`
-- `BOOT-INF/classes/static/load-balancing-cockpit.html`
-- `BOOT-INF/classes/application-proxy-demo-round-robin.properties`
-- `BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties`
-- `BOOT-INF/classes/application-proxy-demo-failover.properties`
-- `BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class`
+- `BOOT-INF/classes/application-proxy-prod.properties`
+- `BOOT-INF/classes/com/richmond423/loadbalancerpro/api/LoadBalancerApiApplication.class`
+- `BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.class`
+- no `cli/`, `demo/`, `gui/`, `lab/`, simulation cockpit, `ServerMonitor`, AWS SDK, Reactor, or Gson entries
 
 Treat these as workflow artifact checks, not release asset publication.
 
@@ -83,7 +82,7 @@ Checklist:
 
 - Local jar was built or an operator explicitly cited CI as source of truth because local Maven is blocked.
 - Local SHA-256 was generated for `target/LoadBalancerPro-2.5.0.jar` when a local jar exists.
-- `jar tf` output was inspected for required static pages, demo profiles, and `ProxyDemoFixtureLauncher.class`.
+- `jar tf` output was inspected for the production proxy classes/resources and the absence of lab/demo content.
 - Local SHA-256 was compared with CI SHA-256 only for the same artifact or a controlled rebuild context.
 - Any checksum mismatch was documented with build context notes rather than treated as automatic failure.
 

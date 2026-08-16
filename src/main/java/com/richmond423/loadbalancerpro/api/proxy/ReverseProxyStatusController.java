@@ -14,7 +14,7 @@ import java.util.Objects;
 
 import com.richmond423.loadbalancerpro.api.ApiErrorResponse;
 import com.richmond423.loadbalancerpro.api.explain.LiveRoutingDecisionExplanation;
-import com.richmond423.loadbalancerpro.api.explain.RoutingExplanationService;
+import com.richmond423.loadbalancerpro.api.explain.LiveRoutingExplanationService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -44,14 +44,14 @@ public class ReverseProxyStatusController {
     private final ReverseProxyProperties properties;
     private final ReverseProxyMetrics metrics;
     private final ObjectProvider<ReverseProxyService> reverseProxyService;
-    private final RoutingExplanationService routingExplanationService;
+    private final LiveRoutingExplanationService routingExplanationService;
     private final Environment environment;
     private final String configuredApiKey;
 
     public ReverseProxyStatusController(ReverseProxyProperties properties,
                                         ReverseProxyMetrics metrics,
                                         ObjectProvider<ReverseProxyService> reverseProxyService,
-                                        RoutingExplanationService routingExplanationService,
+                                        LiveRoutingExplanationService routingExplanationService,
                                         Environment environment,
                                         @Value("${loadbalancerpro.api.key:}") String configuredApiKey) {
         this.properties = properties;

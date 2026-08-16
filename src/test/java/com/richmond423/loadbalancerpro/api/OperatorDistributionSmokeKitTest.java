@@ -43,12 +43,10 @@ class OperatorDistributionSmokeKitTest {
         assertTrue(powershell.contains("operator distribution smoke kit"));
         assertTrue(unix.contains("operator distribution smoke kit"));
         assertTrue(combined.contains("mvn -B -DskipTests package"));
-        assertTrue(combined.contains("ProxyDemoFixtureLauncher"));
         assertTrue(combined.contains("/proxy-status.html"));
         assertTrue(combined.contains("/api/proxy/status"));
-        assertTrue(combined.contains("application-proxy-demo-round-robin.properties"));
-        assertTrue(combined.contains("application-proxy-demo-weighted-round-robin.properties"));
-        assertTrue(combined.contains("application-proxy-demo-failover.properties"));
+        assertFalse(combined.contains("ProxyDemoFixtureLauncher"));
+        assertFalse(combined.contains("application-proxy-demo-round-robin.properties"));
         assertTrue(combined.contains("application-proxy-real-backend-example.properties"));
         assertTrue(combined.contains("application-proxy-real-backend-weighted-example.properties"));
         assertTrue(combined.contains("application-proxy-real-backend-failover-example.properties"));

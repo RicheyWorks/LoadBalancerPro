@@ -83,19 +83,13 @@ echo
 required_paths=(
   "pom.xml"
   "src/main/resources/static/proxy-status.html"
-  "src/main/resources/static/load-balancing-cockpit.html"
   "src/main/resources/application.properties"
-  "src/main/resources/application-proxy-demo-round-robin.properties"
-  "src/main/resources/application-proxy-demo-weighted-round-robin.properties"
-  "src/main/resources/application-proxy-demo-failover.properties"
   "src/main/resources/application-proxy-prod.properties"
   "docs/examples/proxy/application-proxy-real-backend-example.properties"
   "docs/examples/proxy/application-proxy-real-backend-weighted-example.properties"
   "docs/examples/proxy/application-proxy-real-backend-failover-example.properties"
   "docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md"
   "docs/OPERATOR_PACKAGING.md"
-  "docs/PROXY_DEMO_FIXTURE_LAUNCHER.md"
-  "docs/PROXY_DEMO_STACK.md"
   "scripts/resolve-executable-jar.sh"
   "scripts/resolve-executable-jar.ps1"
 )
@@ -111,22 +105,14 @@ cat <<COMMANDS
 Package command:
   mvn -B -DskipTests package
 
-Maven exec fixture launcher:
-  mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
-
 Packaged jar startup:
   java -jar $EXPECTED_JAR_PATH --server.address=127.0.0.1 --server.port=$PORT --spring.profiles.active=local
 
 Proxy status checks:
-  curl -fsS http://127.0.0.1:$PORT/api/health
+  curl -fsS http://127.0.0.1:$PORT/actuator/health
   curl -fsS http://127.0.0.1:$PORT/actuator/health/readiness
   curl -fsS http://127.0.0.1:$PORT/proxy-status.html
   curl -fsS http://127.0.0.1:$PORT/api/proxy/status
-
-Demo profiles:
-  proxy-demo-round-robin
-  proxy-demo-weighted-round-robin
-  proxy-demo-failover
 COMMANDS
 
 JAR_PATH=""
@@ -158,7 +144,7 @@ if [[ "$RUN_JAR_SMOKE" == "true" ]]; then
     >"$LOG_FILE" 2>&1 &
   APP_PID="$!"
   trap 'kill "$APP_PID" >/dev/null 2>&1 || true' EXIT
-  wait_for_url "http://127.0.0.1:$PORT/api/health"
+  wait_for_url "http://127.0.0.1:$PORT/actuator/health"
   wait_for_url "http://127.0.0.1:$PORT/actuator/health/readiness"
   wait_for_url "http://127.0.0.1:$PORT/proxy-status.html"
   wait_for_url "http://127.0.0.1:$PORT/api/proxy/status"

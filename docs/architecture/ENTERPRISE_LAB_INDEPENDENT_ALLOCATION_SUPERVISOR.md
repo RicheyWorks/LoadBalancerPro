@@ -5,6 +5,8 @@ independent allocation supervisor. PR2 implements the supervisor side; later slo
 reconciliation. It is not a production traffic-controller design, a distributed fencing claim, or a public service
 contract.
 
+The supervisor CLI is available only from the Lab Tools artifact built with `mvn -B -P lab -DskipTests package`; it is intentionally absent from the production proxy JAR.
+
 ## Responsibility boundary
 
 The application remains authoritative for experiment lifecycle, observations, scoring, guardrails, durable allocation
@@ -213,7 +215,7 @@ PR2 fixes the process limits as follows:
 Start locally with an explicit controlled directory when the default ignored target directory is not desired:
 
 ```text
-java -jar target/LoadBalancerPro-2.5.0.jar --enterprise-lab-supervisor --enterprise-lab-supervisor-data-directory=target/enterprise-lab-supervisor --enterprise-lab-supervisor-port=0
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --enterprise-lab-supervisor --enterprise-lab-supervisor-data-directory=target/enterprise-lab-supervisor --enterprise-lab-supervisor-port=0
 ```
 
 Readiness is distinct from process health. The listener can answer health while mutation readiness remains closed until

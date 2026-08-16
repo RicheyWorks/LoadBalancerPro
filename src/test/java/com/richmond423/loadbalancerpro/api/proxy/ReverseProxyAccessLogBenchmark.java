@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
-import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -178,7 +177,7 @@ class ReverseProxyAccessLogBenchmark {
                 new ReverseProxyMetrics(),
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),
-                LaseShadowRuntime.disabled(),
+                LiveRoutingObservationSink.disabled(),
                 accessLog);
         return new Fixture(service, accessLog);
     }

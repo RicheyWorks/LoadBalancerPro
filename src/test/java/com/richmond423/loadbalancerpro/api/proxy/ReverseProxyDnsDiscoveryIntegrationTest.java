@@ -21,7 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
@@ -51,7 +50,7 @@ class ReverseProxyDnsDiscoveryIntegrationTest {
                 new ReverseProxyMetrics(),
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),
-                LaseShadowRuntime.disabled(),
+                LiveRoutingObservationSink.disabled(),
                 ReverseProxyAccessLog.disabled(),
                 name -> {
                     resolverThread.set(Thread.currentThread().getName());
@@ -334,7 +333,7 @@ class ReverseProxyDnsDiscoveryIntegrationTest {
                 new ReverseProxyMetrics(),
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),
-                LaseShadowRuntime.disabled(),
+                LiveRoutingObservationSink.disabled(),
                 ReverseProxyAccessLog.disabled(),
                 resolver);
     }

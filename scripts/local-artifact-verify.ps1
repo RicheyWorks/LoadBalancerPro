@@ -66,12 +66,10 @@ Write-Host "Required jar entries:"
 $requiredEntries = @(
     "META-INF/MANIFEST.MF",
     "BOOT-INF/classes/static/proxy-status.html",
-    "BOOT-INF/classes/static/load-balancing-cockpit.html",
-    "BOOT-INF/classes/application-proxy-demo-round-robin.properties",
-    "BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties",
-    "BOOT-INF/classes/application-proxy-demo-failover.properties",
     "BOOT-INF/classes/application-proxy-prod.properties",
-    "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
+    "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/LoadBalancerApiApplication.class",
+    "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.class",
+    "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyStatusController.class"
 )
 
 foreach ($entry in $requiredEntries) {
@@ -80,6 +78,11 @@ foreach ($entry in $requiredEntries) {
 
 Write-Host ""
 Write-Host "Forbidden jar entries:"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/(cli|demo|gui|lab)/' -Description "lab, demo, GUI, or CLI application classes"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/api/(AllocatorController|DecisionExplorer|EnterpriseLab|Evidence|Lase|Remediation|RoutingController|ScenarioReplay)' -Description "simulation API controllers and services"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/core/(CloudManager|LoadBalancer|ServerMonitor)' -Description "simulation, cloud-manager, or synthetic-monitor core"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '^BOOT-INF/classes/static/(adaptive-routing|ci-evidence|decision-explorer|enterprise-lab|evidence-|index\.html|load-balancing|operator-evidence|routing-demo)' -Description "simulation and cockpit web pages"
+Assert-ForbiddenJarPattern -Entries $entries -Pattern '^BOOT-INF/lib/(autoscaling|cloudwatch|ec2|aws-|sdk-core|reactor-core|gson)-' -Description "lab-only cloud, reactive, or JSON libraries"
 Assert-ForbiddenJarPattern -Entries $entries -Pattern '^BOOT-INF/classes/.*(Test|Tests)\.class$' -Description "test classes"
 Assert-ForbiddenJarPattern -Entries $entries -Pattern '\.(exe|dll|msi|dmg|pkg|deb|rpm|appimage)$' -Description "unexpected native installers or executables"
 Assert-ForbiddenJarPattern -Entries $entries -Pattern '\.(pem|p12|pfx|jks|keystore|key)$' -Description "embedded key, certificate, or trust material"
@@ -89,13 +92,13 @@ Write-Host "Packaged jar startup:"
 Write-Host "  java -jar $JarPath --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local"
 Write-Host ""
 Write-Host "Status and static page checks:"
-Write-Host "  curl -fsS http://127.0.0.1:8080/api/health"
+Write-Host "  curl -fsS http://127.0.0.1:8080/actuator/health"
 Write-Host "  curl -fsS http://127.0.0.1:8080/proxy-status.html"
-Write-Host "  curl -fsS http://127.0.0.1:8080/load-balancing-cockpit.html"
 Write-Host "  curl -fsS http://127.0.0.1:8080/api/proxy/status"
 Write-Host ""
-Write-Host "Maven exec fixture launcher:"
-Write-Host "  mvn -q -DskipTests compile exec:java `"-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`" `"-Dexec.args=--mode round-robin`""
+Write-Host "Optional Lab Tools artifact:"
+Write-Host "  mvn -B -P lab -DskipTests package"
+Write-Host "  ./scripts/resolve-executable-jar.ps1 -Lab"
 Write-Host ""
 Write-Host "GitHub Actions artifact:"
 Write-Host "  packaged-artifact-smoke"

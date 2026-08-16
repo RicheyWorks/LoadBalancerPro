@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.richmond423.loadbalancerpro.api.LaseShadowRuntime;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
@@ -188,7 +187,7 @@ class ReverseProxyDnsRoutingSemanticsTest {
                 metrics,
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),
-                LaseShadowRuntime.disabled(),
+                LiveRoutingObservationSink.disabled(),
                 accessLog,
                 name -> answers.get());
         try {
@@ -339,7 +338,7 @@ class ReverseProxyDnsRoutingSemanticsTest {
                 new ReverseProxyMetrics(),
                 RoutingStrategyRegistry.defaultRegistry(),
                 Clock.systemUTC(),
-                LaseShadowRuntime.disabled(),
+                LiveRoutingObservationSink.disabled(),
                 ReverseProxyAccessLog.disabled(),
                 resolver);
     }

@@ -2,11 +2,13 @@
 
 LoadBalancerPro can generate deterministic remediation reports from saved API JSON without starting the API server:
 
+These commands require the opt-in Lab Tools artifact. Build it with `mvn -B -P lab -DskipTests package`; the default production JAR intentionally omits offline evidence and simulation CLIs.
+
 The commands below are dispatched by the packaged Spring Boot JAR itself. They no longer depend on the retired
 synthetic interactive CLI launcher.
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --remediation-report \
   --input saved-evaluation.json \
   --format markdown \
@@ -18,7 +20,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 The same packaged JAR can write structured JSON for automation:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --remediation-report \
   --input saved-replay.json \
   --format json \
@@ -28,7 +30,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 It can also create a portable offline incident bundle:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --input saved-evaluation.json \
   --format markdown \
   --bundle incident-bundle.zip \
@@ -177,7 +179,7 @@ When `--manifest` is supplied, the CLI writes a deterministic JSON manifest with
 Example:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --remediation-report \
   --input saved-replay.json \
   --format json \
@@ -189,7 +191,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 Verify the bundle later without starting the API server:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --verify-manifest incident-report.manifest.json
 ```
 
@@ -214,7 +216,7 @@ When redaction is used with standalone `--manifest`, the CLI writes a companion 
 Example:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --input saved-replay.json \
   --format json \
   --bundle incident-bundle.zip \
@@ -224,7 +226,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 Verify the ZIP later without extracting files manually:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --verify-bundle incident-bundle.zip
 ```
 
@@ -239,7 +241,7 @@ When redaction is used with `--bundle`, the ZIP includes redacted `input.json`, 
 Redaction is deterministic literal string replacement. It is designed for operator-controlled removal of known sensitive strings before attaching evidence to a ticket:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --input saved-replay.json \
   --format markdown \
   --bundle incident-bundle.zip \
@@ -302,7 +304,7 @@ Redaction limitations:
 Example:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --input saved-replay.json \
   --format markdown \
   --bundle incident-bundle.zip \
@@ -316,7 +318,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 Verify the audit log later:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --verify-audit-log incident-audit.jsonl
 ```
 
@@ -343,7 +345,7 @@ This is local checksum chaining for tamper evidence. It is not cryptographic sig
 `--inventory` scans a local evidence directory and emits a deterministic Markdown or JSON catalog:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --inventory incident-evidence \
   --inventory-format json \
   --verify-inventory \
@@ -373,7 +375,7 @@ The evidence inventory is a local checksum catalog. It does not prove operator i
 `--diff-inventory` compares two saved JSON inventory catalogs and emits a deterministic handoff-delta report:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --diff-format markdown \
   --fail-on-drift \
@@ -400,7 +402,7 @@ The diff is a local inventory comparison only. It cannot prove files were never 
 `--policy` evaluates a catalog diff against deterministic pass/warn/fail handoff rules:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --policy handoff-policy.json \
   --policy-report-format markdown \
@@ -413,16 +415,16 @@ Policy reports include a `PASS`, `WARN`, or `FAIL` decision, severity counts, ma
 Packaged templates can be listed, exported, validated, and used directly:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-templates
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-policy-templates
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --export-policy-template regulated-handoff \
   --policy-output regulated-handoff.json
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --validate-policy regulated-handoff.json
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --policy-template regulated-handoff \
   --policy-report-format markdown \
@@ -443,13 +445,13 @@ See [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md) for intended 
 Packaged walkthrough examples let operators practice the full flow without locating test resources:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-examples
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-policy-examples
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --export-policy-example receiver-redaction-warn \
   --example-output-dir walkthrough/receiver-redaction
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --diff-inventory walkthrough/receiver-redaction/before.json \
                    walkthrough/receiver-redaction/after.json \
   --policy-template receiver-redaction \
@@ -459,7 +461,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 For a single-command tutorial dry-run:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --walkthrough-policy-example receiver-redaction-warn \
   --example-output-dir walkthrough/receiver-redaction \
   --policy-report-format json
@@ -470,7 +472,7 @@ The walkthrough command exports `before.json`, `after.json`, and `expected-decis
 Run the full offline training lab when an operator needs to practice every packaged profile in one pass:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --run-policy-training-lab \
   --training-lab-format markdown
 ```
@@ -478,7 +480,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar \
 For a machine-readable transcript:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --run-policy-training-lab \
   --training-lab-format json \
   --training-lab-output evidence-policy-training-lab.json
@@ -489,9 +491,9 @@ The training lab batch-runs the packaged `PASS`, `WARN`, and `FAIL` walkthrough 
 Training scorecards let operators submit answers for the packaged examples and receive deterministic grading reports:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --list-training-scorecards
+java -jar target/LoadBalancerPro-2.5.0-lab.jar --list-training-scorecards
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --print-training-scorecard audit-append-warn
 ```
 
@@ -515,12 +517,12 @@ Answers use this JSON shape:
 Grade the answers as Markdown or JSON:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --grade-training-scorecard scorecard-answers.json \
   --scorecard-format markdown \
   --scorecard-output scorecard-report.md
 
-java -jar target/LoadBalancerPro-2.5.0.jar \
+java -jar target/LoadBalancerPro-2.5.0-lab.jar \
   --grade-training-scorecard scorecard-answers.json \
   --scorecard-format json \
   --scorecard-output scorecard-report.json \

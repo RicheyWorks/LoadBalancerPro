@@ -44,19 +44,13 @@ Write-Host ""
 $requiredPaths = @(
     "pom.xml",
     "src/main/resources/static/proxy-status.html",
-    "src/main/resources/static/load-balancing-cockpit.html",
     "src/main/resources/application.properties",
-    "src/main/resources/application-proxy-demo-round-robin.properties",
-    "src/main/resources/application-proxy-demo-weighted-round-robin.properties",
-    "src/main/resources/application-proxy-demo-failover.properties",
     "src/main/resources/application-proxy-prod.properties",
     "docs/examples/proxy/application-proxy-real-backend-example.properties",
     "docs/examples/proxy/application-proxy-real-backend-weighted-example.properties",
     "docs/examples/proxy/application-proxy-real-backend-failover-example.properties",
     "docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md",
     "docs/OPERATOR_PACKAGING.md",
-    "docs/PROXY_DEMO_FIXTURE_LAUNCHER.md",
-    "docs/PROXY_DEMO_STACK.md",
     "scripts/resolve-executable-jar.sh",
     "scripts/resolve-executable-jar.ps1"
 )
@@ -71,22 +65,14 @@ Write-Host ""
 Write-Host "Package command:"
 Write-Host "  mvn -B -DskipTests package"
 Write-Host ""
-Write-Host "Maven exec fixture launcher:"
-Write-Host "  mvn -q -DskipTests compile exec:java `"-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`" `"-Dexec.args=--mode round-robin`""
-Write-Host ""
 Write-Host "Packaged jar startup:"
 Write-Host "  java -jar $expectedJarPath --server.address=127.0.0.1 --server.port=$Port --spring.profiles.active=local"
 Write-Host ""
 Write-Host "Proxy status checks:"
-Write-Host "  curl -fsS http://127.0.0.1:$Port/api/health"
+Write-Host "  curl -fsS http://127.0.0.1:$Port/actuator/health"
 Write-Host "  curl -fsS http://127.0.0.1:$Port/actuator/health/readiness"
 Write-Host "  curl -fsS http://127.0.0.1:$Port/proxy-status.html"
 Write-Host "  curl -fsS http://127.0.0.1:$Port/api/proxy/status"
-Write-Host ""
-Write-Host "Demo profiles:"
-Write-Host "  proxy-demo-round-robin"
-Write-Host "  proxy-demo-weighted-round-robin"
-Write-Host "  proxy-demo-failover"
 
 if ($Package) {
     Write-Host ""
@@ -115,7 +101,7 @@ if ($RunJarSmoke) {
     )
     $process = Start-Process -FilePath "java" -ArgumentList $arguments -PassThru -WindowStyle Hidden
     try {
-        Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/api/health"
+        Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/actuator/health"
         Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/actuator/health/readiness"
         Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/proxy-status.html"
         Invoke-UrlWithRetry -Url "http://127.0.0.1:$Port/api/proxy/status"

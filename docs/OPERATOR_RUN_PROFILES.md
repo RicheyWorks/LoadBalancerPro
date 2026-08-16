@@ -8,7 +8,7 @@ After choosing a profile, use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.m
 
 ## Start Here
 
-The explicit `local` profile remains the easiest source-checkout mode. It selects `loadbalancerpro.auth.mode=none`, emits a prominent authentication-disabled warning, keeps browser review pages available, uses local-friendly CORS defaults, keeps live AWS mutation off, and keeps proxy mode disabled unless you explicitly enable a proxy profile or imported proxy config. Do not expose local/demo mode on public interfaces. An unqualified start uses fail-closed API-key mode and refuses startup without a key.
+The explicit `local` profile remains the easiest source-checkout mode. It selects `loadbalancerpro.auth.mode=none`, emits a prominent authentication-disabled warning, keeps browser review pages available when run from source or the Lab Tools artifact, uses local-friendly CORS defaults, keeps live AWS mutation off, and keeps proxy mode disabled unless explicitly enabled. The default packaged artifact intentionally contains only the proxy status page and production runtime. Do not expose local/demo mode on public interfaces. An unqualified start uses fail-closed API-key mode and refuses startup without a key.
 
 The prod and cloud-sandbox profiles are opt-in boundaries for controlled validation. In API-key mode, they require `X-API-Key` for protected mutation routes, `/proxy/**`, and `GET /api/proxy/status`. OAuth2 mode is available when an issuer or JWK set is configured.
 
@@ -22,13 +22,13 @@ This guide does not claim production readiness, gateway hardening, security cert
 
 | Profile/mode | Intended use | Required flags/env vars | Proxy default | Auth boundary | TLS assumption | Cockpit access | Status/proxy verification command | What it proves | What it does not prove |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| local demo | Fastest source checkout demo and browser review | `mvn spring-boot:run` with `--spring.profiles.active=local`, or packaged JAR with that profile | Disabled | Explicit `auth.mode=none`; startup warning; not a security boundary | Loopback HTTP only; terminate TLS externally before shared exposure | `http://localhost:8080/` and `http://localhost:8080/load-balancing-cockpit.html` | `curl -fsS http://127.0.0.1:8080/api/health` | App starts locally with static pages and health endpoint | Public exposure safety, identity, TLS, or gateway readiness |
-| packaged jar local | Validate the built executable jar | `mvn -B -DskipTests package`, then `java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local` | Disabled | Same explicit open local mode | Loopback HTTP only | Same cockpit URLs | `curl -fsS http://127.0.0.1:8080/api/health` | Packaged jar can start and serve local API/static resources | Release asset publication or signed provenance |
+| local demo | Fastest source checkout demo and browser review | `mvn spring-boot:run` with `--spring.profiles.active=local` | Disabled | Explicit `auth.mode=none`; startup warning; not a security boundary | Loopback HTTP only; terminate TLS externally before shared exposure | `http://localhost:8080/` and `http://localhost:8080/load-balancing-cockpit.html` | `curl -fsS http://127.0.0.1:8080/api/health` | Source application starts with simulation pages and health endpoint | Packaged production contents, public exposure safety, identity, TLS, or gateway readiness |
+| packaged jar local | Validate the production-boundary executable jar | `mvn -B -DskipTests package`, then resolve with `scripts/resolve-executable-jar.*` | Disabled | Same explicit open local mode | Loopback HTTP only | `http://localhost:8080/proxy-status.html` | `curl -fsS http://127.0.0.1:8080/actuator/health` | Production proxy jar starts without lab/demo classes | Release asset publication, signed provenance, or simulation tooling |
 | prod API-key boundary | Local production-like API-key validation | `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, `--spring.profiles.active=prod` | Disabled | `X-API-Key` protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger by default; public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` | Terminate TLS at trusted edge before non-local exposure | Local only unless intentionally routed through a trusted edge | `curl -i http://127.0.0.1:8080/api/proxy/status` then `curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status` | API-key fail-closed boundary for protected surfaces | Full identity, secret rotation, public readiness, or TLS |
-| cloud-sandbox API-key boundary | Dry-run sandbox-profile validation with API-key boundary | `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, `--spring.profiles.active=cloud-sandbox` | Disabled | Same API-key boundary as prod; cloud live mutation remains off by default | Terminate TLS at trusted edge before non-local exposure | Local/private only | `curl -i http://127.0.0.1:8080/api/proxy/status` then `curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status` | Sandbox profile starts dry-run and protected surfaces require API key | Live AWS behavior, IAM proof, or sandbox cleanup correctness |
+| cloud-sandbox API-key boundary | Dry-run sandbox-profile validation from source or Lab Tools | `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, `--spring.profiles.active=cloud-sandbox` | Disabled | Same API-key boundary as prod; cloud live mutation remains off by default | Terminate TLS at trusted edge before non-local exposure | Local/private only | `curl -i http://127.0.0.1:8080/api/proxy/status` then authenticated retry | Sandbox profile starts dry-run and protected surfaces require API key | Production artifact contents, live AWS behavior, IAM proof, or sandbox cleanup correctness |
 | OAuth2 mode | App-native JWT role-check validation | `loadbalancerpro.auth.mode=oauth2` plus loopback issuer or JWK set config | Disabled unless explicitly enabled elsewhere | Bearer token required; configured allocation role defaults to `operator` for protected allocation/routing and proxy surfaces | Terminate TLS externally; do not send real tokens over plain shared networks | Private/demo review only | `curl -i -H "Authorization: Bearer CHANGE_ME_LOCAL_TOKEN" http://127.0.0.1:8080/api/proxy/status` | OAuth2 mode wiring and role boundary can be validated with a configured local identity/JWK source | Identity-provider operation, key rotation, or end-to-end encryption |
 | proxy-enabled loopback validation | Real HTTP forwarding to local/private backends | `--spring.config.import=optional:file:docs/examples/operator-run-profiles/proxy-loopback.properties` | Explicitly enabled by imported example | Imported example explicitly selects `auth.mode=none` and is loopback-only | Loopback HTTP only; terminate TLS externally before exposure | `http://localhost:8080/proxy-status.html` | `curl -i http://127.0.0.1:8080/proxy/api/health` and `curl -s http://127.0.0.1:8080/api/proxy/status` | Configured route/target forwarding and status visibility | Production gateway behavior, throughput, public ingress safety, or TLS |
-| container run | Validate Dockerfile-based protected runtime | `docker build -t loadbalancerpro:local .`, then loopback-bound `docker run` with `LOADBALANCERPRO_API_KEY` | Disabled | Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`; `/api/**`, `/proxy/**`, OpenAPI, and Swagger require `X-API-Key` except `GET /api/health` and unauthenticated `OPTIONS` | Container port is HTTP; terminate TLS externally | `http://localhost:8080/` when mapped to loopback | `curl -fsS http://127.0.0.1:8080/api/health`, then `curl -i http://127.0.0.1:8080/v3/api-docs` should return 401 without a key | Container image can start with prod API-key protection and answer health on loopback | Kubernetes, Helm, Compose, registry publishing, full identity, secret rotation, or production runtime posture |
+| container run | Validate Dockerfile-based protected runtime | `docker build -t loadbalancerpro:local .`, then loopback-bound `docker run` with `LOADBALANCERPRO_API_KEY` | Disabled | Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`; protected proxy APIs require `X-API-Key` | Container port is HTTP; terminate TLS externally | `http://localhost:8080/proxy-status.html` when mapped to loopback | `curl -fsS http://127.0.0.1:8080/actuator/health`, then unauthenticated `curl -i http://127.0.0.1:8080/api/proxy/status` should return 401 | Container image can start with prod API-key protection and answer health on loopback | Kubernetes, Helm, Compose, registry publishing, full identity, secret rotation, or production runtime posture |
 
 ## Copyable Recipes
 
@@ -46,8 +46,10 @@ Packaged local demo variant:
 
 ```bash
 mvn -B -DskipTests package
-java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
-curl -fsS http://127.0.0.1:8080/api/health
+JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
+java -jar "$JAR_PATH" --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
+curl -fsS http://127.0.0.1:8080/actuator/health
+curl -fsS http://127.0.0.1:8080/proxy-status.html
 ```
 
 ### Prod API-Key Boundary
@@ -80,7 +82,7 @@ Expected boundary: the unauthenticated status/proxy calls return HTTP 401 in pro
 
 ```bash
 export LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY
-java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=cloud-sandbox
+mvn spring-boot:run "-Dspring-boot.run.arguments=--server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=cloud-sandbox"
 curl -i http://127.0.0.1:8080/api/proxy/status
 curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status
 ```
@@ -136,11 +138,11 @@ The repository has a Dockerfile. There is no checked-in compose file, so keep th
 ```bash
 docker build -t loadbalancerpro:local .
 docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
-curl -fsS http://127.0.0.1:8080/api/health
+curl -fsS http://127.0.0.1:8080/actuator/health
 curl -i http://127.0.0.1:8080/v3/api-docs
 ```
 
-Expected boundary: the default container uses the prod API-key profile. The unauthenticated OpenAPI request returns HTTP 401, `/api/**` requires `X-API-Key` by default, and `GET /api/health` remains public for health checks.
+Expected boundary: the default container uses the prod API-key profile. The unauthenticated OpenAPI request returns HTTP 401, `/api/**` requires `X-API-Key` by default, and `/actuator/health` supplies the production health check.
 
 Explicit local/demo behavior in a loopback-bound container:
 

@@ -105,7 +105,7 @@ class EnterpriseLabSupervisorProcessIntegrationTest {
         command.add(javaExecutable.toString());
         command.add("-cp");
         command.add(System.getProperty("java.class.path"));
-        command.add("com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication");
+        command.add("com.richmond423.loadbalancerpro.cli.LabToolsApplication");
         command.add("--enterprise-lab-supervisor");
         command.add("--enterprise-lab-supervisor-data-directory="
                 + root.toAbsolutePath().normalize());

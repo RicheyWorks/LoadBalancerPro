@@ -9,26 +9,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.richmond423.loadbalancerpro.api.CandidateDecisionDeltaResponse;
-import com.richmond423.loadbalancerpro.api.CandidateDecisionVectorResponse;
-import com.richmond423.loadbalancerpro.api.CandidateDominantFactorResponse;
-import com.richmond423.loadbalancerpro.api.DominantFactorAnalysisResponse;
-import com.richmond423.loadbalancerpro.api.DominantFactorResponse;
-import com.richmond423.loadbalancerpro.api.RoutingComparisonResponse;
-import com.richmond423.loadbalancerpro.api.RoutingComparisonResultResponse;
-import com.richmond423.loadbalancerpro.api.RoutingDecisionDeltaAnalysisResponse;
-import com.richmond423.loadbalancerpro.api.ScoreFactorContributionResponse;
-import com.richmond423.loadbalancerpro.api.ScoreFactorDeltaResponse;
-import com.richmond423.loadbalancerpro.api.proxy.LiveRoutingDecisionRecord;
 import org.springframework.stereotype.Service;
 
+import com.richmond423.loadbalancerpro.api.proxy.LiveRoutingDecisionRecord;
+
+/** Builds explanations only from privacy-bounded decisions captured by the production proxy. */
 @Service
-public final class RoutingExplanationService {
+public final class LiveRoutingExplanationService {
     private static final String UNKNOWN = "UNKNOWN";
-    private static final String BOUNDARY_NOTE =
-            "Read-only, simulation-only arithmetic over evidence returned by the routing comparison. "
-                    + "It does not execute replay, rerun a strategy, mutate weights or traffic, call external "
-                    + "systems, persist evidence, or prove production behavior.";
     private static final String LIVE_BOUNDARY_NOTE =
             "Read-only arithmetic over one bounded process-local proxy decision record and the strategy evidence "
                     + "captured with its actual selection. It retains no request path, query, method, body, headers, "
@@ -40,39 +28,56 @@ public final class RoutingExplanationService {
                     + "same direction changes only the captured score ordering; it does not rerun stateful, sampled, "
                     + "positional, keyed, or affinity selection and is not an actuation recommendation.";
 
-    public List<RoutingExplanation> explain(RoutingComparisonResponse comparison) {
-        if (comparison == null || comparison.results() == null) {
-            return List.of();
-        }
-        return comparison.results().stream()
-                .map(this::explain)
-                .toList();
-    }
-
-    public RoutingExplanation explain(RoutingComparisonResultResponse result) {
-        List<RoutingExplanation.CandidateFactors> candidates = candidateFactors(result);
-        RoutingExplanation.DominantFactors dominantFactors = dominantFactors(result);
-        RoutingExplanation.DecisionDelta decisionDelta = decisionDelta(result);
-        return new RoutingExplanation(
+    public LiveRoutingDecisionExplanation explain(LiveRoutingDecisionRecord decision) {
+        Objects.requireNonNull(decision, "decision cannot be null");
+        LiveRoutingDecisionRecord.SelectionEvidence evidence = decision.selectionEvidence();
+        List<RoutingExplanation.CandidateFactors> candidates = candidateFactors(decision, evidence);
+        RoutingExplanation.DominantFactors dominantFactors = dominantFactors(candidates);
+        RoutingExplanation.DecisionDelta decisionDelta = decisionDelta(decision, evidence, candidates);
+        RoutingExplanation analysis = new RoutingExplanation(
                 true,
-                true,
+                false,
                 RoutingExplanation.CONTRACT_VERSION,
-                valueOrUnknown(result == null ? null : result.strategyId()),
-                valueOrUnknown(result == null ? null : result.status()),
-                valueOrUnknown(result == null ? null : result.chosenServerId()),
-                valueOrUnknown(result == null ? null : result.decisionFingerprint()),
+                decision.strategy(),
+                evidence.status(),
+                decision.chosenUpstreamId(),
+                valueOrUnknown(evidence.decisionFingerprint()),
                 candidates,
                 dominantFactors,
                 decisionDelta,
                 counterfactualWeightScenarios(decisionDelta),
-                BOUNDARY_NOTE);
+                LIVE_BOUNDARY_NOTE);
+        return new LiveRoutingDecisionExplanation(
+                true,
+                true,
+                LiveRoutingDecisionExplanation.PROCESS_LOCAL,
+                LiveRoutingDecisionExplanation.CONTRACT_VERSION,
+                decision.decisionId(),
+                decision.capturedAt(),
+                decision.configurationGeneration(),
+                decision.routeName(),
+                decision.strategy(),
+                decision.attempt(),
+                decision.selectionSource(),
+                decision.chosenUpstreamId(),
+                decision.candidates().stream()
+                        .map(LiveRoutingDecisionRecord.CandidateState::upstreamId)
+                        .toList(),
+                decision.candidates(),
+                evidence.consideredCandidateIds(),
+                decision.responseStatus(),
+                decision.latencyMillis(),
+                decision.retriable(),
+                decision.outcome(),
+                evidence.status(),
+                evidence.reason(),
+                evidence.scorePreference(),
+                analysis,
+                changeThresholds(evidence, decisionDelta),
+                LIVE_BOUNDARY_NOTE);
     }
 
-    public LiveRoutingDecisionExplanation explain(LiveRoutingDecisionRecord decision) {
-        return new LiveRoutingExplanationService().explain(decision);
-    }
-
-    private static List<RoutingExplanation.CandidateFactors> liveCandidateFactors(
+    private static List<RoutingExplanation.CandidateFactors> candidateFactors(
             LiveRoutingDecisionRecord decision,
             LiveRoutingDecisionRecord.SelectionEvidence evidence) {
         List<String> consideredIds = evidence.consideredCandidateIds().isEmpty()
@@ -95,7 +100,7 @@ public final class RoutingExplanationService {
                 .toList();
     }
 
-    private static RoutingExplanation.DominantFactors liveDominantFactors(
+    private static RoutingExplanation.DominantFactors dominantFactors(
             List<RoutingExplanation.CandidateFactors> candidates) {
         List<RoutingExplanation.CandidateDominantFactor> rows = candidates.stream()
                 .map(candidate -> {
@@ -111,7 +116,7 @@ public final class RoutingExplanationService {
                 })
                 .toList();
         boolean available = rows.stream().anyMatch(row -> row.largestAbsoluteImpact() != null);
-        return new RoutingExplanation.DominantFactors(available ? "AVAILABLE" : "UNKNOWN", rows);
+        return new RoutingExplanation.DominantFactors(available ? "AVAILABLE" : UNKNOWN, rows);
     }
 
     private static RoutingExplanation.FactorContribution largestFactor(
@@ -119,8 +124,8 @@ public final class RoutingExplanationService {
             boolean supportOnly,
             boolean penaltyOnly) {
         return factors.stream()
-                .filter(factor -> !supportOnly || supportsSelection(factor))
-                .filter(factor -> !penaltyOnly || weakensSelection(factor))
+                .filter(factor -> !supportOnly || "SUPPORTS_SELECTION".equals(factor.direction()))
+                .filter(factor -> !penaltyOnly || "WEAKENS_SELECTION".equals(factor.direction()))
                 .max(Comparator
                         .comparingDouble((RoutingExplanation.FactorContribution factor) ->
                                 Math.abs(factor.contributionValue()))
@@ -129,15 +134,7 @@ public final class RoutingExplanationService {
                 .orElse(null);
     }
 
-    private static boolean supportsSelection(RoutingExplanation.FactorContribution factor) {
-        return "SUPPORTS_SELECTION".equals(factor.direction());
-    }
-
-    private static boolean weakensSelection(RoutingExplanation.FactorContribution factor) {
-        return "WEAKENS_SELECTION".equals(factor.direction());
-    }
-
-    private static RoutingExplanation.DecisionDelta liveDecisionDelta(
+    private static RoutingExplanation.DecisionDelta decisionDelta(
             LiveRoutingDecisionRecord decision,
             LiveRoutingDecisionRecord.SelectionEvidence evidence,
             List<RoutingExplanation.CandidateFactors> candidates) {
@@ -160,9 +157,9 @@ public final class RoutingExplanationService {
         if (alternativeId == null) {
             return new RoutingExplanation.DecisionDelta(UNKNOWN, UNKNOWN, null, List.of());
         }
-        Map<String, RoutingExplanation.FactorContribution> selectedFactors = liveFactorsByName(
+        Map<String, RoutingExplanation.FactorContribution> selectedFactors = factorsByName(
                 candidates, decision.chosenUpstreamId());
-        Map<String, RoutingExplanation.FactorContribution> alternativeFactors = liveFactorsByName(
+        Map<String, RoutingExplanation.FactorContribution> alternativeFactors = factorsByName(
                 candidates, alternativeId);
         Set<String> factorNames = new TreeSet<>();
         factorNames.addAll(selectedFactors.keySet());
@@ -185,15 +182,14 @@ public final class RoutingExplanationService {
                         .thenComparing(RoutingExplanation.FactorDelta::factorName))
                 .toList();
         boolean omitted = factorNames.size() != deltas.size();
-        String status = deltas.isEmpty() || omitted ? "PARTIAL" : "AVAILABLE";
         return new RoutingExplanation.DecisionDelta(
-                status,
+                deltas.isEmpty() || omitted ? "PARTIAL" : "AVAILABLE",
                 alternativeId,
                 round(selectedScore - evidence.scores().get(alternativeId)),
                 deltas);
     }
 
-    private static Map<String, RoutingExplanation.FactorContribution> liveFactorsByName(
+    private static Map<String, RoutingExplanation.FactorContribution> factorsByName(
             List<RoutingExplanation.CandidateFactors> candidates,
             String candidateId) {
         Map<String, RoutingExplanation.FactorContribution> byName = new LinkedHashMap<>();
@@ -207,7 +203,7 @@ public final class RoutingExplanationService {
         return Map.copyOf(byName);
     }
 
-    private static List<LiveRoutingDecisionExplanation.DecisionChangeThreshold> liveChangeThresholds(
+    private static List<LiveRoutingDecisionExplanation.DecisionChangeThreshold> changeThresholds(
             LiveRoutingDecisionRecord.SelectionEvidence evidence,
             RoutingExplanation.DecisionDelta delta) {
         if (delta.finalScoreGap() == null || delta.factors().isEmpty()) {
@@ -229,93 +225,6 @@ public final class RoutingExplanationService {
                             CHANGE_THRESHOLD_BOUNDARY);
                 })
                 .toList();
-    }
-
-    private static List<RoutingExplanation.CandidateFactors> candidateFactors(
-            RoutingComparisonResultResponse result) {
-        if (result == null || result.decisionVector() == null
-                || result.decisionVector().candidateSummaries() == null) {
-            return List.of();
-        }
-        return result.decisionVector().candidateSummaries().stream()
-                .filter(candidate -> candidate != null)
-                .sorted(Comparator.comparing(CandidateDecisionVectorResponse::candidateId,
-                        Comparator.nullsLast(String::compareTo)))
-                .map(candidate -> new RoutingExplanation.CandidateFactors(
-                        valueOrUnknown(candidate.candidateId()),
-                        candidate.selected(),
-                        candidate.factorContributions().stream()
-                                .filter(factor -> factor != null)
-                                .sorted(Comparator.comparing(ScoreFactorContributionResponse::factorName,
-                                        Comparator.nullsLast(String::compareTo)))
-                                .map(RoutingExplanationService::factorContribution)
-                                .toList()))
-                .toList();
-    }
-
-    private static RoutingExplanation.FactorContribution factorContribution(
-            ScoreFactorContributionResponse factor) {
-        return new RoutingExplanation.FactorContribution(
-                valueOrUnknown(factor.factorName()),
-                finiteOrNull(factor.contributionValue()),
-                valueOrUnknown(factor.direction()),
-                valueOrUnknown(factor.exactness()));
-    }
-
-    private static RoutingExplanation.FactorContribution factorContribution(
-            DominantFactorResponse factor) {
-        if (factor == null) {
-            return null;
-        }
-        return new RoutingExplanation.FactorContribution(
-                valueOrUnknown(factor.factorName()),
-                finiteOrNull(factor.contributionValue()),
-                valueOrUnknown(factor.direction()),
-                "RETURNED_ANALYSIS");
-    }
-
-    private static RoutingExplanation.DominantFactors dominantFactors(
-            RoutingComparisonResultResponse result) {
-        DominantFactorAnalysisResponse analysis = result == null ? null : result.dominantFactorAnalysis();
-        if (analysis == null) {
-            return new RoutingExplanation.DominantFactors(UNKNOWN, List.of());
-        }
-        List<RoutingExplanation.CandidateDominantFactor> candidates = analysis.candidateAnalyses().stream()
-                .filter(candidate -> candidate != null)
-                .sorted(Comparator.comparing(CandidateDominantFactorResponse::candidateId,
-                        Comparator.nullsLast(String::compareTo)))
-                .map(candidate -> new RoutingExplanation.CandidateDominantFactor(
-                        valueOrUnknown(candidate.candidateId()),
-                        candidate.selected(),
-                        factorContribution(candidate.largestPositiveContributor()),
-                        factorContribution(candidate.largestPenaltyContributor()),
-                        factorContribution(candidate.largestAbsoluteImpact())))
-                .toList();
-        return new RoutingExplanation.DominantFactors(valueOrUnknown(analysis.status()), candidates);
-    }
-
-    private static RoutingExplanation.DecisionDelta decisionDelta(
-            RoutingComparisonResultResponse result) {
-        RoutingDecisionDeltaAnalysisResponse analysis = result == null ? null : result.decisionDeltaAnalysis();
-        if (analysis == null) {
-            return new RoutingExplanation.DecisionDelta(UNKNOWN, UNKNOWN, null, List.of());
-        }
-        CandidateDecisionDeltaResponse comparison = analysis.comparison();
-        List<RoutingExplanation.FactorDelta> factors = analysis.factorDeltas().stream()
-                .filter(factor -> factor != null)
-                .sorted(Comparator.comparing(ScoreFactorDeltaResponse::factorName,
-                        Comparator.nullsLast(String::compareTo)))
-                .map(factor -> new RoutingExplanation.FactorDelta(
-                        valueOrUnknown(factor.factorName()),
-                        finiteOrNull(factor.selectedCandidateContribution()),
-                        finiteOrNull(factor.alternativeCandidateContribution()),
-                        finiteOrNull(factor.contributionDelta())))
-                .toList();
-        return new RoutingExplanation.DecisionDelta(
-                valueOrUnknown(analysis.status()),
-                valueOrUnknown(comparison == null ? null : comparison.closestAlternativeCandidateId()),
-                finiteOrNull(comparison == null ? null : comparison.finalScoreGap()),
-                factors);
     }
 
     private static List<RoutingExplanation.CounterfactualWeightScenario> counterfactualWeightScenarios(

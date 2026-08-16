@@ -16,6 +16,12 @@ public class AdaptiveRoutingPolicyConfiguration {
     }
 
     @Bean
+    ApiRateLimitObserver adaptiveRoutingRateLimitObserver(
+            AdaptiveRoutingObservabilityMetrics observabilityMetrics) {
+        return observabilityMetrics::recordRateLimited;
+    }
+
+    @Bean
     AdaptiveRoutingPolicyAuditLog adaptiveRoutingPolicyAuditLog(
             AdaptiveRoutingPolicyProperties properties,
             AdaptiveRoutingObservabilityMetrics observabilityMetrics) {

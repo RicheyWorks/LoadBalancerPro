@@ -1,10 +1,10 @@
 # Operator Distribution Smoke Kit
 
-This smoke kit validates the local operator distribution path without creating a release. It checks the packaged-jar path, Maven exec fixture launcher command, proxy demo profiles, real-backend example configs, packaged static resources, and proxy status endpoints.
+This smoke kit validates the production proxy distribution path without creating a release. It checks the packaged-jar path, real-backend example configs, the packaged proxy status resource, and proxy status endpoints. Simulation and demo tooling belongs to the separate opt-in Lab Tools artifact.
 
 No tags, releases, or assets are created. The kit does not upload artifacts, does not modify release workflows, and does not touch local release evidence.
 
-For focused local checksum, manifest, jar resource, static page, demo profile, and launcher-class verification after packaging, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
+For focused local checksum, manifest, production resource, and lab-content absence verification after packaging, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
 
 GitHub CI now runs the same release-free packaged artifact inspection and uploads the `packaged-artifact-smoke` workflow artifact with `artifact-smoke-summary.txt`, `artifact-sha256.txt`, and `jar-resource-list.txt`. This is workflow evidence only; it does not create tags, GitHub releases, release assets, or `release-downloads/` files.
 
@@ -41,10 +41,7 @@ The default mode checks that these files are present and prints the operator com
 
 - `pom.xml`
 - `src/main/resources/static/proxy-status.html`
-- `src/main/resources/static/load-balancing-cockpit.html`
-- `src/main/resources/application-proxy-demo-round-robin.properties`
-- `src/main/resources/application-proxy-demo-weighted-round-robin.properties`
-- `src/main/resources/application-proxy-demo-failover.properties`
+- `src/main/resources/application-proxy-prod.properties`
 - `docs/examples/proxy/application-proxy-real-backend-example.properties`
 - `docs/examples/proxy/application-proxy-real-backend-weighted-example.properties`
 - `docs/examples/proxy/application-proxy-real-backend-failover-example.properties`
@@ -93,7 +90,7 @@ java -jar "$JAR_PATH" --server.address=127.0.0.1 --server.port=18080 --spring.pr
 Then check:
 
 ```bash
-curl -fsS http://127.0.0.1:18080/api/health
+curl -fsS http://127.0.0.1:18080/actuator/health
 curl -fsS http://127.0.0.1:18080/proxy-status.html
 curl -fsS http://127.0.0.1:18080/api/proxy/status
 ```
@@ -110,21 +107,21 @@ Unix helper with package and HTTP smoke:
 bash scripts/operator-distribution-smoke.sh --package --run-jar-smoke
 ```
 
-The HTTP smoke starts the jar locally, waits for `/api/health`, checks `/proxy-status.html`, checks `/api/proxy/status`, and stops the process.
+The HTTP smoke starts the jar locally, waits for `/actuator/health`, checks `/proxy-status.html`, checks `/api/proxy/status`, and stops the process.
 
-## Maven Exec Fixture Launcher Smoke
+## Optional Lab Tools Smoke
 
-The Java loopback fixture launcher can be started without remembering a manual classpath:
+Demo commands and resources are intentionally absent from the production jar. Package and resolve the opt-in artifact first:
 
 ```bash
-mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+mvn -B -P lab -DskipTests package
+LAB_JAR_PATH="$(bash scripts/resolve-executable-jar.sh --lab)"
 ```
 
-Other modes:
+The Java loopback fixture launcher can also be started directly from the compiled source tree:
 
 ```bash
-mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode weighted-round-robin"
-mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode failover"
+mvn -q -P lab -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
 ```
 
 The fixture launcher binds to loopback by default and blocks until stopped by the operator.
@@ -139,11 +136,10 @@ mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-
 mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-demo-failover"
 ```
 
-Or with the packaged jar:
+Or with the Lab Tools jar:
 
 ```bash
-JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
-java -jar "$JAR_PATH" --spring.profiles.active=proxy-demo-round-robin
+java -jar "$LAB_JAR_PATH" --spring.profiles.active=proxy-demo-round-robin
 ```
 
 Then verify:
@@ -195,7 +191,6 @@ Windows PowerShell:
 ```powershell
 $jarPath = .\scripts\resolve-executable-jar.ps1
 jar tf $jarPath | Select-String "BOOT-INF/classes/static/proxy-status.html"
-jar tf $jarPath | Select-String "BOOT-INF/classes/static/load-balancing-cockpit.html"
 ```
 
 Unix shell:
@@ -203,12 +198,11 @@ Unix shell:
 ```bash
 JAR_PATH="$(bash scripts/resolve-executable-jar.sh)"
 jar tf "$JAR_PATH" | grep 'BOOT-INF/classes/static/proxy-status.html'
-jar tf "$JAR_PATH" | grep 'BOOT-INF/classes/static/load-balancing-cockpit.html'
 ```
 
 The proxy operator status page uses `GET /api/proxy/status` as its status source.
 
-For a reusable helper that checks these entries plus the demo profiles and `ProxyDemoFixtureLauncher.class`, run:
+For a reusable helper that checks these entries and rejects lab-only content, run:
 
 ```powershell
 .\scripts\local-artifact-verify.ps1
@@ -232,7 +226,7 @@ bash scripts/local-artifact-verify.sh
 - If Maven cannot download dependencies locally, verify the same branch in GitHub CI.
 - If `/proxy-status.html` is missing, rerun `mvn -B -DskipTests package` and inspect the jar resource list.
 - If `/api/proxy/status` reports proxy disabled, that is expected for default local startup.
-- If `/proxy/**` returns 404, start with one of the explicit `proxy-demo-*` profiles.
+- If `/proxy/**` returns 404, import a production proxy config with explicit loopback/private upstreams, or use the Lab Tools artifact for an explicit `proxy-demo-*` profile.
 - If the fixture launcher command exits immediately, rerun it with `--help` to inspect supported modes.
 
 ## Safety Boundaries

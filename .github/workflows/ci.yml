@@ -171,12 +171,10 @@ jobs:
 
           require_entry "META-INF/MANIFEST.MF"
           require_entry "BOOT-INF/classes/static/proxy-status.html"
-          require_entry "BOOT-INF/classes/static/load-balancing-cockpit.html"
-          require_entry "BOOT-INF/classes/application-proxy-demo-round-robin.properties"
-          require_entry "BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"
-          require_entry "BOOT-INF/classes/application-proxy-demo-failover.properties"
           require_entry "BOOT-INF/classes/application-proxy-prod.properties"
-          require_entry "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
+          require_entry "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/LoadBalancerApiApplication.class"
+          require_entry "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.class"
+          require_entry "BOOT-INF/classes/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyStatusController.class"
 
           forbid_pattern() {
             local pattern="$1"
@@ -189,11 +187,17 @@ jobs:
             echo "ABSENT: $description" | tee -a "$SUMMARY"
           }
 
-          forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/(cli|lab)/EnterpriseLab.*Proof' \
-            "Enterprise Lab proof command/runner/report/exporter classes"
-          forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/gui/(LoadBalancerGUI|ServerTableRow)' \
-            "application classes that directly import JavaFX"
+          forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/(cli|demo|gui|lab)/' \
+            "lab, demo, GUI, or CLI application classes"
+          forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/api/(AllocatorController|DecisionExplorer|EnterpriseLab|Evidence|Lase|Remediation|RoutingController|ScenarioReplay)' \
+            "simulation API controllers and services"
+          forbid_pattern '^BOOT-INF/classes/com/richmond423/loadbalancerpro/core/(CloudManager|LoadBalancer|ServerMonitor)' \
+            "simulation, cloud-manager, or synthetic-monitor core"
+          forbid_pattern '^BOOT-INF/classes/static/(adaptive-routing|ci-evidence|decision-explorer|enterprise-lab|evidence-|index\.html|load-balancing|operator-evidence|routing-demo)' \
+            "simulation and cockpit web pages"
           forbid_pattern '^BOOT-INF/lib/javafx' "OpenJFX libraries"
+          forbid_pattern '^BOOT-INF/lib/(autoscaling|cloudwatch|ec2|aws-|sdk-core|reactor-core|gson)-' \
+            "lab-only cloud, reactive, or JSON libraries"
           forbid_pattern '^BOOT-INF/classes/.*(Test|Tests)\.class$' "test classes"
           forbid_pattern '\.(exe|dll|msi|dmg|pkg|deb|rpm|appimage)$' "unexpected native installers or executables"
           forbid_pattern '\.(pem|p12|pfx|jks|keystore|key)$' "embedded key, certificate, or trust material"
@@ -229,7 +233,10 @@ jobs:
             target/bom.xml
           retention-days: 30
 
-      - name: Smoke test LASE demo command
+      - name: Package Lab Tools executable JAR
+        run: mvn -B -P lab -DskipTests package
+
+      - name: Smoke test LASE demo command from Lab Tools artifact
         shell: bash
         run: |
           set -euo pipefail
@@ -264,7 +271,7 @@ jobs:
           HEALTHY_LOG="$(mktemp)"
           OVERLOADED_LOG="$(mktemp)"
           INVALID_LOG="$(mktemp)"
-          JAR="$(bash scripts/resolve-executable-jar.sh)"
+          JAR="$(bash scripts/resolve-executable-jar.sh --lab)"
 
           java -jar "$JAR" --lase-demo=healthy >"$HEALTHY_LOG" 2>&1
           assert_contains "$HEALTHY_LOG" "=== LoadBalancerPro LASE Synthetic Demo ==="
@@ -323,7 +330,7 @@ jobs:
           trap cleanup EXIT
 
           for attempt in {1..60}; do
-            if curl -fsS -o /dev/null http://127.0.0.1:18080/api/health; then
+            if curl -fsS -o /dev/null http://127.0.0.1:18080/actuator/health; then
               echo "Packaged JAR smoke test passed."
               exit 0
             fi
@@ -337,7 +344,7 @@ jobs:
             sleep 2
           done
 
-          echo "Application did not return HTTP 200 from /api/health in time."
+          echo "Application did not return HTTP 200 from /actuator/health in time."
           cat "$APP_LOG"
           exit 1
 
@@ -366,7 +373,7 @@ jobs:
             loadbalancerpro:ci
 
           for attempt in {1..60}; do
-            if curl -fsS -o /dev/null http://127.0.0.1:18081/api/health; then
+            if curl -fsS -o /dev/null http://127.0.0.1:18081/actuator/health; then
               echo "Docker runtime health endpoint returned HTTP 200."
               break
             fi
@@ -378,7 +385,7 @@ jobs:
             fi
 
             if [ "$attempt" -eq 60 ]; then
-              echo "Container did not return HTTP 200 from /api/health in time."
+              echo "Container did not return HTTP 200 from /actuator/health in time."
               docker logs "$CONTAINER_NAME" 2>/dev/null || true
               exit 1
             fi

@@ -59,7 +59,7 @@ spec:
                 - >-
                   curl --fail --silent --show-error --cacert /run/tls/ca.pem
                   --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
-                  "https://${LBP_TLS_HOSTNAME}:8080/api/health" > /dev/null
+                  "https://${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
             initialDelaySeconds: 20
             periodSeconds: 5
             timeoutSeconds: 3
@@ -72,7 +72,7 @@ spec:
                 - >-
                   curl --fail --silent --show-error --cacert /run/tls/ca.pem
                   --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
-                  "https://${LBP_TLS_HOSTNAME}:8080/api/health" > /dev/null
+                  "https://${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
             initialDelaySeconds: 30
             periodSeconds: 15
             timeoutSeconds: 3

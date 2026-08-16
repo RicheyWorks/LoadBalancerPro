@@ -64,7 +64,8 @@ fi
 base_url="https://$tls_hostname:$proxy_port"
 curl_tls=(--silent --show-error --cacert "$tls_dir/ca.pem" --resolve "$tls_hostname:$proxy_port:127.0.0.1")
 for attempt in $(seq 1 120); do
-    if curl "${curl_tls[@]}" --fail --output /dev/null "$base_url/api/health"; then
+    if curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
+        --output /dev/null "$base_url/actuator/health"; then
         break
     fi
     if [[ "$attempt" -eq 120 ]]; then

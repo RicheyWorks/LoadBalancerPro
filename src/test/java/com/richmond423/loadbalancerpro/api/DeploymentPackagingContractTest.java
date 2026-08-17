@@ -95,10 +95,20 @@ class DeploymentPackagingContractTest {
     void staticManifestHasTheCanonicalLifecycleAndSecuritySketch() throws Exception {
         String manifest = read(MANIFEST);
 
-        assertEquals(3, yamlDocumentCount(manifest));
+        assertEquals(4, yamlDocumentCount(manifest));
 
         for (String expected : List.of(
-                "imagePullPolicy: Never",
+                "replicas: 2",
+                "type: RollingUpdate",
+                "maxUnavailable: 0",
+                "maxSurge: 1",
+                "minReadySeconds: 10",
+                "progressDeadlineSeconds: 600",
+                "registry.invalid/loadbalancerpro@sha256:",
+                "imagePullPolicy: IfNotPresent",
+                "kind: PodDisruptionBudget",
+                "minAvailable: 1",
+                "preferredDuringSchedulingIgnoredDuringExecution:",
                 "runAsNonRoot: true",
                 "readOnlyRootFilesystem: true",
                 "allowPrivilegeEscalation: false",
@@ -118,6 +128,7 @@ class DeploymentPackagingContractTest {
     void ciExecutesTheRuntimeSmokeAndUnsuppressedImageScans() throws Exception {
         String smoke = read(SMOKE);
         String ci = read(CI);
+        assertEquals(1, yamlDocumentCount(ci));
 
         for (String expected : List.of(
                 "docker image save",
@@ -133,7 +144,10 @@ class DeploymentPackagingContractTest {
         }
         assertTrue(ci.contains("Smoke test proxy-prod Compose deployment"));
         assertTrue(ci.contains("Scan proxy-prod fixture image"));
-        assertTrue(count(ci, "ignore-unfixed: false") >= 2);
+        assertTrue(ci.contains("bash scripts/bench/topology-validator-contract-test.sh"));
+        assertTrue(ci.contains("Scan active-active ingress fixture image"));
+        assertTrue(ci.contains("Scan immutable rollout candidate image"));
+        assertTrue(count(ci, "ignore-unfixed: false") >= 4);
         assertFalse(smoke.contains("cp \"$tls_dir/certificate.pem\" \"$tls_dir/ca.pem\""));
         assertFalse(ci.contains("ignore-unfixed: true"));
         assertFalse(ci.contains("trivyignores:"));

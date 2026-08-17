@@ -1,4 +1,4 @@
-# Static manifest sketch only. Replace local image and referenced Secret/ConfigMap objects before any deployment.
+# Static manifest sketch only. Replace the non-resolving digest and referenced Secret/ConfigMap objects before deployment.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,7 +13,15 @@ kind: Deployment
 metadata:
   name: loadbalancerpro
 spec:
-  replicas: 1
+  replicas: 2
+  revisionHistoryLimit: 2
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: loadbalancerpro
@@ -23,14 +31,23 @@ spec:
         app: loadbalancerpro
     spec:
       terminationGracePeriodSeconds: 40
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: loadbalancerpro
       securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: loadbalancerpro
-          image: loadbalancerpro:replace-with-reviewed-local-image
-          imagePullPolicy: Never
+          image: registry.invalid/loadbalancerpro@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          imagePullPolicy: IfNotPresent
           args:
             - --server.address=0.0.0.0
             - --server.ssl.enabled=true
@@ -159,3 +176,13 @@ spec:
     - name: https
       port: 443
       targetPort: https
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: loadbalancerpro
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: loadbalancerpro

@@ -473,9 +473,13 @@ jobs:
           LBP_TOPOLOGY_PROXY_IMAGE: loadbalancerpro:ci
           LBP_TOPOLOGY_FIXTURE_IMAGE: loadbalancerpro:proxy-prod-fixture-ci
           LBP_TOPOLOGY_INGRESS_IMAGE: loadbalancerpro:topology-ingress-ci
+          LBP_TOPOLOGY_CANDIDATE_IMAGE: loadbalancerpro:immutable-candidate-ci
+          LBP_TOPOLOGY_REJECTED_IMAGE: loadbalancerpro:immutable-rejected-ci
         run: |
           set -euo pipefail
           bash -n scripts/bench/proxy-active-active-topology.sh
+          bash -n scripts/bench/topology-validator-contract-test.sh
+          bash scripts/bench/topology-validator-contract-test.sh
           bash scripts/bench/proxy-active-active-topology.sh --mode validate
           bash scripts/bench/proxy-active-active-topology.sh --mode smoke
 
@@ -530,7 +534,7 @@ jobs:
             echo "- Source image tag: \`${IMAGE_TAG}\`"
             echo "- Local dry-run image tag: \`${DRY_RUN_TAG}\`"
             echo "- Docker runtime and proxy-prod Compose smokes: passed before this evidence was captured."
-            echo "- Trivy scans: see \`trivy-summary.txt\`, \`fixture-trivy-summary.txt\`, and \`topology-ingress-trivy-summary.txt\` when the scan steps complete."
+            echo "- Trivy scans: see \`trivy-summary.txt\`, \`fixture-trivy-summary.txt\`, \`topology-ingress-trivy-summary.txt\`, and \`immutable-candidate-trivy-summary.txt\` when the scan steps complete."
             echo "- Evidence directory: \`${EVIDENCE_DIR}\`"
             echo "- Artifact name: \`container-dry-run-evidence-no-publish-no-sign\`"
             echo ""
@@ -575,6 +579,18 @@ jobs:
           image-ref: loadbalancerpro:topology-ingress-ci
           format: table
           output: target/container-dry-run-evidence/topology-ingress-trivy-summary.txt
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+
+      - name: Scan immutable rollout candidate image
+        # aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: loadbalancerpro:immutable-candidate-ci
+          format: table
+          output: target/container-dry-run-evidence/immutable-candidate-trivy-summary.txt
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: false

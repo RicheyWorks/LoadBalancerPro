@@ -4,6 +4,8 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/../.." && pwd)"
 compose_file="$repo_root/deploy/topology/docker-compose.active-active.yml"
+candidate_dockerfile="$repo_root/deploy/topology/RolloutCandidate.Dockerfile"
+rejected_dockerfile="$repo_root/deploy/topology/RolloutRejected.Dockerfile"
 example_profile="$script_dir/topology-profile.example.json"
 
 mode=validate
@@ -18,7 +20,7 @@ while [[ $# -gt 0 ]]; do
 done
 case "$mode" in validate|smoke|run) ;; *) echo "Mode must be validate, smoke, or run" >&2; exit 2 ;; esac
 command -v jq >/dev/null 2>&1 || { echo "jq is required" >&2; exit 2; }
-for required_file in "$compose_file" "$profile"; do
+for required_file in "$compose_file" "$candidate_dockerfile" "$rejected_dockerfile" "$profile"; do
     [[ -f "$required_file" ]] || { echo "Missing required file: $required_file" >&2; exit 2; }
 done
 
@@ -39,6 +41,24 @@ jq -e '
   and (.workload.ratePerSecond | type == "number" and . > 0 and floor == .)
   and (.workload.scenarioSeconds | type == "number" and . >= 8 and floor == .)
   and (.workload.distributionRequests | type == "number" and . >= 20 and floor == . and (. % 2 == 0))
+  and (.rollout.candidateReleaseId | type == "string" and test("^[a-z0-9][a-z0-9._-]{0,62}$"))
+  and (.rollout.trafficDurationSeconds | type == "number" and . >= 20 and floor == .)
+  and (.rollout.maximumReplicaReplacementMillis | type == "number" and . >= 5000 and . <= 120000 and floor == .)
+  and ((.rollout.maximumRolloutMillis | type) == "number"
+      and .rollout.maximumRolloutMillis >= (2 * .rollout.maximumReplicaReplacementMillis)
+      and .rollout.maximumRolloutMillis <= 300000
+      and (.rollout.maximumRolloutMillis | floor) == .rollout.maximumRolloutMillis)
+  and ((.rollout.maximumRollbackMillis | type) == "number"
+      and .rollout.maximumRollbackMillis >= (2 * .rollout.maximumReplicaReplacementMillis)
+      and .rollout.maximumRollbackMillis <= 300000
+      and (.rollout.maximumRollbackMillis | floor) == .rollout.maximumRollbackMillis)
+  and ((.rollout.maximumAbortRecoveryMillis | type) == "number"
+      and .rollout.maximumAbortRecoveryMillis >= .rollout.maximumReplicaReplacementMillis
+      and .rollout.maximumAbortRecoveryMillis <= 120000
+      and (.rollout.maximumAbortRecoveryMillis | floor) == .rollout.maximumAbortRecoveryMillis)
+  and ((.rollout.trafficDurationSeconds * 1000) >= (.rollout.maximumRolloutMillis + 5000))
+  and ((.rollout.trafficDurationSeconds * 1000) >= (.rollout.maximumRollbackMillis + 5000))
+  and ((.rollout.trafficDurationSeconds * 1000) >= (.rollout.maximumAbortRecoveryMillis + 5000))
   and (.limits.globalMaxInFlight | type == "number" and . > 0 and floor == .)
   and (.limits.perReplicaUpstreamMaxInFlight | type == "number" and . > 0 and floor == .)
   and (.limits.aggregateUpstreamConnectionBudget | type == "number" and . > 0 and floor == .)
@@ -54,7 +74,7 @@ jq -e '
 
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated two-replica loopback topology contract %s.\n' "$(jq -r '.profileId' "$profile")"
-    printf 'Validated proof cases: distribution rollout rollback replica-loss recovery aggregate-limits per-instance-metrics\n'
+    printf 'Validated proof cases: distribution config-rollout config-rollback candidate-rejection immutable-rollout immutable-rollback replica-loss recovery aggregate-limits per-instance-metrics\n'
     exit 0
 fi
 if [[ "$mode" == "run" ]]; then
@@ -132,11 +152,11 @@ openssl rand -hex 16 > "$ingress_dir/server-password"
 ca_key="$work_dir/ca-key.pem"
 server_csr="$work_dir/server.csr"
 server_extensions="$work_dir/server-extensions.cnf"
-openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
+MSYS2_ARG_CONV_EXCL='/CN=LoadBalancerPro Topology Proof CA' openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
     -subj '/CN=LoadBalancerPro Topology Proof CA' \
     -addext 'basicConstraints=critical,CA:TRUE' -addext 'keyUsage=critical,keyCertSign,cRLSign' \
     -keyout "$ca_key" -out "$tls_dir/ca.pem" >/dev/null 2>&1
-openssl req -newkey rsa:2048 -sha256 -nodes -subj '/CN=lbp-topology.local' \
+MSYS2_ARG_CONV_EXCL='/CN=lbp-topology.local' openssl req -newkey rsa:2048 -sha256 -nodes -subj '/CN=lbp-topology.local' \
     -keyout "$tls_dir/private-key.pem" -out "$server_csr" >/dev/null 2>&1
 printf '%s\n' \
     'subjectAltName=DNS:lbp-topology.local,DNS:proxy-a,DNS:proxy-b,DNS:topology-ingress,IP:127.0.0.1' \
@@ -145,9 +165,14 @@ printf '%s\n' \
     'extendedKeyUsage=serverAuth' > "$server_extensions"
 openssl x509 -req -sha256 -days 1 -in "$server_csr" -CA "$tls_dir/ca.pem" -CAkey "$ca_key" \
     -set_serial 1 -extfile "$server_extensions" -out "$tls_dir/certificate.pem" >/dev/null 2>&1
+openssl_password_file="$ingress_dir/server-password"
+if command -v cygpath >/dev/null 2>&1; then
+    openssl_password_file="$(cygpath -m "$openssl_password_file")"
+fi
+MSYS2_ARG_CONV_EXCL="file:$openssl_password_file" \
 openssl pkcs12 -export -name topology-ingress -in "$tls_dir/certificate.pem" \
     -inkey "$tls_dir/private-key.pem" -certfile "$tls_dir/ca.pem" \
-    -out "$ingress_dir/server.p12" -passout "file:$ingress_dir/server-password" >/dev/null 2>&1
+    -out "$ingress_dir/server.p12" -passout "file:$openssl_password_file" >/dev/null 2>&1
 cp "$tls_dir/ca.pem" "$ingress_dir/ca.pem"
 chmod 0444 "$api_key_file" "$tls_dir"/* "$ingress_dir"/*
 chmod 0555 "$tls_dir" "$trust_dir" "$identity_dir" "$config_dir" "$ingress_dir"
@@ -166,6 +191,16 @@ export LBP_TOPOLOGY_STRATEGY="$(jq -r '.topology.baselineStrategy' "$profile")"
 export LBP_TOPOLOGY_PROXY_IMAGE="${LBP_TOPOLOGY_PROXY_IMAGE:-loadbalancerpro:${project_name}}"
 export LBP_TOPOLOGY_FIXTURE_IMAGE="${LBP_TOPOLOGY_FIXTURE_IMAGE:-loadbalancerpro:${project_name}-fixture}"
 export LBP_TOPOLOGY_INGRESS_IMAGE="${LBP_TOPOLOGY_INGRESS_IMAGE:-loadbalancerpro:${project_name}-ingress}"
+candidate_image_tag="${LBP_TOPOLOGY_CANDIDATE_IMAGE:-loadbalancerpro:${project_name}-candidate}"
+rejected_image_tag="${LBP_TOPOLOGY_REJECTED_IMAGE:-loadbalancerpro:${project_name}-rejected}"
+for local_image_tag in "$candidate_image_tag" "$rejected_image_tag"; do
+    [[ "$local_image_tag" =~ ^loadbalancerpro:[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$ ]] || {
+        echo "Rollout proof image tags must remain in the local loadbalancerpro repository" >&2
+        exit 2
+    }
+done
+export LBP_TOPOLOGY_PROXY_A_IMAGE="$LBP_TOPOLOGY_PROXY_IMAGE"
+export LBP_TOPOLOGY_PROXY_B_IMAGE="$LBP_TOPOLOGY_PROXY_IMAGE"
 compose=(docker compose -p "$project_name" -f "$compose_file")
 "${compose[@]}" config --quiet
 if [[ "${LBP_TOPOLOGY_REUSE_PROXY_IMAGE:-false}" == "true" ]]; then
@@ -173,6 +208,45 @@ if [[ "${LBP_TOPOLOGY_REUSE_PROXY_IMAGE:-false}" == "true" ]]; then
 else
     "${compose[@]}" build proxy-a backend-a topology-ingress
 fi
+
+baseline_image_id="$(docker image inspect --format '{{.Id}}' "$LBP_TOPOLOGY_PROXY_IMAGE")"
+[[ "$baseline_image_id" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "Baseline proxy image has no exact content ID" >&2; exit 1; }
+candidate_release_id="$(jq -r '.rollout.candidateReleaseId' "$profile")"
+docker build --quiet --file "$candidate_dockerfile" --build-arg "BASE_IMAGE=$LBP_TOPOLOGY_PROXY_IMAGE" \
+    --build-arg "ROLLOUT_RELEASE_ID=$candidate_release_id" --tag "$candidate_image_tag" "$repo_root" >/dev/null
+docker build --quiet --file "$rejected_dockerfile" --build-arg "BASE_IMAGE=$LBP_TOPOLOGY_PROXY_IMAGE" \
+    --build-arg "ROLLOUT_RELEASE_ID=${candidate_release_id}-rejected" --tag "$rejected_image_tag" "$repo_root" >/dev/null
+[[ "$(docker image inspect --format '{{.Id}}' "$LBP_TOPOLOGY_PROXY_IMAGE")" == "$baseline_image_id" ]] || {
+    echo "Baseline proxy image tag changed while deriving rollout proof images" >&2; exit 1;
+}
+candidate_image_id="$(docker image inspect --format '{{.Id}}' "$candidate_image_tag")"
+rejected_image_id="$(docker image inspect --format '{{.Id}}' "$rejected_image_tag")"
+for exact_image_id in "$candidate_image_id" "$rejected_image_id"; do
+    [[ "$exact_image_id" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "Rollout proof image has no exact content ID" >&2; exit 1; }
+    [[ "$exact_image_id" != "$baseline_image_id" ]] || { echo "Rollout proof image is not content-distinct" >&2; exit 1; }
+done
+[[ "$candidate_image_id" != "$rejected_image_id" ]] || { echo "Candidate and rejected image IDs must differ" >&2; exit 1; }
+baseline_layers="$(docker image inspect --format '{{json .RootFS.Layers}}' "$baseline_image_id")"
+[[ "$(docker image inspect --format '{{json .RootFS.Layers}}' "$candidate_image_id")" == "$baseline_layers" ]] || {
+    echo "Candidate proof image changed application layers" >&2; exit 1;
+}
+[[ "$(docker image inspect --format '{{json .RootFS.Layers}}' "$rejected_image_id")" == "$baseline_layers" ]] || {
+    echo "Rejected proof image changed application layers" >&2; exit 1;
+}
+for inherited_config in '{{json .Config.Cmd}}' '{{json .Config.Entrypoint}}' '{{json .Config.User}}'; do
+    [[ "$(docker image inspect --format "$inherited_config" "$candidate_image_id")" == \
+       "$(docker image inspect --format "$inherited_config" "$baseline_image_id")" ]] || {
+        echo "Candidate proof image changed inherited runtime configuration" >&2; exit 1;
+    }
+done
+[[ "$(docker image inspect --format '{{index .Config.Labels "com.richeyworks.loadbalancerpro.rollout.release-id"}}' \
+    "$candidate_image_id")" == "$candidate_release_id" ]] || { echo "Candidate release label is missing" >&2; exit 1; }
+[[ "$(docker image inspect --format '{{json .Config.Entrypoint}}' "$rejected_image_id")" == '["/bin/false"]' ]] || {
+    echo "Rejected candidate must fail before application startup" >&2; exit 1;
+}
+export LBP_TOPOLOGY_PROXY_A_IMAGE="$baseline_image_id"
+export LBP_TOPOLOGY_PROXY_B_IMAGE="$baseline_image_id"
+"${compose[@]}" config --quiet
 "${compose[@]}" up --no-build --detach
 
 curl_config="$work_dir/curl-auth.conf"
@@ -303,12 +377,18 @@ targets="$work_dir/topology.targets"
 printf 'GET %s/proxy/topology/load\nX-API-Key: %s\n\n' "$ingress_url" "$api_key" > "$targets"
 
 run_attack() {
-    local name="$1" during="$2" after="${3:-}"
-    vegeta attack -duration="${scenario_seconds}s" -rate="${rate}/s" -timeout=10s \
+    local name="$1" during="$2" after="${3:-}" duration="${4:-$scenario_seconds}" warmup="${5:-$(( scenario_seconds / 3 ))}"
+    vegeta attack -duration="${duration}s" -rate="${rate}/s" -timeout=10s \
         -root-certs="$tls_dir/ca.pem" -max-body=0 -targets="$targets" > "$work_dir/$name.bin" &
     attack_pid=$!
-    sleep $(( scenario_seconds / 3 ))
+    sleep "$warmup"
     "$during"
+    kill -0 "$attack_pid" 2>/dev/null || {
+        wait "$attack_pid" || true
+        attack_pid=""
+        echo "$name traffic ended before its deployment action completed" >&2
+        exit 1
+    }
     if ! wait "$attack_pid"; then attack_pid=""; echo "$name attack failed" >&2; exit 1; fi
     attack_pid=""
     [[ -z "$after" ]] || "$after"
@@ -371,6 +451,177 @@ rollback_action() {
         maximumSkewMillis:$maximumSkewMillis}' > "$output_dir/rollback.json"
 }
 
+set_replica_image() {
+    local replica="$1" exact_image_id="$2"
+    [[ "$exact_image_id" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "Replica image must be an exact local content ID" >&2; exit 1; }
+    docker image inspect "$exact_image_id" >/dev/null
+    case "$replica" in
+        proxy-a) export LBP_TOPOLOGY_PROXY_A_IMAGE="$exact_image_id" ;;
+        proxy-b) export LBP_TOPOLOGY_PROXY_B_IMAGE="$exact_image_id" ;;
+        *) echo "Unknown topology replica: $replica" >&2; exit 1 ;;
+    esac
+}
+
+replica_container_id() {
+    local replica="$1" container_id
+    container_id="$("${compose[@]}" ps --all --quiet "$replica")"
+    [[ "$container_id" =~ ^[0-9a-f]{12,64}$ ]] || { echo "Could not resolve one container for $replica" >&2; return 1; }
+    printf '%s\n' "$container_id"
+}
+
+replica_image_id() {
+    docker container inspect --format '{{.Image}}' "$(replica_container_id "$1")"
+}
+
+assert_replica_image() {
+    local replica="$1" expected="$2" actual
+    actual="$(replica_image_id "$replica")"
+    [[ "$actual" == "$expected" ]] || {
+        echo "$replica runs $actual instead of reviewed exact image $expected" >&2
+        exit 1
+    }
+}
+
+recreate_replica() {
+    local replica="$1" exact_image_id="$2"
+    set_replica_image "$replica" "$exact_image_id"
+    "${compose[@]}" up --detach --no-deps --no-build --force-recreate "$replica" >/dev/null
+    assert_replica_image "$replica" "$exact_image_id"
+}
+
+wait_for_replacement_readiness() {
+    local replica="$1" expected_image_id="$2" maximum_millis="$3"
+    local deadline container_id state actual
+    deadline=$(( $(epoch_millis) + maximum_millis ))
+    while (( $(epoch_millis) < deadline )); do
+        container_id="$(replica_container_id "$replica")" || return 2
+        actual="$(docker container inspect --format '{{.Image}}' "$container_id")"
+        [[ "$actual" == "$expected_image_id" ]] || return 2
+        state="$(docker container inspect --format '{{.State.Status}}' "$container_id")"
+        case "$state" in
+            exited|dead) return 1 ;;
+            running) if curl_replica "$replica" /actuator/health /dev/null 2>/dev/null; then return 0; fi ;;
+        esac
+        sleep 1
+    done
+    return 2
+}
+
+maximum_replica_replacement_millis="$(jq -r '.rollout.maximumReplicaReplacementMillis' "$profile")"
+baseline_config_hash="$(config_hash "$output_dir/baseline-proxy-a-config.json")"
+replace_replica_ready() {
+    local replica="$1" exact_image_id="$2" evidence_file="$3"
+    local started completed elapsed replica_config actual_config_hash generation
+    started="$(epoch_millis)"
+    recreate_replica "$replica" "$exact_image_id"
+    wait_for_replacement_readiness "$replica" "$exact_image_id" "$maximum_replica_replacement_millis" || {
+        echo "$replica did not become ready on exact image $exact_image_id" >&2
+        exit 1
+    }
+    reload_replica "$replica" "$baseline_config" "$work_dir/$(basename "$evidence_file").reload.json"
+    wait_for_url ingress
+    replica_config="$work_dir/$(basename "$evidence_file").config.json"
+    curl_replica "$replica" /api/proxy/config "$replica_config"
+    actual_config_hash="$(config_hash "$replica_config")"
+    [[ "$actual_config_hash" == "$baseline_config_hash" ]] || {
+        echo "$replica configuration changed during image replacement" >&2; exit 1;
+    }
+    generation="$(jq -r '.generation' "$replica_config")"
+    completed="$(epoch_millis)"
+    elapsed=$(( completed - started ))
+    (( elapsed <= maximum_replica_replacement_millis )) || {
+        echo "$replica replacement exceeded its reviewed window" >&2; exit 1;
+    }
+    jq -n --arg replica "$replica" --arg imageId "$exact_image_id" --arg configSha256 "$actual_config_hash" \
+      --argjson generation "$generation" --argjson elapsedMillis "$elapsed" \
+      --argjson maximumMillis "$maximum_replica_replacement_millis" \
+      '{passed:($elapsedMillis <= $maximumMillis),replica:$replica,imageId:$imageId,
+        configSha256:$configSha256,processLocalGeneration:$generation,
+        elapsedMillis:$elapsedMillis,maximumMillis:$maximumMillis}' > "$evidence_file"
+}
+
+candidate_rejection_action() {
+    local started completed elapsed candidate_container state maximum_abort
+    started="$(epoch_millis)"
+    recreate_replica proxy-a "$rejected_image_id"
+    if wait_for_replacement_readiness proxy-a "$rejected_image_id" "$maximum_replica_replacement_millis"; then
+        echo "The deliberately unhealthy candidate unexpectedly became ready" >&2
+        exit 1
+    fi
+    candidate_container="$(replica_container_id proxy-a)"
+    state="$(docker container inspect --format '{{.State.Status}}' "$candidate_container")"
+    [[ "$state" == "exited" || "$state" == "dead" ]] || {
+        echo "Candidate rejection did not produce a terminal container state" >&2; exit 1;
+    }
+    docker container inspect "$candidate_container" > "$output_dir/rejected-candidate-container.json"
+    assert_replica_image proxy-b "$baseline_image_id"
+    replace_replica_ready proxy-a "$baseline_image_id" "$output_dir/candidate-rejection-restore-step.json"
+    assert_replica_image proxy-a "$baseline_image_id"
+    assert_replica_image proxy-b "$baseline_image_id"
+    capture_configs candidate-rejection-restored
+    assert_same_config candidate-rejection-restored
+    completed="$(epoch_millis)"
+    elapsed=$(( completed - started ))
+    maximum_abort="$(jq -r '.rollout.maximumAbortRecoveryMillis' "$profile")"
+    (( elapsed <= maximum_abort )) || { echo "Candidate abort recovery exceeded its reviewed window" >&2; exit 1; }
+    jq -n --arg rejectedImageId "$rejected_image_id" --arg restoredImageId "$baseline_image_id" \
+      --arg rejectedState "$state" --argjson elapsedMillis "$elapsed" --argjson maximumMillis "$maximum_abort" \
+      '{passed:($rejectedState == "exited" and $elapsedMillis <= $maximumMillis),
+        rejectedImageId:$rejectedImageId,rejectedState:$rejectedState,
+        secondReplicaPromoted:false,restoredImageId:$restoredImageId,
+        elapsedMillis:$elapsedMillis,maximumMillis:$maximumMillis}' > "$output_dir/candidate-rejection.json"
+}
+
+immutable_rollout_action() {
+    local started completed elapsed maximum_rollout
+    started="$(epoch_millis)"
+    replace_replica_ready proxy-a "$candidate_image_id" "$output_dir/immutable-rollout-proxy-a-step.json"
+    assert_replica_image proxy-b "$baseline_image_id"
+    capture_configs immutable-rollout-one-candidate
+    assert_same_config immutable-rollout-one-candidate
+    replace_replica_ready proxy-b "$candidate_image_id" "$output_dir/immutable-rollout-proxy-b-step.json"
+    assert_replica_image proxy-a "$candidate_image_id"
+    assert_replica_image proxy-b "$candidate_image_id"
+    capture_configs immutable-rollout-converged
+    assert_same_config immutable-rollout-converged
+    completed="$(epoch_millis)"
+    elapsed=$(( completed - started ))
+    maximum_rollout="$(jq -r '.rollout.maximumRolloutMillis' "$profile")"
+    (( elapsed <= maximum_rollout )) || { echo "Immutable rollout exceeded its reviewed window" >&2; exit 1; }
+    jq -n --slurpfile proxyA "$output_dir/immutable-rollout-proxy-a-step.json" \
+      --slurpfile proxyB "$output_dir/immutable-rollout-proxy-b-step.json" \
+      --arg baselineImageId "$baseline_image_id" --arg candidateImageId "$candidate_image_id" \
+      --argjson elapsedMillis "$elapsed" --argjson maximumMillis "$maximum_rollout" \
+      '{passed:($proxyA[0].passed and $proxyB[0].passed and $elapsedMillis <= $maximumMillis),
+        fromImageId:$baselineImageId,toImageId:$candidateImageId,steps:[$proxyA[0],$proxyB[0]],
+        elapsedMillis:$elapsedMillis,maximumMillis:$maximumMillis}' > "$output_dir/immutable-rollout.json"
+}
+
+immutable_rollback_action() {
+    local started completed elapsed maximum_rollback
+    started="$(epoch_millis)"
+    replace_replica_ready proxy-a "$baseline_image_id" "$output_dir/immutable-rollback-proxy-a-step.json"
+    assert_replica_image proxy-b "$candidate_image_id"
+    capture_configs immutable-rollback-one-baseline
+    assert_same_config immutable-rollback-one-baseline
+    replace_replica_ready proxy-b "$baseline_image_id" "$output_dir/immutable-rollback-proxy-b-step.json"
+    assert_replica_image proxy-a "$baseline_image_id"
+    assert_replica_image proxy-b "$baseline_image_id"
+    capture_configs immutable-rollback-converged
+    assert_same_config immutable-rollback-converged
+    completed="$(epoch_millis)"
+    elapsed=$(( completed - started ))
+    maximum_rollback="$(jq -r '.rollout.maximumRollbackMillis' "$profile")"
+    (( elapsed <= maximum_rollback )) || { echo "Immutable rollback exceeded its reviewed window" >&2; exit 1; }
+    jq -n --slurpfile proxyA "$output_dir/immutable-rollback-proxy-a-step.json" \
+      --slurpfile proxyB "$output_dir/immutable-rollback-proxy-b-step.json" \
+      --arg candidateImageId "$candidate_image_id" --arg baselineImageId "$baseline_image_id" \
+      --argjson elapsedMillis "$elapsed" --argjson maximumMillis "$maximum_rollback" \
+      '{passed:($proxyA[0].passed and $proxyB[0].passed and $elapsedMillis <= $maximumMillis),
+        fromImageId:$candidateImageId,toImageId:$baselineImageId,steps:[$proxyA[0],$proxyB[0]],
+        elapsedMillis:$elapsedMillis,maximumMillis:$maximumMillis}' > "$output_dir/immutable-rollback.json"
+}
+
 loss_started_millis=0
 stop_proxy_a() {
     loss_started_millis="$(epoch_millis)"
@@ -394,6 +645,10 @@ recover_proxy_a() {
 
 run_attack rollout-under-load rollout_action
 run_attack rollback-under-load rollback_action
+rollout_traffic_duration="$(jq -r '.rollout.trafficDurationSeconds' "$profile")"
+run_attack candidate-rejection-under-load candidate_rejection_action "" "$rollout_traffic_duration" 2
+run_attack immutable-rollout-under-load immutable_rollout_action "" "$rollout_traffic_duration" 2
+run_attack immutable-rollback-under-load immutable_rollback_action "" "$rollout_traffic_duration" 2
 run_attack replica-loss-under-load stop_proxy_a recover_proxy_a
 capture_configs recovered
 assert_same_config recovered
@@ -407,8 +662,22 @@ for metrics in "$output_dir/proxy-a-metrics.prom" "$output_dir/proxy-b-metrics.p
 done
 
 docker info --format '{{json .}}' > "$output_dir/docker-info.json"
-docker image inspect "$LBP_TOPOLOGY_PROXY_IMAGE" > "$output_dir/proxy-image.json"
+docker image inspect "$baseline_image_id" > "$output_dir/proxy-baseline-image.json"
+docker image inspect "$candidate_image_id" > "$output_dir/proxy-candidate-image.json"
+docker image inspect "$rejected_image_id" > "$output_dir/proxy-rejected-image.json"
 docker image inspect "$LBP_TOPOLOGY_INGRESS_IMAGE" > "$output_dir/ingress-image.json"
+docker container inspect "$(replica_container_id proxy-a)" > "$output_dir/proxy-a-container.json"
+docker container inspect "$(replica_container_id proxy-b)" > "$output_dir/proxy-b-container.json"
+assert_replica_image proxy-a "$baseline_image_id"
+assert_replica_image proxy-b "$baseline_image_id"
+jq -n --arg baselineImageId "$baseline_image_id" --arg candidateImageId "$candidate_image_id" \
+  --arg rejectedImageId "$rejected_image_id" --arg candidateReleaseId "$candidate_release_id" \
+  '{schemaVersion:1,identityType:"local Docker content-addressed image ID",
+    baseline:{imageId:$baselineImageId},candidate:{releaseId:$candidateReleaseId,imageId:$candidateImageId},
+    deliberatelyRejectedCandidate:{imageId:$rejectedImageId},
+    applicationLayersIdentical:true,
+    boundary:"Local image IDs prove replacement mechanics; a registry manifest digest is still required for reviewed staging."}' \
+  > "$output_dir/image-identities.json"
 profile_sha256="$(sha256sum "$profile" | awk '{print $1}')"
 source_revision="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || echo unknown)"
 jq -n --arg profileId "$profile_id" --arg profileSha256 "$profile_sha256" \
@@ -420,22 +689,34 @@ jq -n --arg profileId "$profile_id" --arg profileSha256 "$profile_sha256" \
 jq -n --slurpfile distribution "$output_dir/distribution.json" \
   --slurpfile aggregate "$output_dir/aggregate-limit.json" --slurpfile rollout "$output_dir/rollout.json" \
   --slurpfile rollback "$output_dir/rollback.json" --slurpfile recovery "$output_dir/recovery.json" \
+  --slurpfile candidateRejection "$output_dir/candidate-rejection.json" \
+  --slurpfile immutableRollout "$output_dir/immutable-rollout.json" \
+  --slurpfile immutableRollback "$output_dir/immutable-rollback.json" \
   --slurpfile rolloutClient "$output_dir/rollout-under-load-client.json" \
   --slurpfile rollbackClient "$output_dir/rollback-under-load-client.json" \
+  --slurpfile rejectionClient "$output_dir/candidate-rejection-under-load-client.json" \
+  --slurpfile immutableRolloutClient "$output_dir/immutable-rollout-under-load-client.json" \
+  --slurpfile immutableRollbackClient "$output_dir/immutable-rollback-under-load-client.json" \
   --slurpfile lossClient "$output_dir/replica-loss-under-load-client.json" \
   --argjson minimumSuccess "$minimum_success" --argjson maximumP99Millis "$p99_budget" '
   {accepted:($distribution[0].passed and $aggregate[0].passed and $rollout[0].passed
-      and $rollback[0].passed and $recovery[0].passed
-      and all([$rolloutClient[0],$rollbackClient[0],$lossClient[0]][];
+      and $rollback[0].passed and $candidateRejection[0].passed and $immutableRollout[0].passed
+      and $immutableRollback[0].passed and $recovery[0].passed
+      and all([$rolloutClient[0],$rollbackClient[0],$rejectionClient[0],$immutableRolloutClient[0],
+          $immutableRollbackClient[0],$lossClient[0]][];
         .success >= $minimumSuccess and (.latencies["99th"] / 1000000) <= $maximumP99Millis)),
    distribution:$distribution[0],aggregateLimits:$aggregate[0],rollout:$rollout[0],rollback:$rollback[0],
-   recovery:$recovery[0],
+   candidateRejection:$candidateRejection[0],immutableRollout:$immutableRollout[0],
+   immutableRollback:$immutableRollback[0],recovery:$recovery[0],
    trafficObjectives:{minimumSuccessRatio:$minimumSuccess,maximumP99Millis:$maximumP99Millis},
    traffic:{
      rollout:{successRatio:$rolloutClient[0].success,p99Millis:($rolloutClient[0].latencies["99th"] / 1000000)},
      rollback:{successRatio:$rollbackClient[0].success,p99Millis:($rollbackClient[0].latencies["99th"] / 1000000)},
+     candidateRejection:{successRatio:$rejectionClient[0].success,p99Millis:($rejectionClient[0].latencies["99th"] / 1000000)},
+     immutableRollout:{successRatio:$immutableRolloutClient[0].success,p99Millis:($immutableRolloutClient[0].latencies["99th"] / 1000000)},
+     immutableRollback:{successRatio:$immutableRollbackClient[0].success,p99Millis:($immutableRollbackClient[0].latencies["99th"] / 1000000)},
      replicaLoss:{successRatio:$lossClient[0].success,p99Millis:($lossClient[0].latencies["99th"] / 1000000)}},
-   boundary:"Local active-active mechanics only; a reviewed deployment ingress and multi-zone run remain required."}' \
+   boundary:"Local active-active and content-addressed image replacement mechanics only; registry-digest, reviewed deployment ingress, and multi-zone runs remain required."}' \
   > "$output_dir/topology-result.json"
 jq -e '.accepted == true' "$output_dir/topology-result.json" >/dev/null
 printf 'Active-active topology evidence: %s\n' "$output_dir"

@@ -16,6 +16,14 @@
     "scenarioSeconds": 12,
     "distributionRequests": 100
   },
+  "rollout": {
+    "candidateReleaseId": "local-candidate-v2",
+    "trafficDurationSeconds": 45,
+    "maximumReplicaReplacementMillis": 20000,
+    "maximumRolloutMillis": 40000,
+    "maximumRollbackMillis": 40000,
+    "maximumAbortRecoveryMillis": 20000
+  },
   "limits": {
     "globalMaxInFlight": 50,
     "perReplicaUpstreamMaxInFlight": 25,

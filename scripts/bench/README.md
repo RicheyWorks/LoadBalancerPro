@@ -29,18 +29,21 @@ passing run is staging evidence for its exact target and artifact; it is not pro
 ## Active-active topology proof
 
 `proxy-active-active-topology.sh` starts two real proxy processes behind a bounded TLS/authenticated round-robin
-ingress fixture. It proves both replicas receive traffic, configuration and generations converge, rollout and rollback
-stay available under load, aggregate per-upstream limits remain inside the reviewed budget, per-instance metrics exist,
-and traffic survives one replica stopping and recovering within the profile's bounded ingress failure-detection time:
+ingress fixture. It proves both replicas receive traffic, configuration and generations converge, an unhealthy image
+candidate is rejected before replica two changes, exact content-addressed image IDs promote and roll back one replica
+at a time under load, aggregate per-upstream limits remain inside the reviewed budget, per-instance metrics exist, and
+traffic survives one replica stopping and recovering within the profile's bounded failure-detection time:
 
 ```bash
 bash scripts/bench/proxy-active-active-topology.sh --mode validate
+bash scripts/bench/topology-validator-contract-test.sh
 bash scripts/bench/proxy-active-active-topology.sh --mode smoke
 ```
 
 `--mode run --profile /path/to/topology-profile.json` requires a reviewed profile, a clean checkout, and at least
-30 seconds per loaded case. CI runs smoke mode and scans the ingress fixture image. This is executable local topology
-evidence, not a substitute for the reviewed deployment ingress or a multi-zone run.
+30 seconds per loaded case. CI runs smoke mode and scans the application, candidate, backend fixture, and ingress
+images. The local candidate changes proof metadata only; its Docker content ID is not a registry manifest digest, and
+the result is not a substitute for release-compatibility testing, the reviewed deployment ingress, or a multi-zone run.
 
 ## Capacity staircase
 

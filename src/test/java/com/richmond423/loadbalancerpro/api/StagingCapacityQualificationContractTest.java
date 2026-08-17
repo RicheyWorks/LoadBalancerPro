@@ -21,6 +21,8 @@ class StagingCapacityQualificationContractTest {
     private static final Path CONTRACT_TEST = Path.of("scripts/bench/staging-capacity-contract-test.sh");
     private static final Path EVALUATOR_CONTRACT_TEST =
             Path.of("scripts/bench/staging-capacity-evaluator-contract-test.sh");
+    private static final Path RUNNER_CONTRACT_TEST =
+            Path.of("scripts/bench/staging-capacity-runner-contract-test.sh");
     private static final Path CI = Path.of(".github/workflows/ci.yml");
 
     @Test
@@ -84,11 +86,13 @@ class StagingCapacityQualificationContractTest {
         assertTrue(profileValidator.contains("execution requires a reviewed telemetry sampler hash"));
         assertTrue(Files.readString(CONTRACT_TEST).contains("16 profile plus 16 telemetry mutations"));
         assertTrue(Files.readString(EVALUATOR_CONTRACT_TEST).contains("rejected 12 unsafe matrices"));
+        assertTrue(Files.readString(RUNNER_CONTRACT_TEST).contains("60 measured cases"));
 
         String ci = Files.readString(CI);
         assertTrue(ci.contains("bash -n scripts/bench/proxy-staging-capacity-staircase.sh"));
         assertTrue(ci.contains("bash scripts/bench/staging-capacity-contract-test.sh"));
         assertTrue(ci.contains("bash scripts/bench/staging-capacity-evaluator-contract-test.sh"));
+        assertTrue(ci.contains("bash scripts/bench/staging-capacity-runner-contract-test.sh"));
         assertTrue(ci.contains("proxy-staging-capacity-staircase.sh --mode validate"));
         assertFalse(ci.contains("proxy-staging-capacity-staircase.sh --mode run --staging-profile"));
     }

@@ -460,11 +460,7 @@ jobs:
           bash -n scripts/bench/proxy-staging-capacity-staircase.sh
           bash -n scripts/bench/staging-capacity-contract-test.sh
           bash -n scripts/bench/staging-capacity-evaluator-contract-test.sh
-          python3 -m py_compile scripts/bench/validate-staging-target.py
-          python3 -m py_compile scripts/bench/validate-staging-deployment.py
-          python3 -m py_compile scripts/bench/validate-staging-capacity.py
-          python3 -m py_compile scripts/bench/validate-staging-capacity-sample.py
-          python3 -m py_compile scripts/bench/evaluate-staging-capacity.py
+          bash -n scripts/bench/staging-capacity-runner-contract-test.sh
           bash scripts/bench/staging-validator-contract-test.sh
           bash scripts/bench/staging-deployment-contract-test.sh
           bash scripts/bench/staging-capacity-contract-test.sh
@@ -481,6 +477,12 @@ jobs:
             exit 1
           fi
           grep -Fq "staging capacity profile rejected:" /tmp/staging-capacity-example-run.log
+          bash scripts/bench/staging-capacity-runner-contract-test.sh
+          python3 -m py_compile scripts/bench/validate-staging-target.py
+          python3 -m py_compile scripts/bench/validate-staging-deployment.py
+          python3 -m py_compile scripts/bench/validate-staging-capacity.py
+          python3 -m py_compile scripts/bench/validate-staging-capacity-sample.py
+          python3 -m py_compile scripts/bench/evaluate-staging-capacity.py
 
       - name: Run active-active topology smoke
         shell: bash

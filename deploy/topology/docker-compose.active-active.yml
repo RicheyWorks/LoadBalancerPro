@@ -1,0 +1,132 @@
+x-fixture: &fixture
+  build:
+    context: ../..
+    dockerfile: deploy/fixture/Dockerfile
+  image: ${LBP_TOPOLOGY_FIXTURE_IMAGE:-loadbalancerpro:topology-fixture}
+  expose: ["8080"]
+  read_only: true
+  tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=16m"]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 64
+  mem_limit: 128m
+  restart: "no"
+
+x-proxy: &proxy
+  depends_on: [backend-a, backend-b]
+  build:
+    context: ../..
+    dockerfile: Dockerfile
+  image: ${LBP_TOPOLOGY_PROXY_IMAGE:-loadbalancerpro:topology-proxy}
+  command:
+    - --server.address=0.0.0.0
+    - --server.ssl.enabled=true
+    - --server.ssl.bundle=proxyprod
+    - --spring.ssl.bundle.pem.proxyprod.keystore.certificate=file:/run/tls/certificate.pem
+    - --spring.ssl.bundle.pem.proxyprod.keystore.private-key=file:/run/tls/private-key.pem
+  environment:
+    SPRING_PROFILES_ACTIVE: prod,proxy-prod
+    SPRING_CONFIG_IMPORT: configtree:/run/secrets/
+    SPRING_CONFIG_ADDITIONAL_LOCATION: optional:file:/run/config/
+    LBP_UPSTREAM_0_URL: http://backend-a:8080
+    LBP_UPSTREAM_1_URL: http://backend-b:8080
+    LBP_PROXY_STRATEGY: ${LBP_TOPOLOGY_STRATEGY:-ROUND_ROBIN}
+    LBP_TLS_HOSTNAME: lbp-topology.local
+  secrets:
+    - source: api-key
+      target: loadbalancerpro.api.key
+      mode: 0444
+  volumes:
+    - type: bind
+      source: ${LBP_TOPOLOGY_TLS_DIRECTORY:?LBP_TOPOLOGY_TLS_DIRECTORY is required}
+      target: /run/tls
+      read_only: true
+    - type: bind
+      source: ${LBP_TOPOLOGY_TRUST_DIRECTORY:?LBP_TOPOLOGY_TRUST_DIRECTORY is required}
+      target: /run/trust
+      read_only: true
+    - type: bind
+      source: ${LBP_TOPOLOGY_IDENTITY_DIRECTORY:?LBP_TOPOLOGY_IDENTITY_DIRECTORY is required}
+      target: /run/identity
+      read_only: true
+    - type: bind
+      source: ${LBP_TOPOLOGY_CONFIG_DIRECTORY:?LBP_TOPOLOGY_CONFIG_DIRECTORY is required}
+      target: /run/config
+      read_only: true
+  healthcheck:
+    test:
+      - CMD-SHELL
+      - >-
+        curl --fail --silent --show-error --cacert /run/tls/ca.pem
+        --header "X-API-Key: $$(cat /run/secrets/loadbalancerpro.api.key)"
+        --resolve "lbp-topology.local:8080:127.0.0.1"
+        "https://lbp-topology.local:8080/actuator/health" > /dev/null
+    interval: 3s
+    timeout: 3s
+    start_period: 30s
+    retries: 20
+  read_only: true
+  tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=64m"]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 256
+  mem_limit: 512m
+  stop_signal: SIGTERM
+  stop_grace_period: 35s
+  restart: "no"
+
+services:
+  backend-a:
+    <<: *fixture
+    environment: {FIXTURE_ID: backend-a}
+
+  backend-b:
+    <<: *fixture
+    environment: {FIXTURE_ID: backend-b}
+
+  proxy-a:
+    <<: *proxy
+    hostname: proxy-a
+    ports: ["127.0.0.1:${LBP_TOPOLOGY_PROXY_A_PORT:-18451}:8080"]
+
+  proxy-b:
+    <<: *proxy
+    hostname: proxy-b
+    ports: ["127.0.0.1:${LBP_TOPOLOGY_PROXY_B_PORT:-18452}:8080"]
+
+  topology-ingress:
+    depends_on: [proxy-a, proxy-b]
+    build:
+      context: ../..
+      dockerfile: deploy/topology/Dockerfile
+    image: ${LBP_TOPOLOGY_INGRESS_IMAGE:-loadbalancerpro:topology-ingress}
+    environment:
+      TOPOLOGY_API_KEY_FILE: /run/secrets/loadbalancerpro.api.key
+      TOPOLOGY_SERVER_KEYSTORE: /run/topology/server.p12
+      TOPOLOGY_SERVER_KEYSTORE_PASSWORD_FILE: /run/topology/server-password
+      TOPOLOGY_CLIENT_CA: /run/topology/ca.pem
+      TOPOLOGY_UPSTREAMS: proxy-a=https://proxy-a:8080,proxy-b=https://proxy-b:8080
+      TOPOLOGY_UPSTREAM_TIMEOUT_MILLIS: ${LBP_TOPOLOGY_INGRESS_TIMEOUT_MILLIS:-500}
+    secrets:
+      - source: api-key
+        target: loadbalancerpro.api.key
+        mode: 0444
+    volumes:
+      - type: bind
+        source: ${LBP_TOPOLOGY_INGRESS_DIRECTORY:?LBP_TOPOLOGY_INGRESS_DIRECTORY is required}
+        target: /run/topology
+        read_only: true
+    ports: ["127.0.0.1:${LBP_TOPOLOGY_INGRESS_PORT:-18450}:8443"]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=32m"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 256m
+    stop_signal: SIGTERM
+    stop_grace_period: 5s
+    restart: "no"
+
+secrets:
+  api-key:
+    file: ${LBP_TOPOLOGY_API_KEY_FILE:?LBP_TOPOLOGY_API_KEY_FILE is required}

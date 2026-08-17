@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "profileId": "staging-example-not-reviewed",
+  "environment": {
+    "classification": "non-production-staging",
+    "name": "replace-with-reviewed-staging-environment",
+    "changeTicket": "replace-with-approved-change-ticket",
+    "billableImpactReviewed": false,
+    "cleanupAuthority": "",
+    "productionTrafficAuthorized": false
+  },
+  "review": {
+    "status": "example",
+    "approvedBy": "",
+    "approvedAt": ""
+  },
+  "artifact": {
+    "imageDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "sourceRevision": "0000000000000000000000000000000000000000"
+  },
+  "target": {
+    "scheme": "https",
+    "host": "staging.invalid",
+    "port": 443,
+    "tlsServerName": "staging.invalid",
+    "allowedCidrs": ["10.0.0.0/8"]
+  },
+  "workload": {
+    "routeMix": [
+      {
+        "path": "/proxy/capacity",
+        "method": "GET",
+        "percent": 100,
+        "retryEligible": true,
+        "affinity": false,
+        "strategy": "TAIL_LATENCY_POWER_OF_TWO"
+      }
+    ],
+    "payload": {
+      "requestBytes": {"p50": 0, "p95": 512, "p99": 4096},
+      "responseBytes": {"p50": 48, "p95": 4096, "p99": 65536}
+    }
+  },
+  "scenarios": {
+    "steady": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 1500, "minimumSuccessRatio": 0.999},
+    "burst": {"ratePerSecond": 80, "durationSeconds": 30, "p99Millis": 1800, "minimumSuccessRatio": 0.995},
+    "slow": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 2500, "minimumSuccessRatio": 0.995},
+    "failure": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 3000, "minimumSuccessRatio": 0.900},
+    "reload": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 1500, "minimumSuccessRatio": 0.999},
+    "drain": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 1500, "minimumSuccessRatio": 0.999},
+    "restart": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 3000, "minimumSuccessRatio": 0.990},
+    "certificateRotation": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 2000, "minimumSuccessRatio": 0.999}
+  },
+  "hooks": {
+    "verify-artifact": "0000000000000000000000000000000000000000000000000000000000000000",
+    "slow": "0000000000000000000000000000000000000000000000000000000000000000",
+    "failure": "0000000000000000000000000000000000000000000000000000000000000000",
+    "reload": "0000000000000000000000000000000000000000000000000000000000000000",
+    "drain": "0000000000000000000000000000000000000000000000000000000000000000",
+    "restart": "0000000000000000000000000000000000000000000000000000000000000000",
+    "certificate-rotation": "0000000000000000000000000000000000000000000000000000000000000000",
+    "reset": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "thresholds": {
+    "maximumProxyOverheadP99Millis": 500,
+    "maximumHealthCheckRequestsPerSecond": 10,
+    "recoveryWindowSeconds": 120
+  }
+}

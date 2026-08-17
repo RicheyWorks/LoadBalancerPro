@@ -52,6 +52,15 @@ class ProxyBenchmarkSoakHarnessTest {
         assertTrue(script.contains("Soak mode requires at least 3600 seconds"));
         assertTrue(heapAnalyzer.contains("Heap post-GC floor trend exceeded the local growth budget"));
         assertTrue(script.contains("Refusing to remove unexpected temporary path"));
+        assertTrue(script.contains("LBP_BENCH_STRATEGY:-TAIL_LATENCY_POWER_OF_TWO"));
+        assertTrue(script.contains("strategy: $routing_strategy"));
+        assertTrue(script.contains("basicConstraints=critical,CA:TRUE"));
+        assertTrue(script.contains("extendedKeyUsage=serverAuth"));
+        assertFalse(script.contains("cp \"$tls_dir/certificate.pem\" \"$tls_dir/ca.pem\""),
+                "the TLS trust anchor must be a CA certificate, not the server leaf certificate");
+        assertTrue(script.contains("build loadbalancerpro backend-a"));
+        assertFalse(script.contains("up --build --detach"),
+                "shared fixture image builds must not race during Compose startup");
         assertTrue(script.contains("no production SLO, capacity, or certification claim"));
     }
 

@@ -51,6 +51,7 @@ slow_p99_budget_ms="${LBP_BENCH_SLOW_P99_BUDGET_MS:-2500}"
 failure_p99_budget_ms="${LBP_BENCH_FAILURE_P99_BUDGET_MS:-3000}"
 proxy_port="${LBP_BENCH_PORT:-18444}"
 project_name="${LBP_BENCH_PROJECT:-lbp-bench-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}}"
+routing_strategy="${LBP_BENCH_STRATEGY:-TAIL_LATENCY_POWER_OF_TWO}"
 
 for pair in \
     "LBP_BENCH_SCENARIO_SECONDS:$scenario_seconds" \
@@ -71,6 +72,10 @@ done
 }
 [[ "$project_name" =~ ^[a-z0-9][a-z0-9_-]{0,62}$ ]] || {
     echo "LBP_BENCH_PROJECT must contain only lower-case letters, digits, underscores, or hyphens" >&2
+    exit 2
+}
+[[ "$routing_strategy" =~ ^[A-Z][A-Z0-9_]{0,63}$ ]] || {
+    echo "LBP_BENCH_STRATEGY must be an uppercase routing strategy identifier" >&2
     exit 2
 }
 if [[ "$mode" == "soak" && "$soak_seconds" -lt 3600 ]]; then
@@ -148,12 +153,31 @@ openssl rand -hex 24 > "$api_key_file"
 chmod 0444 "$api_key_file"
 api_key="$(<"$api_key_file")"
 tls_hostname="lbp.local"
+ca_private_key="$work_dir/ca-private-key.pem"
+server_csr="$work_dir/server.csr"
+server_extensions="$work_dir/server-extensions.cnf"
 openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
+    -subj "/CN=LoadBalancerPro Local Benchmark CA" \
+    -addext "basicConstraints=critical,CA:TRUE" \
+    -addext "keyUsage=critical,keyCertSign,cRLSign" \
+    -keyout "$ca_private_key" \
+    -out "$tls_dir/ca.pem" >/dev/null 2>&1
+openssl req -newkey rsa:2048 -sha256 -nodes \
     -subj "/CN=$tls_hostname" \
-    -addext "subjectAltName=DNS:$tls_hostname,IP:127.0.0.1" \
     -keyout "$tls_dir/private-key.pem" \
+    -out "$server_csr" >/dev/null 2>&1
+printf '%s\n' \
+    "subjectAltName=DNS:$tls_hostname,IP:127.0.0.1" \
+    "basicConstraints=critical,CA:FALSE" \
+    "keyUsage=critical,digitalSignature,keyEncipherment" \
+    "extendedKeyUsage=serverAuth" > "$server_extensions"
+openssl x509 -req -sha256 -days 1 \
+    -in "$server_csr" \
+    -CA "$tls_dir/ca.pem" \
+    -CAkey "$ca_private_key" \
+    -set_serial 1 \
+    -extfile "$server_extensions" \
     -out "$tls_dir/certificate.pem" >/dev/null 2>&1
-cp "$tls_dir/certificate.pem" "$tls_dir/ca.pem"
 chmod 0444 "$tls_dir/private-key.pem" "$tls_dir/certificate.pem" "$tls_dir/ca.pem"
 chmod 0555 "$tls_dir" "$trust_dir" "$identity_dir" "$config_dir"
 
@@ -164,6 +188,7 @@ export LBP_IDENTITY_DIRECTORY="$identity_dir"
 export LBP_CONFIG_DIRECTORY="$config_dir"
 export LBP_TLS_HOSTNAME="$tls_hostname"
 export LBP_PROXY_PROD_PORT="$proxy_port"
+export LBP_PROXY_STRATEGY="$routing_strategy"
 export LBP_PROXY_PROD_IMAGE="${LBP_PROXY_PROD_IMAGE:-loadbalancerpro:${project_name}}"
 export LBP_PROXY_PROD_FIXTURE_IMAGE="${LBP_PROXY_PROD_FIXTURE_IMAGE:-loadbalancerpro:${project_name}-fixture}"
 
@@ -172,7 +197,11 @@ compose=(docker compose -p "$project_name" -f "$compose_base" -f "$compose_overr
 if [[ "${LBP_BENCH_REUSE_IMAGE:-false}" == "true" ]]; then
     "${compose[@]}" up --no-build --detach
 else
-    "${compose[@]}" up --build --detach
+    # Both fixture services intentionally share one image tag. Building a
+    # single fixture service avoids concurrent BuildKit exports racing to
+    # install that same tag on a clean local machine.
+    "${compose[@]}" build loadbalancerpro backend-a
+    "${compose[@]}" up --no-build --detach
 fi
 
 base_url="https://127.0.0.1:$proxy_port"
@@ -191,9 +220,9 @@ for attempt in $(seq 1 120); do
     sleep 1
 done
 
-jq -n '{
+jq -n --arg routing_strategy "$routing_strategy" '{
   enabled: true,
-  strategy: "ROUND_ROBIN",
+  strategy: $routing_strategy,
   connectTimeout: "PT1S",
   requestTimeout: "PT5S",
   maxRequestBytes: 65536,
@@ -449,5 +478,6 @@ fi
 
 wait_for_inflight_zero
 printf 'Proxy %s regression harness passed against loopback Compose fixtures.\n' "$mode"
+printf 'Routing strategy: %s\n' "$routing_strategy"
 printf 'Evidence: %s\n' "$output_dir"
 printf 'Boundary: local regression budgets only; no production SLO, capacity, or certification claim.\n'

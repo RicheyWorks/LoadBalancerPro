@@ -11,6 +11,8 @@ The default posture is conservative: API-key authentication is selected, proxyin
   process-local concurrency/load-shedding controls, status, recent decisions, and guarded reload.
 - Production-boundary executable Spring Boot JAR, non-root proxy Docker image, hardened Compose deployment, CycloneDX
   SBOM generation, and load smoke/soak helpers.
+- Fail-closed reviewed-staging qualification plus a CI-gated two-replica active-active topology proof covering
+  distribution, configuration convergence, rollout, rollback, replica loss, recovery, and aggregate upstream limits.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
 - Capacity-aware, predictive, and evaluation-only allocation APIs in the separate source/Lab Tools runtime.
@@ -33,9 +35,11 @@ for forecast traffic. Work in this phase is load-balancer engineering and deploy
 5. Promote an immutable image through controlled traffic steps with tested abort and rollback thresholds.
 
 [`LOAD_BALANCER_BUILD_OUT.md`](docs/LOAD_BALANCER_BUILD_OUT.md) is the execution plan and readiness gate for this phase.
-The TLS-authenticated loopback smoke and one-hour soak are the regression baseline; deployment capacity is established
-only by the capacity and staging results above. Lab, demo, and general documentation work are supporting scope only
-when they directly enable load qualification, deployment, or operation.
+The capacity, staging, and active-active runners now exist. The next engineering action is to run the exact release and
+reviewed forecast profile on deployment-equivalent resources, then replace the loopback ingress fixture with the
+reviewed deployment ingress for immutable-image rollout and rollback. Local results establish regression and topology
+mechanics only; they do not establish deployment capacity or production-ingress behavior. Lab, demo, and general
+documentation work are supporting scope only when they directly enable load qualification, deployment, or operation.
 
 Authentication, TLS verification, secret handling, bounded concurrency, dependency/image scanning, and protected
 merge gates remain mandatory while this work advances.

@@ -450,6 +450,35 @@ jobs:
           bash scripts/bench/proxy-capacity-staircase.sh --mode validate
           bash scripts/bench/proxy-benchmark-soak.sh --mode smoke
 
+      - name: Validate fail-closed staging qualification boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/bench/proxy-staging-qualification.sh
+          bash -n scripts/bench/staging-validator-contract-test.sh
+          bash scripts/bench/staging-validator-contract-test.sh
+          bash scripts/bench/proxy-staging-qualification.sh --mode validate
+          if bash scripts/bench/proxy-staging-qualification.sh --mode run > /tmp/staging-example-run.log 2>&1; then
+            echo "The unreviewed example staging profile unexpectedly entered run mode."
+            exit 1
+          fi
+          grep -Fq "Run mode requires reviewed staging authority" /tmp/staging-example-run.log
+
+      - name: Run active-active topology smoke
+        shell: bash
+        env:
+          LBP_TOPOLOGY_PROJECT: lbp-topology-${{ github.run_id }}-${{ github.run_attempt }}
+          LBP_TOPOLOGY_OUTPUT_DIR: target/topology/ci-smoke
+          LBP_TOPOLOGY_REUSE_PROXY_IMAGE: "true"
+          LBP_TOPOLOGY_PROXY_IMAGE: loadbalancerpro:ci
+          LBP_TOPOLOGY_FIXTURE_IMAGE: loadbalancerpro:proxy-prod-fixture-ci
+          LBP_TOPOLOGY_INGRESS_IMAGE: loadbalancerpro:topology-ingress-ci
+        run: |
+          set -euo pipefail
+          bash -n scripts/bench/proxy-active-active-topology.sh
+          bash scripts/bench/proxy-active-active-topology.sh --mode validate
+          bash scripts/bench/proxy-active-active-topology.sh --mode smoke
+
       - name: Upload loopback proxy benchmark smoke reports
         if: always() && hashFiles('target/bench/ci-smoke/**') != ''
         # actions/upload-artifact@v7
@@ -457,6 +486,15 @@ jobs:
         with:
           name: proxy-benchmark-smoke-${{ github.event.pull_request.head.sha || github.sha }}
           path: target/bench/ci-smoke
+          retention-days: 30
+
+      - name: Upload active-active topology smoke reports
+        if: always() && hashFiles('target/topology/ci-smoke/**') != ''
+        # actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: active-active-topology-smoke-${{ github.event.pull_request.head.sha || github.sha }}
+          path: target/topology/ci-smoke
           retention-days: 30
 
       - name: Capture container dry-run evidence
@@ -492,7 +530,7 @@ jobs:
             echo "- Source image tag: \`${IMAGE_TAG}\`"
             echo "- Local dry-run image tag: \`${DRY_RUN_TAG}\`"
             echo "- Docker runtime and proxy-prod Compose smokes: passed before this evidence was captured."
-            echo "- Trivy scans: see \`trivy-summary.txt\` and \`fixture-trivy-summary.txt\` when the scan steps complete."
+            echo "- Trivy scans: see \`trivy-summary.txt\`, \`fixture-trivy-summary.txt\`, and \`topology-ingress-trivy-summary.txt\` when the scan steps complete."
             echo "- Evidence directory: \`${EVIDENCE_DIR}\`"
             echo "- Artifact name: \`container-dry-run-evidence-no-publish-no-sign\`"
             echo ""
@@ -525,6 +563,18 @@ jobs:
           image-ref: loadbalancerpro:proxy-prod-fixture-ci
           format: table
           output: target/container-dry-run-evidence/fixture-trivy-summary.txt
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+
+      - name: Scan active-active ingress fixture image
+        # aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: loadbalancerpro:topology-ingress-ci
+          format: table
+          output: target/container-dry-run-evidence/topology-ingress-trivy-summary.txt
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: false

@@ -89,13 +89,19 @@ deployment-equivalent resources for the exact release artifact.
 
 ### 2. Prove A Reviewed Staging Boundary
 
-Create a separate staging runner only after its target allow-list, credentials, billable impact, and cleanup authority
-are reviewed. It must fail closed unless all targets resolve inside the approved private ranges and must never accept
-production-looking defaults.
+The staging runner is [`proxy-staging-qualification.sh`](../scripts/bench/proxy-staging-qualification.sh), backed by
+[`validate-staging-target.py`](../scripts/bench/validate-staging-target.py) and the reviewed-input template
+[`staging-profile.example.json`](../scripts/bench/staging-profile.example.json). Validation is traffic-free. Run mode
+fails closed until the target allow-list, exact artifact, credentials, billable impact, cleanup authority, CA, and
+hash-pinned action adapters are reviewed. Every resolved address must remain inside the declared RFC1918/ULA ranges;
+production-looking targets and embedded secrets are rejected.
 
 Use the forecast route/payload mix against staging upstreams. Compare client latency with upstream latency to measure
 proxy overhead, verify health-check cost, exercise certificate rotation, and repeat slow, failure, reload, drain, and
 restart cases. Store secrets in the deployment secret system, not command lines, evidence files, or the repository.
+
+The runner implementation and its CI boundary tests do not close this gate. Closure requires its passing result from
+the reviewed non-production environment for the exact release artifact.
 
 ### 3. Choose And Prove The Runtime Topology
 
@@ -110,7 +116,19 @@ process-local. Choose one of these deliberately:
 A static Kubernetes manifest is not multi-instance proof. If active-active consistency needs a shared control plane,
 that is a separate implementation and failure-containment project.
 
+The executable local active-active proof is
+[`proxy-active-active-topology.sh`](../scripts/bench/proxy-active-active-topology.sh) with
+[`docker-compose.active-active.yml`](../deploy/topology/docker-compose.active-active.yml). CI starts two actual proxy
+processes behind a bounded TLS/authenticated ingress fixture and gates distribution, configuration convergence,
+rollout, rollback, aggregate upstream limits, per-instance metrics, replica loss, and recovery under load. This closes
+the local mechanics proof only. A reviewed deployment ingress and multi-zone proof remain required when the selected
+deployment topology uses them.
+
 ### 4. Stage The Rollout And Rollback
+
+The active-active runner proves rolling configuration change and reversal; it does not claim immutable-image rollout.
+The next deployment slice is to apply the same availability, generation-skew, metric, and recovery assertions while
+replacing proxy replicas by exact image digest behind the reviewed staging ingress.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,

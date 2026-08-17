@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "profileId": "active-active-loopback-example",
+  "review": {"status": "example", "approvedBy": "", "approvedAt": ""},
+  "topology": {
+    "replicas": 2,
+    "zones": 1,
+    "ingress": "bounded-loopback-round-robin-fixture",
+    "ingressUpstreamTimeoutMillis": 500,
+    "affinity": false,
+    "baselineStrategy": "ROUND_ROBIN",
+    "rolloutStrategy": "TAIL_LATENCY_POWER_OF_TWO"
+  },
+  "workload": {
+    "ratePerSecond": 40,
+    "scenarioSeconds": 12,
+    "distributionRequests": 100
+  },
+  "limits": {
+    "globalMaxInFlight": 50,
+    "perReplicaUpstreamMaxInFlight": 25,
+    "aggregateUpstreamConnectionBudget": 100
+  },
+  "objectives": {
+    "minimumSuccessRatio": 0.999,
+    "p99Millis": 2500,
+    "maximumDistributionSkewPercent": 20,
+    "maximumGenerationSkewMillis": 5000,
+    "recoveryWindowSeconds": 60
+  }
+}

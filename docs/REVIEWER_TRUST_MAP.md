@@ -1,42 +1,39 @@
-# Reviewer Trust Map
+# Engineering Evidence Index
 
-This map directs reviewers to current executable evidence. Documentation explains what to inspect; passing prose checks
-does not establish runtime behavior, security, or readiness.
+This filename is retained for existing links. It is a secondary evidence index, not a work queue, phase gate, or
+reason to create documentation-only tasks. The active goal and ordered engineering work are in
+[`LOAD_BALANCER_BUILD_OUT.md`](LOAD_BALANCER_BUILD_OUT.md).
 
-## Evidence Map
+New evidence comes from runtime behavior, secure configuration, tests, deployment exercises, benchmarks, and exact
+artifact checks. Update this index only when one of those executable surfaces materially changes.
 
-| Reviewer question | Executable evidence | Source or configuration | Test or workflow | Material limitation |
-| --- | --- | --- | --- | --- |
-| Are protected APIs deny-by-default? | Startup and request authorization behavior | `ApiSecurityConfig`, `AuthModeConfiguration`, `application.properties` | `CheckedInSecurityDefaultsTest`, `AuthModeConfigurationTest`, `OAuth2AuthorizationTest`, CI | The `local` profile disables authentication and is loopback-only. |
-| Are secrets and TLS handled safely? | API-key/JWT validation, PEM loading, redacted output, TLS-enabled Compose smoke | `api/config`, `deploy/docker-compose.proxy-prod.yml`, `application-proxy-prod.properties` | security tests; proxy-prod Compose smoke in CI | Deployment identity lifecycle, rotation, and ingress policy remain operator responsibilities. |
-| Can proxy targets escape network policy? | Syntax-only planning plus literal-address validation before use | `ProxyBackendUrlClassifier`, `ReverseProxyRoutePlanner`, `ProxyDnsDiscovery` | classifier, routing, reload, DNS discovery, and private-network validation tests | Public targets are possible only when the operator disables private-network validation. |
-| Are requests, retries, and concurrency bounded? | Body/time limits, admission caps, retry budgets, queue bounds, cooldown, and shutdown behavior | `ReverseProxyService` and proxy configuration | proxy unit/integration suites; benchmark smoke | Process-local limits do not prove distributed capacity or production SLOs. |
-| Does DNS discovery fail closed? | Bounded asynchronous lookup, last-known-good expiry, stable per-address members | `ProxyDnsDiscoveryRuntime`, `ProxyDnsEffectiveConfig` | DNS configuration/runtime/routing/health tests | HTTP address authority only; no logical-host TLS identity or authoritative TTL proof. |
-| Is durable lab state protected? | Locked append/replay, integrity checks, atomic replacement, reconciliation | `ChainedJsonlStore` and Enterprise Lab stores/reconcilers | durable-state, corruption, concurrency, and recovery tests | Local durable evidence is not multi-region durability or tenant validation. |
-| Can lab or explanation output shift production traffic? | Read-only/simulation services are separated from proxy and cloud mutation paths | Decision Explorer, LASE shadow, Enterprise Lab controllers/services | controller/service/security tests | Review output and recommendations are not production authority. |
-| Is cloud mutation guarded? | Dry-run default plus explicit live-mode/account/region/capacity gates | `CloudManager` and cloud configuration | CloudManager and security-boundary tests | Default tests use mocks; live-cloud operation is not established. |
-| Is the artifact reproducible and inspectable? | Executable JAR, required/forbidden entry checks, SBOM | `pom.xml`, `Dockerfile`, resolver and artifact scripts | package/artifact jobs in CI | Reproducible build identity and signed publication are separate release concerns. |
-| Is the container hardened? | Pinned bases, non-root user, read-only root, dropped capabilities, secret mounts | `Dockerfile`, proxy-prod Compose | runtime and Compose smoke; Trivy scans | Host, orchestrator, ingress, and network policy remain deployment-specific. |
-| Are dependencies and source risks gated? | Dependency tree, dependency review, CodeQL, SBOM, image scans | `pom.xml`, pinned workflow actions | CI, CodeQL, Dependabot, Trivy | A green scan is evidence for one exact commit, not future vulnerability absence. |
-| Is performance evidence reproducible? | Loopback scenario harness and explicit diagnostic access-log lane | `scripts/bench`, benchmark workflow | benchmark smoke and access-log benchmark artifacts | Local/hosted regression budgets do not establish production capacity or p95/p99 guarantees. |
+## Load-Balancer Evidence
 
-## Review Entry Points
+| Engineering question | Runtime or configuration source | Executable proof | Next qualification gate |
+| --- | --- | --- | --- |
+| Does the live data plane forward with the selected strategy? | `ReverseProxyService`, `ReverseProxyRoutePlanner`, core routing strategies | proxy integration tests, production Compose smoke, benchmark smoke | Capacity staircase with the forecast route and payload mix |
+| Are authentication and TLS enforced? | `ApiSecurityConfiguration`, SSL bundles, `application-proxy-prod.properties`, production Compose | security tests, packaged runtime smoke, TLS-enabled Compose smoke | Staging identity, trust, and certificate-rotation exercise |
+| Are upstream targets constrained by the reviewed network policy? | `ProxyBackendUrlClassifier`, `ReverseProxyRoutePlanner`, `ProxyDnsDiscovery` | classifier, routing, reload, DNS discovery, and private-network validation tests | Staging allow-list and resolver-policy proof |
+| Are requests, retries, and concurrency bounded? | proxy request limits, admission controls, retry budgets, shedding, cooldown | proxy unit/integration tests, benchmark smoke, one-hour soak | Saturation knee and operating envelope with explicit headroom |
+| Do health, failure, reload, drain, and recovery work under traffic? | health runtime, cooldown, slow start, reload generations, graceful shutdown | integration tests, production Compose smoke, benchmark scenarios, one-hour soak | Deployment-equivalent failure and replacement exercises |
+| Is the release artifact isolated and runnable? | `pom.xml`, `Dockerfile`, production profile, resolver and artifact scripts | artifact-content tests, packaged-JAR smoke, Docker/Compose smoke | Immutable digest deployed in the selected topology |
+| Are code, dependency, and image risks gated? | pinned workflows, dependency configuration, Docker images | CI, dependency review, CodeQL, SBOM generation, application and fixture image scans | All gates green on the exact release artifact |
+| Is performance evidence reproducible? | `scripts/bench` and ignored machine-readable output under `target/` | benchmark smoke and scheduled one-hour soak | Repeated capacity staircase and reviewed staging results |
 
-- Runtime and API contracts: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`API_SECURITY.md`](API_SECURITY.md), and
-  [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md).
-- Deployment controls: [`DEPLOYMENT_HARDENING_GUIDE.md`](DEPLOYMENT_HARDENING_GUIDE.md),
-  [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md), and [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md).
-- Architecture decisions: [`adr/`](adr/), including the reviewer evidence decision in
-  [`ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md).
-- Active implementation campaign state: [`agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`](agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md)
-  and [`agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json). These are
-  bookkeeping, not trust evidence.
-- Exact commit evidence: the pull request, GitHub Actions, CodeQL, dependency review, generated test reports, SBOMs,
-  image scans, and ignored local benchmark output.
+## Engineering Entry Points
 
-## Evidence Interpretation
+- Current phase and promotion gate: [`LOAD_BALANCER_BUILD_OUT.md`](LOAD_BALANCER_BUILD_OUT.md).
+- Runtime behavior and configuration: [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md) and
+  [`API_SECURITY.md`](API_SECURITY.md).
+- Deployment and rollback controls: [`DEPLOYMENT.md`](DEPLOYMENT.md),
+  [`DEPLOYMENT_HARDENING_GUIDE.md`](DEPLOYMENT_HARDENING_GUIDE.md), and
+  [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md).
+- Load execution and evidence boundary: [`../scripts/bench/README.md`](../scripts/bench/README.md).
+- Exact artifact evidence: required CI, dependency review, CodeQL, generated test reports, SBOMs, image scans, and
+  ignored benchmark output for the commit being qualified.
 
-Observed runtime/test results, generated artifacts, and workflow conclusions should retain their commit identity and
-provenance. Inferred or synthetic conclusions must be labeled as such. Human or operator authority remains required
-where configuration, deployment, cloud mutation, or production traffic is involved. Repository evidence supports
-review; it does not certify an environment that was not exercised.
+Lab, demo, cloud-management, architecture-history, and campaign-board material is outside the current load
+qualification path. Consult it only when a scoped engineering change touches those surfaces.
+
+Editing this index does not close an engineering gate. A gate closes only when its executable proof passes for the
+artifact, configuration, workload, and topology being promoted.

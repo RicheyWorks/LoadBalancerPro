@@ -12,12 +12,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
-class EngineeringTrustInterfaceTest {
+class EngineeringEntryPointSafetyTest {
 
     private static final Path REPOSITORY = Path.of("").toAbsolutePath().normalize();
-    private static final List<Path> ENTRY_DOCS = List.of(
+    private static final List<Path> ENGINEERING_ENTRY_POINTS = List.of(
             Path.of("README.md"),
-            Path.of("docs/REVIEWER_TRUST_MAP.md"));
+            Path.of("docs/LOAD_BALANCER_BUILD_OUT.md"));
     private static final Pattern MARKDOWN_LINK = Pattern.compile("\\[[^]\\r\\n]+]\\(([^)\\r\\n]+)\\)");
     private static final Pattern UNSAFE_COMMAND = Pattern.compile(
             "(?im)^\\s*(?:\\$\\s*)?(?:gh\\s+release\\s+create|docker\\s+push|git\\s+push\\s+--force|"
@@ -28,24 +28,24 @@ class EngineeringTrustInterfaceTest {
                     + "production certification|live-cloud validated|real-tenant validated)\\b");
 
     @Test
-    void entryDocumentsContainNoUnsafeMutationOrReleaseCommands() throws IOException {
-        for (Path document : ENTRY_DOCS) {
+    void entryPointsContainNoUnsafeMutationOrReleaseCommands() throws IOException {
+        for (Path document : ENGINEERING_ENTRY_POINTS) {
             String content = Files.readString(document);
             assertFalse(UNSAFE_COMMAND.matcher(content).find(), () -> "Unsafe command in " + document);
         }
     }
 
     @Test
-    void entryDocumentsContainNoObviousAffirmativeCertificationClaims() throws IOException {
-        for (Path document : ENTRY_DOCS) {
+    void entryPointsContainNoObviousAffirmativeCertificationClaims() throws IOException {
+        for (Path document : ENGINEERING_ENTRY_POINTS) {
             String content = Files.readString(document);
             assertFalse(AFFIRMATIVE_OVERCLAIM.matcher(content).find(), () -> "Unsupported claim in " + document);
         }
     }
 
     @Test
-    void localLinksFromEntryDocumentsResolveInsideTheRepository() throws IOException {
-        for (Path document : ENTRY_DOCS) {
+    void localLinksFromEntryPointsResolveInsideTheRepository() throws IOException {
+        for (Path document : ENGINEERING_ENTRY_POINTS) {
             String content = Files.readString(document);
             Matcher links = MARKDOWN_LINK.matcher(content);
             while (links.find()) {

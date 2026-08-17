@@ -20,7 +20,10 @@ cleanup() {
     local status=$?
     trap - EXIT
     case "$work_dir" in
-        "${TMPDIR:-/tmp}"/lbp-staging-capacity-runner.*) rm -rf -- "$work_dir" ;;
+        "${TMPDIR:-/tmp}"/lbp-staging-capacity-runner.*)
+            chmod -R u+w -- "$work_dir" >/dev/null 2>&1 || true
+            rm -rf -- "$work_dir"
+            ;;
         *) echo "Refusing to remove unexpected runner contract path: $work_dir" >&2 ;;
     esac
     exit "$status"
@@ -30,7 +33,8 @@ trap cleanup EXIT
 action_dir="$work_dir/actions"
 stub_dir="$work_dir/stubs"
 state_dir="$work_dir/state"
-mkdir -m 0700 "$action_dir" "$stub_dir" "$state_dir"
+mkdir "$action_dir" "$stub_dir" "$state_dir"
+chmod 0700 "$action_dir" "$stub_dir" "$state_dir"
 printf '0\n' > "$state_dir/generation"
 printf '{"key":"","total":0,"completed":false}\n' > "$state_dir/metrics-state.json"
 

@@ -101,6 +101,11 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 
 [`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical static manifest sketch. It encodes two replicas, zero-unavailable rolling replacement, bounded rollout history/progress, required zone separation, preferred host separation, a one-replica disruption budget, `/api/health` readiness/liveness, a five-second preStop delay, a 40-second termination window, non-root/capability-dropped/read-only execution, and external Secret/ConfigMap mounts. Its image is a deliberately non-resolving digest placeholder. The reviewed staging runner separately validates adapter-reported digest, replica, zone, resource, configuration, ingress, metrics, drain, and transition evidence. Neither surface has been applied here, so no registry, Kubernetes, capacity, or production-readiness claim follows.
 
+After the staging failure matrix passes, use
+[`../scripts/bench/proxy-staging-capacity-staircase.sh`](../scripts/bench/proxy-staging-capacity-staircase.sh) for the
+deployment-equivalent rate ladder. It requires the same exact staging profile plus a hash-bound capacity profile and
+external per-replica telemetry adapter, and always restores the prior digest before accepting an envelope.
+
 HTTP/2 applies to ordinary inbound HTTP traffic. WebSocket passthrough uses an HTTP/1.1 Upgrade handshake, shares the
 proxy's routing/concurrency/drain controls, and does not implement RFC 8441 extended CONNECT. Browser origin and
 subprotocol allow-lists use indexed `loadbalancerpro.proxy.websocket.allowed-origins[...]` and

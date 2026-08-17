@@ -28,6 +28,40 @@ under traffic. Snapshots must prove full replica convergence, reviewed zone/reso
 per-replica metrics, drain completion, and transition bounds. A passing run applies only to that staging target and
 those hash-pinned adapters; it is not production authorization.
 
+## Deployment-equivalent staging capacity
+
+`proxy-staging-capacity-staircase.sh` extends the reviewed staging boundary into the real capacity lane. It binds a
+capacity profile to the exact bytes of the reviewed staging profile, rolls that profile's candidate digest under
+traffic, replaces every candidate replica before each repeat, runs equal/slow/failing/draining/recovering cases across
+the reviewed rate ladder, locates a reproducible saturation knee, and restores the prior digest under traffic.
+Validation performs no DNS lookup or traffic:
+
+```bash
+bash scripts/bench/staging-capacity-contract-test.sh
+bash scripts/bench/staging-capacity-evaluator-contract-test.sh
+bash scripts/bench/proxy-staging-capacity-staircase.sh --mode validate \
+  --staging-profile /path/to/staging-profile.json \
+  --capacity-profile /path/to/staging-capacity-profile.json
+```
+
+Copy `staging-capacity-profile.example.json` outside the repository and set `stagingBinding.stagingProfileSha256` to
+the `sha256sum` of the frozen staging profile. Run mode requires both reviews, the staging secret/CA/action environment
+from the staging runner, and `LBP_STAGING_CAPACITY_SAMPLER` pointing to an external non-writable executable whose hash
+matches `telemetry.samplerSha256`:
+
+```bash
+bash scripts/bench/proxy-staging-capacity-staircase.sh --mode run \
+  --staging-profile /path/to/staging-profile.json \
+  --capacity-profile /path/to/staging-capacity-profile.json
+```
+
+The sampler writes one JSON object to stdout per invocation. It must identify the exact candidate, configuration, and
+ingress; use immutable runtime IDs for every ready replica; include zone, CPU, memory, connections, and JVM threads per
+replica; and provide deployment-wide monotonic request/retry/shed/limit/GC and per-upstream counters. The enforced
+shape is the `sample` root in `validate-staging-capacity-sample.py`. Raw samples and Vegeta results remain under ignored
+`target/staging-capacity/`, and `evaluate-staging-capacity.py` recomputes the final envelope from the complete matrix.
+Only an authorized passing run creates environment-specific capacity evidence.
+
 ## Active-active topology proof
 
 `proxy-active-active-topology.sh` starts two real proxy processes behind a bounded TLS/authenticated round-robin
@@ -47,9 +81,9 @@ bash scripts/bench/proxy-active-active-topology.sh --mode smoke
 images. The local candidate changes proof metadata only; its Docker content ID is not a registry manifest digest, and
 the result is not a substitute for release-compatibility testing, the reviewed deployment ingress, or a multi-zone run.
 
-## Capacity staircase
+## Local capacity staircase
 
-`proxy-capacity-staircase.sh` is the separate capacity-qualification lane. It runs equal, slow, failing, draining, and
+`proxy-capacity-staircase.sh` is the local baseline lane. It runs equal, slow, failing, draining, and
 recovering fixture cases across an ascending rate ladder. Every rate gets warm-up, at least three fresh-proxy repeats,
 steady measurements, and cooldown. Raw Vegeta results, Prometheus snapshots, proxy status, container metadata, and
 resource samples stay under ignored `target/capacity/`; the final JSON identifies a reproducible saturation step and a

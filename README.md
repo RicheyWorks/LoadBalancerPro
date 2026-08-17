@@ -162,6 +162,7 @@ The production proxy exposes forwarding under `/proxy/**`, read-only state at `G
 
 Before enabling private-network validation, review:
 
+- [`LOAD_BALANCER_BUILD_OUT.md`](docs/LOAD_BALANCER_BUILD_OUT.md)
 - [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md)
 - [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md)
 - [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](docs/PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md)

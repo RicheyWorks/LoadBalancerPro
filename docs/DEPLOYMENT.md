@@ -10,12 +10,32 @@ Prepare runtime material outside the repository. `certificate.pem`, `private-key
 runtime_dir="$(mktemp -d)"
 mkdir -p "$runtime_dir"/{tls,trust,identity,config}
 openssl rand -hex 32 > "$runtime_dir/api-key"
+ca_private_key="$runtime_dir/ca-private-key.pem"
+server_csr="$runtime_dir/server.csr"
+server_extensions="$runtime_dir/server-extensions.cnf"
 openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
+  -subj "/CN=LoadBalancerPro Local Deployment CA" \
+  -addext "basicConstraints=critical,CA:TRUE" \
+  -addext "keyUsage=critical,keyCertSign,cRLSign" \
+  -keyout "$ca_private_key" \
+  -out "$runtime_dir/tls/ca.pem"
+openssl req -newkey rsa:2048 -sha256 -nodes \
   -subj "/CN=lbp.local" \
-  -addext "subjectAltName=DNS:lbp.local,IP:127.0.0.1" \
   -keyout "$runtime_dir/tls/private-key.pem" \
+  -out "$server_csr"
+printf '%s\n' \
+  'subjectAltName=DNS:lbp.local,IP:127.0.0.1' \
+  'basicConstraints=critical,CA:FALSE' \
+  'keyUsage=critical,digitalSignature,keyEncipherment' \
+  'extendedKeyUsage=serverAuth' > "$server_extensions"
+openssl x509 -req -sha256 -days 1 \
+  -in "$server_csr" \
+  -CA "$runtime_dir/tls/ca.pem" \
+  -CAkey "$ca_private_key" \
+  -set_serial 1 \
+  -extfile "$server_extensions" \
   -out "$runtime_dir/tls/certificate.pem"
-cp "$runtime_dir/tls/certificate.pem" "$runtime_dir/tls/ca.pem"
+rm -f -- "$ca_private_key" "$server_csr" "$server_extensions"
 chmod 0444 "$runtime_dir/api-key" "$runtime_dir/tls/"*.pem
 chmod 0555 "$runtime_dir"/{tls,trust,identity,config}
 

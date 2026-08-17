@@ -6,29 +6,39 @@ The default posture is conservative: API-key authentication is selected, proxyin
 
 ## Current capabilities
 
-- Capacity-aware, predictive, and evaluation-only allocation APIs in the source/Lab Tools runtime.
-- Deterministic request-level comparison and Decision Explorer/browser cockpit surfaces in the source/Lab Tools runtime.
-- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, bounded recent-decision records and read-only per-decision explanations, opt-in asynchronous LASE shadow evaluation, active health checks, retry budgets/backoff, cooldown/slow-start recovery, process-local concurrency/load-shedding controls, status, and guarded reload.
-- Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools in the opt-in Lab Tools artifact.
+- Opt-in reverse proxy data plane with configured routes, bounded request size and timeout, live per-upstream routing
+  telemetry, exact rolling tail latency, active health checks, retry budgets/backoff, cooldown/slow-start recovery,
+  process-local concurrency/load-shedding controls, status, recent decisions, and guarded reload.
+- Production-boundary executable Spring Boot JAR, non-root proxy Docker image, hardened Compose deployment, CycloneDX
+  SBOM generation, and load smoke/soak helpers.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
-- A guarded AWS `CloudManager` boundary using AWS SDK v2; live mutation requires explicit operator and account/region/capacity gates.
-- Production-boundary executable Spring Boot JAR, separate opt-in Lab Tools JAR, non-root proxy Docker image, CycloneDX SBOM generation, and local smoke helpers.
+- Capacity-aware, predictive, and evaluation-only allocation APIs in the separate source/Lab Tools runtime.
+- Deterministic request-level comparison, Decision Explorer/browser cockpit surfaces, Enterprise Lab scenarios, durable
+  evidence, and packaged proof tools in the opt-in Lab Tools artifact.
+- A guarded AWS `CloudManager` boundary using AWS SDK v2; live mutation requires explicit operator and
+  account/region/capacity gates.
 
-## Engineering Trust Interface
+## Current Phase: Qualify Forecast Load
 
-Trust comes from executable behavior and independently verifiable controls: secure defaults, deterministic tests, required CI and security gates, reproducible loopback evidence, and concise documentation that points to those sources. Documentation describes evidence; it does not create evidence.
+The live `/proxy/**` data plane and production-only artifact are built. The project is now qualifying an exact release
+for forecast traffic. Work in this phase is load-balancer engineering and deployment proof:
 
-- Safety, authentication, TLS, secret handling, data integrity, dependency/image scanning, and protected merge gates remain strict.
-- Engineering work is the default. Update documentation when user-facing behavior, configuration, security posture, operator procedure, or a material architectural decision changes.
-- Transient branch, pull-request, SHA, CI, and campaign state belongs in GitHub and CI rather than README.
-- Documentation must not claim evidence that runtime behavior and verification do not establish.
+1. Lock the expected request rate, concurrency, route and payload mix, upstream behavior, failure cases, and objectives.
+2. Run a repeatable capacity staircase on deployment-equivalent resources and locate the first saturation point.
+3. Prove TLS, authentication, target policy, observability, reload, drain, restart, and certificate rotation in a
+   reviewed staging boundary.
+4. Choose single-active or multiple-active topology and verify its failover, configuration, connection, and state
+   behavior.
+5. Promote an immutable image through controlled traffic steps with tested abort and rollback thresholds.
 
-See [`AGENTS.md`](AGENTS.md) for the authoritative agent rules, optional [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) for a short task template, and [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md) for executable evidence navigation.
+[`LOAD_BALANCER_BUILD_OUT.md`](docs/LOAD_BALANCER_BUILD_OUT.md) is the execution plan and readiness gate for this phase.
+The TLS-authenticated loopback smoke and one-hour soak are the regression baseline; deployment capacity is established
+only by the capacity and staging results above. Lab, demo, and general documentation work are supporting scope only
+when they directly enable load qualification, deployment, or operation.
 
-This repository provides deployable software and controlled local evidence, not production certification. The `local`
-profile disables authentication and is loopback-only. Lab and Decision Explorer output do not shift production traffic.
-Cloud mutation remains gated and disabled by default. TLS termination and network access control are deployment duties.
+Authentication, TLS verification, secret handling, bounded concurrency, dependency/image scanning, and protected
+merge gates remain mandatory while this work advances.
 
 ## Requirements
 
@@ -160,7 +170,7 @@ pwsh ./scripts/smoke/operator-run-profiles-smoke.ps1 -Package
 
 The production proxy exposes forwarding under `/proxy/**`, read-only state at `GET /api/proxy/status`, the newest 100 process-local forwarding decisions at `GET /api/proxy/decisions/recent`, read-only analysis for a retained attempt at `GET /api/proxy/decisions/{decisionId}/explain`, and guarded configuration reload at `POST /api/proxy/reload`. Named routes support exact host/header predicates and deterministic percentage split groups in addition to path prefixes. The explanation uses score and factor evidence captured with the actual selection; it does not rerun a stateful, sampled, keyed, positional, or affinity strategy later. Opt-in LASE shadow evaluation and `GET /api/lase/shadow` remain available only in the source/Lab Tools runtime. Operator configuration examples are under [`docs/examples/proxy`](docs/examples/proxy).
 
-Before enabling private-network validation, review:
+Use these as the forecast-load qualification and proxy-operation path:
 
 - [`LOAD_BALANCER_BUILD_OUT.md`](docs/LOAD_BALANCER_BUILD_OUT.md)
 - [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md)
@@ -249,16 +259,20 @@ curl -fsS http://127.0.0.1:8080/actuator/health
 
 The Docker image runs as a non-root user and defaults to the `prod` profile. Keep the host port loopback-bound for local checks. See [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for networking and TLS boundaries.
 
-## Operator workflow
+## Forecast-load workflow
 
-1. Choose a profile and review its effective properties.
-2. Supply secrets through deployment secret management.
-3. Keep proxy, cloud mutation, telemetry export, and expanded Actuator exposure disabled unless required.
-4. Build and verify the exact artifact.
-5. Start on loopback, verify `/actuator/health`, then test protected routes.
-6. If proxying is enabled, validate route targets, health behavior, retry budget/backoff, cooldown/slow-start recovery, status, and reload before widening access.
-7. Review logs and metrics for sanitized configuration summaries and failures.
-8. Apply deployment-specific TLS, network policy, authentication, rate limits, resource limits, monitoring, backup, and rollback controls.
+1. Record the workload contract and acceptance thresholds from the build-out.
+2. Build and verify the exact production artifact with its SBOM and image scans.
+3. Supply TLS, authentication, trust, identity, upstream, and monitoring configuration through deployment secret and
+   configuration management.
+4. Pass the loopback regression smoke and one-hour soak without weakening verification or safety limits.
+5. Run the capacity staircase on deployment-equivalent resources and select an operating envelope with agreed
+   headroom below saturation.
+6. Repeat the forecast mix and failure cases in the reviewed staging boundary.
+7. Prove the selected single-active or multiple-active topology, including drain, replacement, and configuration
+   consistency behavior.
+8. Roll out an immutable image in controlled traffic steps; abort and restore the prior image/configuration when an
+   agreed threshold is exceeded.
 
 For the packaged-application proof path use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md). For controlled lab tooling use [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md).
 
@@ -274,12 +288,12 @@ For the packaged-application proof path use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEP
 - **A port is already in use:** select another `server.port` and keep the bind address explicit.
 - **Local Maven trust errors occur:** repair the workstation/JDK trust store; do not disable TLS verification.
 
-## Architecture and security references
+## Load-balancer deployment references
 
-- [`ENTERPRISE_LAB_DURABLE_EVIDENCE.md`](docs/architecture/ENTERPRISE_LAB_DURABLE_EVIDENCE.md)
-- [`ENTERPRISE_LAB_INDEPENDENT_ALLOCATION_SUPERVISOR.md`](docs/architecture/ENTERPRISE_LAB_INDEPENDENT_ALLOCATION_SUPERVISOR.md)
+- [`LOAD_BALANCER_BUILD_OUT.md`](docs/LOAD_BALANCER_BUILD_OUT.md)
+- [`DEPLOYMENT.md`](docs/DEPLOYMENT.md)
+- [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md)
 - [`SECURITY.md`](SECURITY.md)
 - [`API_SECURITY.md`](docs/API_SECURITY.md)
 - [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md)
 - [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md)
-- [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md)

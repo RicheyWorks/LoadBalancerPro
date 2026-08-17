@@ -60,6 +60,7 @@ class DeploymentPackagingContractTest {
                 "SPRING_CONFIG_IMPORT: configtree:/run/secrets/",
                 "LBP_UPSTREAM_0_URL: http://backend-a:8080",
                 "LBP_UPSTREAM_1_URL: http://backend-b:8080",
+                "LBP_PROXY_STRATEGY: ${LBP_PROXY_STRATEGY:-ROUND_ROBIN}",
                 "target: loadbalancerpro.api.key",
                 "target: /run/tls",
                 "target: /run/trust",

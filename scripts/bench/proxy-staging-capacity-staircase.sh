@@ -68,7 +68,8 @@ fi
 jq -e '
   .review.status == "reviewed"
   and (.review.approvedBy | type == "string" and length > 0 and (test("replace|example|todo"; "i") | not))
-  and (.review.approvedAt | fromdateiso8601 > 0 and . <= now)
+  and (.review.approvedAt | fromdateiso8601 > 0)
+  and (.review.approvedAt | fromdateiso8601 <= now)
   and .environment.billableImpactReviewed == true
   and .environment.productionTrafficAuthorized == false
   and (.environment.cleanupAuthority | type == "string" and length > 0 and (test("replace|example|todo"; "i") | not))

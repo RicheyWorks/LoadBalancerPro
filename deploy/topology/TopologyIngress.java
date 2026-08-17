@@ -22,8 +22,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -58,16 +62,18 @@ public final class TopologyIngress {
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build();
         ExecutorService executor = Executors.newFixedThreadPool(64);
+        ExecutorService responseReaders = Executors.newFixedThreadPool(32);
         HttpsServer server = HttpsServer.create(new InetSocketAddress("0.0.0.0", port), 128);
         server.setHttpsConfigurator(new HttpsConfigurator(serverTls));
         server.setExecutor(executor);
-        server.createContext("/", new IngressHandler(client, replicas, apiKey, upstreamTimeout));
+        server.createContext("/", new IngressHandler(client, responseReaders, replicas, apiKey, upstreamTimeout));
         server.start();
 
         CountDownLatch stopped = new CountDownLatch(1);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             server.stop(2);
             executor.shutdownNow();
+            responseReaders.shutdownNow();
             stopped.countDown();
         }, "topology-ingress-shutdown"));
         stopped.await();
@@ -147,13 +153,20 @@ public final class TopologyIngress {
 
     private static final class IngressHandler implements HttpHandler {
         private final HttpClient client;
+        private final ExecutorService responseReaders;
         private final List<Replica> replicas;
         private final byte[] apiKey;
         private final Duration upstreamTimeout;
         private final AtomicInteger next = new AtomicInteger();
 
-        private IngressHandler(HttpClient client, List<Replica> replicas, String apiKey, Duration upstreamTimeout) {
+        private IngressHandler(
+                HttpClient client,
+                ExecutorService responseReaders,
+                List<Replica> replicas,
+                String apiKey,
+                Duration upstreamTimeout) {
             this.client = client;
+            this.responseReaders = responseReaders;
             this.replicas = replicas;
             this.apiKey = apiKey.getBytes(StandardCharsets.UTF_8);
             this.upstreamTimeout = upstreamTimeout;
@@ -223,10 +236,7 @@ public final class TopologyIngress {
                 try {
                     HttpResponse<InputStream> response = send(
                             replica, exchange.getRequestMethod(), exchange.getRequestURI().toASCIIString(), body);
-                    byte[] responseBody;
-                    try (InputStream input = response.body()) {
-                        responseBody = input.readNBytes(MAX_RESPONSE_BYTES + 1);
-                    }
+                    byte[] responseBody = readResponseBody(response);
                     if (responseBody.length > MAX_RESPONSE_BYTES) {
                         respond(exchange, 502, "upstream response too large", null, replica.id());
                         return;
@@ -244,6 +254,41 @@ public final class TopologyIngress {
                 }
             }
             throw lastFailure == null ? new IOException("no topology replicas configured") : lastFailure;
+        }
+
+        private byte[] readResponseBody(HttpResponse<InputStream> response) throws IOException, InterruptedException {
+            InputStream input = response.body();
+            Future<byte[]> read = responseReaders.submit(() -> {
+                try (InputStream owned = input) {
+                    return owned.readNBytes(MAX_RESPONSE_BYTES + 1);
+                }
+            });
+            try {
+                return read.get(upstreamTimeout.toMillis(), TimeUnit.MILLISECONDS);
+            } catch (TimeoutException exception) {
+                read.cancel(true);
+                IOException failure = new IOException("topology upstream response body timed out", exception);
+                try {
+                    input.close();
+                } catch (IOException closeFailure) {
+                    failure.addSuppressed(closeFailure);
+                }
+                throw failure;
+            } catch (ExecutionException exception) {
+                Throwable cause = exception.getCause();
+                if (cause instanceof IOException ioException) {
+                    throw ioException;
+                }
+                throw new IOException("topology upstream response body failed", cause);
+            } catch (InterruptedException exception) {
+                read.cancel(true);
+                try {
+                    input.close();
+                } catch (IOException closeFailure) {
+                    exception.addSuppressed(closeFailure);
+                }
+                throw exception;
+            }
         }
 
         private HttpResponse<InputStream> send(Replica replica, String method, String path, byte[] body)

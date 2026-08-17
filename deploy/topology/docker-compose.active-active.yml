@@ -17,7 +17,6 @@ x-proxy: &proxy
   build:
     context: ../..
     dockerfile: Dockerfile
-  image: ${LBP_TOPOLOGY_PROXY_IMAGE:-loadbalancerpro:topology-proxy}
   command:
     - --server.address=0.0.0.0
     - --server.ssl.enabled=true
@@ -86,11 +85,13 @@ services:
 
   proxy-a:
     <<: *proxy
+    image: ${LBP_TOPOLOGY_PROXY_A_IMAGE:-loadbalancerpro:topology-proxy}
     hostname: proxy-a
     ports: ["127.0.0.1:${LBP_TOPOLOGY_PROXY_A_PORT:-18451}:8080"]
 
   proxy-b:
     <<: *proxy
+    image: ${LBP_TOPOLOGY_PROXY_B_IMAGE:-loadbalancerpro:topology-proxy}
     hostname: proxy-b
     ports: ["127.0.0.1:${LBP_TOPOLOGY_PROXY_B_PORT:-18452}:8080"]
 
@@ -121,7 +122,7 @@ services:
     tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=32m"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    pids_limit: 128
+    pids_limit: 192
     mem_limit: 256m
     stop_signal: SIGTERM
     stop_grace_period: 5s

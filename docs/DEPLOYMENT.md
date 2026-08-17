@@ -99,7 +99,7 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 | `LBP_BACKEND_TRUST_BUNDLE` | `loadbalancerpro.proxy.backend-tls.truststore` | blank |
 | `LBP_UPSTREAM_0_CLIENT_CERT_BUNDLE` | `loadbalancerpro.proxy.upstreams[0].tls.client-cert` | blank |
 
-[`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical static manifest sketch. It shows `/api/health` readiness/liveness, a five-second preStop delay, a 40-second pod termination window, non-root/capability-dropped/read-only execution, and external Secret/ConfigMap mounts. It has not been applied to a cluster and does not establish Kubernetes, multi-host, capacity, or production-readiness evidence.
+[`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical static manifest sketch. It encodes two replicas, zero-unavailable rolling replacement, bounded rollout history/progress, preferred host separation, a one-replica disruption budget, `/api/health` readiness/liveness, a five-second preStop delay, a 40-second termination window, non-root/capability-dropped/read-only execution, and external Secret/ConfigMap mounts. Its image is a deliberately non-resolving digest placeholder. It has not been applied to a cluster and does not establish registry, Kubernetes, multi-host, capacity, or production-readiness evidence.
 
 HTTP/2 applies to ordinary inbound HTTP traffic. WebSocket passthrough uses an HTTP/1.1 Upgrade handshake, shares the
 proxy's routing/concurrency/drain controls, and does not implement RFC 8441 extended CONNECT. Browser origin and

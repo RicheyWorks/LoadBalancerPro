@@ -120,15 +120,23 @@ The executable local active-active proof is
 [`proxy-active-active-topology.sh`](../scripts/bench/proxy-active-active-topology.sh) with
 [`docker-compose.active-active.yml`](../deploy/topology/docker-compose.active-active.yml). CI starts two actual proxy
 processes behind a bounded TLS/authenticated ingress fixture and gates distribution, configuration convergence,
-rollout, rollback, aggregate upstream limits, per-instance metrics, replica loss, and recovery under load. This closes
-the local mechanics proof only. A reviewed deployment ingress and multi-zone proof remain required when the selected
-deployment topology uses them.
+unhealthy-candidate rejection, content-addressed image rollout/rollback, aggregate upstream limits, per-instance
+metrics, replica loss, and recovery under load. This closes the local mechanics proof only. A reviewed deployment
+ingress and multi-zone proof remain required when the selected deployment topology uses them.
 
 ### 4. Stage The Rollout And Rollback
 
-The active-active runner proves rolling configuration change and reversal; it does not claim immutable-image rollout.
-The next deployment slice is to apply the same availability, generation-skew, metric, and recovery assertions while
-replacing proxy replicas by exact image digest behind the reviewed staging ingress.
+The active-active runner now derives a content-distinct candidate from the exact local proxy image, rejects a
+deliberately unhealthy candidate before promoting the second replica, promotes the healthy candidate one replica at a
+time, and restores both replicas to the exact baseline content ID. It asserts the running container image ID,
+configuration hash, readiness, traffic objectives, and replacement/abort windows at every step. The candidate changes
+only immutable proof metadata, so this proves replacement mechanics rather than compatibility between two application
+releases. A local Docker content ID is also not a registry manifest digest.
+
+The next deployment slice is to repeat those assertions with the reviewed prior and candidate registry digests behind
+the reviewed staging ingress. The supplied Kubernetes sketch encodes two replicas, zero-unavailable rolling update,
+bounded history/progress, preferred host separation, and a one-replica disruption budget; it remains unapplied input,
+not cluster evidence.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,

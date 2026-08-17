@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,6 +13,7 @@ import java.util.concurrent.Executors;
 public final class FixtureBackend {
     private static final int PORT = 8080;
     private static final int MAX_REQUEST_BYTES = 1_048_576;
+    private static final int MAX_RESPONSE_BYTES = 1_048_576;
     private static final long MAX_DELAY_MILLIS = 10_000;
 
     private FixtureBackend() {
@@ -43,25 +45,34 @@ public final class FixtureBackend {
                     return;
                 }
                 if ("/slow".equals(uri.getPath())) {
-                    pause(delayMillis(uri));
+                    pause(delayMillis(uri, backendId));
                 }
                 byte[] requestBody = exchange.getRequestBody().readNBytes(MAX_REQUEST_BYTES + 1);
                 if (requestBody.length > MAX_REQUEST_BYTES) {
                     respond(exchange, backendId, 413, backendId + " request too large");
                     return;
                 }
-                respond(exchange, backendId, 200,
-                        backendId + " handled " + exchange.getRequestMethod() + " " + uri.getPath());
+                String response = backendId + " handled " + exchange.getRequestMethod() + " " + uri.getPath();
+                respond(exchange, backendId, 200, response, responseBytes(uri, response.length()));
             } catch (IllegalArgumentException exception) {
-                respond(exchange, backendId, 400, backendId + " invalid delay");
+                respond(exchange, backendId, 400, backendId + " invalid fixture parameter");
             }
         }
     }
 
-    private static long delayMillis(URI uri) {
+    private static long delayMillis(URI uri, String backendId) {
         String query = uri.getRawQuery();
         if (query == null) {
             return 2_500;
+        }
+        String slowBackend = null;
+        for (String component : query.split("&")) {
+            if (component.startsWith("slowBackend=")) {
+                slowBackend = component.substring("slowBackend=".length());
+            }
+        }
+        if (slowBackend != null && !slowBackend.equals(backendId)) {
+            return 0;
         }
         for (String component : query.split("&")) {
             if (component.startsWith("millis=")) {
@@ -75,6 +86,23 @@ public final class FixtureBackend {
         return 2_500;
     }
 
+    private static int responseBytes(URI uri, int defaultBytes) {
+        String query = uri.getRawQuery();
+        if (query == null) {
+            return defaultBytes;
+        }
+        for (String component : query.split("&")) {
+            if (component.startsWith("lbpResponseBytes=")) {
+                int bytes = Integer.parseInt(component.substring("lbpResponseBytes=".length()));
+                if (bytes < 0 || bytes > MAX_RESPONSE_BYTES) {
+                    throw new IllegalArgumentException("response size out of range");
+                }
+                return bytes;
+            }
+        }
+        return defaultBytes;
+    }
+
     private static void pause(long delayMillis) throws IOException {
         try {
             Thread.sleep(delayMillis);
@@ -86,6 +114,19 @@ public final class FixtureBackend {
 
     private static void respond(HttpExchange exchange, String backendId, int status, String body) throws IOException {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+        respond(exchange, backendId, status, bytes);
+    }
+
+    private static void respond(
+            HttpExchange exchange, String backendId, int status, String body, int responseBytes) throws IOException {
+        byte[] prefix = body.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = new byte[responseBytes];
+        Arrays.fill(bytes, (byte) 'x');
+        System.arraycopy(prefix, 0, bytes, 0, Math.min(prefix.length, bytes.length));
+        respond(exchange, backendId, status, bytes);
+    }
+
+    private static void respond(HttpExchange exchange, String backendId, int status, byte[] bytes) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
         exchange.getResponseHeaders().set("X-Fixture-Upstream", backendId);
         exchange.sendResponseHeaders(status, bytes.length);

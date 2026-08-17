@@ -446,6 +446,8 @@ jobs:
           set -euo pipefail
           bash -n scripts/bench/proxy-benchmark-soak.sh
           bash scripts/bench/proxy-benchmark-soak.sh --mode validate
+          bash -n scripts/bench/proxy-capacity-staircase.sh
+          bash scripts/bench/proxy-capacity-staircase.sh --mode validate
           bash scripts/bench/proxy-benchmark-soak.sh --mode smoke
 
       - name: Upload loopback proxy benchmark smoke reports

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "profileId": "loopback-example-not-reviewed",
+  "review": {
+    "status": "example",
+    "approvedBy": "",
+    "approvedAt": ""
+  },
+  "workload": {
+    "requestRate": {
+      "normalPerSecond": 20,
+      "peakPerSecond": 40,
+      "burstPerSecond": 80,
+      "burstDurationSeconds": 10,
+      "expectedGrowthPercent": 25
+    },
+    "concurrency": {
+      "clientConnections": 100,
+      "http2Streams": 0,
+      "webSockets": 0,
+      "keepAlive": true,
+      "connectionChurn": "vegeta-default"
+    },
+    "routeMix": [
+      {
+        "path": "/proxy/capacity",
+        "method": "GET",
+        "percent": 100,
+        "retryEligible": true,
+        "affinity": false,
+        "strategy": "TAIL_LATENCY_POWER_OF_TWO"
+      }
+    ],
+    "payload": {
+      "requestBytes": {"p50": 0, "p95": 512, "p99": 4096},
+      "responseBytes": {"p50": 48, "p95": 4096, "p99": 65536},
+      "streamingResponses": false,
+      "serverSentEvents": false,
+      "uploads": false
+    },
+    "upstreams": {
+      "count": 2,
+      "latencyModel": "equal-loopback-fixtures plus a 250ms slow case",
+      "connectionLimitPerUpstream": 50,
+      "errorModes": ["refusal", "recovery"],
+      "healthEndpointCost": "one GET /health per second",
+      "transport": "private Compose HTTP; authenticated TLS on the client edge"
+    },
+    "objectives": {
+      "minimumSuccessRatio": 0.999,
+      "normalP99Millis": 1500,
+      "slowP99Millis": 2500,
+      "failureP99Millis": 3000
+    },
+    "failureModel": ["slow", "refusal", "drain", "recovery"],
+    "topology": {
+      "proxyReplicas": 1,
+      "zones": 1,
+      "ingress": "127.0.0.1 only",
+      "resourceClass": "local Docker limits from docker-compose.proxy-prod.yml",
+      "observability": "authenticated Prometheus snapshots and local raw artifacts"
+    }
+  },
+  "capacity": {
+    "ratesPerSecond": [20, 40, 80, 120],
+    "repeatsPerStep": 3,
+    "warmupSeconds": 10,
+    "measurementSeconds": 30,
+    "cooldownSeconds": 5,
+    "sampleIntervalSeconds": 1,
+    "slowDelayMillis": 250,
+    "minimumThroughputRatio": 0.95,
+    "failureCaseMinimumSuccessRatio": 0.90,
+    "maximumNonInjectedRetryRatio": 0.01,
+    "headroomPercent": 20,
+    "heapGrowthBudgetBytes": 67108864,
+    "maxInFlight": 100
+  }
+}

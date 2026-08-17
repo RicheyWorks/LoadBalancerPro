@@ -125,6 +125,8 @@ class DeploymentPackagingContractTest {
                 "effectiveHealthyBackendCount",
                 "$base_url/actuator/health",
                 "actuator/prometheus",
+                "basicConstraints=critical,CA:TRUE",
+                "extendedKeyUsage=serverAuth",
                 "ReadonlyRootfs",
                 "CapDrop")) {
             assertTrue(smoke.contains(expected), "missing smoke proof: " + expected);
@@ -132,6 +134,7 @@ class DeploymentPackagingContractTest {
         assertTrue(ci.contains("Smoke test proxy-prod Compose deployment"));
         assertTrue(ci.contains("Scan proxy-prod fixture image"));
         assertTrue(count(ci, "ignore-unfixed: false") >= 2);
+        assertFalse(smoke.contains("cp \"$tls_dir/certificate.pem\" \"$tls_dir/ca.pem\""));
         assertFalse(ci.contains("ignore-unfixed: true"));
         assertFalse(ci.contains("trivyignores:"));
     }

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "profileId": "staging-capacity-example-not-reviewed",
+  "review": {
+    "status": "example",
+    "approvedBy": "",
+    "approvedAt": ""
+  },
+  "stagingBinding": {
+    "stagingProfileSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "workload": {
+    "requestRate": {
+      "normalPerSecond": 40,
+      "peakPerSecond": 60,
+      "burstPerSecond": 80,
+      "burstDurationSeconds": 30,
+      "expectedGrowthPercent": 25
+    },
+    "concurrency": {
+      "clientConnections": 200,
+      "keepAlive": true,
+      "connectionChurn": "vegeta-default"
+    },
+    "routeMix": [
+      {
+        "path": "/proxy/capacity",
+        "method": "GET",
+        "percent": 100,
+        "retryEligible": true,
+        "affinity": false,
+        "strategy": "TAIL_LATENCY_POWER_OF_TWO"
+      }
+    ],
+    "payload": {
+      "requestBytes": {"p50": 0, "p95": 512, "p99": 4096},
+      "responseBytes": {"p50": 48, "p95": 4096, "p99": 65536}
+    },
+    "upstreamIds": ["backend-a", "backend-b"],
+    "objectives": {
+      "minimumSuccessRatio": 0.999,
+      "normalP99Millis": 1500,
+      "slowP99Millis": 2500,
+      "failureP99Millis": 3000
+    },
+    "failureModel": ["slow", "failure", "drain", "recovery"]
+  },
+  "capacity": {
+    "ratesPerSecond": [40, 80, 120, 160],
+    "repeatsPerStep": 3,
+    "warmupSeconds": 10,
+    "measurementSeconds": 30,
+    "cooldownSeconds": 5,
+    "sampleIntervalSeconds": 5,
+    "minimumThroughputRatio": 0.95,
+    "failureCaseMinimumSuccessRatio": 0.9,
+    "maximumNonInjectedRetryRatio": 0.01,
+    "minimumRequestMetricCoverageRatio": 0.98,
+    "maximumRequestMetricOvercountRatio": 1.02,
+    "headroomPercent": 20,
+    "maximumCpuUtilizationRatio": 0.85,
+    "maximumMemoryUtilizationRatio": 0.85,
+    "maximumGcPauseSecondsPerMeasurement": 1.0,
+    "maxInFlight": 200,
+    "maximumOpenConnectionsPerReplica": 1000,
+    "maximumJvmLiveThreadsPerReplica": 512
+  },
+  "telemetry": {
+    "samplerSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "maximumSampleAgeSeconds": 60,
+    "maximumSamplerSeconds": 3
+  }
+}

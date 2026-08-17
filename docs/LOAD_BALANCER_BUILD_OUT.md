@@ -84,8 +84,18 @@ quiesce, memory grows outside budget, or the proxy reaches a configured safety l
 The passing envelope must cover the larger of the reviewed burst rate or the forecast peak after declared growth and
 reserved headroom.
 
-Implementing the runner does not close this gate. Closure requires a reviewed forecast profile and a passing run on
-deployment-equivalent resources for the exact release artifact.
+The deployment-equivalent runner is
+[`proxy-staging-capacity-staircase.sh`](../scripts/bench/proxy-staging-capacity-staircase.sh), using
+[`staging-capacity-profile.example.json`](../scripts/bench/staging-capacity-profile.example.json). It binds the
+forecast profile to the exact reviewed staging-profile hash, candidate registry digest, deployment configuration, and
+ingress identity. A hash-pinned external telemetry adapter must report every ready replica by immutable runtime ID,
+zone, CPU, memory, connections, JVM threads, and deployment-wide monotonic proxy/upstream counters. Each repeat
+restarts every candidate replica and proves the runtime identities changed; the runner then executes the five-case
+ladder and restores the prior digest. [`evaluate-staging-capacity.py`](../scripts/bench/evaluate-staging-capacity.py)
+rejects incomplete, duplicated, out-of-order, internally inconsistent, prematurely stopped, or unstable evidence.
+
+Implementing either runner does not close this gate. Closure requires the authorized deployment-equivalent runner to
+produce a passing result for the exact release artifact and frozen staging profile.
 
 ### 2. Prove A Reviewed Staging Boundary
 
@@ -149,8 +159,9 @@ client success/latency, upstream health, proxy p95/p99, in-flight work, retries,
 and connection counts with the prior step.
 
 Abort the step when an agreed objective is exceeded, a metric disappears, configuration diverges, an upstream is
-overloaded, or rollback cannot be completed inside its window. The remaining next action is the authorized run on
-deployment-equivalent staging resources, followed by the forecast capacity staircase against the exact candidate.
+overloaded, or rollback cannot be completed inside its window. The remaining next action is the authorized staging
+qualification followed by `proxy-staging-capacity-staircase.sh --mode run` against the exact reviewed candidate; both
+commands fail closed without private target authority, pinned trust/secrets/adapters, and a clean matching checkout.
 
 ## Ready-For-Forecast-Load Gate
 

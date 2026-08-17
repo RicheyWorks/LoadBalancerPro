@@ -63,8 +63,11 @@ Do not substitute the repository's fixture rates or p99 budgets for missing work
 
 ### 1. Establish The Capacity Envelope
 
-Add a dedicated loopback capacity-staircase runner under `scripts/bench/`; do not turn the regression soak into a
-capacity claim. The runner must:
+The dedicated loopback runner is
+[`proxy-capacity-staircase.sh`](../scripts/bench/proxy-capacity-staircase.sh). It requires the executable reviewed
+workload profile represented by
+[`capacity-profile.example.json`](../scripts/bench/capacity-profile.example.json) and remains separate from the
+regression soak. Run it to:
 
 - test a reviewed rate ladder with warm-up, steady measurement, and cooldown at every step;
 - run each step at least three times from a fresh proxy process;
@@ -77,6 +80,12 @@ capacity claim. The runner must:
 Acceptance is a reproducible saturation knee and a recommended operating envelope with explicit headroom. Stop below
 the first step where non-injected failures appear, latency exceeds the workload objective, in-flight work does not
 quiesce, memory grows outside budget, or the proxy reaches a configured safety limit.
+
+The passing envelope must cover the larger of the reviewed burst rate or the forecast peak after declared growth and
+reserved headroom.
+
+Implementing the runner does not close this gate. Closure requires a reviewed forecast profile and a passing run on
+deployment-equivalent resources for the exact release artifact.
 
 ### 2. Prove A Reviewed Staging Boundary
 

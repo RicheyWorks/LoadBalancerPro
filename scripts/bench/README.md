@@ -1,5 +1,31 @@
 # Proxy Benchmark And Soak Harness
 
+## Capacity staircase
+
+`proxy-capacity-staircase.sh` is the separate capacity-qualification lane. It runs equal, slow, failing, draining, and
+recovering fixture cases across an ascending rate ladder. Every rate gets warm-up, at least three fresh-proxy repeats,
+steady measurements, and cooldown. Raw Vegeta results, Prometheus snapshots, proxy status, container metadata, and
+resource samples stay under ignored `target/capacity/`; the final JSON identifies a reproducible saturation step and a
+headroom-adjusted operating envelope. A pass must cover the larger of the declared burst rate or the forecast peak
+after expected growth and reserved headroom; those inputs are reviewed claim inputs, not annotations.
+
+Copy `capacity-profile.example.json` outside the repository when the workload contains private deployment details,
+replace every example value with reviewed forecast inputs, and populate its approval fields. Validation is safe and
+does not start Docker:
+
+```bash
+bash scripts/bench/proxy-capacity-staircase.sh --mode validate --profile /path/to/capacity-profile.json
+```
+
+Execution is loopback-only and refuses an unreviewed profile or dirty checkout:
+
+```bash
+bash scripts/bench/proxy-capacity-staircase.sh --mode run --profile /path/to/capacity-profile.json
+```
+
+A passing result applies only to the recorded artifact, profile, host, Compose limits, and fixture behavior. It is not
+staging, public-ingress, multi-instance, or production-capacity evidence.
+
 ## Access-log overhead lane
 
 Run `bash scripts/bench/access-log-overhead.sh` for five fresh-JVM enabled/disabled access-log comparisons. Raw JSON

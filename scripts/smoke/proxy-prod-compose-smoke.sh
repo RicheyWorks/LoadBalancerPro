@@ -33,12 +33,31 @@ trap cleanup EXIT
 mkdir -p "$tls_dir" "$trust_dir" "$identity_dir" "$config_dir"
 printf '%s' "$api_key" > "$api_key_file"
 chmod 0444 "$api_key_file"
+ca_private_key="$work_dir/ca-private-key.pem"
+server_csr="$work_dir/server.csr"
+server_extensions="$work_dir/server-extensions.cnf"
 openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
+    -subj "/CN=LoadBalancerPro Local Smoke CA" \
+    -addext "basicConstraints=critical,CA:TRUE" \
+    -addext "keyUsage=critical,keyCertSign,cRLSign" \
+    -keyout "$ca_private_key" \
+    -out "$tls_dir/ca.pem" >/dev/null 2>&1
+openssl req -newkey rsa:2048 -sha256 -nodes \
     -subj "/CN=$tls_hostname" \
-    -addext "subjectAltName=DNS:$tls_hostname,IP:127.0.0.1" \
     -keyout "$tls_dir/private-key.pem" \
+    -out "$server_csr" >/dev/null 2>&1
+printf '%s\n' \
+    "subjectAltName=DNS:$tls_hostname,IP:127.0.0.1" \
+    "basicConstraints=critical,CA:FALSE" \
+    "keyUsage=critical,digitalSignature,keyEncipherment" \
+    "extendedKeyUsage=serverAuth" > "$server_extensions"
+openssl x509 -req -sha256 -days 1 \
+    -in "$server_csr" \
+    -CA "$tls_dir/ca.pem" \
+    -CAkey "$ca_private_key" \
+    -set_serial 1 \
+    -extfile "$server_extensions" \
     -out "$tls_dir/certificate.pem" >/dev/null 2>&1
-cp "$tls_dir/certificate.pem" "$tls_dir/ca.pem"
 chmod 0444 "$tls_dir/private-key.pem" "$tls_dir/certificate.pem" "$tls_dir/ca.pem"
 chmod 0555 "$tls_dir" "$trust_dir" "$identity_dir" "$config_dir"
 
@@ -109,6 +128,11 @@ for request in 1 2 3 4; do
 done
 grep -Fq 'backend-a handled' "$proxy_bodies"
 grep -Fq 'backend-b handled' "$proxy_bodies"
+
+sized_response="$work_dir/sized-response.bin"
+curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \
+    --output "$sized_response" "$base_url/proxy/capacity?lbpResponseBytes=4096"
+[[ "$(wc -c < "$sized_response" | tr -d '[:space:]')" == "4096" ]]
 
 request_payload='streamed-proxy-request-body'
 curl "${curl_tls[@]}" --fail --header "X-API-Key: $api_key" \

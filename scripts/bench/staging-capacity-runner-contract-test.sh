@@ -209,7 +209,7 @@ chmod 0500 "$sampler"
 chmod 0500 "$action_dir"
 
 revision="$(git -C "$repo_root" rev-parse HEAD)"
-repository="registry.example.internal/loadbalancerpro"
+repository="registry.contract.internal/loadbalancerpro"
 prior_digest="sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 candidate_digest="sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 staging="$work_dir/staging.json"

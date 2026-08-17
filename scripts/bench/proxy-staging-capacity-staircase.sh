@@ -534,8 +534,10 @@ run_scenario() {
     [[ "$quiesced" == "true" ]] || { echo "$scenario in-flight work did not quiesce" >&2; exit 1; }
     vegeta report -type=json "$results_file" > "$report_file"
     vegeta report -type=text "$results_file" > "$scenario_dir/client.txt"
-    resource_summary="$(jq -s '
-      sort_by(.observedAt) as $samples
+    resource_summary="$(jq -s \
+      --slurpfile first "$samples_dir/sample-0000-validation.json" \
+      --slurpfile last "${final_raw%.json}-validation.json" '
+      . as $samples
       | {samples:($samples|length),stableReplicaSet:([$samples[].replicaIds]|unique|length == 1),
          maxCpuUtilizationRatio:([$samples[].maximumCpuUtilizationRatio]|max),
          maxMemoryUtilizationRatio:([$samples[].maximumMemoryUtilizationRatio]|max),
@@ -543,17 +545,17 @@ run_scenario() {
          maxJvmLiveThreadsPerReplica:([$samples[].maximumJvmLiveThreadsPerReplica]|max),
          maxInflight:([$samples[].inflight]|max),maxProxyP99Millis:([$samples[].proxyP99Millis]|max),
          maxUpstreamP99Millis:([$samples[].upstreamP99Millis]|max),
-         firstCounters:$samples[0].counters,lastCounters:$samples[-1].counters,
-         firstUpstreamRequests:$samples[0].upstreamRequestsTotal,
-         lastUpstreamRequests:$samples[-1].upstreamRequestsTotal,
-         counterMonotonic:($samples[-1].counters.requestsTotal >= $samples[0].counters.requestsTotal
-           and $samples[-1].counters.retriesTotal >= $samples[0].counters.retriesTotal
-           and $samples[-1].counters.shedsTotal >= $samples[0].counters.shedsTotal
-           and $samples[-1].counters.limitRejectionsTotal >= $samples[0].counters.limitRejectionsTotal
-           and $samples[-1].counters.gcPauseCountTotal >= $samples[0].counters.gcPauseCountTotal
-           and $samples[-1].counters.gcPauseSecondsTotal >= $samples[0].counters.gcPauseSecondsTotal
-           and ([$samples[0].upstreamRequestsTotal | to_entries[] | . as $entry
-             | $samples[-1].upstreamRequestsTotal[$entry.key] >= $entry.value] | all))}
+         firstCounters:$first[0].counters,lastCounters:$last[0].counters,
+         firstUpstreamRequests:$first[0].upstreamRequestsTotal,
+         lastUpstreamRequests:$last[0].upstreamRequestsTotal,
+         counterMonotonic:($last[0].counters.requestsTotal >= $first[0].counters.requestsTotal
+           and $last[0].counters.retriesTotal >= $first[0].counters.retriesTotal
+           and $last[0].counters.shedsTotal >= $first[0].counters.shedsTotal
+           and $last[0].counters.limitRejectionsTotal >= $first[0].counters.limitRejectionsTotal
+           and $last[0].counters.gcPauseCountTotal >= $first[0].counters.gcPauseCountTotal
+           and $last[0].counters.gcPauseSecondsTotal >= $first[0].counters.gcPauseSecondsTotal
+           and ([$first[0].upstreamRequestsTotal | to_entries[] | . as $entry
+             | $last[0].upstreamRequestsTotal[$entry.key] >= $entry.value] | all))}
     ' "$samples_dir"/*-validation.json)"
     [[ "$(jq -r '.samples' <<<"$resource_summary")" -ge 3 ]] || { echo "$scenario produced fewer than three valid telemetry samples" >&2; exit 1; }
     requests="$(jq -r '.requests' "$report_file")"
@@ -570,11 +572,11 @@ run_scenario() {
     limits_delta="$(jq -r '.lastCounters.limitRejectionsTotal - .firstCounters.limitRejectionsTotal' <<<"$resource_summary")"
     gc_pause_count_delta="$(jq -r '.lastCounters.gcPauseCountTotal - .firstCounters.gcPauseCountTotal' <<<"$resource_summary")"
     gc_pause_seconds_delta="$(jq -r '.lastCounters.gcPauseSecondsTotal - .firstCounters.gcPauseSecondsTotal' <<<"$resource_summary")"
-    retry_ratio="$(awk -v retries="$retries_delta" -v total="$requests" 'BEGIN { printf "%.9f", total > 0 ? retries / total : 1 }')"
-    coverage_ratio="$(awk -v observed="$requests_delta" -v total="$requests" 'BEGIN { printf "%.9f", total > 0 ? observed / total : 0 }')"
+    retry_ratio="$(awk -v retries="$retries_delta" -v total="$requests" 'BEGIN { printf "%.9f", (total > 0 ? retries / total : 1) }')"
+    coverage_ratio="$(awk -v observed="$requests_delta" -v total="$requests" 'BEGIN { printf "%.9f", (total > 0 ? observed / total : 0) }')"
     scenario_minimum_success="$minimum_success_ratio"
     [[ "$injected" == "false" ]] || scenario_minimum_success="$failure_minimum_success_ratio"
-    proxy_overhead="$(awk -v client="$p99_ms" -v upstream="$(jq -r '.maxUpstreamP99Millis' <<<"$resource_summary")" 'BEGIN { value=client-upstream; printf "%.6f", value > 0 ? value : 0 }')"
+    proxy_overhead="$(awk -v client="$p99_ms" -v upstream="$(jq -r '.maxUpstreamP99Millis' <<<"$resource_summary")" 'BEGIN { value=client-upstream; printf "%.6f", (value > 0 ? value : 0) }')"
     case_pass="$(jq -nr --argjson injected "$injected" --argjson throughputRatio "$throughput_ratio" \
       --argjson completionRatio "$completion_ratio" --argjson minimumThroughput "$minimum_throughput_ratio" \
       --argjson success "$success" --argjson minimumSuccess "$scenario_minimum_success" \

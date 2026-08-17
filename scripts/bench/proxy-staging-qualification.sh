@@ -5,6 +5,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/../.." && pwd)"
 example_profile="$script_dir/staging-profile.example.json"
 validator="$script_dir/validate-staging-target.py"
+deployment_validator="$script_dir/validate-staging-deployment.py"
 target_renderer="$script_dir/render-capacity-targets.jq"
 
 mode=validate
@@ -18,7 +19,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 [[ "$mode" == "validate" || "$mode" == "run" ]] || { echo "Mode must be validate or run" >&2; exit 2; }
-for required_file in "$profile" "$validator" "$target_renderer"; do
+for required_file in "$profile" "$validator" "$deployment_validator" "$target_renderer"; do
     [[ -f "$required_file" ]] || { echo "Missing required file: $required_file" >&2; exit 2; }
 done
 
@@ -37,6 +38,7 @@ command -v jq >/dev/null 2>&1 || { echo "jq is required" >&2; exit 2; }
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated fail-closed staging profile %s without DNS resolution or traffic.\n' \
         "$(jq -r '.profileId' "$profile")"
+    printf 'Validated prior/candidate registry identities, deployment resources, zone placement, and transition windows.\n'
     printf 'Run mode remains disabled until review, private resolution, secret files, and hook hashes are present.\n'
     exit 0
 fi
@@ -57,8 +59,14 @@ jq -e '
   and (.environment.cleanupAuthority | test("replace|example|todo"; "i") | not)
   and (.review.approvedBy | test("replace|example|todo"; "i") | not)
   and (.review.approvedAt | fromdateiso8601 <= now)
-  and (.artifact.imageDigest != "sha256:" + ("0" * 64))
-  and (.artifact.sourceRevision != ("0" * 40))
+  and (.artifact.registryRepository | test("invalid|replace|example|todo"; "i") | not)
+  and (.artifact.prior.imageDigest != "sha256:" + ("0" * 64))
+  and (.artifact.candidate.imageDigest != "sha256:" + ("1" * 64))
+  and (.artifact.prior.imageDigest != .artifact.candidate.imageDigest)
+  and (.artifact.prior.sourceRevision != ("0" * 40))
+  and (.artifact.candidate.sourceRevision != ("1" * 40))
+  and (.deployment.ingressIdentitySha256 != ("0" * 64))
+  and (.deployment.configurationSha256 != ("0" * 64))
   and all(.hooks[]; . != ("0" * 64))
 ' "$profile" >/dev/null || {
     echo "Run mode requires reviewed staging authority, exact artifact identity, and non-placeholder hook hashes" >&2
@@ -66,8 +74,8 @@ jq -e '
 }
 
 git_revision="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || echo unknown)"
-[[ "$git_revision" == "$(jq -r '.artifact.sourceRevision' "$profile")" ]] || {
-    echo "The reviewed artifact sourceRevision must match the clean runner checkout" >&2
+[[ "$git_revision" == "$(jq -r '.artifact.candidate.sourceRevision' "$profile")" ]] || {
+    echo "The reviewed candidate sourceRevision must match the clean runner checkout" >&2
     exit 2
 }
 [[ -z "$(git -C "$repo_root" status --porcelain 2>/dev/null)" ]] || {
@@ -123,6 +131,7 @@ cp -- "$ca_file" "$trusted_ca"
 chmod 0400 "$trusted_ca"
 attack_pid=""
 needs_reset=false
+needs_rollback=false
 hooks_verified=false
 hook_timeout_seconds="$(jq -r '.thresholds.recoveryWindowSeconds' "$profile")"
 cleanup() {
@@ -135,6 +144,10 @@ cleanup() {
     if [[ "$needs_reset" == "true" && "$hooks_verified" == "true" ]]; then
         timeout --foreground "${hook_timeout_seconds}s" "$verified_hook_dir/reset.sh" >/dev/null 2>&1 || true
     fi
+    if [[ "$needs_rollback" == "true" && "$hooks_verified" == "true" ]]; then
+        timeout --foreground "$(jq -r '.deployment.rollout.maximumRollbackSeconds' "$profile")s" \
+            "$verified_hook_dir/rollback-prior.sh" >/dev/null 2>&1 || true
+    fi
     case "$work_dir" in
         "${TMPDIR:-/tmp}"/lbp-staging.*) rm -rf -- "$work_dir" ;;
         *) echo "Refusing to remove unexpected staging temporary path: $work_dir" >&2 ;;
@@ -143,7 +156,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-hook_names=(verify-artifact slow failure reload drain restart certificate-rotation reset)
+hook_names=(verify-deployment rollout-candidate rollback-prior slow failure reload drain restart certificate-rotation reset)
 for hook_name in "${hook_names[@]}"; do
     hook_path="$action_dir/$hook_name.sh"
     [[ -f "$hook_path" && ! -L "$hook_path" && -x "$hook_path" ]] || {
@@ -191,8 +204,14 @@ curl_common=(--silent --show-error --fail --cacert "$trusted_ca" --resolve "$tls
     --connect-timeout 5 --max-time 15 --config "$curl_config")
 vegeta_connect_to="$tls_server_name:$port:$curl_address:$port"
 
-export LBP_EXPECTED_IMAGE_DIGEST="$(jq -r '.artifact.imageDigest' "$profile")"
-export LBP_EXPECTED_SOURCE_REVISION="$(jq -r '.artifact.sourceRevision' "$profile")"
+registry_repository="$(jq -r '.artifact.registryRepository' "$profile")"
+prior_image_digest="$(jq -r '.artifact.prior.imageDigest' "$profile")"
+candidate_image_digest="$(jq -r '.artifact.candidate.imageDigest' "$profile")"
+export LBP_STAGING_PRIOR_IMAGE_REFERENCE="$registry_repository@$prior_image_digest"
+export LBP_STAGING_CANDIDATE_IMAGE_REFERENCE="$registry_repository@$candidate_image_digest"
+export LBP_STAGING_PRIOR_SOURCE_REVISION="$(jq -r '.artifact.prior.sourceRevision' "$profile")"
+export LBP_STAGING_CANDIDATE_SOURCE_REVISION="$(jq -r '.artifact.candidate.sourceRevision' "$profile")"
+export LBP_STAGING_ATTESTATION_SCHEMA=1
 export LBP_STAGING_CHANGE_TICKET="$(jq -r '.environment.changeTicket' "$profile")"
 export LBP_STAGING_TARGET_HOST="$host"
 export LBP_STAGING_TARGET_PORT="$port"
@@ -212,6 +231,31 @@ run_hook() {
         >> "$output_dir/hook-executions.jsonl"
 }
 
+run_attested_hook() {
+    local name="$1" phase="$2" snapshot_file="$3" maximum_seconds="$4"
+    local started completed raw_snapshot validation_file
+    raw_snapshot="$work_dir/$name-$phase-${BASHPID}.json"
+    validation_file="${snapshot_file%.json}-validation.json"
+    started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    LBP_STAGING_EXPECTED_PHASE="$phase" timeout --foreground "${maximum_seconds}s" \
+        "$verified_hook_dir/$name.sh" > "$raw_snapshot"
+    [[ -s "$raw_snapshot" && "$(stat -c '%s' "$raw_snapshot")" -le 65536 ]] || {
+        echo "Staging hook $name must emit one bounded deployment snapshot" >&2
+        exit 1
+    }
+    cp -- "$raw_snapshot" "$snapshot_file"
+    chmod 0400 "$snapshot_file"
+    "$python_command" "$deployment_validator" --profile "$profile" --snapshot "$snapshot_file" \
+        --phase "$phase" --output "$validation_file"
+    chmod 0400 "$validation_file"
+    completed="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    jq -cn --arg name "$name" --arg phase "$phase" --arg startedAt "$started" --arg completedAt "$completed" \
+        --arg sha256 "$(jq -r --arg name "$name" '.hooks[$name]' "$profile")" \
+        --arg snapshotSha256 "$(sha256sum "$snapshot_file" | awk '{print $1}')" \
+        '{name:$name,phase:$phase,sha256:$sha256,startedAt:$startedAt,completedAt:$completedAt,exitCode:0,
+          deploymentSnapshotValidated:true,snapshotSha256:$snapshotSha256}' >> "$output_dir/hook-executions.jsonl"
+}
+
 certificate_fingerprint() {
     openssl s_client -connect "$connect_address" -servername "$tls_server_name" \
         -CAfile "$trusted_ca" -verify_return_error </dev/null 2>/dev/null \
@@ -228,7 +272,7 @@ wait_for_health() {
     return 1
 }
 
-run_hook verify-artifact
+run_attested_hook verify-deployment prior "$output_dir/deployment-prior.json" "$hook_timeout_seconds"
 wait_for_health
 curl "${curl_common[@]}" --output "$output_dir/initial-proxy-config.json" "$base_url/api/proxy/config"
 jq -e --slurpfile reviewed "$profile" '
@@ -250,11 +294,14 @@ initial_certificate_fingerprint="$(certificate_fingerprint)"
 profile_sha256="$(sha256sum "$profile" | awk '{print $1}')"
 ca_sha256="$(sha256sum "$trusted_ca" | awk '{print $1}')"
 jq -n --arg profileId "$profile_id" --arg profileSha256 "$profile_sha256" \
-  --arg sourceRevision "$git_revision" --arg expectedImageDigest "$LBP_EXPECTED_IMAGE_DIGEST" \
+  --arg candidateSourceRevision "$git_revision" \
+  --arg priorImageReference "$LBP_STAGING_PRIOR_IMAGE_REFERENCE" \
+  --arg candidateImageReference "$LBP_STAGING_CANDIDATE_IMAGE_REFERENCE" \
   --arg caSha256 "$ca_sha256" --arg initialCertificateSha256 "$initial_certificate_fingerprint" \
   --arg targetBoundary "reviewed HTTPS staging target pinned to private DNS resolution" \
-  '{schemaVersion:1,profileId:$profileId,profileSha256:$profileSha256,sourceRevision:$sourceRevision,
-    expectedImageDigest:$expectedImageDigest,caSha256:$caSha256,
+  '{schemaVersion:1,profileId:$profileId,profileSha256:$profileSha256,
+    candidateSourceRevision:$candidateSourceRevision,priorImageReference:$priorImageReference,
+    candidateImageReference:$candidateImageReference,caSha256:$caSha256,
     initialCertificateSha256:$initialCertificateSha256,targetBoundary:$targetBoundary}' \
   > "$output_dir/run-metadata.json"
 
@@ -266,8 +313,9 @@ write_targets() {
 run_scenario() {
     local scenario="$1"
     local hook_name="${2:-}"
+    local attestation_phase="${3:-}"
     local scenario_dir="$output_dir/$scenario"
-    local rate duration p99_budget minimum_success client_p99 client_success upstream_p99 overhead health_cost
+    local rate duration p99_budget minimum_success client_p99 client_success upstream_p99 overhead health_cost action_timeout
     mkdir -p "$scenario_dir"
     rate="$(jq -r --arg name "$scenario" '.scenarios[$name].ratePerSecond' "$profile")"
     duration="$(jq -r --arg name "$scenario" '.scenarios[$name].durationSeconds' "$profile")"
@@ -283,9 +331,32 @@ run_scenario() {
     local before_rotation=""
     if [[ "$hook_name" == "certificate-rotation" ]]; then before_rotation="$(certificate_fingerprint)"; fi
     if [[ -n "$hook_name" ]]; then
-        sleep $(( duration / 3 ))
-        needs_reset=true
-        run_hook "$hook_name" "$(( duration / 3 ))"
+        if [[ -n "$attestation_phase" ]]; then
+            sleep 5
+            case "$attestation_phase" in
+                candidate)
+                    action_timeout="$(jq -r '.deployment.rollout.maximumRolloutSeconds' "$profile")"
+                    needs_rollback=true
+                    ;;
+                rollback)
+                    action_timeout="$(jq -r '.deployment.rollout.maximumRollbackSeconds' "$profile")"
+                    ;;
+                *) echo "Unsupported deployment transition phase: $attestation_phase" >&2; exit 2 ;;
+            esac
+            run_attested_hook "$hook_name" "$attestation_phase" \
+                "$scenario_dir/deployment-snapshot.json" "$action_timeout"
+            wait_for_health
+        else
+            sleep $(( duration / 3 ))
+            needs_reset=true
+            run_hook "$hook_name" "$(( duration / 3 ))"
+        fi
+        kill -0 "$attack_pid" 2>/dev/null || {
+            wait "$attack_pid" || true
+            attack_pid=""
+            echo "$scenario traffic ended before its reviewed action completed" >&2
+            exit 1
+        }
     fi
     if ! wait "$attack_pid"; then attack_pid=""; echo "$scenario staging attack failed" >&2; exit 1; fi
     attack_pid=""
@@ -303,10 +374,12 @@ run_scenario() {
         jq -n --arg before "$before_rotation" --arg after "$after_rotation" \
             '{verified:true,beforeSha256:$before,afterSha256:$after}' > "$scenario_dir/certificate-rotation.json"
     fi
-    if [[ -n "$hook_name" ]]; then
+    if [[ -n "$hook_name" && -z "$attestation_phase" ]]; then
         run_hook reset
-        needs_reset=false
         wait_for_health
+        run_attested_hook verify-deployment candidate \
+            "$scenario_dir/deployment-after-reset.json" "$hook_timeout_seconds"
+        needs_reset=false
     fi
     curl "${curl_common[@]}" --output "$scenario_dir/status-after-reset.json" "$base_url/api/proxy/status"
     curl "${curl_common[@]}" --output "$scenario_dir/metrics-after.prom" "$base_url/actuator/prometheus"
@@ -337,8 +410,10 @@ run_scenario() {
         echo "$scenario exceeded its reviewed staging objectives" >&2
         exit 1
     }
+    if [[ "$attestation_phase" == "rollback" ]]; then needs_rollback=false; fi
 }
 
+run_scenario candidateRollout rollout-candidate candidate
 run_scenario steady
 run_scenario burst
 run_scenario slow slow
@@ -347,6 +422,7 @@ run_scenario reload reload
 run_scenario drain drain
 run_scenario restart restart
 run_scenario certificateRotation certificate-rotation
+run_scenario priorRollback rollback-prior rollback
 
 "$python_command" - "$runtime_api_key_file" "$output_dir" <<'PY'
 from pathlib import Path
@@ -358,8 +434,12 @@ for evidence in Path(sys.argv[2]).rglob("*"):
         raise SystemExit(f"API key leaked into staging evidence: {evidence}")
 PY
 
-jq -s '{accepted:all(.[]; .passed),scenarios:.,
-  boundary:"Reviewed private staging target only; no production-capacity or multi-instance claim."}' \
+jq -s --slurpfile prior "$output_dir/deployment-prior-validation.json" \
+  --slurpfile candidate "$output_dir/candidateRollout/deployment-snapshot-validation.json" \
+  --slurpfile rollback "$output_dir/priorRollback/deployment-snapshot-validation.json" '
+  {accepted:(all(.[]; .passed) and $prior[0].accepted and $candidate[0].accepted and $rollback[0].accepted),
+   deployments:{prior:$prior[0],candidate:$candidate[0],rollback:$rollback[0]},scenarios:.,
+   boundary:"Reviewed private staging target and hash-pinned deployment adapters only; no production-capacity claim."}' \
   "$output_dir"/*/result.json > "$output_dir/staging-result.json"
 jq -e '.accepted == true' "$output_dir/staging-result.json" >/dev/null
 printf 'Staging qualification evidence: %s\n' "$output_dir"

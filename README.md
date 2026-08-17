@@ -11,9 +11,8 @@ The default posture is conservative: API-key authentication is selected, proxyin
   process-local concurrency/load-shedding controls, status, recent decisions, and guarded reload.
 - Production-boundary executable Spring Boot JAR, non-root proxy Docker image, hardened Compose deployment, CycloneDX
   SBOM generation, and load smoke/soak helpers.
-- Fail-closed reviewed-staging qualification plus a CI-gated two-replica active-active topology proof covering
-  distribution, configuration convergence, unhealthy-candidate abort, content-addressed image rollout/rollback,
-  replica loss, recovery, and aggregate upstream limits.
+- Fail-closed reviewed-staging qualification binding prior/candidate registry digests, observed deployment state, and
+  loaded rollout/rollback, plus a CI-gated two-replica local topology proof covering candidate abort and replica loss.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
 - Capacity-aware, predictive, and evaluation-only allocation APIs in the separate source/Lab Tools runtime.
@@ -36,11 +35,11 @@ for forecast traffic. Work in this phase is load-balancer engineering and deploy
 5. Promote an immutable image through controlled traffic steps with tested abort and rollback thresholds.
 
 [`LOAD_BALANCER_BUILD_OUT.md`](docs/LOAD_BALANCER_BUILD_OUT.md) is the execution plan and readiness gate for this phase.
-The capacity, staging, and active-active/image-replacement runners now exist. The next engineering action is to run the
-exact registry digests and reviewed forecast profile on deployment-equivalent resources through the reviewed staging
-ingress. Local results establish regression, abort, and rollout mechanics only; they do not establish deployment
-capacity, release compatibility, registry integrity, or production-ingress behavior. Lab, demo, and general
-documentation work are supporting scope only when they directly enable load qualification, deployment, or operation.
+The capacity, staging, and active-active/image-replacement runners now exist. The staging lane requires hash-pinned
+adapters to attest exact registry references, replica convergence, zone placement, resources, configuration, ingress,
+metrics coverage, drain, and transition bounds. The next action is the authorized reviewed staging run and capacity
+staircase on deployment-equivalent resources. Local and CI results do not establish deployment capacity, release
+compatibility, registry integrity, or production-ingress behavior.
 
 Authentication, TLS verification, secret handling, bounded concurrency, dependency/image scanning, and protected
 merge gates remain mandatory while this work advances.

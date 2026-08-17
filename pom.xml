@@ -272,6 +272,7 @@
                         <include>com/richmond423/loadbalancerpro/api/explain/RoutingExplanation.class</include>
                         <include>com/richmond423/loadbalancerpro/api/explain/RoutingExplanation$*.class</include>
                         <include>com/richmond423/loadbalancerpro/api/proxy/**</include>
+                        <include>com/richmond423/loadbalancerpro/telemetry/**</include>
                         <include>com/richmond423/loadbalancerpro/core/AdaptiveConcurrencyConfig*.class</include>
                         <include>com/richmond423/loadbalancerpro/core/AdaptiveConcurrencyLimiter*.class</include>
                         <include>com/richmond423/loadbalancerpro/core/AutoscalingSignal*.class</include>

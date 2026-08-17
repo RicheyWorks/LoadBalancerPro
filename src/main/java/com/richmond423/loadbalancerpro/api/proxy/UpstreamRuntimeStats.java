@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntPredicate;
 
+import com.richmond423.loadbalancerpro.telemetry.RankedLatencyWindow;
+import com.richmond423.loadbalancerpro.telemetry.SelfContainedRankedLatencyWindow;
+
 /**
  * Bounded process-local measurements for one configured upstream id.
  */
@@ -21,13 +24,12 @@ final class UpstreamRuntimeStats {
     private final Clock clock;
     private final AtomicInteger inFlight = new AtomicInteger();
     private final Object windowLock = new Object();
-    private final long[] latencyNanos = new long[LATENCY_WINDOW_SIZE];
+    private final RankedLatencyWindow latencyWindow =
+            new SelfContainedRankedLatencyWindow(LATENCY_WINDOW_SIZE);
     private final long[] bucketEpochSeconds = new long[ERROR_WINDOW_SECONDS];
     private final long[] bucketSuccesses = new long[ERROR_WINDOW_SECONDS];
     private final long[] bucketFailures = new long[ERROR_WINDOW_SECONDS];
 
-    private int latencyCursor;
-    private int latencySampleCount;
     private long completedRequestCount;
     private double ewmaLatencyMillis;
     private Instant lastUpdatedAt;
@@ -71,9 +73,7 @@ final class UpstreamRuntimeStats {
             long measuredNanos = safeNanos(latency);
             Instant completedAt = clock.instant();
             synchronized (windowLock) {
-                latencyNanos[latencyCursor] = measuredNanos;
-                latencyCursor = (latencyCursor + 1) % LATENCY_WINDOW_SIZE;
-                latencySampleCount = Math.min(LATENCY_WINDOW_SIZE, latencySampleCount + 1);
+                latencyWindow.record(measuredNanos);
                 completedRequestCount++;
 
                 double latencyMillis = nanosToMillis(measuredNanos);
@@ -106,9 +106,6 @@ final class UpstreamRuntimeStats {
 
     Snapshot snapshot() {
         synchronized (windowLock) {
-            long[] samples = Arrays.copyOf(latencyNanos, latencySampleCount);
-            Arrays.sort(samples);
-
             long nowEpochSecond = clock.instant().getEpochSecond();
             long recentSuccesses = 0;
             long recentFailures = 0;
@@ -127,11 +124,11 @@ final class UpstreamRuntimeStats {
             return new Snapshot(
                     inFlight.get(),
                     completedRequestCount,
-                    latencySampleCount,
+                    latencyWindow.size(),
                     ewmaLatencyMillis,
-                    percentileMillis(samples, 0.50),
-                    percentileMillis(samples, 0.95),
-                    percentileMillis(samples, 0.99),
+                    nanosToMillis(latencyWindow.p50()),
+                    nanosToMillis(latencyWindow.p95()),
+                    nanosToMillis(latencyWindow.p99()),
                     recentSuccesses,
                     recentFailures,
                     recentErrorRate,
@@ -158,14 +155,6 @@ final class UpstreamRuntimeStats {
         } catch (ArithmeticException exception) {
             return Long.MAX_VALUE;
         }
-    }
-
-    private static double percentileMillis(long[] sortedSamples, double percentile) {
-        if (sortedSamples.length == 0) {
-            return 0.0;
-        }
-        int index = Math.max(0, (int) Math.ceil(percentile * sortedSamples.length) - 1);
-        return nanosToMillis(sortedSamples[index]);
     }
 
     private static double nanosToMillis(long nanos) {

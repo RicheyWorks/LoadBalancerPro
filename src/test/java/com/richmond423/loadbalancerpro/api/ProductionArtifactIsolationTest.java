@@ -77,6 +77,8 @@ class ProductionArtifactIsolationTest {
         assertTrue(pom.contains(
                 "<include>com/richmond423/loadbalancerpro/api/proxy/**</include>"));
         assertTrue(pom.contains(
+                "<include>com/richmond423/loadbalancerpro/telemetry/**</include>"));
+        assertTrue(pom.contains(
                 "<excludeGroupIds>software.amazon.awssdk,com.google.code.gson,io.projectreactor</excludeGroupIds>"));
         assertFalse(pom.contains("com/richmond423/loadbalancerpro/gui/LoadBalancerGUI"));
         assertFalse(pom.contains("com/richmond423/loadbalancerpro/gui/ServerTableRow"));

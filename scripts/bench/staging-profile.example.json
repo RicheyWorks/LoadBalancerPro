@@ -15,8 +15,47 @@
     "approvedAt": ""
   },
   "artifact": {
-    "imageDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-    "sourceRevision": "0000000000000000000000000000000000000000"
+    "registryRepository": "registry.invalid/loadbalancerpro",
+    "prior": {
+      "imageDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "sourceRevision": "0000000000000000000000000000000000000000"
+    },
+    "candidate": {
+      "imageDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "sourceRevision": "1111111111111111111111111111111111111111"
+    }
+  },
+  "deployment": {
+    "replicas": 2,
+    "minimumZones": 2,
+    "maximumZoneSkew": 1,
+    "ingressIdentitySha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "configurationSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "resources": {
+      "cpuRequestMillis": 100,
+      "cpuLimitMillis": 1000,
+      "memoryRequestMiB": 256,
+      "memoryLimitMiB": 512
+    },
+    "observability": {
+      "requiredSignals": [
+        "lbp_proxy_requests_total",
+        "lbp_proxy_latency_seconds_count",
+        "lbp_proxy_inflight",
+        "lbp_proxy_retries_total",
+        "lbp_proxy_sheds_total",
+        "lbp_proxy_limit_rejections_total",
+        "process_cpu_usage",
+        "jvm_memory_used_bytes",
+        "jvm_gc_pause_seconds_count"
+      ]
+    },
+    "rollout": {
+      "maximumUnavailable": 0,
+      "maximumSurge": 1,
+      "maximumRolloutSeconds": 120,
+      "maximumRollbackSeconds": 120
+    }
   },
   "target": {
     "scheme": "https",
@@ -49,10 +88,14 @@
     "reload": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 1500, "minimumSuccessRatio": 0.999},
     "drain": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 1500, "minimumSuccessRatio": 0.999},
     "restart": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 3000, "minimumSuccessRatio": 0.990},
-    "certificateRotation": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 2000, "minimumSuccessRatio": 0.999}
+    "certificateRotation": {"ratePerSecond": 40, "durationSeconds": 60, "p99Millis": 2000, "minimumSuccessRatio": 0.999},
+    "candidateRollout": {"ratePerSecond": 40, "durationSeconds": 150, "p99Millis": 2500, "minimumSuccessRatio": 0.999},
+    "priorRollback": {"ratePerSecond": 40, "durationSeconds": 150, "p99Millis": 2500, "minimumSuccessRatio": 0.999}
   },
   "hooks": {
-    "verify-artifact": "0000000000000000000000000000000000000000000000000000000000000000",
+    "verify-deployment": "0000000000000000000000000000000000000000000000000000000000000000",
+    "rollout-candidate": "0000000000000000000000000000000000000000000000000000000000000000",
+    "rollback-prior": "0000000000000000000000000000000000000000000000000000000000000000",
     "slow": "0000000000000000000000000000000000000000000000000000000000000000",
     "failure": "0000000000000000000000000000000000000000000000000000000000000000",
     "reload": "0000000000000000000000000000000000000000000000000000000000000000",

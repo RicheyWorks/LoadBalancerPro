@@ -456,7 +456,9 @@ jobs:
           set -euo pipefail
           bash -n scripts/bench/proxy-staging-qualification.sh
           bash -n scripts/bench/staging-validator-contract-test.sh
+          bash -n scripts/bench/staging-deployment-contract-test.sh
           bash scripts/bench/staging-validator-contract-test.sh
+          bash scripts/bench/staging-deployment-contract-test.sh
           bash scripts/bench/proxy-staging-qualification.sh --mode validate
           if bash scripts/bench/proxy-staging-qualification.sh --mode run > /tmp/staging-example-run.log 2>&1; then
             echo "The unreviewed example staging profile unexpectedly entered run mode."

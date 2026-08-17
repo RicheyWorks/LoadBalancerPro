@@ -108,6 +108,8 @@ class DeploymentPackagingContractTest {
                 "imagePullPolicy: IfNotPresent",
                 "kind: PodDisruptionBudget",
                 "minAvailable: 1",
+                "requiredDuringSchedulingIgnoredDuringExecution:",
+                "topologyKey: topology.kubernetes.io/zone",
                 "preferredDuringSchedulingIgnoredDuringExecution:",
                 "runAsNonRoot: true",
                 "readOnlyRootFilesystem: true",

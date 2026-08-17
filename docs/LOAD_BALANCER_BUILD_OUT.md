@@ -96,6 +96,12 @@ fails closed until the target allow-list, exact artifact, credentials, billable 
 hash-pinned action adapters are reviewed. Every resolved address must remain inside the declared RFC1918/ULA ranges;
 production-looking targets and embedded secrets are rejected.
 
+Deployment actions must also pass [`validate-staging-deployment.py`](../scripts/bench/validate-staging-deployment.py).
+Its strict snapshots bind the prior/candidate registry references and revisions to full replica convergence, reviewed
+zone placement and resources, configuration/ingress fingerprints, per-replica metrics, drain completion, and rollout
+limits. The runner rolls the candidate under load, executes the staging failure matrix, and restores the prior digest
+under load; cleanup invokes the reviewed rollback adapter after an interrupted candidate phase.
+
 Use the forecast route/payload mix against staging upstreams. Compare client latency with upstream latency to measure
 proxy overhead, verify health-check cost, exercise certificate rotation, and repeat slow, failure, reload, drain, and
 restart cases. Store secrets in the deployment secret system, not command lines, evidence files, or the repository.
@@ -133,18 +139,18 @@ configuration hash, readiness, traffic objectives, and replacement/abort windows
 only immutable proof metadata, so this proves replacement mechanics rather than compatibility between two application
 releases. A local Docker content ID is also not a registry manifest digest.
 
-The next deployment slice is to repeat those assertions with the reviewed prior and candidate registry digests behind
-the reviewed staging ingress. The supplied Kubernetes sketch encodes two replicas, zero-unavailable rolling update,
-bounded history/progress, preferred host separation, and a one-replica disruption budget; it remains unapplied input,
-not cluster evidence.
+The staging lane now makes those assertions for reviewed prior and candidate registry digests through hash-pinned
+deployment adapters. The supplied Kubernetes sketch encodes two replicas, zero-unavailable rolling update, bounded
+history/progress, required zone separation, preferred host separation, and a one-replica disruption budget. Both are
+unapplied inputs until an authorized staging environment supplies the reviewed profile and adapters.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,
 and connection counts with the prior step.
 
 Abort the step when an agreed objective is exceeded, a metric disappears, configuration diverges, an upstream is
-overloaded, or rollback cannot be completed inside its window. Rollback removes new traffic, drains accepted work,
-restores the prior immutable image/configuration, and verifies health before another attempt.
+overloaded, or rollback cannot be completed inside its window. The remaining next action is the authorized run on
+deployment-equivalent staging resources, followed by the forecast capacity staircase against the exact candidate.
 
 ## Ready-For-Forecast-Load Gate
 
@@ -155,7 +161,8 @@ Traffic promotion requires all of the following on the exact release artifact:
   upstream-address policy intact;
 - regression smoke and one-hour soak pass without non-injected reload/drain failures or heap-growth violations;
 - the capacity staircase passes at forecast peak plus agreed headroom on deployment-equivalent resources;
-- the reviewed staging mix passes steady, burst, slow, failure, reload, drain, restart, and certificate-rotation cases;
+- the reviewed staging mix passes digest rollout/rollback, steady, burst, slow, failure, reload, drain, restart, and
+  certificate-rotation cases with the reviewed deployment snapshot intact;
 - dashboards and alerts cover traffic, p95/p99, failures, retries, sheds, in-flight work, health, cooldown, resources,
   and scrape failure without unbounded labels;
 - an operator has executed the drain and rollback procedure within the agreed recovery window; and

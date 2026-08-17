@@ -8,23 +8,25 @@ unhashed action adapters:
 
 ```bash
 bash scripts/bench/staging-validator-contract-test.sh
+bash scripts/bench/staging-deployment-contract-test.sh
 bash scripts/bench/proxy-staging-qualification.sh --mode validate --profile /path/to/staging-profile.json
 ```
 
-Run mode additionally requires a reviewed profile tied to the clean checkout and exact image digest, private DNS
+Run mode additionally requires a reviewed profile tied to the clean checkout and exact prior/candidate registry digests, private DNS
 resolution inside its approved RFC1918/ULA ranges, billable/cleanup authority, a secret API-key file, a pinned CA, and
-hash-pinned, self-contained `verify-artifact`, `slow`, `failure`, `reload`, `drain`, `restart`, `certificate-rotation`,
-and `reset` adapters outside the repository. Supply those paths with `LBP_STAGING_API_KEY_FILE`, `LBP_STAGING_CA_FILE`, and
-`LBP_STAGING_ACTION_DIR`, then run:
+hash-pinned adapters outside the repository. `verify-deployment`, `rollout-candidate`, and `rollback-prior` must emit
+the strict JSON snapshot enforced by `validate-staging-deployment.py`; fault/reset adapters remain self-contained.
+Supply paths with `LBP_STAGING_API_KEY_FILE`, `LBP_STAGING_CA_FILE`, and `LBP_STAGING_ACTION_DIR`, then run:
 
 ```bash
 bash scripts/bench/proxy-staging-qualification.sh --mode run --profile /path/to/staging-profile.json
 ```
 
 The runner pins resolved private addresses, keeps authentication out of process arguments and evidence, verifies the
-deployed artifact before load, and records client/upstream p99, derived proxy overhead, health-check cost, recovery,
-and certificate change. Copy `staging-profile.example.json` outside the repository and replace its placeholders. A
-passing run is staging evidence for its exact target and artifact; it is not production authorization.
+prior deployment, rolls the candidate digest under traffic, runs the failure matrix, and restores the prior digest
+under traffic. Snapshots must prove full replica convergence, reviewed zone/resource/config/ingress identity,
+per-replica metrics, drain completion, and transition bounds. A passing run applies only to that staging target and
+those hash-pinned adapters; it is not production authorization.
 
 ## Active-active topology proof
 

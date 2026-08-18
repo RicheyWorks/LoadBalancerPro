@@ -92,10 +92,10 @@ class DeploymentPackagingContractTest {
     }
 
     @Test
-    void staticManifestHasTheCanonicalLifecycleAndSecuritySketch() throws Exception {
+    void kubernetesBaseHasTheCanonicalLifecycleAndSecurityBoundary() throws Exception {
         String manifest = read(MANIFEST);
 
-        assertEquals(4, yamlDocumentCount(manifest));
+        assertEquals(5, yamlDocumentCount(manifest));
 
         for (String expected : List.of(
                 "replicas: 2",
@@ -108,15 +108,21 @@ class DeploymentPackagingContractTest {
                 "imagePullPolicy: IfNotPresent",
                 "kind: PodDisruptionBudget",
                 "minAvailable: 1",
-                "requiredDuringSchedulingIgnoredDuringExecution:",
+                "topologySpreadConstraints:",
+                "minDomains: 2",
                 "topologyKey: topology.kubernetes.io/zone",
-                "preferredDuringSchedulingIgnoredDuringExecution:",
+                "whenUnsatisfiable: DoNotSchedule",
+                "whenUnsatisfiable: ScheduleAnyway",
+                "automountServiceAccountToken: false",
+                "enableServiceLinks: false",
                 "runAsNonRoot: true",
+                "runAsUser: 10001",
                 "readOnlyRootFilesystem: true",
                 "allowPrivilegeEscalation: false",
                 "drop: [\"ALL\"]",
                 "terminationGracePeriodSeconds: 40",
                 "sleep 5",
+                "startupProbe:",
                 "https://${LBP_TLS_HOSTNAME}:8080/actuator/health",
                 "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)",
                 "secretName: loadbalancerpro-api-key",

@@ -99,7 +99,16 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 | `LBP_BACKEND_TRUST_BUNDLE` | `loadbalancerpro.proxy.backend-tls.truststore` | blank |
 | `LBP_UPSTREAM_0_CLIENT_CERT_BUNDLE` | `loadbalancerpro.proxy.upstreams[0].tls.client-cert` | blank |
 
-[`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical static manifest sketch. It encodes two replicas, zero-unavailable rolling replacement, bounded rollout history/progress, required zone separation, preferred host separation, a one-replica disruption budget, `/api/health` readiness/liveness, a five-second preStop delay, a 40-second termination window, non-root/capability-dropped/read-only execution, and external Secret/ConfigMap mounts. Its image is a deliberately non-resolving digest placeholder. The reviewed staging runner separately validates adapter-reported digest, replica, zone, resource, configuration, ingress, metrics, drain, and transition evidence. Neither surface has been applied here, so no registry, Kubernetes, capacity, or production-readiness claim follows.
+[`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical deployment base. It
+encodes two replicas, zero-unavailable rolling replacement, a two-domain zone-spread rule that permits a temporary
+surge pod, preferred host spreading, a one-replica disruption budget, startup/readiness/liveness probes, a five-second
+preStop delay, a 40-second termination window, a token-free service account, numeric non-root execution, and external
+Secret/ConfigMap mounts. Its image remains a deliberately non-resolving digest placeholder. The disposable
+[`../scripts/bench/proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) lane applies the
+separate loopback qualification workload and proves live two-zone rollout, Service distribution, worker removal, and
+recovery. The reviewed staging runner separately validates the external target's digest, replicas, zones, resources,
+configuration, ingress, metrics, drain, and transitions; local proof does not establish registry integrity, deployment
+capacity, external ingress behavior, or production readiness.
 
 After the staging failure matrix passes, use
 [`../scripts/bench/proxy-staging-capacity-staircase.sh`](../scripts/bench/proxy-staging-capacity-staircase.sh) for the

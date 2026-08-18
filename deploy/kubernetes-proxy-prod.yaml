@@ -1,4 +1,4 @@
-# Static manifest sketch only. Replace the non-resolving digest and referenced Secret/ConfigMap objects before deployment.
+# Deployment base only. Replace the non-resolving digest and reviewed object references before server-side validation.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,6 +8,12 @@ data:
   LBP_UPSTREAM_0_URL: http://backend-a:8080
   LBP_UPSTREAM_1_URL: http://backend-b:8080
   LBP_TLS_HOSTNAME: lbp.local
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loadbalancerpro
+automountServiceAccountToken: false
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,23 +40,28 @@ spec:
         loadbalancerpro.io/source-revision: "0000000000000000000000000000000000000000"
         loadbalancerpro.io/change-ticket: replace-with-approved-change-ticket
     spec:
+      serviceAccountName: loadbalancerpro
+      automountServiceAccountToken: false
+      enableServiceLinks: false
       terminationGracePeriodSeconds: 40
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - topologyKey: topology.kubernetes.io/zone
-              labelSelector:
-                matchLabels:
-                  app: loadbalancerpro
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
-                labelSelector:
-                  matchLabels:
-                    app: loadbalancerpro
+      topologySpreadConstraints:
+        - maxSkew: 1
+          minDomains: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: loadbalancerpro
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: loadbalancerpro
       securityContext:
         runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -91,6 +102,19 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 6
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  curl --fail --silent --show-error --cacert /run/tls/ca.pem
+                  --header "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)"
+                  --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
+                  "https://${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
           livenessProbe:
             exec:
               command:

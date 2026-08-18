@@ -243,7 +243,9 @@ assert_rejected action-payload-drift "$python_command" "$compiled/actions/reload
 update_state 'del(.actionPayloadDrift)'
 
 validate_snapshot rollback-prior rollback
+chmod 0700 "$fixture_bin/kubectl"
 printf '\n' >> "$fixture_bin/kubectl"
+chmod 0500 "$fixture_bin/kubectl"
 assert_rejected changed-kubectl-binary env LBP_STAGING_EXPECTED_PHASE=rollback "$python_command" "$compiled/actions/verify-deployment.sh"
 
 printf '%s\n' \

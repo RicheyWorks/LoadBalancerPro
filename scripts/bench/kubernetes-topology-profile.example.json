@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "profileId": "local-kind-two-zone-smoke",
   "review": {
     "status": "example"
@@ -19,16 +19,21 @@
     "connectionMode": "close-per-request",
     "ratePerSecond": 30,
     "baselineSeconds": 8,
+    "rolloutSeconds": 60,
+    "postRolloutSeconds": 8,
     "transitionSeconds": 20,
     "degradedSeconds": 8,
     "recoveredSeconds": 8
   },
   "objectives": {
     "minimumBaselineSuccessRatio": 0.999,
+    "minimumRolloutSuccessRatio": 0.999,
+    "minimumPostRolloutSuccessRatio": 0.999,
     "minimumTransitionSuccessRatio": 0.97,
     "minimumDegradedSuccessRatio": 0.999,
     "minimumRecoveredSuccessRatio": 0.999,
     "maximumP99Millis": 1500,
+    "maximumRolloutSeconds": 45,
     "maximumRecoverySeconds": 180
   }
 }

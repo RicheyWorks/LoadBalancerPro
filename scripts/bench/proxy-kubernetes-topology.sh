@@ -24,7 +24,7 @@ for required_file in "$cluster_config" "$workload_manifest" "$profile"; do
 done
 
 jq -e '
-  .schemaVersion == 1
+  .schemaVersion == 2
   and (.profileId | type == "string" and test("^[a-z0-9][a-z0-9._-]{0,62}$"))
   and .review.status == "example"
   and .cluster.kindVersion == "v0.31.0"
@@ -39,15 +39,21 @@ jq -e '
   and .workload.connectionMode == "close-per-request"
   and (.workload.ratePerSecond | type == "number" and . >= 10 and . <= 500 and floor == .)
   and (.workload.baselineSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.rolloutSeconds | type == "number" and . >= 20 and . <= 180 and floor == .)
+  and (.workload.postRolloutSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.transitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
   and (.workload.degradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.recoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.objectives.minimumBaselineSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumPostRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
   and (.objectives.minimumDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.maximumP99Millis | type == "number" and . >= 100 and . <= 5000 and floor == .)
+  and (.objectives.maximumRolloutSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
+  and .workload.rolloutSeconds >= (.objectives.maximumRolloutSeconds + 5)
 ' "$profile" >/dev/null || { echo "Kubernetes topology profile does not satisfy the executable contract" >&2; exit 2; }
 
 for invariant in \
@@ -61,6 +67,7 @@ for invariant in \
     'pod-security.kubernetes.io/enforce: restricted' \
     'automountServiceAccountToken: false' \
     'maxUnavailable: 0' \
+    'maxSurge: 1' \
     'minDomains: 2' \
     'runAsUser: 10001' \
     'readOnlyRootFilesystem: true' \
@@ -76,7 +83,7 @@ fi
 
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated disposable two-worker/two-zone Kubernetes topology contract %s.\n' "$(jq -r '.profileId' "$profile")"
-    printf 'Validated proof cases: service-distribution per-replica-metrics planned-worker-drain stopped-worker degraded-service worker-recovery\n'
+    printf 'Validated proof cases: service-distribution per-replica-metrics rolling-replacement endpoint-continuity pod-identity-turnover post-rollout-distribution planned-worker-drain stopped-worker degraded-service worker-recovery\n'
     exit 0
 fi
 
@@ -120,12 +127,19 @@ kubeconfig="$work_dir/kubeconfig"
 api_key_file="$work_dir/loadbalancerpro-api-key"
 tls_dir="$work_dir/tls"
 attack_pid=""
+rollout_sampler_pid=""
+rollout_stop_file="$work_dir/stop-rollout-sampler"
 stopped_node=""
 cluster_created=false
 cleanup() {
     local status=$?
     trap - EXIT
     if [[ -n "$attack_pid" ]]; then kill "$attack_pid" >/dev/null 2>&1 || true; wait "$attack_pid" >/dev/null 2>&1 || true; fi
+    if [[ -n "$rollout_sampler_pid" ]]; then
+        : > "$rollout_stop_file"
+        kill "$rollout_sampler_pid" >/dev/null 2>&1 || true
+        wait "$rollout_sampler_pid" >/dev/null 2>&1 || true
+    fi
     if [[ -n "$stopped_node" ]]; then docker start "$stopped_node" >/dev/null 2>&1 || true; fi
     if [[ "$cluster_created" == true ]]; then kind delete cluster --name "$cluster_name" >/dev/null 2>&1 || true; fi
     case "$work_dir" in "${TMPDIR:-/tmp}"/lbp-kubernetes.*) chmod -R u+w "$work_dir" 2>/dev/null || true; rm -rf -- "$work_dir" ;;
@@ -217,6 +231,8 @@ capture_state() {
     kubectl get nodes -o wide > "$output_dir/${prefix}-nodes.txt"
     kubectl get deployment,pod,service,poddisruptionbudget,networkpolicy --namespace "$namespace" -o wide \
         > "$output_dir/${prefix}-workloads.txt"
+    kubectl get deployment,replicaset,pod --namespace "$namespace" -o json \
+        > "$output_dir/${prefix}-workloads.json"
     kubectl get endpointslice --namespace "$namespace" -o json > "$output_dir/${prefix}-endpointslices.json"
 }
 
@@ -244,21 +260,107 @@ wait_for_count() {
     return 1
 }
 
+sample_rollout_continuity() {
+    local output="$output_dir/rollout-continuity.csv"
+    printf 'epoch_seconds,ready_proxy_pods,ready_service_endpoints,total_proxy_pods\n' > "$output"
+    while [[ ! -f "$rollout_stop_file" ]]; do
+        local ready_pods ready_endpoints total_pods
+        ready_pods="$(ready_proxy_count)"
+        ready_endpoints="$(ready_endpoint_count)"
+        total_pods="$(kubectl get pod --namespace "$namespace" \
+            -l app.kubernetes.io/name=loadbalancerpro -o json | jq '.items | length')"
+        printf '%s,%s,%s,%s\n' "$(date +%s)" "$ready_pods" "$ready_endpoints" "$total_pods" >> "$output"
+        if (( ready_pods < 2 || ready_endpoints < 2 )); then
+            echo "Rolling replacement dropped below two ready proxy pods or Service endpoints" >&2
+            return 1
+        fi
+        sleep 1
+    done
+}
+
+collect_distribution() {
+    local phase="$1"
+    local pods_json pod pod_total pod_backend_a pod_backend_b metrics_file
+    local backend_a_total=0 backend_b_total=0
+    local rows_file="$work_dir/${phase}-distribution-rows.jsonl"
+    local -a phase_proxy_pods=()
+    : > "$rows_file"
+    pods_json="$(kubectl get pod --namespace "$namespace" \
+        -l app.kubernetes.io/name=loadbalancerpro -o json)"
+    mapfile -t phase_proxy_pods < <(jq -r '.items[]
+        | select(.status.phase == "Running")
+        | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+        | .metadata.name' <<< "$pods_json" | sort)
+    [[ ${#phase_proxy_pods[@]} -eq 2 ]] || {
+        echo "Expected two ready proxy replicas for $phase metrics proof" >&2
+        return 1
+    }
+    for pod in "${phase_proxy_pods[@]}"; do
+        metrics_file="$output_dir/${phase}-${pod}-metrics.txt"
+        kubectl exec --namespace "$namespace" "$pod" -- sh -c '
+          curl --fail --silent --show-error --cacert /run/tls/ca.pem \
+            --header "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)" \
+            --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1" \
+            "https://${LBP_TLS_HOSTNAME}:8080/actuator/prometheus"
+        ' > "$metrics_file"
+        pod_total="$(awk '$1 ~ /^lbp_proxy_requests_total(\{|$)/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")"
+        [[ "$pod_total" =~ ^[1-9][0-9]*$ ]] || {
+            echo "$pod did not serve $phase traffic" >&2
+            return 1
+        }
+        pod_backend_a="$(awk '$1 ~ /^lbp_proxy_requests_total\{/ && $1 ~ /upstream="backend-a"/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")"
+        pod_backend_b="$(awk '$1 ~ /^lbp_proxy_requests_total\{/ && $1 ~ /upstream="backend-b"/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")"
+        backend_a_total=$((backend_a_total + pod_backend_a))
+        backend_b_total=$((backend_b_total + pod_backend_b))
+        jq -n --arg pod "$pod" --argjson requests "$pod_total" \
+            --argjson backendARequests "$pod_backend_a" --argjson backendBRequests "$pod_backend_b" \
+            '{pod: $pod, requests: $requests,
+              backendARequests: $backendARequests, backendBRequests: $backendBRequests}' >> "$rows_file"
+    done
+    (( backend_a_total > 0 && backend_b_total > 0 )) || {
+        echo "Both configured backends must serve $phase traffic" >&2
+        return 1
+    }
+    jq -s --arg phase "$phase" --argjson backendARequests "$backend_a_total" \
+        --argjson backendBRequests "$backend_b_total" \
+        '{phase: $phase, bothProxyReplicasServed: true,
+          backendARequests: $backendARequests, backendBRequests: $backendBRequests,
+          pods: .}' "$rows_file" > "$output_dir/${phase}-distribution.json"
+}
+
 proxy_pods_json="$(kubectl get pod --namespace "$namespace" -l app.kubernetes.io/name=loadbalancerpro -o json)"
-[[ "$(jq '[.items[].spec.nodeName] | unique | length' <<< "$proxy_pods_json")" == 2 ]] || {
+initial_ready_proxy_pods_json="$(jq --arg revision "$source_revision" '[.items[]
+    | select(.status.phase == "Running")
+    | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+    | select(.metadata.annotations["loadbalancerpro.io/source-revision"] == $revision)]' \
+    <<< "$proxy_pods_json")"
+[[ "$(jq 'length' <<< "$initial_ready_proxy_pods_json")" == 2 ]] || {
+    echo "Expected two ready initial proxy pods for the exact source revision" >&2; exit 1;
+}
+[[ "$(jq '[.[].spec.nodeName] | unique | length' <<< "$initial_ready_proxy_pods_json")" == 2 ]] || {
     echo "Proxy replicas were not placed on distinct workers" >&2; exit 1;
 }
-mapfile -t initial_proxy_pods < <(jq -r '.items[].metadata.name' <<< "$proxy_pods_json" | sort)
+mapfile -t initial_proxy_pods < <(jq -r '.[].metadata.name' <<< "$initial_ready_proxy_pods_json" | sort)
 for pod in "${initial_proxy_pods[@]}"; do
     [[ "$(kubectl exec --namespace "$namespace" "$pod" -- id -u)" == 10001 ]] || {
         echo "$pod is not running with the enforced non-root UID 10001" >&2; exit 1;
     }
 done
-proxy_zones="$(jq -r '.items[].spec.nodeName' <<< "$proxy_pods_json" \
+proxy_zones="$(jq -r '.[].spec.nodeName' <<< "$initial_ready_proxy_pods_json" \
     | while read -r node; do kubectl get node "$node" -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}{"\n"}'; done \
     | sort -u | wc -l | tr -d ' ')"
 [[ "$proxy_zones" == 2 ]] || { echo "Proxy replicas were not placed in distinct zones" >&2; exit 1; }
 [[ "$(ready_endpoint_count)" == 2 ]] || { echo "Proxy Service did not publish two ready endpoints" >&2; exit 1; }
+initial_proxy_uids_json="$(jq '[.[].metadata.uid] | sort' <<< "$initial_ready_proxy_pods_json")"
+initial_proxy_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
+    | select(.name == "loadbalancerpro") | .imageID] | unique | sort' \
+    <<< "$initial_ready_proxy_pods_json")"
+[[ "$(jq 'length' <<< "$initial_proxy_uids_json")" == 2 ]] || {
+    echo "Expected two initial proxy pod UIDs" >&2; exit 1;
+}
+[[ "$(jq 'length' <<< "$initial_proxy_runtime_image_ids_json")" == 1 ]] || {
+    echo "Initial proxy pods did not report one immutable runtime image ID" >&2; exit 1;
+}
 capture_state initial
 
 api_key="$(<"$api_key_file")"
@@ -294,28 +396,119 @@ run_attack() {
 
 baseline_seconds="$(jq -r '.workload.baselineSeconds' "$profile")"
 run_attack baseline "$baseline_seconds" "$(jq -r '.objectives.minimumBaselineSuccessRatio' "$profile")"
+collect_distribution baseline
 
-mapfile -t proxy_pods < <(kubectl get pod --namespace "$namespace" -l app.kubernetes.io/name=loadbalancerpro \
-    -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | sort)
-[[ ${#proxy_pods[@]} -eq 2 ]] || { echo "Expected two proxy replicas for metrics proof" >&2; exit 1; }
-backend_a_total=0
-backend_b_total=0
-for pod in "${proxy_pods[@]}"; do
-    metrics_file="$output_dir/baseline-${pod}-metrics.txt"
-    kubectl exec --namespace "$namespace" "$pod" -- sh -c '
-      curl --fail --silent --show-error --cacert /run/tls/ca.pem \
-        --header "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)" \
-        --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1" \
-        "https://${LBP_TLS_HOSTNAME}:8080/actuator/prometheus"
-    ' > "$metrics_file"
-    pod_total="$(awk '$1 ~ /^lbp_proxy_requests_total(\{|$)/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")"
-    [[ "$pod_total" =~ ^[1-9][0-9]*$ ]] || { echo "$pod did not serve baseline traffic" >&2; exit 1; }
-    backend_a_total=$((backend_a_total + $(awk '$1 ~ /^lbp_proxy_requests_total\{/ && $1 ~ /upstream="backend-a"/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")))
-    backend_b_total=$((backend_b_total + $(awk '$1 ~ /^lbp_proxy_requests_total\{/ && $1 ~ /upstream="backend-b"/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")))
+rollout_duration_seconds="$(jq -r '.workload.rolloutSeconds' "$profile")"
+maximum_rollout_seconds="$(jq -r '.objectives.maximumRolloutSeconds' "$profile")"
+rollout_token="$(printf '%s\n' "$source_revision|$default_run_id|rolling-replacement" \
+    | sha256sum | awk '{print $1}')"
+rm -f -- "$rollout_stop_file"
+sample_rollout_continuity &
+rollout_sampler_pid=$!
+vegeta attack -duration="${rollout_duration_seconds}s" -rate="${rate}/s" -timeout=5s \
+    -keepalive=false -http2=false -root-certs="$tls_dir/ca.pem" -targets="$targets" \
+    > "$work_dir/rollout.bin" &
+attack_pid=$!
+sleep 3
+rollout_started_epoch="$(date +%s)"
+kubectl patch deployment loadbalancerpro --namespace "$namespace" --type merge \
+    -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"loadbalancerpro.io/qualification-rollout\":\"$rollout_token\"}}}}}"
+kubectl rollout status deployment/loadbalancerpro --namespace "$namespace" \
+    --timeout="${maximum_rollout_seconds}s"
+rollout_elapsed_seconds=$(( $(date +%s) - rollout_started_epoch ))
+(( rollout_elapsed_seconds <= maximum_rollout_seconds )) || {
+    echo "Rolling replacement exceeded the rollout objective" >&2; exit 1;
+}
+if ! wait "$attack_pid"; then
+    attack_pid=""
+    echo "Rolling replacement traffic attack failed" >&2
+    exit 1
+fi
+attack_pid=""
+: > "$rollout_stop_file"
+if ! wait "$rollout_sampler_pid"; then
+    rollout_sampler_pid=""
+    echo "Rolling replacement endpoint-continuity sampler failed" >&2
+    exit 1
+fi
+rollout_sampler_pid=""
+report_attack rollout "$(jq -r '.objectives.minimumRolloutSuccessRatio' "$profile")"
+rollout_sample_count="$(awk -F, 'NR > 1 { count++ } END { print count + 0 }' \
+    "$output_dir/rollout-continuity.csv")"
+rollout_min_ready_pods="$(awk -F, 'NR > 1 && (minimum == "" || $2 < minimum) { minimum = $2 }
+    END { print minimum + 0 }' "$output_dir/rollout-continuity.csv")"
+rollout_min_ready_endpoints="$(awk -F, 'NR > 1 && (minimum == "" || $3 < minimum) { minimum = $3 }
+    END { print minimum + 0 }' "$output_dir/rollout-continuity.csv")"
+(( rollout_sample_count >= 5 && rollout_min_ready_pods >= 2 && rollout_min_ready_endpoints >= 2 )) || {
+    echo "Rolling replacement continuity evidence was incomplete" >&2; exit 1;
+}
+
+replacement_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json)"
+replacement_ready_proxy_pods_json="$(jq --arg token "$rollout_token" '[.items[]
+    | select(.status.phase == "Running")
+    | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+    | select(.metadata.annotations["loadbalancerpro.io/qualification-rollout"] == $token)]' \
+    <<< "$replacement_proxy_pods_json")"
+[[ "$(jq 'length' <<< "$replacement_ready_proxy_pods_json")" == 2 ]] || {
+    echo "Rolling replacement did not converge to two ready replacement pods" >&2; exit 1;
+}
+[[ "$(ready_proxy_count)" == 2 && "$(ready_endpoint_count)" == 2 ]] || {
+    echo "Rolling replacement did not restore exactly two ready pods and Service endpoints" >&2; exit 1;
+}
+replacement_proxy_uids_json="$(jq '[.[].metadata.uid] | sort' <<< "$replacement_ready_proxy_pods_json")"
+rollout_old_uid_overlap="$(jq -n --argjson prior "$initial_proxy_uids_json" \
+    --argjson replacement "$replacement_proxy_uids_json" \
+    '[ $prior[] as $uid | $replacement[] | select(. == $uid) ] | length')"
+[[ "$rollout_old_uid_overlap" == 0 ]] || {
+    echo "Rolling replacement retained an initial proxy pod UID" >&2; exit 1;
+}
+replacement_proxy_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
+    | select(.name == "loadbalancerpro") | .imageID] | unique | sort' \
+    <<< "$replacement_ready_proxy_pods_json")"
+[[ "$replacement_proxy_runtime_image_ids_json" == "$initial_proxy_runtime_image_ids_json" ]] || {
+    echo "Rolling replacement changed the immutable runtime image ID" >&2; exit 1;
+}
+[[ "$(jq '[.[].spec.nodeName] | unique | length' <<< "$replacement_ready_proxy_pods_json")" == 2 ]] || {
+    echo "Replacement proxy pods were not restored to distinct workers" >&2; exit 1;
+}
+replacement_proxy_zones="$(jq -r '.[].spec.nodeName' <<< "$replacement_ready_proxy_pods_json" \
+    | while read -r node; do kubectl get node "$node" \
+        -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}{"\n"}'; done \
+    | sort -u | wc -l | tr -d ' ')"
+[[ "$replacement_proxy_zones" == 2 ]] || {
+    echo "Replacement proxy pods were not restored to distinct zones" >&2; exit 1;
+}
+mapfile -t replacement_proxy_pods < <(jq -r '.[].metadata.name' \
+    <<< "$replacement_ready_proxy_pods_json" | sort)
+for pod in "${replacement_proxy_pods[@]}"; do
+    [[ "$(kubectl exec --namespace "$namespace" "$pod" -- id -u)" == 10001 ]] || {
+        echo "$pod replacement is not running with UID 10001" >&2; exit 1;
+    }
 done
-(( backend_a_total > 0 && backend_b_total > 0 )) || { echo "Both configured backends must serve baseline traffic" >&2; exit 1; }
+capture_state post-rollout
+collect_distribution post-rollout-before
+run_attack post-rollout "$(jq -r '.workload.postRolloutSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumPostRolloutSuccessRatio' "$profile")"
+collect_distribution post-rollout
+jq -n --slurpfile before "$output_dir/post-rollout-before-distribution.json" \
+    --slurpfile after "$output_dir/post-rollout-distribution.json" '
+      ($before[0]) as $before | ($after[0]) as $after |
+      {phase: "post-rollout", bothReplacementProxyReplicasServed: true,
+       backendARequestDelta: ($after.backendARequests - $before.backendARequests),
+       backendBRequestDelta: ($after.backendBRequests - $before.backendBRequests),
+       pods: [$after.pods[] as $current
+         | ($before.pods[] | select(.pod == $current.pod)) as $prior
+         | {pod: $current.pod, requestDelta: ($current.requests - $prior.requests)}]}
+    ' > "$output_dir/post-rollout-distribution-delta.json"
+jq -e '(.pods | length) == 2
+    and all(.pods[]; .requestDelta > 0)
+    and .backendARequestDelta > 0
+    and .backendBRequestDelta > 0' "$output_dir/post-rollout-distribution-delta.json" >/dev/null || {
+    echo "Both replacement proxies and both backends must serve post-rollout traffic" >&2; exit 1;
+}
 
-failed_node="$(jq -r '.items[0].spec.nodeName' <<< "$proxy_pods_json")"
+failed_node="$(jq -r '.[0].spec.nodeName' <<< "$replacement_ready_proxy_pods_json")"
 [[ "$failed_node" == "${cluster_name}-worker" || "$failed_node" == "${cluster_name}-worker2" ]] || {
     echo "Refusing to drain unexpected node $failed_node" >&2; exit 1;
 }
@@ -356,22 +549,40 @@ run_attack recovered "$(jq -r '.workload.recoveredSeconds' "$profile")" \
 kubectl version -o json > "$output_dir/kubernetes-version.json"
 kind version > "$output_dir/kind-version.txt"
 sha256sum "$profile" "$cluster_config" "$workload_manifest" > "$output_dir/input-sha256.txt"
+baseline_distribution_json="$(<"$output_dir/baseline-distribution.json")"
+post_rollout_distribution_delta_json="$(<"$output_dir/post-rollout-distribution-delta.json")"
 jq -n \
     --arg profileId "$profile_id" \
     --arg sourceRevision "$source_revision" \
     --arg proxyImageId "$proxy_image_id" \
     --arg fixtureImageId "$fixture_image_id" \
+    --arg rolloutToken "$rollout_token" \
     --arg drainedWorker "$failed_node" \
+    --argjson priorPodUids "$initial_proxy_uids_json" \
+    --argjson replacementPodUids "$replacement_proxy_uids_json" \
+    --argjson runtimeImageIds "$replacement_proxy_runtime_image_ids_json" \
+    --argjson rolloutSeconds "$rollout_elapsed_seconds" \
+    --argjson rolloutSamples "$rollout_sample_count" \
+    --argjson minimumReadyPods "$rollout_min_ready_pods" \
+    --argjson minimumReadyEndpoints "$rollout_min_ready_endpoints" \
     --argjson recoverySeconds "$recovery_seconds" \
-    --argjson backendARequests "$backend_a_total" \
-    --argjson backendBRequests "$backend_b_total" \
-    '{schemaVersion: 1, result: "pass", evidenceBoundary: "disposable loopback kind mechanics; local image content IDs are not registry/source bindings or deployment-capacity proof",
+    --argjson baselineDistribution "$baseline_distribution_json" \
+    --argjson postRolloutDistribution "$post_rollout_distribution_delta_json" \
+    '{schemaVersion: 2, result: "pass", evidenceBoundary: "disposable loopback kind replacement mechanics using one local image content ID; not release compatibility, registry/source binding, deployment-ingress, abrupt-node-failure, or deployment-capacity proof",
       profileId: $profileId, repositoryRevision: $sourceRevision,
       images: {proxyContentId: $proxyImageId, fixtureContentId: $fixtureImageId},
-      topology: {workers: 2, zones: 2, initialProxyReplicas: 2, degradedProxyReplicas: 1, recoveredProxyReplicas: 2},
-      traffic: {bothProxyReplicasServed: true, backendARequests: $backendARequests, backendBRequests: $backendBRequests,
-        baseline: "pass", drainTransition: "pass", degraded: "pass", recovered: "pass"},
+      topology: {workers: 2, zones: 2, initialProxyReplicas: 2, postRolloutProxyReplicas: 2,
+        degradedProxyReplicas: 1, recoveredProxyReplicas: 2},
+      traffic: {bothProxyReplicasServed: true, baseline: $baselineDistribution,
+        rollout: "pass", postRollout: $postRolloutDistribution,
+        drainTransition: "pass", degraded: "pass", recovered: "pass"},
+      rolloutExercise: {triggerAnnotation: $rolloutToken, sameRuntimeImageId: true,
+        runtimeImageIds: $runtimeImageIds, priorPodUids: $priorPodUids,
+        replacementPodUids: $replacementPodUids, retainedPriorPodUids: 0,
+        rolloutSeconds: $rolloutSeconds, continuitySamples: $rolloutSamples,
+        minimumReadyProxyPods: $minimumReadyPods,
+        minimumReadyServiceEndpoints: $minimumReadyEndpoints},
       workerExercise: {drainedAndStopped: $drainedWorker, recoverySeconds: $recoverySeconds}}' \
     > "$output_dir/summary.json"
 
-printf 'Kubernetes two-zone live topology proof passed; evidence: %s\n' "$output_dir"
+printf 'Kubernetes two-zone live rollout and worker-loss proof passed; evidence: %s\n' "$output_dir"

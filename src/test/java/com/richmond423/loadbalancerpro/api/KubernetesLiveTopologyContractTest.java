@@ -29,6 +29,8 @@ class KubernetesLiveTopologyContractTest {
         for (String invariant : List.of(
                 "pod-security.kubernetes.io/enforce: restricted",
                 "automountServiceAccountToken: false",
+                "maxUnavailable: 0",
+                "maxSurge: 1",
                 "minDomains: 2",
                 "runAsNonRoot: true",
                 "runAsUser: 10001",
@@ -56,6 +58,7 @@ class KubernetesLiveTopologyContractTest {
                 "kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48"));
 
         JsonNode profile = new ObjectMapper().readTree(read(PROFILE));
+        assertEquals(2, profile.path("schemaVersion").asInt());
         assertEquals("example", profile.path("review").path("status").asText());
         assertEquals("v1.34.3", profile.path("cluster").path("kubectlVersion").asText());
         assertEquals(2, profile.path("cluster").path("workers").asInt());
@@ -63,10 +66,14 @@ class KubernetesLiveTopologyContractTest {
         assertEquals("lbp-kubernetes-smoke", profile.path("cluster").path("namespace").asText());
         assertEquals(30443, profile.path("cluster").path("nodePort").asInt());
         assertEquals("close-per-request", profile.path("workload").path("connectionMode").asText());
+        assertTrue(profile.path("workload").path("rolloutSeconds").asInt()
+                >= profile.path("objectives").path("maximumRolloutSeconds").asInt() + 5);
+        assertTrue(profile.path("objectives").path("minimumRolloutSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumPostRolloutSuccessRatio").asDouble() >= 0.95);
     }
 
     @Test
-    void runnerExecutesLiveDistributionDrainStopAndRecoveryChecks() throws IOException {
+    void runnerExecutesLiveRollingReplacementDistributionDrainStopAndRecoveryChecks() throws IOException {
         String runner = read(RUNNER);
         for (String behavior : List.of(
                 "kind create cluster",
@@ -75,7 +82,17 @@ class KubernetesLiveTopologyContractTest {
                 "Proxy replicas were not placed in distinct zones",
                 "minDomains: 2",
                 "-keepalive=false",
-                "baseline-${pod}-metrics.txt",
+                "${phase}-${pod}-metrics.txt",
+                "loadbalancerpro.io/qualification-rollout",
+                "kubectl rollout status deployment/loadbalancerpro",
+                "rollout-continuity.csv",
+                "Rolling replacement retained an initial proxy pod UID",
+                "Rolling replacement changed the immutable runtime image ID",
+                "post-rollout-distribution-delta.json",
+                "bothReplacementProxyReplicasServed: true",
+                "priorPodUids: $priorPodUids",
+                "replacementPodUids: $replacementPodUids",
+                "sameRuntimeImageId: true",
                 "kubectl drain",
                 "docker stop",
                 "ready Service endpoints while one worker is stopped",
@@ -84,7 +101,7 @@ class KubernetesLiveTopologyContractTest {
                 "bothProxyReplicasServed: true")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 12 unsafe profiles without creating a cluster"));
+        assertTrue(read(CONTRACT).contains("rejected 19 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
     }

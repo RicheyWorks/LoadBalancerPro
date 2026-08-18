@@ -14,7 +14,7 @@ trap cleanup EXIT
 
 bash -n "$runner"
 bash "$runner" --mode validate --profile "$profile" > "$work_dir/valid.log"
-grep -Fq 'service-distribution per-replica-metrics planned-worker-drain stopped-worker degraded-service worker-recovery' \
+grep -Fq 'service-distribution per-replica-metrics rolling-replacement endpoint-continuity pod-identity-turnover post-rollout-distribution planned-worker-drain stopped-worker degraded-service worker-recovery' \
     "$work_dir/valid.log"
 
 assert_rejected() {
@@ -29,6 +29,7 @@ assert_rejected() {
 }
 
 assert_rejected production-status '.review.status = "reviewed"'
+assert_rejected legacy-schema '.schemaVersion = 1'
 assert_rejected skewed-kubectl '.cluster.kubectlVersion = "v1.32.2"'
 assert_rejected mutable-node-image '.cluster.nodeImageDigest = "sha256:" + ("f" * 64)'
 assert_rejected one-worker '.cluster.workers = 1'
@@ -37,8 +38,14 @@ assert_rejected external-namespace '.cluster.namespace = "production"'
 assert_rejected public-port '.cluster.hostPort = 443'
 assert_rejected sticky-connection-mode '.workload.connectionMode = "keep-alive"'
 assert_rejected low-rate '.workload.ratePerSecond = 1'
+assert_rejected short-rollout '.workload.rolloutSeconds = 10'
+assert_rejected short-post-rollout '.workload.postRolloutSeconds = 1'
+assert_rejected rollout-window-too-short '.workload.rolloutSeconds = .objectives.maximumRolloutSeconds'
 assert_rejected short-transition '.workload.transitionSeconds = 5'
+assert_rejected weak-rollout-objective '.objectives.minimumRolloutSuccessRatio = 0.5'
+assert_rejected weak-post-rollout-objective '.objectives.minimumPostRolloutSuccessRatio = 0.5'
+assert_rejected long-rollout '.objectives.maximumRolloutSeconds = 180'
 assert_rejected weak-transition-objective '.objectives.minimumTransitionSuccessRatio = 0.5'
 assert_rejected long-recovery '.objectives.maximumRecoverySeconds = 600'
 
-printf 'Kubernetes topology contract rejected 12 unsafe profiles without creating a cluster.\n'
+printf 'Kubernetes topology contract rejected 19 unsafe profiles without creating a cluster.\n'

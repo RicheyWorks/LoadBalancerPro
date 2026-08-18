@@ -113,8 +113,26 @@ bash scripts/bench/proxy-active-active-topology.sh --mode smoke
 
 `--mode run --profile /path/to/topology-profile.json` requires a reviewed profile, a clean checkout, and at least
 30 seconds per loaded case. CI runs smoke mode and scans the application, candidate, backend fixture, and ingress
-images. The local candidate changes proof metadata only; its Docker content ID is not a registry manifest digest, and
-the result is not a substitute for release-compatibility testing, the reviewed deployment ingress, or a multi-zone run.
+images. The local candidate changes proof metadata only; its Docker content ID is not a registry manifest digest.
+
+## Live Kubernetes topology proof
+
+`proxy-kubernetes-topology.sh` creates an isolated kind cluster from a digest-pinned Kubernetes node image, loads the
+numeric-non-root proxy and fixture images, and deploys two proxy replicas and redundant backends across two workers and
+zones. It sends TLS/API-key-protected connection-churn traffic through a loopback-only NodePort, proves both proxy
+replicas and both backends served requests, drains and stops one worker under load, tests the one-replica degraded
+service, and verifies worker, endpoint, and traffic recovery:
+
+```bash
+bash scripts/bench/proxy-kubernetes-topology.sh --mode validate
+bash scripts/bench/kubernetes-topology-contract-test.sh
+bash scripts/bench/proxy-kubernetes-topology.sh --mode smoke
+```
+
+Smoke mode requires Docker, kind 0.31.0, kubectl 1.34.3, Vegeta, jq, OpenSSL, and curl. TLS keys and the API key live
+only in a temporary directory; redacted reports are written beneath `target/kubernetes/`. The result proves
+disposable Kubernetes mechanics, not deployment capacity, external ingress behavior, or an authorized staging
+environment.
 
 ## Local capacity staircase
 

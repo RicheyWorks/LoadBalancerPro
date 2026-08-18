@@ -81,7 +81,9 @@ class StagingDeploymentQualificationContractTest {
 
         assertTrue(contract.contains("rejected 16 unsafe snapshots"));
         assertTrue(ci.contains("bash scripts/bench/staging-deployment-contract-test.sh"));
-        assertTrue(manifest.contains("requiredDuringSchedulingIgnoredDuringExecution:"));
+        assertTrue(manifest.contains("topologySpreadConstraints:"));
+        assertTrue(manifest.contains("minDomains: 2"));
+        assertTrue(manifest.contains("whenUnsatisfiable: DoNotSchedule"));
         assertTrue(manifest.contains("topologyKey: topology.kubernetes.io/zone"));
         assertTrue(manifest.contains("maxUnavailable: 0"));
         assertTrue(manifest.contains("maxSurge: 1"));

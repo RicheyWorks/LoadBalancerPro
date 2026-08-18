@@ -1,0 +1,442 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lbp-kubernetes-smoke
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loadbalancerpro
+  namespace: lbp-kubernetes-smoke
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadbalancerpro-proxy
+  namespace: lbp-kubernetes-smoke
+immutable: true
+data:
+  LBP_UPSTREAM_0_URL: http://backend-a:8080
+  LBP_UPSTREAM_1_URL: http://backend-b:8080
+  LBP_TLS_HOSTNAME: lbp-kubernetes.local
+  LBP_PROXY_STRATEGY: ROUND_ROBIN
+  LBP_HEALTH_CHECK_INTERVAL: 1s
+  LBP_HEALTHY_THRESHOLD: "1"
+  LBP_UNHEALTHY_THRESHOLD: "2"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-a
+  namespace: lbp-kubernetes-smoke
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fixture-backend
+      loadbalancerpro.io/backend: backend-a
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fixture-backend
+        loadbalancerpro.io/backend: backend-a
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      nodeSelector:
+        loadbalancerpro.io/qualification-worker: "true"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          minDomains: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              loadbalancerpro.io/backend: backend-a
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backend
+          image: loadbalancerpro:kubernetes-fixture
+          imagePullPolicy: Never
+          env:
+            - name: FIXTURE_ID
+              value: backend-a
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 2
+            timeoutSeconds: 1
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 48Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-a
+  namespace: lbp-kubernetes-smoke
+spec:
+  selector:
+    app.kubernetes.io/name: fixture-backend
+    loadbalancerpro.io/backend: backend-a
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-b
+  namespace: lbp-kubernetes-smoke
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fixture-backend
+      loadbalancerpro.io/backend: backend-b
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fixture-backend
+        loadbalancerpro.io/backend: backend-b
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      nodeSelector:
+        loadbalancerpro.io/qualification-worker: "true"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          minDomains: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              loadbalancerpro.io/backend: backend-b
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backend
+          image: loadbalancerpro:kubernetes-fixture
+          imagePullPolicy: Never
+          env:
+            - name: FIXTURE_ID
+              value: backend-b
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 2
+            timeoutSeconds: 1
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 48Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-b
+  namespace: lbp-kubernetes-smoke
+spec:
+  selector:
+    app.kubernetes.io/name: fixture-backend
+    loadbalancerpro.io/backend: backend-b
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadbalancerpro
+  namespace: lbp-kubernetes-smoke
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  minReadySeconds: 5
+  progressDeadlineSeconds: 300
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loadbalancerpro
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: loadbalancerpro
+      annotations:
+        loadbalancerpro.io/source-revision: "0000000000000000000000000000000000000000"
+        loadbalancerpro.io/change-ticket: loopback-kubernetes-qualification
+    spec:
+      serviceAccountName: loadbalancerpro
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 40
+      nodeSelector:
+        loadbalancerpro.io/qualification-worker: "true"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          minDomains: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: loadbalancerpro
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: loadbalancerpro
+          image: loadbalancerpro:kubernetes-proxy
+          imagePullPolicy: Never
+          args:
+            - --server.address=0.0.0.0
+            - --server.ssl.enabled=true
+            - --server.ssl.bundle=proxyprod
+            - --spring.ssl.bundle.pem.proxyprod.keystore.certificate=file:/run/tls/certificate.pem
+            - --spring.ssl.bundle.pem.proxyprod.keystore.private-key=file:/run/tls/private-key.pem
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod,proxy-prod
+            - name: SPRING_CONFIG_IMPORT
+              value: configtree:/run/secrets/
+          envFrom:
+            - configMapRef:
+                name: loadbalancerpro-proxy
+          ports:
+            - name: https
+              containerPort: 8080
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  curl --fail --silent --show-error --cacert /run/tls/ca.pem
+                  --header "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)"
+                  --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
+                  "https://${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 40
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  curl --fail --silent --show-error --cacert /run/tls/ca.pem
+                  --header "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)"
+                  --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
+                  "https://${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  curl --fail --silent --show-error --cacert /run/tls/ca.pem
+                  --header "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)"
+                  --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
+                  "https://${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 5"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: api-key
+              mountPath: /run/secrets
+              readOnly: true
+            - name: server-tls
+              mountPath: /run/tls
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: api-key
+          secret:
+            secretName: loadbalancerpro-api-key
+            items:
+              - key: api-key
+                path: loadbalancerpro.api.key
+        - name: server-tls
+          secret:
+            secretName: loadbalancerpro-server-tls
+            items:
+              - key: tls.crt
+                path: certificate.pem
+              - key: tls.key
+                path: private-key.pem
+              - key: ca.crt
+                path: ca.pem
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadbalancerpro
+  namespace: lbp-kubernetes-smoke
+spec:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  sessionAffinity: None
+  selector:
+    app.kubernetes.io/name: loadbalancerpro
+  ports:
+    - name: https
+      port: 443
+      targetPort: https
+      nodePort: 30443
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: loadbalancerpro
+  namespace: lbp-kubernetes-smoke
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loadbalancerpro
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: lbp-kubernetes-smoke
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: proxy-ingress
+  namespace: lbp-kubernetes-smoke
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: loadbalancerpro
+  policyTypes: ["Ingress"]
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: proxy-egress
+  namespace: lbp-kubernetes-smoke
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: loadbalancerpro
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: fixture-backend
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-ingress
+  namespace: lbp-kubernetes-smoke
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: fixture-backend
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loadbalancerpro
+      ports:
+        - protocol: TCP
+          port: 8080

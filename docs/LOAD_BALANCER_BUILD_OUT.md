@@ -18,8 +18,8 @@ The repository already has these executable production surfaces:
   shedding, slow start, health hysteresis, cooldown, drain, and graceful shutdown;
 - live per-upstream in-flight, error-rate, EWMA, and exact rolling p50/p95/p99 signals used by adaptive routing;
 - TLS termination, verified backend TLS and optional mTLS bundles, API-key protection, and protected Actuator metrics;
-- a hardened production Compose definition, a static Kubernetes manifest, and fail-closed Kubernetes staging adapter
-  generation for deployment actions and per-replica telemetry;
+- hardened production Compose and Kubernetes deployment bases, a disposable live two-zone Kubernetes topology lane,
+  and fail-closed Kubernetes staging adapter generation for deployment actions and per-replica telemetry;
 - production artifact, Compose, graceful-shutdown, benchmark-smoke, SBOM, CodeQL, and image-scan CI gates; and
 - a one-hour loopback soak covering steady traffic, spikes, slow upstreams, upstream loss, reload, drain, in-flight
   quiescence, p99 budgets, and heap-floor growth.
@@ -152,8 +152,14 @@ The executable local active-active proof is
 [`docker-compose.active-active.yml`](../deploy/topology/docker-compose.active-active.yml). CI starts two actual proxy
 processes behind a bounded TLS/authenticated ingress fixture and gates distribution, configuration convergence,
 unhealthy-candidate rejection, content-addressed image rollout/rollback, aggregate upstream limits, per-instance
-metrics, replica loss, and recovery under load. This closes the local mechanics proof only. A reviewed deployment
-ingress and multi-zone proof remain required when the selected deployment topology uses them.
+metrics, replica loss, and recovery under load.
+
+[`proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) adds a live disposable Kubernetes proof:
+two restricted proxy replicas are scheduled across two labeled worker zones, Kubernetes Service traffic must reach both
+replicas and both backends, one worker is drained and stopped under load, degraded traffic must continue through the
+remaining replica, and the stopped worker and second replica must recover inside the bound. This closes local
+multi-zone Kubernetes mechanics only; the reviewed deployment ingress, deployment-equivalent resources, and abrupt
+infrastructure-failure behavior remain staging gates.
 
 ### 4. Stage The Rollout And Rollback
 

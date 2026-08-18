@@ -19,14 +19,14 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/* \
-    && groupadd --system loadbalancer \
-    && useradd --system --gid loadbalancer --home-dir /app --shell /usr/sbin/nologin loadbalancer
+    && groupadd --system --gid 10001 loadbalancer \
+    && useradd --system --uid 10001 --gid 10001 --home-dir /app --shell /usr/sbin/nologin loadbalancer
 
 COPY --from=build --chown=loadbalancer:loadbalancer /workspace/app.jar app.jar
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
-USER loadbalancer:loadbalancer
+USER 10001:10001
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD curl -fsS -o /dev/null http://127.0.0.1:8080/actuator/health || exit 1

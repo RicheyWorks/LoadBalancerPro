@@ -18,7 +18,8 @@ The repository already has these executable production surfaces:
   shedding, slow start, health hysteresis, cooldown, drain, and graceful shutdown;
 - live per-upstream in-flight, error-rate, EWMA, and exact rolling p50/p95/p99 signals used by adaptive routing;
 - TLS termination, verified backend TLS and optional mTLS bundles, API-key protection, and protected Actuator metrics;
-- a hardened production Compose definition and a static Kubernetes manifest sketch;
+- a hardened production Compose definition, a static Kubernetes manifest, and fail-closed Kubernetes staging adapter
+  generation for deployment actions and per-replica telemetry;
 - production artifact, Compose, graceful-shutdown, benchmark-smoke, SBOM, CodeQL, and image-scan CI gates; and
 - a one-hour loopback soak covering steady traffic, spikes, slow upstreams, upstream loss, reload, drain, in-flight
   quiescence, p99 budgets, and heap-floor growth.
@@ -94,6 +95,12 @@ restarts every candidate replica and proves the runtime identities changed; the 
 ladder and restores the prior digest. [`evaluate-staging-capacity.py`](../scripts/bench/evaluate-staging-capacity.py)
 rejects incomplete, duplicated, out-of-order, internally inconsistent, prematurely stopped, or unstable evidence.
 
+For Kubernetes, [`prepare-kubernetes-staging-adapters.py`](../scripts/bench/prepare-kubernetes-staging-adapters.py)
+compiles the capacity sampler and every staging action from one reviewed cluster/profile boundary. The generated
+executables pin kubectl, context, API server, namespace UID/staging label, workload identity, configuration/ingress
+objects, and action payload bytes. This removes the need to invent deployment or telemetry scripts before the
+authorized capacity run.
+
 Implementing either runner does not close this gate. Closure requires the authorized deployment-equivalent runner to
 produce a passing result for the exact release artifact and frozen staging profile.
 
@@ -111,6 +118,14 @@ Its strict snapshots bind the prior/candidate registry references and revisions 
 zone placement and resources, configuration/ingress fingerprints, per-replica metrics, drain completion, and rollout
 limits. The runner rolls the candidate under load, executes the staging failure matrix, and restores the prior digest
 under load; cleanup invokes the reviewed rollback adapter after an interrupted candidate phase.
+
+For a Kubernetes target, copy
+[`kubernetes-staging-adapter-profile.example.json`](../scripts/bench/kubernetes-staging-adapter-profile.example.json)
+outside the repository, review its exact cluster and mutation boundary, and compile it with
+[`prepare-kubernetes-staging-adapters.py`](../scripts/bench/prepare-kubernetes-staging-adapters.py). Run the generated
+read-only inspector to obtain the live configuration and ingress hashes, freeze those values and `bindings.json` into
+the staging/capacity profiles, then supply the generated action directory and sampler to the runners. CI exercises the
+same compiled runtime against a hermetic kubectl API fixture; it does not contact or authorize a real cluster.
 
 Use the forecast route/payload mix against staging upstreams. Compare client latency with upstream latency to measure
 proxy overhead, verify health-check cost, exercise certificate rotation, and repeat slow, failure, reload, drain, and
@@ -150,9 +165,10 @@ only immutable proof metadata, so this proves replacement mechanics rather than 
 releases. A local Docker content ID is also not a registry manifest digest.
 
 The staging lane now makes those assertions for reviewed prior and candidate registry digests through hash-pinned
-deployment adapters. The supplied Kubernetes sketch encodes two replicas, zero-unavailable rolling update, bounded
-history/progress, required zone separation, preferred host separation, and a one-replica disruption budget. Both are
-unapplied inputs until an authorized staging environment supplies the reviewed profile and adapters.
+deployment adapters. The Kubernetes manifest encodes two replicas, zero-unavailable rolling update, bounded
+history/progress, required zone separation, preferred host separation, and a one-replica disruption budget; the
+adapter compiler supplies the matching rollout/rollback, fault, reset, inspection, and telemetry executables. They
+remain unapplied until an authorized staging environment supplies the reviewed cluster and workload profiles.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,

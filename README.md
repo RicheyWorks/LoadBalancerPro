@@ -39,7 +39,10 @@ for forecast traffic. Work in this phase is load-balancer engineering and deploy
 The local capacity, staging, deployment-capacity, and active-active/image-replacement runners now exist. The
 deployment-capacity lane binds the reviewed forecast to the exact staging-profile hash and candidate digest, requires
 fresh replica identities and hash-pinned per-replica telemetry at every repeat, recomputes the saturation envelope,
-and restores the prior digest. The next action is its authorized run on deployment-equivalent staging resources.
+and restores the prior digest. The Kubernetes adapter compiler now supplies the rollout, rollback, fault, reset,
+restart, certificate-rotation, deployment-inspection, and capacity-sampling executables. The next action is to compile
+them from the reviewed staging cluster identity, freeze the observed configuration/ingress hashes into the profiles,
+then run staging qualification and the capacity staircase against that exact candidate.
 Local and CI results do not establish deployment capacity, release compatibility, registry integrity, or
 production-ingress behavior.
 

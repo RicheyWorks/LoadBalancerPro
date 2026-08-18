@@ -461,10 +461,14 @@ jobs:
           bash -n scripts/bench/staging-capacity-contract-test.sh
           bash -n scripts/bench/staging-capacity-evaluator-contract-test.sh
           bash -n scripts/bench/staging-capacity-runner-contract-test.sh
+          bash -n scripts/bench/kubernetes-staging-adapter-contract-test.sh
+          bash -n scripts/bench/kubernetes-staging-runtime-contract-test.sh
           bash scripts/bench/staging-validator-contract-test.sh
           bash scripts/bench/staging-deployment-contract-test.sh
           bash scripts/bench/staging-capacity-contract-test.sh
           bash scripts/bench/staging-capacity-evaluator-contract-test.sh
+          bash scripts/bench/kubernetes-staging-adapter-contract-test.sh
+          bash scripts/bench/kubernetes-staging-runtime-contract-test.sh
           bash scripts/bench/proxy-staging-qualification.sh --mode validate
           bash scripts/bench/proxy-staging-capacity-staircase.sh --mode validate
           if bash scripts/bench/proxy-staging-qualification.sh --mode run > /tmp/staging-example-run.log 2>&1; then
@@ -483,6 +487,9 @@ jobs:
           python3 -m py_compile scripts/bench/validate-staging-capacity.py
           python3 -m py_compile scripts/bench/validate-staging-capacity-sample.py
           python3 -m py_compile scripts/bench/evaluate-staging-capacity.py
+          python3 -m py_compile scripts/bench/prepare-kubernetes-staging-adapters.py
+          python3 -m py_compile scripts/bench/kubernetes-staging-adapter-runtime.py
+          python3 -m py_compile scripts/bench/kubernetes-staging-kubectl-fixture.py
 
       - name: Run active-active topology smoke
         shell: bash

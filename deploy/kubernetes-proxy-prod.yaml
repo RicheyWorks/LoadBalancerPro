@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: loadbalancerpro-proxy-prod
+immutable: true
 data:
   LBP_UPSTREAM_0_URL: http://backend-a:8080
   LBP_UPSTREAM_1_URL: http://backend-b:8080
@@ -29,6 +30,9 @@ spec:
     metadata:
       labels:
         app: loadbalancerpro
+      annotations:
+        loadbalancerpro.io/source-revision: "0000000000000000000000000000000000000000"
+        loadbalancerpro.io/change-ticket: replace-with-approved-change-ticket
     spec:
       terminationGracePeriodSeconds: 40
       affinity:
@@ -144,7 +148,7 @@ spec:
                 path: loadbalancerpro.api.key
         - name: server-tls
           secret:
-            secretName: loadbalancerpro-server-tls
+            secretName: loadbalancerpro-server-tls-a
             items:
               - key: tls.crt
                 path: certificate.pem

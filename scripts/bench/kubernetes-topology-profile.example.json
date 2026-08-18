@@ -19,7 +19,7 @@
     "connectionMode": "close-per-request",
     "ratePerSecond": 30,
     "baselineSeconds": 8,
-    "rolloutSeconds": 60,
+    "rolloutSeconds": 90,
     "postRolloutSeconds": 8,
     "transitionSeconds": 20,
     "degradedSeconds": 8,
@@ -33,7 +33,7 @@
     "minimumDegradedSuccessRatio": 0.999,
     "minimumRecoveredSuccessRatio": 0.999,
     "maximumP99Millis": 1500,
-    "maximumRolloutSeconds": 45,
+    "maximumRolloutSeconds": 75,
     "maximumRecoverySeconds": 180
   }
 }

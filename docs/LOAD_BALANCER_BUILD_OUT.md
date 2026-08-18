@@ -156,10 +156,13 @@ metrics, replica loss, and recovery under load.
 
 [`proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) adds a live disposable Kubernetes proof:
 two restricted proxy replicas are scheduled across two labeled worker zones, Kubernetes Service traffic must reach both
-replicas and both backends, one worker is drained and stopped under load, degraded traffic must continue through the
-remaining replica, and the stopped worker and second replica must recover inside the bound. This closes local
-multi-zone Kubernetes mechanics only; the reviewed deployment ingress, deployment-equivalent resources, and abrupt
-infrastructure-failure behavior remain staging gates.
+replicas and both backends, a zero-unavailable rolling replacement must turn over both pod UIDs without dropping below
+two ready Service endpoints, both replacement replicas and both backends must serve post-rollout traffic, one worker is
+drained and stopped under load, degraded traffic must continue through the remaining replica, and the stopped worker
+and second replica must recover inside the bound. The replacement reuses one exact local image content ID, so it proves
+Kubernetes replacement mechanics rather than compatibility between releases. The reviewed deployment ingress,
+deployment-equivalent resources, registry digest transition, and abrupt infrastructure-failure behavior remain staging
+gates.
 
 ### 4. Stage The Rollout And Rollback
 
@@ -175,6 +178,11 @@ deployment adapters. The Kubernetes manifest encodes two replicas, zero-unavaila
 history/progress, required zone separation, preferred host separation, and a one-replica disruption budget; the
 adapter compiler supplies the matching rollout/rollback, fault, reset, inspection, and telemetry executables. They
 remain unapplied until an authorized staging environment supplies the reviewed cluster and workload profiles.
+
+The disposable Kubernetes lane executes that zero-unavailable strategy under continuous traffic, repeatedly samples
+ready pods and Service endpoints with a one-second pause between queries, proves complete pod-UID turnover and unchanged
+runtime image identity, restores two-zone placement, and requires positive post-rollout traffic deltas on both
+replacement replicas and both backends.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,

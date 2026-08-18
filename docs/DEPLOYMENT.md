@@ -105,8 +105,9 @@ surge pod, preferred host spreading, a one-replica disruption budget, startup/re
 preStop delay, a 40-second termination window, a token-free service account, numeric non-root execution, and external
 Secret/ConfigMap mounts. Its image remains a deliberately non-resolving digest placeholder. The disposable
 [`../scripts/bench/proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) lane applies the
-separate loopback qualification workload and proves live two-zone rollout, Service distribution, worker removal, and
-recovery. The reviewed staging runner separately validates the external target's digest, replicas, zones, resources,
+separate loopback qualification workload and proves same-image rolling pod replacement under continuous traffic,
+complete pod-UID turnover, ready-endpoint continuity, two-zone Service distribution, worker removal, and recovery. The
+reviewed staging runner separately validates the external target's digest, replicas, zones, resources,
 configuration, ingress, metrics, drain, and transitions; local proof does not establish registry integrity, deployment
 capacity, external ingress behavior, or production readiness.
 

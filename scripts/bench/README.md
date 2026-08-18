@@ -28,6 +28,41 @@ under traffic. Snapshots must prove full replica convergence, reviewed zone/reso
 per-replica metrics, drain completion, and transition bounds. A passing run applies only to that staging target and
 those hash-pinned adapters; it is not production authorization.
 
+### Kubernetes staging adapters
+
+`prepare-kubernetes-staging-adapters.py` turns one reviewed Kubernetes boundary into the complete deployment-action
+and telemetry adapter set required by both staging runners. Copy
+`kubernetes-staging-adapter-profile.example.json` outside the repository, then pin the exact kubectl binary, context,
+API server, namespace UID/staging label, change ticket, prior/candidate artifact identities, proxy objects, action
+payload hashes, fault targets, and TLS secrets. Validation and compilation do not contact the cluster:
+
+```bash
+python3 scripts/bench/prepare-kubernetes-staging-adapters.py \
+  --mode validate --profile /secure/reviewed-kubernetes-adapter.json
+python3 scripts/bench/prepare-kubernetes-staging-adapters.py \
+  --mode build --profile /secure/reviewed-kubernetes-adapter.json \
+  --output /secure/compiled-lbp-adapters
+```
+
+With the reviewed kubectl context selected, run `/secure/compiled-lbp-adapters/inspect.sh`. The read-only result supplies
+the observed configuration and ingress hashes for the frozen staging profile. Copy `bindings.json.actions` into that
+profile's `hooks`, and bind `capacitySamplerSha256` into the capacity profile. Run mode then uses:
+
+```bash
+export LBP_STAGING_ACTION_DIR=/secure/compiled-lbp-adapters/actions
+export LBP_STAGING_CAPACITY_SAMPLER=/secure/compiled-lbp-adapters/capacity-sampler.sh
+```
+
+Every generated executable rechecks the kubectl hash, current context, API server, namespace UID, staging label,
+artifact identity, configuration/ingress fingerprints, and immutable action payload bytes before it observes or
+mutates the reviewed namespace. Every referenced configuration ConfigMap or Secret must be Kubernetes-immutable. The
+compiler and runtime contracts use a hermetic kubectl fixture and never contact a cluster:
+
+```bash
+bash scripts/bench/kubernetes-staging-adapter-contract-test.sh
+bash scripts/bench/kubernetes-staging-runtime-contract-test.sh
+```
+
 ## Deployment-equivalent staging capacity
 
 `proxy-staging-capacity-staircase.sh` extends the reviewed staging boundary into the real capacity lane. It binds a

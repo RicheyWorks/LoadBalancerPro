@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "adapterId": "kubernetes-staging-example-not-reviewed",
+  "platform": "kubernetes",
+  "review": {
+    "status": "example",
+    "approvedBy": "",
+    "approvedAt": ""
+  },
+  "kubectl": {
+    "executableSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "maximumCommandSeconds": 15
+  },
+  "cluster": {
+    "context": "replace-with-reviewed-staging-context",
+    "apiServer": "https://staging-api.invalid",
+    "namespace": "replace-with-reviewed-staging-namespace",
+    "namespaceUid": "00000000-0000-0000-0000-000000000000",
+    "environmentLabel": {
+      "key": "loadbalancerpro.io/environment",
+      "value": "staging"
+    }
+  },
+  "stagingBinding": {
+    "changeTicket": "replace-with-approved-change-ticket",
+    "artifact": {
+      "registryRepository": "registry.invalid/loadbalancerpro",
+      "prior": {
+        "imageDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sourceRevision": "0000000000000000000000000000000000000000"
+      },
+      "candidate": {
+        "imageDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "sourceRevision": "1111111111111111111111111111111111111111"
+      }
+    }
+  },
+  "proxy": {
+    "deployment": "loadbalancerpro",
+    "container": "loadbalancerpro",
+    "podSelector": "app=loadbalancerpro",
+    "zoneLabel": "topology.kubernetes.io/zone",
+    "sourceRevisionAnnotation": "loadbalancerpro.io/source-revision",
+    "changeTicketAnnotation": "loadbalancerpro.io/change-ticket",
+    "localApi": {
+      "tlsHost": "lbp.staging.internal",
+      "port": 8080,
+      "apiKeyPath": "/run/secrets/loadbalancerpro.api.key",
+      "caPath": "/run/tls/ca.pem",
+      "healthPath": "/actuator/health",
+      "metricsPath": "/actuator/prometheus",
+      "statusPath": "/api/proxy/status",
+      "reloadPath": "/api/proxy/reload"
+    },
+    "configurationObjects": [
+      {"apiVersion": "v1", "kind": "ConfigMap", "name": "loadbalancerpro-proxy-prod"},
+      {"apiVersion": "v1", "kind": "ConfigMap", "name": "loadbalancerpro-external-config"},
+      {"apiVersion": "v1", "kind": "ConfigMap", "name": "loadbalancerpro-staging-actions"},
+      {"apiVersion": "v1", "kind": "Secret", "name": "loadbalancerpro-backend-trust"},
+      {"apiVersion": "v1", "kind": "Secret", "name": "loadbalancerpro-backend-identity"},
+      {"apiVersion": "v1", "kind": "Secret", "name": "loadbalancerpro-server-tls-a"},
+      {"apiVersion": "v1", "kind": "Secret", "name": "loadbalancerpro-server-tls-b"}
+    ],
+    "ingressObjects": [
+      {"apiVersion": "v1", "kind": "Service", "name": "loadbalancerpro"}
+    ]
+  },
+  "faults": {
+    "slow": {
+      "deployment": "backend-a",
+      "container": "backend-a",
+      "environmentVariable": "LBP_FIXTURE_DELAY_MS",
+      "baselineValue": "0",
+      "activeValue": "750"
+    },
+    "failure": {
+      "deployment": "backend-b",
+      "baselineReplicas": 1
+    },
+    "reload": {
+      "configMap": "loadbalancerpro-staging-actions",
+      "key": "reload.json",
+      "payloadSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "drain": {
+      "configMap": "loadbalancerpro-staging-actions",
+      "key": "drain.json",
+      "payloadSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "reset": {
+      "configMap": "loadbalancerpro-staging-actions",
+      "key": "baseline.json",
+      "payloadSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "certificateRotation": {
+      "volumeName": "server-tls",
+      "baselineSecret": "loadbalancerpro-server-tls-a",
+      "candidateSecret": "loadbalancerpro-server-tls-b"
+    }
+  },
+  "capacity": {
+    "upstreamIds": ["backend-a", "backend-b"],
+    "openConnectionsMetric": "tomcat_connections_current_connections",
+    "jvmThreadsMetric": "jvm_threads_live_threads"
+  }
+}

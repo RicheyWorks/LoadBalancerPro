@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "profileId": "local-kind-two-zone-smoke",
   "review": {
     "status": "example"
@@ -23,6 +23,10 @@
     "postRolloutSeconds": 8,
     "rollbackSeconds": 90,
     "postRollbackSeconds": 8,
+    "certificateRotationSeconds": 90,
+    "postCertificateRotationSeconds": 8,
+    "certificateRollbackSeconds": 90,
+    "postCertificateRollbackSeconds": 8,
     "transitionSeconds": 20,
     "degradedSeconds": 8,
     "recoveredSeconds": 8,
@@ -36,6 +40,10 @@
     "minimumPostRolloutSuccessRatio": 0.999,
     "minimumRollbackSuccessRatio": 0.999,
     "minimumPostRollbackSuccessRatio": 0.999,
+    "minimumCertificateRotationSuccessRatio": 0.999,
+    "minimumPostCertificateRotationSuccessRatio": 0.999,
+    "minimumCertificateRollbackSuccessRatio": 0.999,
+    "minimumPostCertificateRollbackSuccessRatio": 0.999,
     "minimumTransitionSuccessRatio": 0.97,
     "minimumDegradedSuccessRatio": 0.999,
     "minimumRecoveredSuccessRatio": 0.999,
@@ -46,8 +54,15 @@
     "maximumAbruptTransitionP99Millis": 5500,
     "maximumRolloutSeconds": 75,
     "maximumRollbackSeconds": 75,
+    "maximumCertificateRotationSeconds": 75,
+    "maximumCertificateRollbackSeconds": 75,
     "maximumRecoverySeconds": 180,
     "maximumAbruptEndpointWithdrawalSeconds": 15,
     "maximumAbruptRecoverySeconds": 180
+  },
+  "tlsRotation": {
+    "hostname": "lbp-kubernetes.local",
+    "baselineSecret": "loadbalancerpro-server-tls-a",
+    "candidateSecret": "loadbalancerpro-server-tls-b"
   }
 }

@@ -328,7 +328,7 @@ spec:
                 path: loadbalancerpro.api.key
         - name: server-tls
           secret:
-            secretName: loadbalancerpro-server-tls
+            secretName: loadbalancerpro-server-tls-a
             items:
               - key: tls.crt
                 path: certificate.pem

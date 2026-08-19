@@ -25,7 +25,7 @@ for required_file in "$cluster_config" "$workload_manifest" "$candidate_dockerfi
 done
 
 jq -e '
-  .schemaVersion == 4
+  .schemaVersion == 5
   and (.profileId | type == "string" and test("^[a-z0-9][a-z0-9._-]{0,62}$"))
   and .review.status == "example"
   and .cluster.kindVersion == "v0.31.0"
@@ -44,6 +44,10 @@ jq -e '
   and (.workload.postRolloutSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.rollbackSeconds | type == "number" and . >= 20 and . <= 180 and floor == .)
   and (.workload.postRollbackSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.certificateRotationSeconds | type == "number" and . >= 20 and . <= 180 and floor == .)
+  and (.workload.postCertificateRotationSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.certificateRollbackSeconds | type == "number" and . >= 20 and . <= 180 and floor == .)
+  and (.workload.postCertificateRollbackSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.transitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
   and (.workload.degradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.recoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
@@ -55,6 +59,10 @@ jq -e '
   and (.objectives.minimumPostRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumPostRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumCertificateRotationSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumPostCertificateRotationSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumCertificateRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumPostCertificateRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
   and (.objectives.minimumDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
@@ -65,12 +73,20 @@ jq -e '
   and (.objectives.maximumAbruptTransitionP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
   and (.objectives.maximumRolloutSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumRollbackSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
+  and (.objectives.maximumCertificateRotationSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
+  and (.objectives.maximumCertificateRollbackSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and (.objectives.maximumAbruptEndpointWithdrawalSeconds | type == "number" and . >= 5 and . <= 30 and floor == .)
   and (.objectives.maximumAbruptRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and .workload.rolloutSeconds >= (.objectives.maximumRolloutSeconds + 5)
   and .workload.rollbackSeconds >= (.objectives.maximumRollbackSeconds + 5)
+  and .workload.certificateRotationSeconds >= (.objectives.maximumCertificateRotationSeconds + 5)
+  and .workload.certificateRollbackSeconds >= (.objectives.maximumCertificateRollbackSeconds + 5)
   and .workload.abruptTransitionSeconds >= (.objectives.maximumAbruptEndpointWithdrawalSeconds + 5)
+  and .tlsRotation.hostname == "lbp-kubernetes.local"
+  and .tlsRotation.baselineSecret == "loadbalancerpro-server-tls-a"
+  and .tlsRotation.candidateSecret == "loadbalancerpro-server-tls-b"
+  and .tlsRotation.baselineSecret != .tlsRotation.candidateSecret
 ' "$profile" >/dev/null || { echo "Kubernetes topology profile does not satisfy the executable contract" >&2; exit 2; }
 
 for invariant in \
@@ -94,7 +110,8 @@ for invariant in \
     'readOnlyRootFilesystem: true' \
     'nodePort: 30443' \
     'kind: PodDisruptionBudget' \
-    'kind: NetworkPolicy'; do
+    'kind: NetworkPolicy' \
+    'secretName: loadbalancerpro-server-tls-a'; do
     grep -Fq "$invariant" "$workload_manifest" || { echo "Kubernetes workload is missing: $invariant" >&2; exit 2; }
 done
 if grep -Eq '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|api-key:[[:space:]]+[^[:space:]]+)' "$workload_manifest"; then
@@ -104,7 +121,7 @@ fi
 
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated disposable two-worker/two-zone Kubernetes topology contract %s.\n' "$(jq -r '.profileId' "$profile")"
-    printf 'Validated proof cases: service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
+    printf 'Validated proof cases: service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution immutable-certificate-secrets certificate-identity-transition certificate-rotation-continuity certificate-pod-identity-turnover post-certificate-rotation-distribution certificate-identity-rollback certificate-rollback-continuity certificate-rollback-pod-identity-turnover post-certificate-rollback-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
     exit 0
 fi
 
@@ -122,6 +139,9 @@ profile_id="$(jq -r '.profileId' "$profile")"
 namespace="$(jq -r '.cluster.namespace' "$profile")"
 host_port="$(jq -r '.cluster.hostPort' "$profile")"
 rate="$(jq -r '.workload.ratePerSecond' "$profile")"
+tls_hostname="$(jq -r '.tlsRotation.hostname' "$profile")"
+baseline_tls_secret="$(jq -r '.tlsRotation.baselineSecret' "$profile")"
+candidate_tls_secret="$(jq -r '.tlsRotation.candidateSecret' "$profile")"
 default_run_id="${GITHUB_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-${BASHPID}}-${GITHUB_RUN_ATTEMPT:-1}"
 cluster_name="${LBP_KUBERNETES_CLUSTER:-lbp-k8s-${GITHUB_RUN_ID:-local-${BASHPID}}-${GITHUB_RUN_ATTEMPT:-1}}"
 [[ "$cluster_name" =~ ^lbp-k8s-[a-z0-9][a-z0-9-]{0,48}$ ]] || {
@@ -147,6 +167,8 @@ work_dir="$(mktemp -d "${TMPDIR:-/tmp}/lbp-kubernetes.XXXXXX")"
 kubeconfig="$work_dir/kubeconfig"
 api_key_file="$work_dir/loadbalancerpro-api-key"
 tls_dir="$work_dir/tls"
+candidate_tls_dir="$work_dir/tls-candidate"
+tls_trust_bundle="$work_dir/tls-rollover-ca-bundle.pem"
 attack_pid=""
 rollout_sampler_pid=""
 rollout_stop_file="$work_dir/stop-rollout-sampler"
@@ -253,35 +275,77 @@ kubectl label node "${workers[0]}" loadbalancerpro.io/qualification-worker=true 
 kubectl label node "${workers[1]}" loadbalancerpro.io/qualification-worker=true topology.kubernetes.io/zone=zone-b --overwrite
 
 kind load docker-image "$proxy_image" "$candidate_image" "$fixture_image" --name "$cluster_name"
-mkdir -p "$tls_dir"
 openssl rand -hex 24 > "$api_key_file"
-ca_key="$work_dir/ca-key.pem"
-server_csr="$work_dir/server.csr"
-server_extensions="$work_dir/server-extensions.cnf"
-MSYS2_ARG_CONV_EXCL='/CN=LoadBalancerPro Kubernetes Qualification CA' \
-openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
-    -subj '/CN=LoadBalancerPro Kubernetes Qualification CA' \
-    -addext 'basicConstraints=critical,CA:TRUE' -addext 'keyUsage=critical,keyCertSign,cRLSign' \
-    -keyout "$ca_key" -out "$tls_dir/ca.pem" >/dev/null 2>&1
-MSYS2_ARG_CONV_EXCL='/CN=lbp-kubernetes.local' \
-openssl req -newkey rsa:2048 -sha256 -nodes -subj '/CN=lbp-kubernetes.local' \
-    -keyout "$tls_dir/private-key.pem" -out "$server_csr" >/dev/null 2>&1
-printf '%s\n' \
-    'subjectAltName=DNS:lbp-kubernetes.local,DNS:loadbalancerpro,DNS:loadbalancerpro.lbp-kubernetes-smoke.svc,IP:127.0.0.1' \
-    'basicConstraints=critical,CA:FALSE' \
-    'keyUsage=critical,digitalSignature,keyEncipherment' \
-    'extendedKeyUsage=serverAuth' > "$server_extensions"
-openssl x509 -req -sha256 -days 1 -in "$server_csr" -CA "$tls_dir/ca.pem" -CAkey "$ca_key" \
-    -set_serial 1 -extfile "$server_extensions" -out "$tls_dir/certificate.pem" >/dev/null 2>&1
-chmod 0600 "$api_key_file" "$tls_dir"/*
+generate_server_identity() {
+    local directory="$1" authority_common_name="$2" serial="$3"
+    local ca_key="$directory/ca-key.pem"
+    local server_csr="$directory/server.csr"
+    local server_extensions="$directory/server-extensions.cnf"
+    mkdir -p "$directory"
+    MSYS2_ARG_CONV_EXCL="/CN=$authority_common_name" \
+    openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
+        -subj "/CN=$authority_common_name" \
+        -addext 'basicConstraints=critical,CA:TRUE' -addext 'keyUsage=critical,keyCertSign,cRLSign' \
+        -keyout "$ca_key" -out "$directory/ca.pem" >/dev/null 2>&1
+    MSYS2_ARG_CONV_EXCL="/CN=$tls_hostname" \
+    openssl req -newkey rsa:2048 -sha256 -nodes -subj "/CN=$tls_hostname" \
+        -keyout "$directory/private-key.pem" -out "$server_csr" >/dev/null 2>&1
+    printf '%s\n' \
+        "subjectAltName=DNS:$tls_hostname,DNS:loadbalancerpro,DNS:loadbalancerpro.$namespace.svc,IP:127.0.0.1" \
+        'basicConstraints=critical,CA:FALSE' \
+        'keyUsage=critical,digitalSignature,keyEncipherment' \
+        'extendedKeyUsage=serverAuth' > "$server_extensions"
+    openssl x509 -req -sha256 -days 1 -in "$server_csr" -CA "$directory/ca.pem" -CAkey "$ca_key" \
+        -set_serial "$serial" -extfile "$server_extensions" -out "$directory/certificate.pem" >/dev/null 2>&1
+}
+
+certificate_fingerprint() {
+    openssl x509 -in "$1" -noout -fingerprint -sha256 \
+        | awk -F= '{print tolower($2)}' | tr -d ':'
+}
+
+generate_server_identity "$tls_dir" 'LoadBalancerPro Kubernetes Qualification CA A' 1001
+generate_server_identity "$candidate_tls_dir" 'LoadBalancerPro Kubernetes Qualification CA B' 2001
+openssl verify -CAfile "$tls_dir/ca.pem" -verify_hostname "$tls_hostname" \
+    "$tls_dir/certificate.pem" >/dev/null
+openssl verify -CAfile "$candidate_tls_dir/ca.pem" -verify_hostname "$tls_hostname" \
+    "$candidate_tls_dir/certificate.pem" >/dev/null
+if openssl verify -CAfile "$tls_dir/ca.pem" "$candidate_tls_dir/certificate.pem" >/dev/null 2>&1 \
+    || openssl verify -CAfile "$candidate_tls_dir/ca.pem" "$tls_dir/certificate.pem" >/dev/null 2>&1; then
+    echo "Generated Kubernetes TLS identities did not use independent trust roots" >&2
+    exit 1
+fi
+cat "$tls_dir/ca.pem" "$candidate_tls_dir/ca.pem" > "$tls_trust_bundle"
+baseline_certificate_fingerprint="$(certificate_fingerprint "$tls_dir/certificate.pem")"
+candidate_certificate_fingerprint="$(certificate_fingerprint "$candidate_tls_dir/certificate.pem")"
+[[ "$baseline_certificate_fingerprint" =~ ^[0-9a-f]{64}$ \
+   && "$candidate_certificate_fingerprint" =~ ^[0-9a-f]{64}$ \
+   && "$baseline_certificate_fingerprint" != "$candidate_certificate_fingerprint" ]] || {
+    echo "Generated Kubernetes TLS identities were not content-distinct" >&2; exit 1;
+}
+chmod 0600 "$api_key_file" "$tls_dir"/* "$candidate_tls_dir"/* "$tls_trust_bundle"
 
 kubectl apply --server-side --field-manager=loadbalancerpro-qualification -f "$workload_manifest"
 kubectl create secret generic loadbalancerpro-api-key --namespace "$namespace" \
     --from-file=api-key="$api_key_file"
-kubectl create secret generic loadbalancerpro-server-tls --namespace "$namespace" \
-    --from-file=tls.crt="$tls_dir/certificate.pem" \
-    --from-file=tls.key="$tls_dir/private-key.pem" \
-    --from-file=ca.crt="$tls_dir/ca.pem"
+create_immutable_tls_secret() {
+    local secret_name="$1" directory="$2"
+    kubectl create secret generic "$secret_name" --namespace "$namespace" \
+        --from-file=tls.crt="$directory/certificate.pem" \
+        --from-file=tls.key="$directory/private-key.pem" \
+        --from-file=ca.crt="$directory/ca.pem" --dry-run=client -o json \
+        | jq '.immutable = true | .type = "kubernetes.io/tls"' \
+        | kubectl create -f -
+}
+create_immutable_tls_secret "$baseline_tls_secret" "$tls_dir"
+create_immutable_tls_secret "$candidate_tls_secret" "$candidate_tls_dir"
+kubectl get "secret/$baseline_tls_secret" "secret/$candidate_tls_secret" --namespace "$namespace" -o json \
+    | jq 'del(.items[].data) | del(.items[].metadata.managedFields)' \
+    > "$output_dir/tls-secret-metadata.json"
+jq -e '(.items | length) == 2 and all(.items[]; .immutable == true and .type == "kubernetes.io/tls")' \
+    "$output_dir/tls-secret-metadata.json" >/dev/null || {
+    echo "Versioned Kubernetes TLS Secrets were not immutable TLS objects" >&2; exit 1;
+}
 kubectl patch deployment loadbalancerpro --namespace "$namespace" --type merge \
     -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"loadbalancerpro.io/source-revision\":\"$source_revision\"}}}}}"
 for deployment in backend-a backend-b loadbalancerpro; do
@@ -342,7 +406,7 @@ sample_transition_continuity() {
             -l app.kubernetes.io/name=loadbalancerpro -o json | jq '.items | length')"
         printf '%s,%s,%s,%s\n' "$(date +%s)" "$ready_pods" "$ready_endpoints" "$total_pods" >> "$output"
         if (( ready_pods < 2 || ready_endpoints < 2 )); then
-            echo "$phase image transition dropped below two ready proxy pods or Service endpoints" >&2
+            echo "$phase transition dropped below two ready proxy pods or Service endpoints" >&2
             return 1
         fi
         sleep 1
@@ -405,6 +469,64 @@ collect_distribution() {
           pods: .}' "$rows_file" > "$output_dir/${phase}-distribution.json"
 }
 
+assert_two_zone_proxy_pods() {
+    local pods_json="$1" description="$2"
+    [[ "$(jq 'length' <<< "$pods_json")" == 2 ]] || {
+        echo "$description did not converge to two ready proxy pods" >&2
+        return 1
+    }
+    [[ "$(ready_proxy_count)" == 2 && "$(ready_endpoint_count)" == 2 ]] || {
+        echo "$description did not publish exactly two ready pods and Service endpoints" >&2
+        return 1
+    }
+    [[ "$(jq '[.[].spec.nodeName] | unique | length' <<< "$pods_json")" == 2 ]] || {
+        echo "$description pods were not placed on distinct workers" >&2
+        return 1
+    }
+    local zone_count
+    zone_count="$(jq -r '.[].spec.nodeName' <<< "$pods_json" \
+        | while read -r node; do kubectl get node "$node" \
+            -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}{"\n"}'; done \
+        | sort -u | wc -l | tr -d ' ')"
+    [[ "$zone_count" == 2 ]] || {
+        echo "$description pods were not placed in distinct zones" >&2
+        return 1
+    }
+    local pod
+    while read -r pod; do
+        [[ "$(kubectl exec --namespace "$namespace" "$pod" -- id -u)" == 10001 ]] || {
+            echo "$description pod $pod is not running with UID 10001" >&2
+            return 1
+        }
+    done < <(jq -r '.[].metadata.name' <<< "$pods_json" | sort)
+}
+
+prove_post_transition_distribution() {
+    local phase="$1" seconds="$2" minimum_success="$3" proof_field="$4" failure_message="$5"
+    collect_distribution "${phase}-before"
+    run_attack "$phase" "$seconds" "$minimum_success"
+    collect_distribution "$phase"
+    jq -n --arg phase "$phase" --arg proofField "$proof_field" \
+        --slurpfile before "$output_dir/${phase}-before-distribution.json" \
+        --slurpfile after "$output_dir/${phase}-distribution.json" '
+          ($before[0]) as $before | ($after[0]) as $after |
+          {phase: $phase,
+           backendARequestDelta: ($after.backendARequests - $before.backendARequests),
+           backendBRequestDelta: ($after.backendBRequests - $before.backendBRequests),
+           pods: [$after.pods[] as $current
+             | ($before.pods[] | select(.pod == $current.pod)) as $prior
+             | {pod: $current.pod, requestDelta: ($current.requests - $prior.requests)}]}
+          + {($proofField): true}
+        ' > "$output_dir/${phase}-distribution-delta.json"
+    jq -e '(.pods | length) == 2
+        and all(.pods[]; .requestDelta > 0)
+        and .backendARequestDelta > 0
+        and .backendBRequestDelta > 0' "$output_dir/${phase}-distribution-delta.json" >/dev/null || {
+        echo "$failure_message" >&2
+        return 1
+    }
+}
+
 proxy_pods_json="$(kubectl get pod --namespace "$namespace" -l app.kubernetes.io/name=loadbalancerpro -o json)"
 initial_ready_proxy_pods_json="$(jq --arg revision "$source_revision" '[.items[]
     | select(.metadata.deletionTimestamp == null)
@@ -439,12 +561,64 @@ initial_proxy_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
 [[ "$(jq 'length' <<< "$initial_proxy_runtime_image_ids_json")" == 1 ]] || {
     echo "Initial proxy pods did not report one immutable runtime image ID" >&2; exit 1;
 }
+[[ "$(jq --arg secret "$baseline_tls_secret" '[.[] | any(.spec.volumes[]?;
+    .name == "server-tls" and .secret.secretName == $secret)] | all' \
+    <<< "$initial_ready_proxy_pods_json")" == true ]] || {
+    echo "Initial proxy pods do not reference the immutable baseline TLS Secret" >&2; exit 1;
+}
 capture_state initial
 
 api_key="$(<"$api_key_file")"
 targets="$work_dir/targets.txt"
 printf 'GET https://127.0.0.1:%s/proxy/kubernetes/topology\nX-API-Key: %s\n\n' \
     "$host_port" "$api_key" > "$targets"
+
+curl_with_ca() {
+    local ca_file="$1"
+    curl --silent --show-error --fail --cacert "$ca_file" --connect-timeout 3 --max-time 10 \
+        --header "X-API-Key: $api_key" \
+        "https://127.0.0.1:${host_port}/proxy/kubernetes/tls-identity" > /dev/null
+}
+
+assert_ca_trusts_endpoint() {
+    local ca_file="$1" description="$2"
+    curl_with_ca "$ca_file" || {
+        echo "$description did not trust the served Kubernetes TLS identity" >&2
+        return 1
+    }
+}
+
+assert_ca_rejected_by_endpoint() {
+    local ca_file="$1" description="$2"
+    if curl_with_ca "$ca_file" >/dev/null 2>&1; then
+        echo "$description unexpectedly trusted the served Kubernetes TLS identity" >&2
+        return 1
+    fi
+}
+
+served_certificate_fingerprint() {
+    local ca_file="$1"
+    openssl s_client -connect "127.0.0.1:${host_port}" -servername "$tls_hostname" \
+        -CAfile "$ca_file" -verify_return_error </dev/null 2>/dev/null \
+        | openssl x509 -noout -fingerprint -sha256 \
+        | awk -F= '{print tolower($2)}' | tr -d ':'
+}
+
+assert_served_certificate() {
+    local expected_fingerprint="$1" ca_file="$2" description="$3"
+    local observed_fingerprint attempt
+    for attempt in 1 2 3 4 5 6; do
+        observed_fingerprint="$(served_certificate_fingerprint "$ca_file")"
+        [[ "$observed_fingerprint" == "$expected_fingerprint" ]] || {
+            echo "$description served unexpected certificate fingerprint $observed_fingerprint" >&2
+            return 1
+        }
+    done
+}
+
+assert_ca_trusts_endpoint "$tls_dir/ca.pem" "Baseline CA"
+assert_ca_rejected_by_endpoint "$candidate_tls_dir/ca.pem" "Candidate-only CA before rotation"
+assert_served_certificate "$baseline_certificate_fingerprint" "$tls_dir/ca.pem" "Baseline TLS identity"
 
 report_attack() {
     local name="$1" minimum_success="$2"
@@ -469,7 +643,7 @@ report_attack() {
 run_attack() {
     local name="$1" seconds="$2" minimum_success="$3"
     vegeta attack -duration="${seconds}s" -rate="${rate}/s" -timeout=5s -keepalive=false -http2=false \
-        -root-certs="$tls_dir/ca.pem" -targets="$targets" > "$work_dir/${name}.bin"
+        -root-certs="$tls_trust_bundle" -targets="$targets" > "$work_dir/${name}.bin"
     report_attack "$name" "$minimum_success"
 }
 
@@ -485,7 +659,7 @@ rm -f -- "$rollout_stop_file"
 sample_transition_continuity rollout &
 rollout_sampler_pid=$!
 vegeta attack -duration="${rollout_duration_seconds}s" -rate="${rate}/s" -timeout=5s \
-    -keepalive=false -http2=false -root-certs="$tls_dir/ca.pem" -targets="$targets" \
+    -keepalive=false -http2=false -root-certs="$tls_trust_bundle" -targets="$targets" \
     > "$work_dir/rollout.bin" &
 attack_pid=$!
 sleep 3
@@ -609,7 +783,7 @@ rm -f -- "$rollout_stop_file"
 sample_transition_continuity rollback &
 rollout_sampler_pid=$!
 vegeta attack -duration="${rollback_duration_seconds}s" -rate="${rate}/s" -timeout=5s \
-    -keepalive=false -http2=false -root-certs="$tls_dir/ca.pem" -targets="$targets" \
+    -keepalive=false -http2=false -root-certs="$tls_trust_bundle" -targets="$targets" \
     > "$work_dir/rollback.bin" &
 attack_pid=$!
 sleep 3
@@ -723,13 +897,216 @@ jq -e '(.pods | length) == 2
     echo "Both restored baseline proxies and both backends must serve post-rollback traffic" >&2; exit 1;
 }
 
-failed_node="$(jq -r '.[0].spec.nodeName' <<< "$rollback_ready_proxy_pods_json")"
+certificate_rotation_duration_seconds="$(jq -r '.workload.certificateRotationSeconds' "$profile")"
+maximum_certificate_rotation_seconds="$(jq -r '.objectives.maximumCertificateRotationSeconds' "$profile")"
+certificate_rotation_token="$(printf '%s\n' \
+    "$source_revision|$baseline_certificate_fingerprint|$candidate_certificate_fingerprint|$default_run_id|certificate-rotation" \
+    | sha256sum | awk '{print $1}')"
+rm -f -- "$rollout_stop_file"
+sample_transition_continuity certificate-rotation &
+rollout_sampler_pid=$!
+vegeta attack -duration="${certificate_rotation_duration_seconds}s" -rate="${rate}/s" -timeout=5s \
+    -keepalive=false -http2=false -root-certs="$tls_trust_bundle" -targets="$targets" \
+    > "$work_dir/certificate-rotation.bin" &
+attack_pid=$!
+sleep 3
+certificate_rotation_started_epoch="$(date +%s)"
+certificate_rotation_patch="$(jq -cn --arg secret "$candidate_tls_secret" \
+    --arg token "$certificate_rotation_token" \
+    '{spec:{template:{metadata:{annotations:{"loadbalancerpro.io/qualification-tls-rotation":$token,
+      "loadbalancerpro.io/qualification-tls-secret":$secret}},
+      spec:{volumes:[{name:"server-tls",secret:{secretName:$secret,items:[
+        {key:"tls.crt",path:"certificate.pem"},{key:"tls.key",path:"private-key.pem"},
+        {key:"ca.crt",path:"ca.pem"}]}}]}}}}')"
+kubectl patch deployment loadbalancerpro --namespace "$namespace" --type strategic \
+    -p "$certificate_rotation_patch"
+kubectl rollout status deployment/loadbalancerpro --namespace "$namespace" \
+    --timeout="${maximum_certificate_rotation_seconds}s"
+certificate_rotation_elapsed_seconds=$(( $(date +%s) - certificate_rotation_started_epoch ))
+(( certificate_rotation_elapsed_seconds <= maximum_certificate_rotation_seconds )) || {
+    echo "Certificate rotation exceeded the rotation objective" >&2; exit 1;
+}
+if ! wait "$attack_pid"; then
+    attack_pid=""
+    echo "Certificate rotation traffic attack failed" >&2
+    exit 1
+fi
+attack_pid=""
+: > "$rollout_stop_file"
+if ! wait "$rollout_sampler_pid"; then
+    rollout_sampler_pid=""
+    echo "Certificate rotation endpoint-continuity sampler failed" >&2
+    exit 1
+fi
+rollout_sampler_pid=""
+report_attack certificate-rotation \
+    "$(jq -r '.objectives.minimumCertificateRotationSuccessRatio' "$profile")"
+certificate_rotation_sample_count="$(awk -F, 'NR > 1 { count++ } END { print count + 0 }' \
+    "$output_dir/certificate-rotation-continuity.csv")"
+certificate_rotation_min_ready_pods="$(awk -F, \
+    'NR > 1 && (minimum == "" || $2 < minimum) { minimum = $2 } END { print minimum + 0 }' \
+    "$output_dir/certificate-rotation-continuity.csv")"
+certificate_rotation_min_ready_endpoints="$(awk -F, \
+    'NR > 1 && (minimum == "" || $3 < minimum) { minimum = $3 } END { print minimum + 0 }' \
+    "$output_dir/certificate-rotation-continuity.csv")"
+(( certificate_rotation_sample_count >= 5 && certificate_rotation_min_ready_pods >= 2 \
+    && certificate_rotation_min_ready_endpoints >= 2 )) || {
+    echo "Certificate rotation continuity evidence was incomplete" >&2; exit 1;
+}
+
+certificate_rotation_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json)"
+certificate_rotation_ready_proxy_pods_json="$(jq --arg token "$certificate_rotation_token" \
+    --arg secret "$candidate_tls_secret" '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.status.phase == "Running")
+      | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+      | select(.metadata.annotations["loadbalancerpro.io/qualification-tls-rotation"] == $token)
+      | select(any(.spec.volumes[]?; .name == "server-tls" and .secret.secretName == $secret))]' \
+    <<< "$certificate_rotation_proxy_pods_json")"
+assert_two_zone_proxy_pods "$certificate_rotation_ready_proxy_pods_json" "Certificate rotation"
+certificate_rotation_proxy_uids_json="$(jq '[.[].metadata.uid] | sort' \
+    <<< "$certificate_rotation_ready_proxy_pods_json")"
+certificate_rotation_prior_uid_overlap="$(jq -n --argjson prior "$rollback_proxy_uids_json" \
+    --argjson rotated "$certificate_rotation_proxy_uids_json" \
+    '[ $prior[] as $uid | $rotated[] | select(. == $uid) ] | length')"
+[[ "$certificate_rotation_prior_uid_overlap" == 0 ]] || {
+    echo "Certificate rotation retained a baseline-certificate pod UID" >&2; exit 1;
+}
+certificate_rotation_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
+    | select(.name == "loadbalancerpro") | .imageID] | unique | sort' \
+    <<< "$certificate_rotation_ready_proxy_pods_json")"
+[[ "$certificate_rotation_runtime_image_ids_json" == "$initial_proxy_runtime_image_ids_json" ]] || {
+    echo "Certificate rotation changed the immutable runtime image ID" >&2; exit 1;
+}
+mapfile -t certificate_rotation_prior_pods < <(jq -r '.[].metadata.name' \
+    <<< "$rollback_ready_proxy_pods_json" | sort)
+for pod in "${certificate_rotation_prior_pods[@]}"; do
+    kubectl wait --for=delete "pod/$pod" --namespace "$namespace" \
+        --timeout="${maximum_certificate_rotation_seconds}s"
+done
+assert_ca_trusts_endpoint "$candidate_tls_dir/ca.pem" "Candidate CA after rotation"
+assert_ca_rejected_by_endpoint "$tls_dir/ca.pem" "Baseline-only CA after rotation"
+assert_served_certificate "$candidate_certificate_fingerprint" "$candidate_tls_dir/ca.pem" \
+    "Rotated TLS identity"
+capture_state post-certificate-rotation
+prove_post_transition_distribution post-certificate-rotation \
+    "$(jq -r '.workload.postCertificateRotationSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumPostCertificateRotationSuccessRatio' "$profile")" \
+    bothRotatedCertificateProxyReplicasServed \
+    "Both rotated-certificate proxies and both backends must serve post-rotation traffic"
+
+certificate_rollback_duration_seconds="$(jq -r '.workload.certificateRollbackSeconds' "$profile")"
+maximum_certificate_rollback_seconds="$(jq -r '.objectives.maximumCertificateRollbackSeconds' "$profile")"
+certificate_rollback_token="$(printf '%s\n' \
+    "$source_revision|$candidate_certificate_fingerprint|$baseline_certificate_fingerprint|$default_run_id|certificate-rollback" \
+    | sha256sum | awk '{print $1}')"
+rm -f -- "$rollout_stop_file"
+sample_transition_continuity certificate-rollback &
+rollout_sampler_pid=$!
+vegeta attack -duration="${certificate_rollback_duration_seconds}s" -rate="${rate}/s" -timeout=5s \
+    -keepalive=false -http2=false -root-certs="$tls_trust_bundle" -targets="$targets" \
+    > "$work_dir/certificate-rollback.bin" &
+attack_pid=$!
+sleep 3
+certificate_rollback_started_epoch="$(date +%s)"
+certificate_rollback_patch="$(jq -cn --arg secret "$baseline_tls_secret" \
+    --arg token "$certificate_rollback_token" \
+    '{spec:{template:{metadata:{annotations:{"loadbalancerpro.io/qualification-tls-rollback":$token,
+      "loadbalancerpro.io/qualification-tls-secret":$secret}},
+      spec:{volumes:[{name:"server-tls",secret:{secretName:$secret,items:[
+        {key:"tls.crt",path:"certificate.pem"},{key:"tls.key",path:"private-key.pem"},
+        {key:"ca.crt",path:"ca.pem"}]}}]}}}}')"
+kubectl patch deployment loadbalancerpro --namespace "$namespace" --type strategic \
+    -p "$certificate_rollback_patch"
+kubectl rollout status deployment/loadbalancerpro --namespace "$namespace" \
+    --timeout="${maximum_certificate_rollback_seconds}s"
+certificate_rollback_elapsed_seconds=$(( $(date +%s) - certificate_rollback_started_epoch ))
+(( certificate_rollback_elapsed_seconds <= maximum_certificate_rollback_seconds )) || {
+    echo "Certificate rollback exceeded the rollback objective" >&2; exit 1;
+}
+if ! wait "$attack_pid"; then
+    attack_pid=""
+    echo "Certificate rollback traffic attack failed" >&2
+    exit 1
+fi
+attack_pid=""
+: > "$rollout_stop_file"
+if ! wait "$rollout_sampler_pid"; then
+    rollout_sampler_pid=""
+    echo "Certificate rollback endpoint-continuity sampler failed" >&2
+    exit 1
+fi
+rollout_sampler_pid=""
+report_attack certificate-rollback \
+    "$(jq -r '.objectives.minimumCertificateRollbackSuccessRatio' "$profile")"
+certificate_rollback_sample_count="$(awk -F, 'NR > 1 { count++ } END { print count + 0 }' \
+    "$output_dir/certificate-rollback-continuity.csv")"
+certificate_rollback_min_ready_pods="$(awk -F, \
+    'NR > 1 && (minimum == "" || $2 < minimum) { minimum = $2 } END { print minimum + 0 }' \
+    "$output_dir/certificate-rollback-continuity.csv")"
+certificate_rollback_min_ready_endpoints="$(awk -F, \
+    'NR > 1 && (minimum == "" || $3 < minimum) { minimum = $3 } END { print minimum + 0 }' \
+    "$output_dir/certificate-rollback-continuity.csv")"
+(( certificate_rollback_sample_count >= 5 && certificate_rollback_min_ready_pods >= 2 \
+    && certificate_rollback_min_ready_endpoints >= 2 )) || {
+    echo "Certificate rollback continuity evidence was incomplete" >&2; exit 1;
+}
+
+certificate_rollback_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json)"
+certificate_rollback_ready_proxy_pods_json="$(jq --arg token "$certificate_rollback_token" \
+    --arg secret "$baseline_tls_secret" '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.status.phase == "Running")
+      | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+      | select(.metadata.annotations["loadbalancerpro.io/qualification-tls-rollback"] == $token)
+      | select(any(.spec.volumes[]?; .name == "server-tls" and .secret.secretName == $secret))]' \
+    <<< "$certificate_rollback_proxy_pods_json")"
+assert_two_zone_proxy_pods "$certificate_rollback_ready_proxy_pods_json" "Certificate rollback"
+certificate_rollback_proxy_uids_json="$(jq '[.[].metadata.uid] | sort' \
+    <<< "$certificate_rollback_ready_proxy_pods_json")"
+certificate_rollback_candidate_uid_overlap="$(jq -n \
+    --argjson candidate "$certificate_rotation_proxy_uids_json" \
+    --argjson restored "$certificate_rollback_proxy_uids_json" \
+    '[ $candidate[] as $uid | $restored[] | select(. == $uid) ] | length')"
+certificate_rollback_prior_uid_overlap="$(jq -n --argjson prior "$rollback_proxy_uids_json" \
+    --argjson restored "$certificate_rollback_proxy_uids_json" \
+    '[ $prior[] as $uid | $restored[] | select(. == $uid) ] | length')"
+[[ "$certificate_rollback_candidate_uid_overlap" == 0 \
+    && "$certificate_rollback_prior_uid_overlap" == 0 ]] || {
+    echo "Certificate rollback retained a prior TLS pod UID" >&2; exit 1;
+}
+certificate_rollback_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
+    | select(.name == "loadbalancerpro") | .imageID] | unique | sort' \
+    <<< "$certificate_rollback_ready_proxy_pods_json")"
+[[ "$certificate_rollback_runtime_image_ids_json" == "$initial_proxy_runtime_image_ids_json" ]] || {
+    echo "Certificate rollback changed the immutable runtime image ID" >&2; exit 1;
+}
+mapfile -t certificate_rollback_prior_pods < <(jq -r '.[].metadata.name' \
+    <<< "$certificate_rotation_ready_proxy_pods_json" | sort)
+for pod in "${certificate_rollback_prior_pods[@]}"; do
+    kubectl wait --for=delete "pod/$pod" --namespace "$namespace" \
+        --timeout="${maximum_certificate_rollback_seconds}s"
+done
+assert_ca_trusts_endpoint "$tls_dir/ca.pem" "Baseline CA after certificate rollback"
+assert_ca_rejected_by_endpoint "$candidate_tls_dir/ca.pem" "Candidate-only CA after certificate rollback"
+assert_served_certificate "$baseline_certificate_fingerprint" "$tls_dir/ca.pem" \
+    "Restored baseline TLS identity"
+capture_state post-certificate-rollback
+prove_post_transition_distribution post-certificate-rollback \
+    "$(jq -r '.workload.postCertificateRollbackSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumPostCertificateRollbackSuccessRatio' "$profile")" \
+    bothRestoredCertificateProxyReplicasServed \
+    "Both restored-certificate proxies and both backends must serve post-certificate-rollback traffic"
+
+failed_node="$(jq -r '.[0].spec.nodeName' <<< "$certificate_rollback_ready_proxy_pods_json")"
 [[ "$failed_node" == "${cluster_name}-worker" || "$failed_node" == "${cluster_name}-worker2" ]] || {
     echo "Refusing to drain unexpected node $failed_node" >&2; exit 1;
 }
 transition_seconds="$(jq -r '.workload.transitionSeconds' "$profile")"
 vegeta attack -duration="${transition_seconds}s" -rate="${rate}/s" -timeout=5s -keepalive=false -http2=false \
-    -root-certs="$tls_dir/ca.pem" -targets="$targets" > "$work_dir/transition.bin" &
+    -root-certs="$tls_trust_bundle" -targets="$targets" > "$work_dir/transition.bin" &
 attack_pid=$!
 sleep 3
 kubectl drain "$failed_node" --ignore-daemonsets --delete-emptydir-data --timeout=120s
@@ -812,7 +1189,7 @@ abrupt_transition_seconds="$(jq -r '.workload.abruptTransitionSeconds' "$profile
 maximum_abrupt_endpoint_withdrawal_seconds="$(jq -r \
     '.objectives.maximumAbruptEndpointWithdrawalSeconds' "$profile")"
 vegeta attack -duration="${abrupt_transition_seconds}s" -rate="${rate}/s" -timeout=5s \
-    -keepalive=false -http2=false -root-certs="$tls_dir/ca.pem" -targets="$targets" \
+    -keepalive=false -http2=false -root-certs="$tls_trust_bundle" -targets="$targets" \
     > "$work_dir/abrupt-transition.bin" &
 attack_pid=$!
 sleep 3
@@ -913,6 +1290,8 @@ sha256sum "$profile" "$cluster_config" "$workload_manifest" "$candidate_dockerfi
 baseline_distribution_json="$(<"$output_dir/baseline-distribution.json")"
 post_rollout_distribution_delta_json="$(<"$output_dir/post-rollout-distribution-delta.json")"
 post_rollback_distribution_delta_json="$(<"$output_dir/post-rollback-distribution-delta.json")"
+post_certificate_rotation_distribution_delta_json="$(<"$output_dir/post-certificate-rotation-distribution-delta.json")"
+post_certificate_rollback_distribution_delta_json="$(<"$output_dir/post-certificate-rollback-distribution-delta.json")"
 recovered_distribution_delta_json="$(<"$output_dir/recovered-distribution-delta.json")"
 abrupt_recovered_distribution_delta_json="$(<"$output_dir/abrupt-recovered-distribution-delta.json")"
 jq -n \
@@ -924,6 +1303,12 @@ jq -n \
     --arg candidateReleaseId "$candidate_release_id" \
     --arg rolloutToken "$rollout_token" \
     --arg rollbackToken "$rollback_token" \
+    --arg baselineTlsSecret "$baseline_tls_secret" \
+    --arg candidateTlsSecret "$candidate_tls_secret" \
+    --arg baselineCertificateFingerprint "$baseline_certificate_fingerprint" \
+    --arg candidateCertificateFingerprint "$candidate_certificate_fingerprint" \
+    --arg certificateRotationToken "$certificate_rotation_token" \
+    --arg certificateRollbackToken "$certificate_rollback_token" \
     --arg drainedWorker "$failed_node" \
     --arg abruptWorker "$abrupt_node" \
     --arg abruptFailedProxyUid "$abrupt_failed_proxy_uid" \
@@ -934,6 +1319,10 @@ jq -n \
     --argjson baselineRuntimeImageIds "$initial_proxy_runtime_image_ids_json" \
     --argjson candidateRuntimeImageIds "$replacement_proxy_runtime_image_ids_json" \
     --argjson restoredRuntimeImageIds "$rollback_proxy_runtime_image_ids_json" \
+    --argjson certificateRotationPodUids "$certificate_rotation_proxy_uids_json" \
+    --argjson certificateRollbackPodUids "$certificate_rollback_proxy_uids_json" \
+    --argjson certificateRotationRuntimeImageIds "$certificate_rotation_runtime_image_ids_json" \
+    --argjson certificateRollbackRuntimeImageIds "$certificate_rollback_runtime_image_ids_json" \
     --argjson rolloutSeconds "$rollout_elapsed_seconds" \
     --argjson rolloutSamples "$rollout_sample_count" \
     --argjson rolloutMinimumReadyPods "$rollout_min_ready_pods" \
@@ -942,15 +1331,25 @@ jq -n \
     --argjson rollbackSamples "$rollback_sample_count" \
     --argjson rollbackMinimumReadyPods "$rollback_min_ready_pods" \
     --argjson rollbackMinimumReadyEndpoints "$rollback_min_ready_endpoints" \
+    --argjson certificateRotationSeconds "$certificate_rotation_elapsed_seconds" \
+    --argjson certificateRotationSamples "$certificate_rotation_sample_count" \
+    --argjson certificateRotationMinimumReadyPods "$certificate_rotation_min_ready_pods" \
+    --argjson certificateRotationMinimumReadyEndpoints "$certificate_rotation_min_ready_endpoints" \
+    --argjson certificateRollbackSeconds "$certificate_rollback_elapsed_seconds" \
+    --argjson certificateRollbackSamples "$certificate_rollback_sample_count" \
+    --argjson certificateRollbackMinimumReadyPods "$certificate_rollback_min_ready_pods" \
+    --argjson certificateRollbackMinimumReadyEndpoints "$certificate_rollback_min_ready_endpoints" \
     --argjson recoverySeconds "$recovery_seconds" \
     --argjson abruptEndpointWithdrawalSeconds "$abrupt_endpoint_withdrawal_seconds" \
     --argjson abruptRecoverySeconds "$abrupt_recovery_seconds" \
     --argjson baselineDistribution "$baseline_distribution_json" \
     --argjson postRolloutDistribution "$post_rollout_distribution_delta_json" \
     --argjson postRollbackDistribution "$post_rollback_distribution_delta_json" \
+    --argjson postCertificateRotationDistribution "$post_certificate_rotation_distribution_delta_json" \
+    --argjson postCertificateRollbackDistribution "$post_certificate_rollback_distribution_delta_json" \
     --argjson recoveredDistribution "$recovered_distribution_delta_json" \
     --argjson abruptRecoveredDistribution "$abrupt_recovered_distribution_delta_json" \
-    '{schemaVersion: 4, result: "pass", evidenceBoundary: "disposable loopback kind metadata-only content-distinct image rollout and baseline rollback, planned worker loss, and operator-remediated abrupt worker-container loss; not automatic infrastructure-failure detection, application-layer release compatibility, registry/source binding, deployment-ingress, or deployment-capacity proof",
+    '{schemaVersion: 5, result: "pass", evidenceBoundary: "disposable loopback kind metadata-only content-distinct image rollout and baseline rollback, versioned immutable inbound-server TLS Secret rotation and identity rollback, planned worker loss, and operator-remediated abrupt worker-container loss; not an ingress-controller, automatic infrastructure-failure detection, application-layer release compatibility, registry/source binding, external certificate-authority, client trust-distribution, or deployment-capacity proof",
       profileId: $profileId, repositoryRevision: $sourceRevision,
       images: {identityType: "local Docker content-addressed image ID",
         baseline: {contentId: $proxyImageId},
@@ -958,11 +1357,14 @@ jq -n \
         fixtureContentId: $fixtureImageId, applicationLayersIdentical: true},
       topology: {workers: 2, zones: 2, initialProxyReplicas: 2, postRolloutProxyReplicas: 2,
         postRollbackProxyReplicas: 2,
+        postCertificateRotationProxyReplicas: 2, postCertificateRollbackProxyReplicas: 2,
         degradedProxyReplicas: 1, recoveredProxyReplicas: 2,
         abruptDegradedProxyReplicas: 1, abruptRecoveredProxyReplicas: 2},
       traffic: {bothProxyReplicasServed: true, baseline: $baselineDistribution,
         rollout: "pass", postRollout: $postRolloutDistribution,
         rollback: "pass", postRollback: $postRollbackDistribution,
+        certificateRotation: "pass", postCertificateRotation: $postCertificateRotationDistribution,
+        certificateRollback: "pass", postCertificateRollback: $postCertificateRollbackDistribution,
         drainTransition: "pass", degraded: "pass", recovered: $recoveredDistribution,
         abruptTransition: "pass", abruptDegraded: "pass",
         abruptRecovered: $abruptRecoveredDistribution},
@@ -982,6 +1384,32 @@ jq -n \
         rollbackSeconds: $rollbackSeconds, continuitySamples: $rollbackSamples,
         minimumReadyProxyPods: $rollbackMinimumReadyPods,
         minimumReadyServiceEndpoints: $rollbackMinimumReadyEndpoints},
+      tlsRotationExercise: {
+        identityType: "generated one-day leaf fingerprint bound to an independently generated local CA",
+        secrets: {immutable: true, baseline: $baselineTlsSecret, candidate: $candidateTlsSecret},
+        baseline: {leafSha256Fingerprint: $baselineCertificateFingerprint,
+          authority: "CN=LoadBalancerPro Kubernetes Qualification CA A"},
+        candidate: {leafSha256Fingerprint: $candidateCertificateFingerprint,
+          authority: "CN=LoadBalancerPro Kubernetes Qualification CA B"},
+        trustRollover: {continuousTrafficBundleContainsBothAuthorities: true,
+          candidateOnlyRejectedBeforeRotation: true,
+          baselineOnlyRejectedAfterRotation: true,
+          candidateOnlyRejectedAfterRollback: true},
+        rotation: {triggerAnnotation: $certificateRotationToken,
+          priorPodUids: $restoredPodUids, rotatedPodUids: $certificateRotationPodUids,
+          retainedPriorPodUids: 0, runtimeImageIds: $certificateRotationRuntimeImageIds,
+          runtimeImageUnchanged: true, servedCandidateFingerprint: true,
+          rotationSeconds: $certificateRotationSeconds, continuitySamples: $certificateRotationSamples,
+          minimumReadyProxyPods: $certificateRotationMinimumReadyPods,
+          minimumReadyServiceEndpoints: $certificateRotationMinimumReadyEndpoints},
+        rollback: {triggerAnnotation: $certificateRollbackToken,
+          rotatedPodUids: $certificateRotationPodUids, restoredPodUids: $certificateRollbackPodUids,
+          retainedRotatedPodUids: 0, retainedPriorBaselinePodUids: 0,
+          runtimeImageIds: $certificateRollbackRuntimeImageIds, runtimeImageUnchanged: true,
+          restoredBaselineFingerprint: true,
+          rollbackSeconds: $certificateRollbackSeconds, continuitySamples: $certificateRollbackSamples,
+          minimumReadyProxyPods: $certificateRollbackMinimumReadyPods,
+          minimumReadyServiceEndpoints: $certificateRollbackMinimumReadyEndpoints}},
       workerExercise: {planned: {drainedAndStopped: $drainedWorker, recoverySeconds: $recoverySeconds},
         abrupt: {stoppedWithoutDrain: $abruptWorker,
           remediation: "verified-down out-of-service:NoExecute taint plus forced API deletion",
@@ -991,4 +1419,4 @@ jq -n \
           recoverySeconds: $abruptRecoverySeconds}}}' \
     > "$output_dir/summary.json"
 
-printf 'Kubernetes two-zone content-distinct rollout, baseline rollback, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"
+printf 'Kubernetes two-zone image rollout/rollback, immutable TLS identity rotation/rollback, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"

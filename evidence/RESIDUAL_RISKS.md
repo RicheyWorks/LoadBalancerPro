@@ -43,7 +43,7 @@ Reference evidence:
 | RR-008 | External OAuth issuer/JWK trust and availability | High | Medium | Deployment | Accepted |
 | RR-009 | Operator misconfiguration | High | Medium | Operator | Accepted |
 | RR-010 | Dependency/supply-chain drift | High | Medium | App | Needs Future Hardening |
-| RR-011 | Framework-generated error surface review | Medium | Medium | App | Needs Future Hardening |
+| RR-011 | Framework-generated error surface review | Medium | Medium | App | Mitigated |
 | RR-012 | Lack of live chaos/SLO validation | Medium | Medium | Future Work | Accepted |
 | RR-013 | No formal verification/model checking | Medium | Low | Future Work | Accepted |
 | RR-014 | API keys as compatibility auth mode | Medium | Medium | Future Work | Accepted |
@@ -163,14 +163,14 @@ Reference evidence:
 
 ### RR-011: Framework-Generated Error Surface Review
 
-- Description: Core error paths have safe-envelope coverage, but every possible framework-generated 404/405/415/proxy-level error variant is not claimed to have identical project JSON-envelope behavior.
+- Description: Core error paths have safe-envelope coverage, including framework-generated unknown-route, unsupported-method, and unsupported-media responses, but every possible future framework or proxy-level variant is not claimed to have identical behavior.
 - Severity: Medium.
 - Likelihood: Medium.
-- Current mitigation: Core validation, auth, request-size, malformed JSON, and LASE failure paths use safe envelopes or redaction where covered.
-- Evidence/tests: `evidence/TEST_EVIDENCE.md` records safe-envelope coverage for core API paths. `evidence/THREAT_MODEL.md` and `evidence/SAFETY_INVARIANTS.md` both identify broader framework-generated errors as residual review scope.
+- Current mitigation: Central exception handling returns fixed JSON envelopes for unknown resources, unsupported methods, and unsupported media types. Authentication still runs before unknown-route disclosure in hardened API-key mode, and query values are omitted from the returned path.
+- Evidence/tests: `AllocatorControllerTest` covers local 404/405/415 envelopes and query-value omission, `RoutingControllerTest` covers routing 405/415 envelopes, and `ProdApiKeyProtectionTest` covers authentication-before-404 plus secret/query omission. `evidence/THREAT_MODEL.md` and `evidence/SAFETY_INVARIANTS.md` retain broader future-variant review scope.
 - Owner: App.
-- Status: Needs Future Hardening.
-- Recommended next action: Add focused contract tests for less-common 404/405/415 and unsupported-media/method paths before hostile exposure.
+- Status: Mitigated.
+- Recommended next action: Preserve these contracts when adding controllers or upgrading Spring, and add focused coverage for any new proxy or framework error variant before hostile exposure.
 
 ### RR-012: Lack of Live Chaos/SLO Validation
 

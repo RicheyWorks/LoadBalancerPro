@@ -46,7 +46,7 @@ mvn -q test
 ## Input/API Hardening Tests
 
 - Allocation API validation rejects malformed JSON, invalid server fields, negative load, empty server lists, and oversized request bodies with safe JSON envelopes.
-- Safe error envelopes avoid stack traces and exception-class leakage.
+- Safe error envelopes avoid stack traces and exception-class leakage. Framework-generated unknown-route, unsupported-method, and unsupported-media responses use the project JSON envelope; hardened API-key mode authenticates unknown API routes before returning a `404`, and returned paths omit query values.
 - CSV/JSON import tests cover malformed rows, unexpected fields, non-finite values, empty input, trailing JSON data, and CSV formula-injection handling.
 - Allocation/evaluation DTO omission coverage verifies omitted `requestedLoad`, server telemetry, capacity, weight, and health fields fail validation instead of defaulting to `0`, `0.0`, or `false`.
 

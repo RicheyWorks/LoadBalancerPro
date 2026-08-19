@@ -221,6 +221,31 @@ class ProdApiKeyProtectionTest {
     }
 
     @Test
+    void prodProfileAuthenticatesUnknownApiRoutesBeforeReturningSafeNotFoundEnvelope() throws Exception {
+        String path = "/api/does-not-exist";
+
+        mockMvc.perform(get(path))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is(path)));
+
+        mockMvc.perform(get(path)
+                        .param("token", "sensitive-query-value")
+                        .header("X-API-Key", API_KEY))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(content().string(not(containsString("sensitive-query-value"))))
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.error", is("not_found")))
+                .andExpect(jsonPath("$.message", is("Resource not found")))
+                .andExpect(jsonPath("$.path", is(path)))
+                .andExpect(jsonPath("$.details").isEmpty())
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist());
+    }
+
+    @Test
     void prodProfileProtectsProxyStatusWithoutApiKey() throws Exception {
         mockMvc.perform(get("/api/proxy/status"))
                 .andExpect(status().isUnauthorized())

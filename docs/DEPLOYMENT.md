@@ -105,13 +105,15 @@ surge pod, preferred host spreading, a one-replica disruption budget, startup/re
 preStop delay, a 40-second termination window, a token-free service account, numeric non-root execution, and external
 Secret/ConfigMap mounts. Its image remains a deliberately non-resolving digest placeholder. The disposable
 [`../scripts/bench/proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) lane applies the
-separate loopback qualification workload and proves same-image rolling pod replacement under continuous traffic,
-complete pod-UID turnover, ready-endpoint continuity, two-zone Service distribution, planned worker removal, and
+separate loopback qualification workload and proves a metadata-only content-distinct candidate rollout and baseline
+rollback under continuous traffic, complete pod-UID turnover in both directions, runtime-image identity transition and
+restoration, ready-endpoint continuity, two-zone Service distribution, planned worker removal, and
 operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
 confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless
 qualification pods from the API. The disposable cluster also pins immediate EndpointSlice-triggered iptables updates
 and a one-second kube-proxy cleanup sync; operators must review the equivalent setting or managed-ingress
-behavior for their environment. It does not prove automatic deployment failure detection. The reviewed staging runner
+behavior for their environment. The candidate preserves the baseline application layers, so this does not prove
+application-layer release compatibility or automatic deployment failure detection. The reviewed staging runner
 separately validates the external target's digest, replicas, zones, resources,
 configuration, ingress, metrics, drain, and transitions; local proof does not establish registry integrity, deployment
 capacity, external ingress behavior, or production readiness.

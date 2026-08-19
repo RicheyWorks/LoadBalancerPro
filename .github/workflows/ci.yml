@@ -537,6 +537,7 @@ jobs:
           LBP_KUBERNETES_CLUSTER: lbp-k8s-${{ github.run_id }}-${{ github.run_attempt }}
           LBP_KUBERNETES_OUTPUT_DIR: target/kubernetes/ci-smoke
           LBP_KUBERNETES_PROXY_SOURCE_IMAGE: loadbalancerpro:ci
+          LBP_KUBERNETES_CANDIDATE_SOURCE_IMAGE: loadbalancerpro:immutable-candidate-ci
           LBP_KUBERNETES_FIXTURE_SOURCE_IMAGE: loadbalancerpro:proxy-prod-fixture-ci
         run: |
           set -euo pipefail

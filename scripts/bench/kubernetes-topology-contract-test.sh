@@ -14,7 +14,7 @@ trap cleanup EXIT
 
 bash -n "$runner"
 bash "$runner" --mode validate --profile "$profile" > "$work_dir/valid.log"
-grep -Fq 'service-distribution per-replica-metrics rolling-replacement endpoint-continuity pod-identity-turnover post-rollout-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery' \
+grep -Fq 'service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery' \
     "$work_dir/valid.log"
 
 assert_rejected() {
@@ -30,7 +30,7 @@ assert_rejected() {
 
 assert_rejected production-status '.review.status = "reviewed"'
 assert_rejected legacy-schema '.schemaVersion = 1'
-assert_rejected previous-schema '.schemaVersion = 2'
+assert_rejected previous-schema '.schemaVersion = 3'
 assert_rejected skewed-kubectl '.cluster.kubectlVersion = "v1.32.2"'
 assert_rejected mutable-node-image '.cluster.nodeImageDigest = "sha256:" + ("f" * 64)'
 assert_rejected one-worker '.cluster.workers = 1'
@@ -42,6 +42,9 @@ assert_rejected low-rate '.workload.ratePerSecond = 1'
 assert_rejected short-rollout '.workload.rolloutSeconds = 10'
 assert_rejected short-post-rollout '.workload.postRolloutSeconds = 1'
 assert_rejected rollout-window-too-short '.workload.rolloutSeconds = .objectives.maximumRolloutSeconds'
+assert_rejected short-rollback '.workload.rollbackSeconds = 10'
+assert_rejected short-post-rollback '.workload.postRollbackSeconds = 1'
+assert_rejected rollback-window-too-short '.workload.rollbackSeconds = .objectives.maximumRollbackSeconds'
 assert_rejected short-transition '.workload.transitionSeconds = 5'
 assert_rejected short-abrupt-transition '.workload.abruptTransitionSeconds = 5'
 assert_rejected short-abrupt-degraded '.workload.abruptDegradedSeconds = 1'
@@ -49,7 +52,10 @@ assert_rejected short-abrupt-recovered '.workload.abruptRecoveredSeconds = 1'
 assert_rejected abrupt-window-too-short '.workload.abruptTransitionSeconds = .objectives.maximumAbruptEndpointWithdrawalSeconds'
 assert_rejected weak-rollout-objective '.objectives.minimumRolloutSuccessRatio = 0.5'
 assert_rejected weak-post-rollout-objective '.objectives.minimumPostRolloutSuccessRatio = 0.5'
+assert_rejected weak-rollback-objective '.objectives.minimumRollbackSuccessRatio = 0.5'
+assert_rejected weak-post-rollback-objective '.objectives.minimumPostRollbackSuccessRatio = 0.5'
 assert_rejected long-rollout '.objectives.maximumRolloutSeconds = 180'
+assert_rejected long-rollback '.objectives.maximumRollbackSeconds = 180'
 assert_rejected weak-transition-objective '.objectives.minimumTransitionSuccessRatio = 0.5'
 assert_rejected weak-abrupt-transition-objective '.objectives.minimumAbruptTransitionSuccessRatio = 0.5'
 assert_rejected weak-abrupt-degraded-objective '.objectives.minimumAbruptDegradedSuccessRatio = 0.5'
@@ -59,4 +65,4 @@ assert_rejected long-abrupt-endpoint-withdrawal '.objectives.maximumAbruptEndpoi
 assert_rejected long-recovery '.objectives.maximumRecoverySeconds = 600'
 assert_rejected long-abrupt-recovery '.objectives.maximumAbruptRecoverySeconds = 600'
 
-printf 'Kubernetes topology contract rejected 30 unsafe profiles without creating a cluster.\n'
+printf 'Kubernetes topology contract rejected 36 unsafe profiles without creating a cluster.\n'

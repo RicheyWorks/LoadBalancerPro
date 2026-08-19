@@ -156,8 +156,11 @@ metrics, replica loss, and recovery under load.
 
 [`proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) adds a live disposable Kubernetes proof:
 two restricted proxy replicas are scheduled across two labeled worker zones, Kubernetes Service traffic must reach both
-replicas and both backends, a zero-unavailable rolling replacement must turn over both pod UIDs without dropping below
-two ready Service endpoints, both replacement replicas and both backends must serve post-rollout traffic, one worker is
+replicas and both backends, a zero-unavailable content-distinct candidate rollout must turn over both pod UIDs without
+dropping below
+two ready Service endpoints, both candidate replicas and both backends must serve post-rollout traffic, and a baseline
+rollback must repeat the continuity and pod-turnover proof, restore the initial runtime image identity, and serve traffic
+through both restored replicas and backends. One worker is then
 drained and stopped under load, degraded traffic must continue through the remaining replica, and the stopped worker
 and second replica must recover inside the bound, and both recovered replicas and backends must serve new traffic. It
 then forcibly stops that recovered worker without a drain, confirms the container is down, and applies the documented
@@ -165,9 +168,10 @@ out-of-service `NoExecute` remediation. It force-removes the three exact statele
 endpoint withdrawal, proves degraded traffic, rejects the failed pod identity after recovery, and requires both
 recovered replicas and backends to serve new traffic. The disposable cluster pins iptables-mode kube-proxy
 to immediate EndpointSlice-triggered updates and a one-second cleanup sync; deployment environments must review the
-equivalent Service/ingress failure-detection and reconciliation behavior. The replacement reuses one exact local image
-content ID, so it proves Kubernetes mechanics
-rather than compatibility between releases. The reviewed deployment ingress, deployment-equivalent resources, registry
+equivalent Service/ingress failure-detection and reconciliation behavior. The candidate has a distinct local image
+content ID but preserves the baseline application layers, so it proves Kubernetes transition and rollback mechanics
+rather than compatibility between application releases. The reviewed deployment ingress, deployment-equivalent
+resources, registry
 digest transition, and automatic infrastructure-failure detection remain staging gates.
 
 ### 4. Stage The Rollout And Rollback
@@ -185,10 +189,11 @@ history/progress, required zone separation, preferred host separation, and a one
 adapter compiler supplies the matching rollout/rollback, fault, reset, inspection, and telemetry executables. They
 remain unapplied until an authorized staging environment supplies the reviewed cluster and workload profiles.
 
-The disposable Kubernetes lane executes that zero-unavailable strategy under continuous traffic, repeatedly samples
-ready pods and Service endpoints with a one-second pause between queries, proves complete pod-UID turnover and unchanged
-runtime image identity, restores two-zone placement, and requires positive post-rollout traffic deltas on both
-replacement replicas and both backends.
+The disposable Kubernetes lane executes that zero-unavailable strategy in both directions under continuous traffic,
+repeatedly samples ready pods and Service endpoints with a one-second pause between queries, proves complete pod-UID
+turnover and a content-distinct runtime image transition, then proves another complete pod turnover and restoration of
+the initial runtime image identity. It restores two-zone placement and requires positive post-transition traffic deltas
+on both candidate/restored replicas and both backends.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,

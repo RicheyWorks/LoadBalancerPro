@@ -17,6 +17,7 @@ class KubernetesLiveTopologyContractTest {
     private static final Path DOCKERFILE = Path.of("Dockerfile");
     private static final Path CLUSTER = Path.of("deploy/kubernetes/kind-cluster.yaml");
     private static final Path WORKLOAD = Path.of("deploy/kubernetes/qualification.yaml");
+    private static final Path CANDIDATE = Path.of("deploy/topology/RolloutCandidate.Dockerfile");
     private static final Path PROFILE = Path.of("scripts/bench/kubernetes-topology-profile.example.json");
     private static final Path RUNNER = Path.of("scripts/bench/proxy-kubernetes-topology.sh");
     private static final Path CONTRACT = Path.of("scripts/bench/kubernetes-topology-contract-test.sh");
@@ -62,7 +63,7 @@ class KubernetesLiveTopologyContractTest {
                 "kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48"));
 
         JsonNode profile = new ObjectMapper().readTree(read(PROFILE));
-        assertEquals(3, profile.path("schemaVersion").asInt());
+        assertEquals(4, profile.path("schemaVersion").asInt());
         assertEquals("example", profile.path("review").path("status").asText());
         assertEquals("v1.34.3", profile.path("cluster").path("kubectlVersion").asText());
         assertEquals(2, profile.path("cluster").path("workers").asInt());
@@ -74,6 +75,10 @@ class KubernetesLiveTopologyContractTest {
                 >= profile.path("objectives").path("maximumRolloutSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumRolloutSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("minimumPostRolloutSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("workload").path("rollbackSeconds").asInt()
+                >= profile.path("objectives").path("maximumRollbackSeconds").asInt() + 5);
+        assertTrue(profile.path("objectives").path("minimumRollbackSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumPostRollbackSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("workload").path("abruptTransitionSeconds").asInt()
                 >= profile.path("objectives").path("maximumAbruptEndpointWithdrawalSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumAbruptTransitionSuccessRatio").asDouble() >= 0.90);
@@ -83,11 +88,14 @@ class KubernetesLiveTopologyContractTest {
     }
 
     @Test
-    void runnerExecutesLiveRollingReplacementPlannedAndAbruptWorkerLossChecks() throws IOException {
+    void runnerExecutesLiveImageTransitionRollbackPlannedAndAbruptWorkerLossChecks() throws IOException {
         String runner = read(RUNNER);
+        assertTrue(read(CANDIDATE).contains("metadata-only-local-candidate"));
         for (String behavior : List.of(
                 "kind create cluster",
                 "kind load docker-image",
+                "Kubernetes rollout candidate is not content-distinct from the baseline image",
+                "Kubernetes rollout candidate changed application layers",
                 "Refusing to reuse or delete an existing kind cluster",
                 "Live kube-proxy config is missing",
                 "kube-proxy-config.yaml",
@@ -96,17 +104,26 @@ class KubernetesLiveTopologyContractTest {
                 "-keepalive=false",
                 "${phase}-${pod}-metrics.txt",
                 "loadbalancerpro.io/qualification-rollout",
+                "loadbalancerpro.io/qualification-release",
+                "--arg image \"$candidate_image\"",
                 "kubectl rollout status deployment/loadbalancerpro",
                 "rollout-continuity.csv",
+                "rollback-continuity.csv",
                 ".metadata.deletionTimestamp == null",
                 ".conditions.terminating != true",
                 "Rolling replacement retained an initial proxy pod UID",
-                "Rolling replacement changed the immutable runtime image ID",
+                "Candidate rollout did not change the immutable runtime image ID",
                 "post-rollout-distribution-delta.json",
                 "bothReplacementProxyReplicasServed: true",
+                "Baseline rollback retained a prior proxy pod UID",
+                "Baseline rollback did not restore the initial immutable runtime image ID",
+                "post-rollback-distribution-delta.json",
+                "bothRestoredBaselineProxyReplicasServed: true",
                 "priorPodUids: $priorPodUids",
-                "replacementPodUids: $replacementPodUids",
-                "sameRuntimeImageId: true",
+                "candidatePodUids: $candidatePodUids",
+                "restoredPodUids: $restoredPodUids",
+                "contentDistinctRuntimeImageId: true",
+                "restoredInitialRuntimeImageId: true",
                 "kubectl drain",
                 "docker stop",
                 "ready Service endpoints while one worker is stopped",
@@ -128,7 +145,7 @@ class KubernetesLiveTopologyContractTest {
                 "bothProxyReplicasServed: true")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 30 unsafe profiles without creating a cluster"));
+        assertTrue(read(CONTRACT).contains("rejected 36 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
     }
@@ -140,6 +157,7 @@ class KubernetesLiveTopologyContractTest {
         assertTrue(ci.contains("ab60ca5f0fd60c1eb81b52909e67060e3ba0bd27e55a8ac147cbc2172ff14212"));
         assertTrue(ci.contains("bash scripts/bench/kubernetes-topology-contract-test.sh"));
         assertTrue(ci.contains("bash scripts/bench/proxy-kubernetes-topology.sh --mode smoke"));
+        assertTrue(ci.contains("LBP_KUBERNETES_CANDIDATE_SOURCE_IMAGE: loadbalancerpro:immutable-candidate-ci"));
         assertTrue(ci.contains("name: kubernetes-live-topology-smoke-"));
     }
 

@@ -6,6 +6,7 @@ repo_root="$(cd "$script_dir/../.." && pwd)"
 cluster_config="$repo_root/deploy/kubernetes/kind-cluster.yaml"
 workload_manifest="$repo_root/deploy/kubernetes/qualification.yaml"
 example_profile="$script_dir/kubernetes-topology-profile.example.json"
+candidate_dockerfile="$repo_root/deploy/topology/RolloutCandidate.Dockerfile"
 
 mode=validate
 profile="$example_profile"
@@ -19,12 +20,12 @@ while [[ $# -gt 0 ]]; do
 done
 case "$mode" in validate|smoke) ;; *) echo "Mode must be validate or smoke" >&2; exit 2 ;; esac
 command -v jq >/dev/null 2>&1 || { echo "jq is required" >&2; exit 2; }
-for required_file in "$cluster_config" "$workload_manifest" "$profile"; do
+for required_file in "$cluster_config" "$workload_manifest" "$candidate_dockerfile" "$profile"; do
     [[ -f "$required_file" ]] || { echo "Missing required file: $required_file" >&2; exit 2; }
 done
 
 jq -e '
-  .schemaVersion == 3
+  .schemaVersion == 4
   and (.profileId | type == "string" and test("^[a-z0-9][a-z0-9._-]{0,62}$"))
   and .review.status == "example"
   and .cluster.kindVersion == "v0.31.0"
@@ -41,6 +42,8 @@ jq -e '
   and (.workload.baselineSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.rolloutSeconds | type == "number" and . >= 20 and . <= 180 and floor == .)
   and (.workload.postRolloutSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.rollbackSeconds | type == "number" and . >= 20 and . <= 180 and floor == .)
+  and (.workload.postRollbackSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.transitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
   and (.workload.degradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.recoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
@@ -50,6 +53,8 @@ jq -e '
   and (.objectives.minimumBaselineSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumPostRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumPostRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
   and (.objectives.minimumDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
@@ -59,10 +64,12 @@ jq -e '
   and (.objectives.maximumP99Millis | type == "number" and . >= 100 and . <= 5000 and floor == .)
   and (.objectives.maximumAbruptTransitionP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
   and (.objectives.maximumRolloutSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
+  and (.objectives.maximumRollbackSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and (.objectives.maximumAbruptEndpointWithdrawalSeconds | type == "number" and . >= 5 and . <= 30 and floor == .)
   and (.objectives.maximumAbruptRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and .workload.rolloutSeconds >= (.objectives.maximumRolloutSeconds + 5)
+  and .workload.rollbackSeconds >= (.objectives.maximumRollbackSeconds + 5)
   and .workload.abruptTransitionSeconds >= (.objectives.maximumAbruptEndpointWithdrawalSeconds + 5)
 ' "$profile" >/dev/null || { echo "Kubernetes topology profile does not satisfy the executable contract" >&2; exit 2; }
 
@@ -97,7 +104,7 @@ fi
 
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated disposable two-worker/two-zone Kubernetes topology contract %s.\n' "$(jq -r '.profileId' "$profile")"
-    printf 'Validated proof cases: service-distribution per-replica-metrics rolling-replacement endpoint-continuity pod-identity-turnover post-rollout-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
+    printf 'Validated proof cases: service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
     exit 0
 fi
 
@@ -164,14 +171,31 @@ cleanup() {
 trap cleanup EXIT
 
 proxy_image=loadbalancerpro:kubernetes-proxy
+candidate_image=loadbalancerpro:kubernetes-candidate
 fixture_image=loadbalancerpro:kubernetes-fixture
 proxy_source="${LBP_KUBERNETES_PROXY_SOURCE_IMAGE:-}"
+candidate_source="${LBP_KUBERNETES_CANDIDATE_SOURCE_IMAGE:-}"
 fixture_source="${LBP_KUBERNETES_FIXTURE_SOURCE_IMAGE:-}"
+source_revision="$(git -C "$repo_root" rev-parse HEAD)"
+[[ "$source_revision" =~ ^[0-9a-f]{40}$ ]] || { echo "Unable to bind source revision" >&2; exit 1; }
+candidate_release_id="kubernetes-${source_revision:0:12}"
 if [[ -n "$proxy_source" ]]; then
     docker image inspect "$proxy_source" >/dev/null
     docker tag "$proxy_source" "$proxy_image"
 else
     docker build --tag "$proxy_image" "$repo_root"
+fi
+if [[ -n "$candidate_source" ]]; then
+    docker image inspect "$candidate_source" >/dev/null
+    docker tag "$candidate_source" "$candidate_image"
+    candidate_release_id="$(docker image inspect --format \
+        '{{index .Config.Labels "com.richeyworks.loadbalancerpro.rollout.release-id"}}' "$candidate_image")"
+    [[ "$candidate_release_id" =~ ^[a-z0-9][a-z0-9._-]{0,127}$ ]] || {
+        echo "Provided Kubernetes rollout candidate has no bounded release label" >&2; exit 1;
+    }
+else
+    docker build --quiet --file "$candidate_dockerfile" --build-arg "BASE_IMAGE=$proxy_image" \
+        --build-arg "ROLLOUT_RELEASE_ID=$candidate_release_id" --tag "$candidate_image" "$repo_root" >/dev/null
 fi
 if [[ -n "$fixture_source" ]]; then
     docker image inspect "$fixture_source" >/dev/null
@@ -180,10 +204,28 @@ else
     docker build --file "$repo_root/deploy/fixture/Dockerfile" --tag "$fixture_image" "$repo_root"
 fi
 proxy_image_id="$(docker image inspect --format '{{.Id}}' "$proxy_image")"
+candidate_image_id="$(docker image inspect --format '{{.Id}}' "$candidate_image")"
 fixture_image_id="$(docker image inspect --format '{{.Id}}' "$fixture_image")"
-for image_id in "$proxy_image_id" "$fixture_image_id"; do
+for image_id in "$proxy_image_id" "$candidate_image_id" "$fixture_image_id"; do
     [[ "$image_id" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "Qualification image has no exact local content ID" >&2; exit 1; }
 done
+[[ "$candidate_image_id" != "$proxy_image_id" ]] || {
+    echo "Kubernetes rollout candidate is not content-distinct from the baseline image" >&2; exit 1;
+}
+baseline_layers="$(docker image inspect --format '{{json .RootFS.Layers}}' "$proxy_image_id")"
+[[ "$(docker image inspect --format '{{json .RootFS.Layers}}' "$candidate_image_id")" == "$baseline_layers" ]] || {
+    echo "Kubernetes rollout candidate changed application layers" >&2; exit 1;
+}
+for inherited_config in '{{json .Config.Cmd}}' '{{json .Config.Entrypoint}}' '{{json .Config.User}}'; do
+    [[ "$(docker image inspect --format "$inherited_config" "$candidate_image_id")" == \
+       "$(docker image inspect --format "$inherited_config" "$proxy_image_id")" ]] || {
+        echo "Kubernetes rollout candidate changed inherited runtime configuration" >&2; exit 1;
+    }
+done
+[[ "$(docker image inspect --format '{{index .Config.Labels "com.richeyworks.loadbalancerpro.rollout.release-id"}}' \
+    "$candidate_image_id")" == "$candidate_release_id" ]] || {
+    echo "Kubernetes rollout candidate release label is missing or stale" >&2; exit 1;
+}
 if kind get clusters | grep -Fxq "$cluster_name"; then
     echo "Refusing to reuse or delete an existing kind cluster named $cluster_name" >&2
     exit 2
@@ -210,7 +252,7 @@ mapfile -t workers < <(kind get nodes --name "$cluster_name" | grep -- '-worker'
 kubectl label node "${workers[0]}" loadbalancerpro.io/qualification-worker=true topology.kubernetes.io/zone=zone-a --overwrite
 kubectl label node "${workers[1]}" loadbalancerpro.io/qualification-worker=true topology.kubernetes.io/zone=zone-b --overwrite
 
-kind load docker-image "$proxy_image" "$fixture_image" --name "$cluster_name"
+kind load docker-image "$proxy_image" "$candidate_image" "$fixture_image" --name "$cluster_name"
 mkdir -p "$tls_dir"
 openssl rand -hex 24 > "$api_key_file"
 ca_key="$work_dir/ca-key.pem"
@@ -240,8 +282,6 @@ kubectl create secret generic loadbalancerpro-server-tls --namespace "$namespace
     --from-file=tls.crt="$tls_dir/certificate.pem" \
     --from-file=tls.key="$tls_dir/private-key.pem" \
     --from-file=ca.crt="$tls_dir/ca.pem"
-source_revision="$(git -C "$repo_root" rev-parse HEAD)"
-[[ "$source_revision" =~ ^[0-9a-f]{40}$ ]] || { echo "Unable to bind source revision" >&2; exit 1; }
 kubectl patch deployment loadbalancerpro --namespace "$namespace" --type merge \
     -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"loadbalancerpro.io/source-revision\":\"$source_revision\"}}}}}"
 for deployment in backend-a backend-b loadbalancerpro; do
@@ -290,8 +330,9 @@ wait_for_count() {
     return 1
 }
 
-sample_rollout_continuity() {
-    local output="$output_dir/rollout-continuity.csv"
+sample_transition_continuity() {
+    local phase="$1"
+    local output="$output_dir/${phase}-continuity.csv"
     printf 'epoch_seconds,ready_proxy_pods,ready_service_endpoints,total_proxy_pods\n' > "$output"
     while [[ ! -f "$rollout_stop_file" ]]; do
         local ready_pods ready_endpoints total_pods
@@ -301,7 +342,7 @@ sample_rollout_continuity() {
             -l app.kubernetes.io/name=loadbalancerpro -o json | jq '.items | length')"
         printf '%s,%s,%s,%s\n' "$(date +%s)" "$ready_pods" "$ready_endpoints" "$total_pods" >> "$output"
         if (( ready_pods < 2 || ready_endpoints < 2 )); then
-            echo "Rolling replacement dropped below two ready proxy pods or Service endpoints" >&2
+            echo "$phase image transition dropped below two ready proxy pods or Service endpoints" >&2
             return 1
         fi
         sleep 1
@@ -438,10 +479,10 @@ collect_distribution baseline
 
 rollout_duration_seconds="$(jq -r '.workload.rolloutSeconds' "$profile")"
 maximum_rollout_seconds="$(jq -r '.objectives.maximumRolloutSeconds' "$profile")"
-rollout_token="$(printf '%s\n' "$source_revision|$default_run_id|rolling-replacement" \
+rollout_token="$(printf '%s\n' "$source_revision|$candidate_image_id|$default_run_id|candidate-rollout" \
     | sha256sum | awk '{print $1}')"
 rm -f -- "$rollout_stop_file"
-sample_rollout_continuity &
+sample_transition_continuity rollout &
 rollout_sampler_pid=$!
 vegeta attack -duration="${rollout_duration_seconds}s" -rate="${rate}/s" -timeout=5s \
     -keepalive=false -http2=false -root-certs="$tls_dir/ca.pem" -targets="$targets" \
@@ -449,8 +490,12 @@ vegeta attack -duration="${rollout_duration_seconds}s" -rate="${rate}/s" -timeou
 attack_pid=$!
 sleep 3
 rollout_started_epoch="$(date +%s)"
-kubectl patch deployment loadbalancerpro --namespace "$namespace" --type merge \
-    -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"loadbalancerpro.io/qualification-rollout\":\"$rollout_token\"}}}}}"
+rollout_patch="$(jq -cn --arg image "$candidate_image" --arg token "$rollout_token" \
+    --arg release "$candidate_release_id" \
+    '{spec:{template:{metadata:{annotations:{"loadbalancerpro.io/qualification-rollout":$token,
+      "loadbalancerpro.io/qualification-release":$release}},
+      spec:{containers:[{name:"loadbalancerpro",image:$image}]}}}}')"
+kubectl patch deployment loadbalancerpro --namespace "$namespace" --type strategic -p "$rollout_patch"
 kubectl rollout status deployment/loadbalancerpro --namespace "$namespace" \
     --timeout="${maximum_rollout_seconds}s"
 rollout_elapsed_seconds=$(( $(date +%s) - rollout_started_epoch ))
@@ -492,6 +537,11 @@ replacement_ready_proxy_pods_json="$(jq --arg token "$rollout_token" '[.items[]
 [[ "$(jq 'length' <<< "$replacement_ready_proxy_pods_json")" == 2 ]] || {
     echo "Rolling replacement did not converge to two ready replacement pods" >&2; exit 1;
 }
+[[ "$(jq --arg image "$candidate_image" '[.[] | any(.spec.containers[]?;
+    .name == "loadbalancerpro" and .image == $image)] | all' \
+    <<< "$replacement_ready_proxy_pods_json")" == true ]] || {
+    echo "Candidate proxy pods do not reference the expected local candidate image" >&2; exit 1;
+}
 [[ "$(ready_proxy_count)" == 2 && "$(ready_endpoint_count)" == 2 ]] || {
     echo "Rolling replacement did not restore exactly two ready pods and Service endpoints" >&2; exit 1;
 }
@@ -505,8 +555,11 @@ rollout_old_uid_overlap="$(jq -n --argjson prior "$initial_proxy_uids_json" \
 replacement_proxy_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
     | select(.name == "loadbalancerpro") | .imageID] | unique | sort' \
     <<< "$replacement_ready_proxy_pods_json")"
-[[ "$replacement_proxy_runtime_image_ids_json" == "$initial_proxy_runtime_image_ids_json" ]] || {
-    echo "Rolling replacement changed the immutable runtime image ID" >&2; exit 1;
+[[ "$(jq 'length' <<< "$replacement_proxy_runtime_image_ids_json")" == 1 ]] || {
+    echo "Candidate proxy pods did not converge to one immutable runtime image ID" >&2; exit 1;
+}
+[[ "$replacement_proxy_runtime_image_ids_json" != "$initial_proxy_runtime_image_ids_json" ]] || {
+    echo "Candidate rollout did not change the immutable runtime image ID" >&2; exit 1;
 }
 [[ "$(jq '[.[].spec.nodeName] | unique | length' <<< "$replacement_ready_proxy_pods_json")" == 2 ]] || {
     echo "Replacement proxy pods were not restored to distinct workers" >&2; exit 1;
@@ -547,7 +600,130 @@ jq -e '(.pods | length) == 2
     echo "Both replacement proxies and both backends must serve post-rollout traffic" >&2; exit 1;
 }
 
-failed_node="$(jq -r '.[0].spec.nodeName' <<< "$replacement_ready_proxy_pods_json")"
+rollback_duration_seconds="$(jq -r '.workload.rollbackSeconds' "$profile")"
+maximum_rollback_seconds="$(jq -r '.objectives.maximumRollbackSeconds' "$profile")"
+rollback_token="$(printf '%s\n' "$source_revision|$proxy_image_id|$default_run_id|baseline-rollback" \
+    | sha256sum | awk '{print $1}')"
+baseline_release_id="baseline-${source_revision:0:12}"
+rm -f -- "$rollout_stop_file"
+sample_transition_continuity rollback &
+rollout_sampler_pid=$!
+vegeta attack -duration="${rollback_duration_seconds}s" -rate="${rate}/s" -timeout=5s \
+    -keepalive=false -http2=false -root-certs="$tls_dir/ca.pem" -targets="$targets" \
+    > "$work_dir/rollback.bin" &
+attack_pid=$!
+sleep 3
+rollback_started_epoch="$(date +%s)"
+rollback_patch="$(jq -cn --arg image "$proxy_image" --arg token "$rollback_token" \
+    --arg release "$baseline_release_id" \
+    '{spec:{template:{metadata:{annotations:{"loadbalancerpro.io/qualification-rollout":$token,
+      "loadbalancerpro.io/qualification-release":$release}},
+      spec:{containers:[{name:"loadbalancerpro",image:$image}]}}}}')"
+kubectl patch deployment loadbalancerpro --namespace "$namespace" --type strategic -p "$rollback_patch"
+kubectl rollout status deployment/loadbalancerpro --namespace "$namespace" \
+    --timeout="${maximum_rollback_seconds}s"
+rollback_elapsed_seconds=$(( $(date +%s) - rollback_started_epoch ))
+(( rollback_elapsed_seconds <= maximum_rollback_seconds )) || {
+    echo "Baseline rollback exceeded the rollback objective" >&2; exit 1;
+}
+if ! wait "$attack_pid"; then
+    attack_pid=""
+    echo "Baseline rollback traffic attack failed" >&2
+    exit 1
+fi
+attack_pid=""
+: > "$rollout_stop_file"
+if ! wait "$rollout_sampler_pid"; then
+    rollout_sampler_pid=""
+    echo "Baseline rollback endpoint-continuity sampler failed" >&2
+    exit 1
+fi
+rollout_sampler_pid=""
+report_attack rollback "$(jq -r '.objectives.minimumRollbackSuccessRatio' "$profile")"
+rollback_sample_count="$(awk -F, 'NR > 1 { count++ } END { print count + 0 }' \
+    "$output_dir/rollback-continuity.csv")"
+rollback_min_ready_pods="$(awk -F, 'NR > 1 && (minimum == "" || $2 < minimum) { minimum = $2 }
+    END { print minimum + 0 }' "$output_dir/rollback-continuity.csv")"
+rollback_min_ready_endpoints="$(awk -F, 'NR > 1 && (minimum == "" || $3 < minimum) { minimum = $3 }
+    END { print minimum + 0 }' "$output_dir/rollback-continuity.csv")"
+(( rollback_sample_count >= 5 && rollback_min_ready_pods >= 2 && rollback_min_ready_endpoints >= 2 )) || {
+    echo "Baseline rollback continuity evidence was incomplete" >&2; exit 1;
+}
+
+rollback_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json)"
+rollback_ready_proxy_pods_json="$(jq --arg token "$rollback_token" '[.items[]
+    | select(.metadata.deletionTimestamp == null)
+    | select(.status.phase == "Running")
+    | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+    | select(.metadata.annotations["loadbalancerpro.io/qualification-rollout"] == $token)]' \
+    <<< "$rollback_proxy_pods_json")"
+[[ "$(jq 'length' <<< "$rollback_ready_proxy_pods_json")" == 2 ]] || {
+    echo "Baseline rollback did not converge to two ready restored pods" >&2; exit 1;
+}
+[[ "$(jq --arg image "$proxy_image" '[.[] | any(.spec.containers[]?;
+    .name == "loadbalancerpro" and .image == $image)] | all' \
+    <<< "$rollback_ready_proxy_pods_json")" == true ]] || {
+    echo "Restored proxy pods do not reference the expected baseline image" >&2; exit 1;
+}
+[[ "$(ready_proxy_count)" == 2 && "$(ready_endpoint_count)" == 2 ]] || {
+    echo "Baseline rollback did not restore exactly two ready pods and Service endpoints" >&2; exit 1;
+}
+rollback_proxy_uids_json="$(jq '[.[].metadata.uid] | sort' <<< "$rollback_ready_proxy_pods_json")"
+rollback_candidate_uid_overlap="$(jq -n --argjson candidate "$replacement_proxy_uids_json" \
+    --argjson restored "$rollback_proxy_uids_json" \
+    '[ $candidate[] as $uid | $restored[] | select(. == $uid) ] | length')"
+rollback_initial_uid_overlap="$(jq -n --argjson initial "$initial_proxy_uids_json" \
+    --argjson restored "$rollback_proxy_uids_json" \
+    '[ $initial[] as $uid | $restored[] | select(. == $uid) ] | length')"
+[[ "$rollback_candidate_uid_overlap" == 0 && "$rollback_initial_uid_overlap" == 0 ]] || {
+    echo "Baseline rollback retained a prior proxy pod UID" >&2; exit 1;
+}
+rollback_proxy_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
+    | select(.name == "loadbalancerpro") | .imageID] | unique | sort' \
+    <<< "$rollback_ready_proxy_pods_json")"
+[[ "$rollback_proxy_runtime_image_ids_json" == "$initial_proxy_runtime_image_ids_json" ]] || {
+    echo "Baseline rollback did not restore the initial immutable runtime image ID" >&2; exit 1;
+}
+[[ "$(jq '[.[].spec.nodeName] | unique | length' <<< "$rollback_ready_proxy_pods_json")" == 2 ]] || {
+    echo "Restored baseline proxy pods were not placed on distinct workers" >&2; exit 1;
+}
+rollback_proxy_zones="$(jq -r '.[].spec.nodeName' <<< "$rollback_ready_proxy_pods_json" \
+    | while read -r node; do kubectl get node "$node" \
+        -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}{"\n"}'; done \
+    | sort -u | wc -l | tr -d ' ')"
+[[ "$rollback_proxy_zones" == 2 ]] || {
+    echo "Restored baseline proxy pods were not placed in distinct zones" >&2; exit 1;
+}
+mapfile -t rollback_proxy_pods < <(jq -r '.[].metadata.name' <<< "$rollback_ready_proxy_pods_json" | sort)
+for pod in "${rollback_proxy_pods[@]}"; do
+    [[ "$(kubectl exec --namespace "$namespace" "$pod" -- id -u)" == 10001 ]] || {
+        echo "$pod restored baseline is not running with UID 10001" >&2; exit 1;
+    }
+done
+capture_state post-rollback
+collect_distribution post-rollback-before
+run_attack post-rollback "$(jq -r '.workload.postRollbackSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumPostRollbackSuccessRatio' "$profile")"
+collect_distribution post-rollback
+jq -n --slurpfile before "$output_dir/post-rollback-before-distribution.json" \
+    --slurpfile after "$output_dir/post-rollback-distribution.json" '
+      ($before[0]) as $before | ($after[0]) as $after |
+      {phase: "post-rollback", bothRestoredBaselineProxyReplicasServed: true,
+       backendARequestDelta: ($after.backendARequests - $before.backendARequests),
+       backendBRequestDelta: ($after.backendBRequests - $before.backendBRequests),
+       pods: [$after.pods[] as $current
+         | ($before.pods[] | select(.pod == $current.pod)) as $prior
+         | {pod: $current.pod, requestDelta: ($current.requests - $prior.requests)}]}
+    ' > "$output_dir/post-rollback-distribution-delta.json"
+jq -e '(.pods | length) == 2
+    and all(.pods[]; .requestDelta > 0)
+    and .backendARequestDelta > 0
+    and .backendBRequestDelta > 0' "$output_dir/post-rollback-distribution-delta.json" >/dev/null || {
+    echo "Both restored baseline proxies and both backends must serve post-rollback traffic" >&2; exit 1;
+}
+
+failed_node="$(jq -r '.[0].spec.nodeName' <<< "$rollback_ready_proxy_pods_json")"
 [[ "$failed_node" == "${cluster_name}-worker" || "$failed_node" == "${cluster_name}-worker2" ]] || {
     echo "Refusing to drain unexpected node $failed_node" >&2; exit 1;
 }
@@ -730,52 +906,82 @@ jq -e '(.pods | length) == 2
 
 kubectl version -o json > "$output_dir/kubernetes-version.json"
 kind version > "$output_dir/kind-version.txt"
-sha256sum "$profile" "$cluster_config" "$workload_manifest" > "$output_dir/input-sha256.txt"
+docker image inspect "$proxy_image_id" > "$output_dir/proxy-baseline-image.json"
+docker image inspect "$candidate_image_id" > "$output_dir/proxy-candidate-image.json"
+sha256sum "$profile" "$cluster_config" "$workload_manifest" "$candidate_dockerfile" \
+    > "$output_dir/input-sha256.txt"
 baseline_distribution_json="$(<"$output_dir/baseline-distribution.json")"
 post_rollout_distribution_delta_json="$(<"$output_dir/post-rollout-distribution-delta.json")"
+post_rollback_distribution_delta_json="$(<"$output_dir/post-rollback-distribution-delta.json")"
 recovered_distribution_delta_json="$(<"$output_dir/recovered-distribution-delta.json")"
 abrupt_recovered_distribution_delta_json="$(<"$output_dir/abrupt-recovered-distribution-delta.json")"
 jq -n \
     --arg profileId "$profile_id" \
     --arg sourceRevision "$source_revision" \
     --arg proxyImageId "$proxy_image_id" \
+    --arg candidateImageId "$candidate_image_id" \
     --arg fixtureImageId "$fixture_image_id" \
+    --arg candidateReleaseId "$candidate_release_id" \
     --arg rolloutToken "$rollout_token" \
+    --arg rollbackToken "$rollback_token" \
     --arg drainedWorker "$failed_node" \
     --arg abruptWorker "$abrupt_node" \
     --arg abruptFailedProxyUid "$abrupt_failed_proxy_uid" \
     --argjson abruptForcedPodNames "$abrupt_forced_pod_names_json" \
     --argjson priorPodUids "$initial_proxy_uids_json" \
-    --argjson replacementPodUids "$replacement_proxy_uids_json" \
-    --argjson runtimeImageIds "$replacement_proxy_runtime_image_ids_json" \
+    --argjson candidatePodUids "$replacement_proxy_uids_json" \
+    --argjson restoredPodUids "$rollback_proxy_uids_json" \
+    --argjson baselineRuntimeImageIds "$initial_proxy_runtime_image_ids_json" \
+    --argjson candidateRuntimeImageIds "$replacement_proxy_runtime_image_ids_json" \
+    --argjson restoredRuntimeImageIds "$rollback_proxy_runtime_image_ids_json" \
     --argjson rolloutSeconds "$rollout_elapsed_seconds" \
     --argjson rolloutSamples "$rollout_sample_count" \
-    --argjson minimumReadyPods "$rollout_min_ready_pods" \
-    --argjson minimumReadyEndpoints "$rollout_min_ready_endpoints" \
+    --argjson rolloutMinimumReadyPods "$rollout_min_ready_pods" \
+    --argjson rolloutMinimumReadyEndpoints "$rollout_min_ready_endpoints" \
+    --argjson rollbackSeconds "$rollback_elapsed_seconds" \
+    --argjson rollbackSamples "$rollback_sample_count" \
+    --argjson rollbackMinimumReadyPods "$rollback_min_ready_pods" \
+    --argjson rollbackMinimumReadyEndpoints "$rollback_min_ready_endpoints" \
     --argjson recoverySeconds "$recovery_seconds" \
     --argjson abruptEndpointWithdrawalSeconds "$abrupt_endpoint_withdrawal_seconds" \
     --argjson abruptRecoverySeconds "$abrupt_recovery_seconds" \
     --argjson baselineDistribution "$baseline_distribution_json" \
     --argjson postRolloutDistribution "$post_rollout_distribution_delta_json" \
+    --argjson postRollbackDistribution "$post_rollback_distribution_delta_json" \
     --argjson recoveredDistribution "$recovered_distribution_delta_json" \
     --argjson abruptRecoveredDistribution "$abrupt_recovered_distribution_delta_json" \
-    '{schemaVersion: 3, result: "pass", evidenceBoundary: "disposable loopback kind same-image replacement, planned worker loss, and operator-remediated abrupt worker-container loss; not automatic infrastructure-failure detection, release compatibility, registry/source binding, deployment-ingress, or deployment-capacity proof",
+    '{schemaVersion: 4, result: "pass", evidenceBoundary: "disposable loopback kind metadata-only content-distinct image rollout and baseline rollback, planned worker loss, and operator-remediated abrupt worker-container loss; not automatic infrastructure-failure detection, application-layer release compatibility, registry/source binding, deployment-ingress, or deployment-capacity proof",
       profileId: $profileId, repositoryRevision: $sourceRevision,
-      images: {proxyContentId: $proxyImageId, fixtureContentId: $fixtureImageId},
+      images: {identityType: "local Docker content-addressed image ID",
+        baseline: {contentId: $proxyImageId},
+        candidate: {releaseId: $candidateReleaseId, contentId: $candidateImageId},
+        fixtureContentId: $fixtureImageId, applicationLayersIdentical: true},
       topology: {workers: 2, zones: 2, initialProxyReplicas: 2, postRolloutProxyReplicas: 2,
+        postRollbackProxyReplicas: 2,
         degradedProxyReplicas: 1, recoveredProxyReplicas: 2,
         abruptDegradedProxyReplicas: 1, abruptRecoveredProxyReplicas: 2},
       traffic: {bothProxyReplicasServed: true, baseline: $baselineDistribution,
         rollout: "pass", postRollout: $postRolloutDistribution,
+        rollback: "pass", postRollback: $postRollbackDistribution,
         drainTransition: "pass", degraded: "pass", recovered: $recoveredDistribution,
         abruptTransition: "pass", abruptDegraded: "pass",
         abruptRecovered: $abruptRecoveredDistribution},
-      rolloutExercise: {triggerAnnotation: $rolloutToken, sameRuntimeImageId: true,
-        runtimeImageIds: $runtimeImageIds, priorPodUids: $priorPodUids,
-        replacementPodUids: $replacementPodUids, retainedPriorPodUids: 0,
+      rolloutExercise: {triggerAnnotation: $rolloutToken, contentDistinctRuntimeImageId: true,
+        fromRuntimeImageIds: $baselineRuntimeImageIds,
+        toRuntimeImageIds: $candidateRuntimeImageIds,
+        priorPodUids: $priorPodUids, candidatePodUids: $candidatePodUids,
+        retainedPriorPodUids: 0,
         rolloutSeconds: $rolloutSeconds, continuitySamples: $rolloutSamples,
-        minimumReadyProxyPods: $minimumReadyPods,
-        minimumReadyServiceEndpoints: $minimumReadyEndpoints},
+        minimumReadyProxyPods: $rolloutMinimumReadyPods,
+        minimumReadyServiceEndpoints: $rolloutMinimumReadyEndpoints},
+      rollbackExercise: {triggerAnnotation: $rollbackToken, restoredInitialRuntimeImageId: true,
+        fromRuntimeImageIds: $candidateRuntimeImageIds,
+        toRuntimeImageIds: $restoredRuntimeImageIds,
+        candidatePodUids: $candidatePodUids, restoredPodUids: $restoredPodUids,
+        retainedCandidatePodUids: 0, retainedInitialPodUids: 0,
+        rollbackSeconds: $rollbackSeconds, continuitySamples: $rollbackSamples,
+        minimumReadyProxyPods: $rollbackMinimumReadyPods,
+        minimumReadyServiceEndpoints: $rollbackMinimumReadyEndpoints},
       workerExercise: {planned: {drainedAndStopped: $drainedWorker, recoverySeconds: $recoverySeconds},
         abrupt: {stoppedWithoutDrain: $abruptWorker,
           remediation: "verified-down out-of-service:NoExecute taint plus forced API deletion",
@@ -785,4 +991,4 @@ jq -n \
           recoverySeconds: $abruptRecoverySeconds}}}' \
     > "$output_dir/summary.json"
 
-printf 'Kubernetes two-zone live rollout, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"
+printf 'Kubernetes two-zone content-distinct rollout, baseline rollback, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"

@@ -120,9 +120,11 @@ images. The local candidate changes proof metadata only; its Docker content ID i
 `proxy-kubernetes-topology.sh` creates an isolated kind cluster from a digest-pinned Kubernetes node image, loads the
 numeric-non-root proxy and fixture images, and deploys two proxy replicas and redundant backends across two workers and
 zones. It sends TLS/API-key-protected connection-churn traffic through a loopback-only NodePort, proves both proxy
-replicas and both backends served requests, performs a same-image rolling pod replacement under continuous traffic,
-samples pod and Service endpoint continuity, proves complete pod-UID turnover and unchanged runtime image identity,
-requires both replacement replicas and both backends to serve new traffic, drains and stops one worker under load,
+replicas and both backends served requests, promotes a metadata-only content-distinct candidate under continuous
+traffic, samples pod and Service endpoint continuity, proves complete pod-UID and runtime-image identity transition, requires both
+candidate replicas and both backends to serve new traffic, then rolls back under a second continuous load window and
+proves fresh pod identities, restoration of the initial runtime image identity, and traffic through both restored
+replicas. It then drains and stops one worker under load,
 tests the one-replica degraded service, requires both recovered replicas and backends to serve new traffic, then
 forcibly stops that recovered worker without a drain. After confirming the worker container is down, it applies
 Kubernetes' out-of-service `NoExecute` remediation and force-removes the three exact stateless workload pods from the
@@ -138,7 +140,9 @@ bash scripts/bench/proxy-kubernetes-topology.sh --mode smoke
 
 Smoke mode requires Docker, kind 0.31.0, kubectl 1.34.3, Vegeta, jq, OpenSSL, and curl. TLS keys and the API key live
 only in a temporary directory; redacted reports are written beneath `target/kubernetes/`. The result proves
-disposable Kubernetes replacement and worker-loss mechanics, not release compatibility, registry integrity,
+disposable Kubernetes content-addressed transition, rollback, and worker-loss mechanics. Because the local candidate
+changes immutable proof metadata but not application layers, it does not prove application-layer release compatibility,
+registry integrity,
 deployment capacity, external ingress behavior, automatic infrastructure-failure detection, or an authorized staging
 environment.
 

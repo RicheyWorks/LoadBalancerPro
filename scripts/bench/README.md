@@ -123,7 +123,12 @@ zones. It sends TLS/API-key-protected connection-churn traffic through a loopbac
 replicas and both backends served requests, performs a same-image rolling pod replacement under continuous traffic,
 samples pod and Service endpoint continuity, proves complete pod-UID turnover and unchanged runtime image identity,
 requires both replacement replicas and both backends to serve new traffic, drains and stops one worker under load,
-tests the one-replica degraded service, and verifies worker, endpoint, and traffic recovery:
+tests the one-replica degraded service, requires both recovered replicas and backends to serve new traffic, then
+forcibly stops that recovered worker without a drain. After confirming the worker container is down, it applies
+Kubernetes' out-of-service `NoExecute` remediation and force-removes the three exact stateless workload pods from the
+API, bounds endpoint withdrawal, proves degraded traffic, and requires fresh pod identity, two-zone placement, and traffic
+distribution after recovery. The lab cluster pins iptables kube-proxy to immediate EndpointSlice-triggered updates and a
+one-second cleanup sync so the Service failover objective is executable and recorded:
 
 ```bash
 bash scripts/bench/proxy-kubernetes-topology.sh --mode validate
@@ -134,7 +139,8 @@ bash scripts/bench/proxy-kubernetes-topology.sh --mode smoke
 Smoke mode requires Docker, kind 0.31.0, kubectl 1.34.3, Vegeta, jq, OpenSSL, and curl. TLS keys and the API key live
 only in a temporary directory; redacted reports are written beneath `target/kubernetes/`. The result proves
 disposable Kubernetes replacement and worker-loss mechanics, not release compatibility, registry integrity,
-deployment capacity, external ingress behavior, abrupt node-failure behavior, or an authorized staging environment.
+deployment capacity, external ingress behavior, automatic infrastructure-failure detection, or an authorized staging
+environment.
 
 ## Local capacity staircase
 

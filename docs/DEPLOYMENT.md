@@ -106,8 +106,13 @@ preStop delay, a 40-second termination window, a token-free service account, num
 Secret/ConfigMap mounts. Its image remains a deliberately non-resolving digest placeholder. The disposable
 [`../scripts/bench/proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) lane applies the
 separate loopback qualification workload and proves same-image rolling pod replacement under continuous traffic,
-complete pod-UID turnover, ready-endpoint continuity, two-zone Service distribution, worker removal, and recovery. The
-reviewed staging runner separately validates the external target's digest, replicas, zones, resources,
+complete pod-UID turnover, ready-endpoint continuity, two-zone Service distribution, planned worker removal, and
+operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
+confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless
+qualification pods from the API. The disposable cluster also pins immediate EndpointSlice-triggered iptables updates
+and a one-second kube-proxy cleanup sync; operators must review the equivalent setting or managed-ingress
+behavior for their environment. It does not prove automatic deployment failure detection. The reviewed staging runner
+separately validates the external target's digest, replicas, zones, resources,
 configuration, ingress, metrics, drain, and transitions; local proof does not establish registry integrity, deployment
 capacity, external ingress behavior, or production readiness.
 

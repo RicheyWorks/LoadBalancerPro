@@ -107,7 +107,12 @@ Secret/ConfigMap mounts. Its image remains a deliberately non-resolving digest p
 [`../scripts/bench/proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) lane applies the
 separate loopback qualification workload and proves a metadata-only content-distinct candidate rollout and baseline
 rollback under continuous traffic, complete pod-UID turnover in both directions, runtime-image identity transition and
-restoration, ready-endpoint continuity, two-zone Service distribution, planned worker removal, and
+restoration, then performs a versioned immutable TLS Secret rotation and identity rollback under two additional
+continuous traffic windows. The TLS exercise uses independently generated roots, a dual-CA rollover bundle, served-leaf
+fingerprints, and single-CA positive/negative checks; it also requires fresh pod UIDs, unchanged runtime image identity,
+ready-endpoint continuity, and traffic through both replicas and backends in both directions. It proves application
+server TLS termination behind the loopback NodePort, not an ingress controller, external issuer, or trust-distribution
+system. The lane then proves two-zone Service distribution, planned worker removal, and
 operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
 confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless
 qualification pods from the API. The disposable cluster also pins immediate EndpointSlice-triggered iptables updates

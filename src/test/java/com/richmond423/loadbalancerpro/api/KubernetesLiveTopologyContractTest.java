@@ -40,7 +40,8 @@ class KubernetesLiveTopologyContractTest {
                 "readOnlyRootFilesystem: true",
                 "drop: [\"ALL\"]",
                 "kind: PodDisruptionBudget",
-                "kind: NetworkPolicy")) {
+                "kind: NetworkPolicy",
+                "secretName: loadbalancerpro-server-tls-a")) {
             assertTrue(workload.contains(invariant), "missing restricted workload invariant: " + invariant);
         }
         assertFalse(workload.contains("BEGIN PRIVATE KEY"));
@@ -63,7 +64,7 @@ class KubernetesLiveTopologyContractTest {
                 "kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48"));
 
         JsonNode profile = new ObjectMapper().readTree(read(PROFILE));
-        assertEquals(4, profile.path("schemaVersion").asInt());
+        assertEquals(5, profile.path("schemaVersion").asInt());
         assertEquals("example", profile.path("review").path("status").asText());
         assertEquals("v1.34.3", profile.path("cluster").path("kubectlVersion").asText());
         assertEquals(2, profile.path("cluster").path("workers").asInt());
@@ -79,6 +80,19 @@ class KubernetesLiveTopologyContractTest {
                 >= profile.path("objectives").path("maximumRollbackSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumRollbackSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("minimumPostRollbackSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("workload").path("certificateRotationSeconds").asInt()
+                >= profile.path("objectives").path("maximumCertificateRotationSeconds").asInt() + 5);
+        assertTrue(profile.path("workload").path("certificateRollbackSeconds").asInt()
+                >= profile.path("objectives").path("maximumCertificateRollbackSeconds").asInt() + 5);
+        assertTrue(profile.path("objectives").path("minimumCertificateRotationSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumPostCertificateRotationSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumCertificateRollbackSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumPostCertificateRollbackSuccessRatio").asDouble() >= 0.95);
+        assertEquals("lbp-kubernetes.local", profile.path("tlsRotation").path("hostname").asText());
+        assertEquals("loadbalancerpro-server-tls-a",
+                profile.path("tlsRotation").path("baselineSecret").asText());
+        assertEquals("loadbalancerpro-server-tls-b",
+                profile.path("tlsRotation").path("candidateSecret").asText());
         assertTrue(profile.path("workload").path("abruptTransitionSeconds").asInt()
                 >= profile.path("objectives").path("maximumAbruptEndpointWithdrawalSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumAbruptTransitionSuccessRatio").asDouble() >= 0.90);
@@ -119,6 +133,33 @@ class KubernetesLiveTopologyContractTest {
                 "Baseline rollback did not restore the initial immutable runtime image ID",
                 "post-rollback-distribution-delta.json",
                 "bothRestoredBaselineProxyReplicasServed: true",
+                "generate_server_identity",
+                "Generated Kubernetes TLS identities did not use independent trust roots",
+                "-verify_hostname \"$tls_hostname\"",
+                ".immutable = true",
+                ".type = \"kubernetes.io/tls\"",
+                "tls-secret-metadata.json",
+                "Candidate-only CA before rotation",
+                "Baseline TLS identity",
+                "loadbalancerpro.io/qualification-tls-rotation",
+                "certificate-rotation-continuity.csv",
+                "Certificate rotation retained a baseline-certificate pod UID",
+                "Certificate rotation changed the immutable runtime image ID",
+                "Baseline-only CA after rotation",
+                "Rotated TLS identity",
+                "bothRotatedCertificateProxyReplicasServed",
+                "loadbalancerpro.io/qualification-tls-rollback",
+                "certificate-rollback-continuity.csv",
+                "Certificate rollback retained a prior TLS pod UID",
+                "Certificate rollback changed the immutable runtime image ID",
+                "Candidate-only CA after certificate rollback",
+                "Restored baseline TLS identity",
+                "bothRestoredCertificateProxyReplicasServed",
+                "continuousTrafficBundleContainsBothAuthorities: true",
+                "candidateOnlyRejectedBeforeRotation: true",
+                "baselineOnlyRejectedAfterRotation: true",
+                "candidateOnlyRejectedAfterRollback: true",
+                "not an ingress-controller",
                 "priorPodUids: $priorPodUids",
                 "candidatePodUids: $candidatePodUids",
                 "restoredPodUids: $restoredPodUids",
@@ -145,7 +186,7 @@ class KubernetesLiveTopologyContractTest {
                 "bothProxyReplicasServed: true")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 36 unsafe profiles without creating a cluster"));
+        assertTrue(read(CONTRACT).contains("rejected 52 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
     }

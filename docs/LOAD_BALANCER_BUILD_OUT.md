@@ -160,7 +160,12 @@ replicas and both backends, a zero-unavailable content-distinct candidate rollou
 dropping below
 two ready Service endpoints, both candidate replicas and both backends must serve post-rollout traffic, and a baseline
 rollback must repeat the continuity and pod-turnover proof, restore the initial runtime image identity, and serve traffic
-through both restored replicas and backends. One worker is then
+through both restored replicas and backends. The restored image then rotates from an immutable baseline TLS Secret to
+an independently rooted immutable candidate Secret and back under continuous traffic. Single-CA rejection checks and
+served-leaf fingerprints prove both identity transitions; fresh pods, unchanged runtime image identity, two-zone
+continuity, and positive traffic deltas on both replicas and backends are required in both directions. This exercises
+application server TLS behind the loopback NodePort, not an ingress controller, external issuer, or client
+trust-distribution system. One worker is then
 drained and stopped under load, degraded traffic must continue through the remaining replica, and the stopped worker
 and second replica must recover inside the bound, and both recovered replicas and backends must serve new traffic. It
 then forcibly stops that recovered worker without a drain, confirms the container is down, and applies the documented
@@ -193,7 +198,9 @@ The disposable Kubernetes lane executes that zero-unavailable strategy in both d
 repeatedly samples ready pods and Service endpoints with a one-second pause between queries, proves complete pod-UID
 turnover and a content-distinct runtime image transition, then proves another complete pod turnover and restoration of
 the initial runtime image identity. It restores two-zone placement and requires positive post-transition traffic deltas
-on both candidate/restored replicas and both backends.
+on both candidate/restored replicas and both backends. It applies the same zero-unavailable and distribution checks to
+versioned immutable TLS Secret rotation and rollback while proving the served leaf fingerprint changes and returns and
+the runtime image identity remains fixed.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,

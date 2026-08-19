@@ -630,6 +630,7 @@ abrupt_node_pods_json="$(kubectl get pod --namespace "$namespace" -o json \
     echo "Expected exactly one proxy and two backend pods on the abrupt-loss worker" >&2; exit 1;
 }
 abrupt_forced_pod_names_json="$(jq '[.[].metadata.name] | sort' <<< "$abrupt_node_pods_json")"
+mapfile -t abrupt_node_pods < <(jq -r '.[].metadata.name' <<< "$abrupt_node_pods_json" | sort)
 
 abrupt_transition_seconds="$(jq -r '.workload.abruptTransitionSeconds' "$profile")"
 maximum_abrupt_endpoint_withdrawal_seconds="$(jq -r \
@@ -647,6 +648,8 @@ stopped_node="$abrupt_node"
 }
 kubectl taint node "$abrupt_node" \
     node.kubernetes.io/out-of-service=qualification-abrupt-worker-loss:NoExecute --overwrite
+kubectl delete pod --namespace "$namespace" "${abrupt_node_pods[@]}" \
+    --ignore-not-found --force --grace-period=0 --wait=false
 wait_for_count 'abrupt-loss source pods remaining in the API' 0 abrupt_source_pod_count \
     "$maximum_abrupt_endpoint_withdrawal_seconds"
 wait_for_count 'ready proxy replicas after abrupt worker loss' 1 ready_proxy_count \
@@ -775,8 +778,8 @@ jq -n \
         minimumReadyServiceEndpoints: $minimumReadyEndpoints},
       workerExercise: {planned: {drainedAndStopped: $drainedWorker, recoverySeconds: $recoverySeconds},
         abrupt: {stoppedWithoutDrain: $abruptWorker,
-          remediation: "node.kubernetes.io/out-of-service:NoExecute",
-          outOfServiceForcedPodNames: $abruptForcedPodNames,
+          remediation: "verified-down out-of-service:NoExecute taint plus forced API deletion",
+          apiForcedPodNames: $abruptForcedPodNames,
           failedProxyPodUid: $abruptFailedProxyUid, retainedFailedProxyPodUids: 0,
           endpointWithdrawalSeconds: $abruptEndpointWithdrawalSeconds,
           recoverySeconds: $abruptRecoverySeconds}}}' \

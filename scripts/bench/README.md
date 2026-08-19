@@ -125,9 +125,8 @@ samples pod and Service endpoint continuity, proves complete pod-UID turnover an
 requires both replacement replicas and both backends to serve new traffic, drains and stops one worker under load,
 tests the one-replica degraded service, requires both recovered replicas and backends to serve new traffic, then
 forcibly stops that recovered worker without a drain. After confirming the worker container is down, it applies
-Kubernetes' out-of-service `NoExecute` remediation, requires it to force-remove the three exact stateless workload pods
-from the API,
-bounds endpoint withdrawal, proves degraded traffic, and requires fresh pod identity, two-zone placement, and traffic
+Kubernetes' out-of-service `NoExecute` remediation and force-removes the three exact stateless workload pods from the
+API, bounds endpoint withdrawal, proves degraded traffic, and requires fresh pod identity, two-zone placement, and traffic
 distribution after recovery. The lab cluster pins iptables kube-proxy to immediate EndpointSlice-triggered updates and a
 one-second cleanup sync so the Service failover objective is executable and recorded:
 

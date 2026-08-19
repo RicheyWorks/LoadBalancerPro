@@ -161,9 +161,9 @@ two ready Service endpoints, both replacement replicas and both backends must se
 drained and stopped under load, degraded traffic must continue through the remaining replica, and the stopped worker
 and second replica must recover inside the bound, and both recovered replicas and backends must serve new traffic. It
 then forcibly stops that recovered worker without a drain, confirms the container is down, and applies the documented
-out-of-service `NoExecute` remediation. It requires that remediation to remove the three exact stateless workload pods
-from the API, bounds endpoint withdrawal, proves degraded traffic, rejects the failed pod identity after recovery, and
-requires both recovered replicas and backends to serve new traffic. The disposable cluster pins iptables-mode kube-proxy
+out-of-service `NoExecute` remediation. It force-removes the three exact stateless workload pods from the API, bounds
+endpoint withdrawal, proves degraded traffic, rejects the failed pod identity after recovery, and requires both
+recovered replicas and backends to serve new traffic. The disposable cluster pins iptables-mode kube-proxy
 to immediate EndpointSlice-triggered updates and a one-second cleanup sync; deployment environments must review the
 equivalent Service/ingress failure-detection and reconciliation behavior. The replacement reuses one exact local image
 content ID, so it proves Kubernetes mechanics

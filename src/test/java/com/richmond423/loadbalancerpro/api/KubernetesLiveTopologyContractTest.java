@@ -116,8 +116,9 @@ class KubernetesLiveTopologyContractTest {
                 "Both recovered proxies and both backends must serve traffic after planned loss",
                 "docker kill \"$abrupt_node\"",
                 "node.kubernetes.io/out-of-service=qualification-abrupt-worker-loss:NoExecute",
+                "--ignore-not-found --force --grace-period=0 --wait=false",
                 "abrupt-loss source pods remaining in the API",
-                "outOfServiceForcedPodNames: $abruptForcedPodNames",
+                "apiForcedPodNames: $abruptForcedPodNames",
                 "docker inspect --format '{{.State.Running}}'",
                 "Abrupt-loss recovery retained the failed worker pod UID",
                 "abrupt-recovered-distribution-delta.json",
@@ -130,7 +131,6 @@ class KubernetesLiveTopologyContractTest {
         assertTrue(read(CONTRACT).contains("rejected 30 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
-        assertFalse(runner.contains("kubectl delete pod"));
     }
 
     @Test

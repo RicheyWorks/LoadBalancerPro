@@ -1023,15 +1023,24 @@ class AllocatorControllerTest {
     }
 
     @Test
-    void unknownApiRouteReturnsFramework404WithoutBodyOrDiagnostics() throws Exception {
-        String responseBody = mockMvc.perform(get("/api/does-not-exist"))
+    void unknownApiRouteReturnsSafeErrorShapeWithoutQueryOrDiagnostics() throws Exception {
+        String responseBody = mockMvc.perform(get("/api/does-not-exist")
+                        .param("token", "sensitive-query-value"))
                 .andExpect(status().isNotFound())
-                .andExpect(header().doesNotExist("Content-Type"))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", is(404)))
+                .andExpect(jsonPath("$.error", is("not_found")))
+                .andExpect(jsonPath("$.message", is("Resource not found")))
+                .andExpect(jsonPath("$.path", is("/api/does-not-exist")))
+                .andExpect(jsonPath("$.details").isEmpty())
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        assertTrue(responseBody.isEmpty(), "Framework 404 currently returns no response body.");
+        assertFalse(responseBody.contains("sensitive-query-value"),
+                "Safe 404 response must not echo query values.");
         assertFalse(responseBody.contains("trace"), "Framework 404 response must not expose trace data.");
         assertFalse(responseBody.contains("exception"), "Framework 404 response must not expose exception data.");
         assertFalse(responseBody.contains("stackTrace"), "Framework 404 response must not expose stack traces.");

@@ -159,10 +159,16 @@ two restricted proxy replicas are scheduled across two labeled worker zones, Kub
 replicas and both backends, a zero-unavailable rolling replacement must turn over both pod UIDs without dropping below
 two ready Service endpoints, both replacement replicas and both backends must serve post-rollout traffic, one worker is
 drained and stopped under load, degraded traffic must continue through the remaining replica, and the stopped worker
-and second replica must recover inside the bound. The replacement reuses one exact local image content ID, so it proves
-Kubernetes replacement mechanics rather than compatibility between releases. The reviewed deployment ingress,
-deployment-equivalent resources, registry digest transition, and abrupt infrastructure-failure behavior remain staging
-gates.
+and second replica must recover inside the bound, and both recovered replicas and backends must serve new traffic. It
+then forcibly stops that recovered worker without a drain, confirms the container is down, and applies the documented
+out-of-service `NoExecute` remediation. It requires that remediation to remove the three exact stateless workload pods
+from the API, bounds endpoint withdrawal, proves degraded traffic, rejects the failed pod identity after recovery, and
+requires both recovered replicas and backends to serve new traffic. The disposable cluster pins iptables-mode kube-proxy
+to immediate EndpointSlice-triggered updates and a one-second cleanup sync; deployment environments must review the
+equivalent Service/ingress failure-detection and reconciliation behavior. The replacement reuses one exact local image
+content ID, so it proves Kubernetes mechanics
+rather than compatibility between releases. The reviewed deployment ingress, deployment-equivalent resources, registry
+digest transition, and automatic infrastructure-failure detection remain staging gates.
 
 ### 4. Stage The Rollout And Rollback
 

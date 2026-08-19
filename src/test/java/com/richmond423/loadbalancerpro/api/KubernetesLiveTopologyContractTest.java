@@ -53,12 +53,16 @@ class KubernetesLiveTopologyContractTest {
         assertEquals(2, count(cluster, "  - role: worker"));
         assertTrue(cluster.contains("listenAddress: 127.0.0.1"));
         assertTrue(cluster.contains("hostPort: 18460"));
+        assertTrue(cluster.contains("kind: KubeProxyConfiguration"));
+        assertTrue(cluster.contains("mode: iptables"));
+        assertTrue(cluster.contains("minSyncPeriod: 0s"));
+        assertTrue(cluster.contains("syncPeriod: 1s"));
         assertFalse(cluster.contains("nodePort"));
         assertEquals(3, count(cluster,
                 "kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48"));
 
         JsonNode profile = new ObjectMapper().readTree(read(PROFILE));
-        assertEquals(2, profile.path("schemaVersion").asInt());
+        assertEquals(3, profile.path("schemaVersion").asInt());
         assertEquals("example", profile.path("review").path("status").asText());
         assertEquals("v1.34.3", profile.path("cluster").path("kubectlVersion").asText());
         assertEquals(2, profile.path("cluster").path("workers").asInt());
@@ -70,15 +74,23 @@ class KubernetesLiveTopologyContractTest {
                 >= profile.path("objectives").path("maximumRolloutSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumRolloutSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("minimumPostRolloutSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("workload").path("abruptTransitionSeconds").asInt()
+                >= profile.path("objectives").path("maximumAbruptEndpointWithdrawalSeconds").asInt() + 5);
+        assertTrue(profile.path("objectives").path("minimumAbruptTransitionSuccessRatio").asDouble() >= 0.90);
+        assertTrue(profile.path("objectives").path("minimumAbruptDegradedSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumAbruptRecoveredSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("maximumAbruptTransitionP99Millis").asInt() <= 6000);
     }
 
     @Test
-    void runnerExecutesLiveRollingReplacementDistributionDrainStopAndRecoveryChecks() throws IOException {
+    void runnerExecutesLiveRollingReplacementPlannedAndAbruptWorkerLossChecks() throws IOException {
         String runner = read(RUNNER);
         for (String behavior : List.of(
                 "kind create cluster",
                 "kind load docker-image",
                 "Refusing to reuse or delete an existing kind cluster",
+                "Live kube-proxy config is missing",
+                "kube-proxy-config.yaml",
                 "Proxy replicas were not placed in distinct zones",
                 "minDomains: 2",
                 "-keepalive=false",
@@ -86,6 +98,8 @@ class KubernetesLiveTopologyContractTest {
                 "loadbalancerpro.io/qualification-rollout",
                 "kubectl rollout status deployment/loadbalancerpro",
                 "rollout-continuity.csv",
+                ".metadata.deletionTimestamp == null",
+                ".conditions.terminating != true",
                 "Rolling replacement retained an initial proxy pod UID",
                 "Rolling replacement changed the immutable runtime image ID",
                 "post-rollout-distribution-delta.json",
@@ -98,12 +112,25 @@ class KubernetesLiveTopologyContractTest {
                 "ready Service endpoints while one worker is stopped",
                 "docker start",
                 "kubectl uncordon",
+                "recovered-distribution-delta.json",
+                "Both recovered proxies and both backends must serve traffic after planned loss",
+                "docker kill \"$abrupt_node\"",
+                "node.kubernetes.io/out-of-service=qualification-abrupt-worker-loss:NoExecute",
+                "abrupt-loss source pods remaining in the API",
+                "outOfServiceForcedPodNames: $abruptForcedPodNames",
+                "docker inspect --format '{{.State.Running}}'",
+                "Abrupt-loss recovery retained the failed worker pod UID",
+                "abrupt-recovered-distribution-delta.json",
+                "bothRecoveredProxyReplicasServed: true",
+                "stoppedWithoutDrain: $abruptWorker",
+                "retainedFailedProxyPodUids: 0",
                 "bothProxyReplicasServed: true")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 19 unsafe profiles without creating a cluster"));
+        assertTrue(read(CONTRACT).contains("rejected 30 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
+        assertFalse(runner.contains("kubectl delete pod"));
     }
 
     @Test

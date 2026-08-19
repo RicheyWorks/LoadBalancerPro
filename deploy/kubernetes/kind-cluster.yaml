@@ -5,6 +5,14 @@ networking:
 nodes:
   - role: control-plane
     image: kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48
+    kubeadmConfigPatches:
+      - |
+        apiVersion: kubeproxy.config.k8s.io/v1alpha1
+        kind: KubeProxyConfiguration
+        mode: iptables
+        iptables:
+          minSyncPeriod: 0s
+          syncPeriod: 1s
     extraPortMappings:
       - containerPort: 30443
         hostPort: 18460

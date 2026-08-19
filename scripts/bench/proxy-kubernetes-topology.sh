@@ -24,7 +24,7 @@ for required_file in "$cluster_config" "$workload_manifest" "$profile"; do
 done
 
 jq -e '
-  .schemaVersion == 2
+  .schemaVersion == 3
   and (.profileId | type == "string" and test("^[a-z0-9][a-z0-9._-]{0,62}$"))
   and .review.status == "example"
   and .cluster.kindVersion == "v0.31.0"
@@ -44,23 +44,37 @@ jq -e '
   and (.workload.transitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
   and (.workload.degradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.recoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.abruptTransitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
+  and (.workload.abruptDegradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.abruptRecoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.objectives.minimumBaselineSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumPostRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
   and (.objectives.minimumDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumAbruptTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
+  and (.objectives.minimumAbruptDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumAbruptRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.maximumP99Millis | type == "number" and . >= 100 and . <= 5000 and floor == .)
+  and (.objectives.maximumAbruptTransitionP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
   and (.objectives.maximumRolloutSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
+  and (.objectives.maximumAbruptEndpointWithdrawalSeconds | type == "number" and . >= 5 and . <= 30 and floor == .)
+  and (.objectives.maximumAbruptRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and .workload.rolloutSeconds >= (.objectives.maximumRolloutSeconds + 5)
+  and .workload.abruptTransitionSeconds >= (.objectives.maximumAbruptEndpointWithdrawalSeconds + 5)
 ' "$profile" >/dev/null || { echo "Kubernetes topology profile does not satisfy the executable contract" >&2; exit 2; }
 
 for invariant in \
     'kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48' \
     'listenAddress: 127.0.0.1' \
     'containerPort: 30443' \
-    'hostPort: 18460'; do
+    'hostPort: 18460' \
+    'kind: KubeProxyConfiguration' \
+    'mode: iptables' \
+    'minSyncPeriod: 0s' \
+    'syncPeriod: 1s'; do
     grep -Fq "$invariant" "$cluster_config" || { echo "Kind cluster config is missing: $invariant" >&2; exit 2; }
 done
 for invariant in \
@@ -83,7 +97,7 @@ fi
 
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated disposable two-worker/two-zone Kubernetes topology contract %s.\n' "$(jq -r '.profileId' "$profile")"
-    printf 'Validated proof cases: service-distribution per-replica-metrics rolling-replacement endpoint-continuity pod-identity-turnover post-rollout-distribution planned-worker-drain stopped-worker degraded-service worker-recovery\n'
+    printf 'Validated proof cases: service-distribution per-replica-metrics rolling-replacement endpoint-continuity pod-identity-turnover post-rollout-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
     exit 0
 fi
 
@@ -183,6 +197,14 @@ else
 fi
 [[ "$(kubectl config current-context)" == "kind-$cluster_name" ]] || { echo "Unexpected Kubernetes context" >&2; exit 1; }
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
+kube_proxy_config="$(kubectl get configmap kube-proxy --namespace kube-system -o json \
+    | jq -r '.data["config.conf"]')"
+for invariant in 'mode: iptables' 'minSyncPeriod: 0s' 'syncPeriod: 1s'; do
+    grep -Fq "$invariant" <<< "$kube_proxy_config" || {
+        echo "Live kube-proxy config is missing: $invariant" >&2; exit 1;
+    }
+done
+printf '%s\n' "$kube_proxy_config" > "$output_dir/kube-proxy-config.yaml"
 mapfile -t workers < <(kind get nodes --name "$cluster_name" | grep -- '-worker' | sort)
 [[ ${#workers[@]} -eq 2 ]] || { echo "Expected exactly two kind workers" >&2; exit 1; }
 kubectl label node "${workers[0]}" loadbalancerpro.io/qualification-worker=true topology.kubernetes.io/zone=zone-a --overwrite
@@ -238,14 +260,22 @@ capture_state() {
 
 ready_proxy_count() {
     kubectl get pod --namespace "$namespace" -l app.kubernetes.io/name=loadbalancerpro -o json \
-        | jq '[.items[] | select(.status.phase == "Running")
+        | jq '[.items[] | select(.metadata.deletionTimestamp == null)
+            | select(.status.phase == "Running")
             | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))] | length'
 }
 
 ready_endpoint_count() {
     kubectl get endpointslice --namespace "$namespace" \
         -l kubernetes.io/service-name=loadbalancerpro -o json \
-        | jq '[.items[].endpoints[] | select(.conditions.ready == true)] | length'
+        | jq '[.items[].endpoints[]
+            | select(.conditions.ready == true and .conditions.terminating != true)] | length'
+}
+
+abrupt_source_pod_count() {
+    kubectl get pod --namespace "$namespace" -o json \
+        | jq --argjson names "$abrupt_forced_pod_names_json" \
+            '[.items[] | select(.metadata.name as $name | $names | index($name))] | length'
 }
 
 wait_for_count() {
@@ -280,6 +310,7 @@ sample_rollout_continuity() {
 
 collect_distribution() {
     local phase="$1"
+    local require_positive="${2:-true}"
     local pods_json pod pod_total pod_backend_a pod_backend_b metrics_file
     local backend_a_total=0 backend_b_total=0
     local rows_file="$work_dir/${phase}-distribution-rows.jsonl"
@@ -288,6 +319,7 @@ collect_distribution() {
     pods_json="$(kubectl get pod --namespace "$namespace" \
         -l app.kubernetes.io/name=loadbalancerpro -o json)"
     mapfile -t phase_proxy_pods < <(jq -r '.items[]
+        | select(.metadata.deletionTimestamp == null)
         | select(.status.phase == "Running")
         | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
         | .metadata.name' <<< "$pods_json" | sort)
@@ -304,10 +336,14 @@ collect_distribution() {
             "https://${LBP_TLS_HOSTNAME}:8080/actuator/prometheus"
         ' > "$metrics_file"
         pod_total="$(awk '$1 ~ /^lbp_proxy_requests_total(\{|$)/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")"
-        [[ "$pod_total" =~ ^[1-9][0-9]*$ ]] || {
-            echo "$pod did not serve $phase traffic" >&2
+        [[ "$pod_total" =~ ^[0-9]+$ ]] || {
+            echo "$pod returned an invalid $phase request counter" >&2
             return 1
         }
+        if [[ "$require_positive" == true && ! "$pod_total" =~ ^[1-9][0-9]*$ ]]; then
+            echo "$pod did not serve $phase traffic" >&2
+            return 1
+        fi
         pod_backend_a="$(awk '$1 ~ /^lbp_proxy_requests_total\{/ && $1 ~ /upstream="backend-a"/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")"
         pod_backend_b="$(awk '$1 ~ /^lbp_proxy_requests_total\{/ && $1 ~ /upstream="backend-b"/ { total += $2 } END { printf "%.0f", total + 0 }' "$metrics_file")"
         backend_a_total=$((backend_a_total + pod_backend_a))
@@ -330,6 +366,7 @@ collect_distribution() {
 
 proxy_pods_json="$(kubectl get pod --namespace "$namespace" -l app.kubernetes.io/name=loadbalancerpro -o json)"
 initial_ready_proxy_pods_json="$(jq --arg revision "$source_revision" '[.items[]
+    | select(.metadata.deletionTimestamp == null)
     | select(.status.phase == "Running")
     | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
     | select(.metadata.annotations["loadbalancerpro.io/source-revision"] == $revision)]' \
@@ -370,11 +407,12 @@ printf 'GET https://127.0.0.1:%s/proxy/kubernetes/topology\nX-API-Key: %s\n\n' \
 
 report_attack() {
     local name="$1" minimum_success="$2"
+    local maximum_p99_millis="${3:-$(jq -r '.objectives.maximumP99Millis' "$profile")}"
     local binary="$work_dir/${name}.bin"
     vegeta report -type=json "$binary" > "$output_dir/${name}-client.json"
     vegeta report -type=text "$binary" > "$output_dir/${name}-client.txt"
     local maximum_p99_nanos
-    maximum_p99_nanos="$(jq '.objectives.maximumP99Millis * 1000000' "$profile")"
+    maximum_p99_nanos="$((maximum_p99_millis * 1000000))"
     jq -e --argjson minimum "$minimum_success" --argjson maximumP99 "$maximum_p99_nanos" '
       .requests > 0
       and .success >= $minimum
@@ -446,6 +484,7 @@ rollout_min_ready_endpoints="$(awk -F, 'NR > 1 && (minimum == "" || $3 < minimum
 replacement_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
     -l app.kubernetes.io/name=loadbalancerpro -o json)"
 replacement_ready_proxy_pods_json="$(jq --arg token "$rollout_token" '[.items[]
+    | select(.metadata.deletionTimestamp == null)
     | select(.status.phase == "Running")
     | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
     | select(.metadata.annotations["loadbalancerpro.io/qualification-rollout"] == $token)]' \
@@ -543,14 +582,156 @@ wait_for_count 'recovered Service endpoints' 2 ready_endpoint_count "$maximum_re
 recovery_seconds=$(( $(date +%s) - recovery_started_epoch ))
 (( recovery_seconds <= maximum_recovery_seconds )) || { echo "Worker recovery exceeded the objective" >&2; exit 1; }
 capture_state recovered
+collect_distribution recovered-before false
 run_attack recovered "$(jq -r '.workload.recoveredSeconds' "$profile")" \
     "$(jq -r '.objectives.minimumRecoveredSuccessRatio' "$profile")"
+collect_distribution recovered
+jq -n --slurpfile before "$output_dir/recovered-before-distribution.json" \
+    --slurpfile after "$output_dir/recovered-distribution.json" '
+      ($before[0]) as $before | ($after[0]) as $after |
+      {phase: "planned-recovered", bothRecoveredProxyReplicasServed: true,
+       backendARequestDelta: ($after.backendARequests - $before.backendARequests),
+       backendBRequestDelta: ($after.backendBRequests - $before.backendBRequests),
+       pods: [$after.pods[] as $current
+         | ($before.pods[] | select(.pod == $current.pod)) as $prior
+         | {pod: $current.pod, requestDelta: ($current.requests - $prior.requests)}]}
+    ' > "$output_dir/recovered-distribution-delta.json"
+jq -e '(.pods | length) == 2
+    and all(.pods[]; .requestDelta > 0)
+    and .backendARequestDelta > 0
+    and .backendBRequestDelta > 0' "$output_dir/recovered-distribution-delta.json" >/dev/null || {
+    echo "Both recovered proxies and both backends must serve traffic after planned loss" >&2; exit 1;
+}
+
+abrupt_ready_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json | jq '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.status.phase == "Running")
+      | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))]')"
+[[ "$(jq 'length' <<< "$abrupt_ready_proxy_pods_json")" == 2 ]] || {
+    echo "Expected two ready proxies before abrupt worker loss" >&2; exit 1;
+}
+abrupt_node="$failed_node"
+[[ "$abrupt_node" == "${cluster_name}-worker" || "$abrupt_node" == "${cluster_name}-worker2" ]] || {
+    echo "Refusing to stop unexpected abrupt-loss node $abrupt_node" >&2; exit 1;
+}
+abrupt_failed_proxy_uid="$(jq -r --arg node "$abrupt_node" \
+    '.[] | select(.spec.nodeName == $node) | .metadata.uid' <<< "$abrupt_ready_proxy_pods_json")"
+[[ "$abrupt_failed_proxy_uid" =~ ^[0-9a-f-]{36}$ ]] || {
+    echo "Unable to bind the proxy pod identity on the abrupt-loss worker" >&2; exit 1;
+}
+abrupt_node_pods_json="$(kubectl get pod --namespace "$namespace" -o json \
+    | jq --arg node "$abrupt_node" '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.spec.nodeName == $node)
+      | select(.metadata.labels["app.kubernetes.io/name"] == "loadbalancerpro"
+          or .metadata.labels["app.kubernetes.io/name"] == "fixture-backend")]')"
+[[ "$(jq 'length' <<< "$abrupt_node_pods_json")" == 3 ]] || {
+    echo "Expected exactly one proxy and two backend pods on the abrupt-loss worker" >&2; exit 1;
+}
+abrupt_forced_pod_names_json="$(jq '[.[].metadata.name] | sort' <<< "$abrupt_node_pods_json")"
+
+abrupt_transition_seconds="$(jq -r '.workload.abruptTransitionSeconds' "$profile")"
+maximum_abrupt_endpoint_withdrawal_seconds="$(jq -r \
+    '.objectives.maximumAbruptEndpointWithdrawalSeconds' "$profile")"
+vegeta attack -duration="${abrupt_transition_seconds}s" -rate="${rate}/s" -timeout=5s \
+    -keepalive=false -http2=false -root-certs="$tls_dir/ca.pem" -targets="$targets" \
+    > "$work_dir/abrupt-transition.bin" &
+attack_pid=$!
+sleep 3
+abrupt_failure_started_epoch="$(date +%s)"
+docker kill "$abrupt_node" >/dev/null
+stopped_node="$abrupt_node"
+[[ "$(docker inspect --format '{{.State.Running}}' "$abrupt_node")" == false ]] || {
+    echo "Abrupt-loss worker container is still running" >&2; exit 1;
+}
+kubectl taint node "$abrupt_node" \
+    node.kubernetes.io/out-of-service=qualification-abrupt-worker-loss:NoExecute --overwrite
+wait_for_count 'abrupt-loss source pods remaining in the API' 0 abrupt_source_pod_count \
+    "$maximum_abrupt_endpoint_withdrawal_seconds"
+wait_for_count 'ready proxy replicas after abrupt worker loss' 1 ready_proxy_count \
+    "$maximum_abrupt_endpoint_withdrawal_seconds"
+wait_for_count 'ready Service endpoints after abrupt worker loss' 1 ready_endpoint_count \
+    "$maximum_abrupt_endpoint_withdrawal_seconds"
+abrupt_endpoint_withdrawal_seconds=$(( $(date +%s) - abrupt_failure_started_epoch ))
+(( abrupt_endpoint_withdrawal_seconds <= maximum_abrupt_endpoint_withdrawal_seconds )) || {
+    echo "Abrupt worker-loss endpoint withdrawal exceeded the objective" >&2; exit 1;
+}
+if ! wait "$attack_pid"; then
+    attack_pid=""
+    echo "Abrupt worker-loss transition traffic attack failed" >&2
+    exit 1
+fi
+attack_pid=""
+report_attack abrupt-transition \
+    "$(jq -r '.objectives.minimumAbruptTransitionSuccessRatio' "$profile")" \
+    "$(jq -r '.objectives.maximumAbruptTransitionP99Millis' "$profile")"
+capture_state abrupt-degraded
+run_attack abrupt-degraded "$(jq -r '.workload.abruptDegradedSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumAbruptDegradedSuccessRatio' "$profile")"
+
+abrupt_recovery_started_epoch="$(date +%s)"
+docker start "$stopped_node" >/dev/null
+stopped_node=""
+maximum_abrupt_recovery_seconds="$(jq -r '.objectives.maximumAbruptRecoverySeconds' "$profile")"
+kubectl wait --for=condition=Ready node/"$abrupt_node" \
+    --timeout="${maximum_abrupt_recovery_seconds}s"
+kubectl taint node "$abrupt_node" node.kubernetes.io/out-of-service:NoExecute-
+for deployment in backend-a backend-b loadbalancerpro; do
+    kubectl rollout status deployment/"$deployment" --namespace "$namespace" \
+        --timeout="${maximum_abrupt_recovery_seconds}s"
+done
+wait_for_count 'abrupt-loss recovered proxy replicas' 2 ready_proxy_count \
+    "$maximum_abrupt_recovery_seconds"
+wait_for_count 'abrupt-loss recovered Service endpoints' 2 ready_endpoint_count \
+    "$maximum_abrupt_recovery_seconds"
+abrupt_recovery_seconds=$(( $(date +%s) - abrupt_recovery_started_epoch ))
+(( abrupt_recovery_seconds <= maximum_abrupt_recovery_seconds )) || {
+    echo "Abrupt worker-loss recovery exceeded the objective" >&2; exit 1;
+}
+abrupt_recovered_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json | jq '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.status.phase == "Running")
+      | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))]')"
+[[ "$(jq '[.[].spec.nodeName] | unique | length' <<< "$abrupt_recovered_proxy_pods_json")" == 2 ]] || {
+    echo "Abrupt-loss recovery did not restore distinct workers" >&2; exit 1;
+}
+abrupt_failed_uid_overlap="$(jq -n --arg prior "$abrupt_failed_proxy_uid" \
+    --argjson recovered "$abrupt_recovered_proxy_pods_json" \
+    '[ $recovered[].metadata.uid | select(. == $prior) ] | length')"
+[[ "$abrupt_failed_uid_overlap" == 0 ]] || {
+    echo "Abrupt-loss recovery retained the failed worker pod UID" >&2; exit 1;
+}
+capture_state abrupt-recovered
+collect_distribution abrupt-recovered-before false
+run_attack abrupt-recovered "$(jq -r '.workload.abruptRecoveredSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumAbruptRecoveredSuccessRatio' "$profile")"
+collect_distribution abrupt-recovered
+jq -n --slurpfile before "$output_dir/abrupt-recovered-before-distribution.json" \
+    --slurpfile after "$output_dir/abrupt-recovered-distribution.json" '
+      ($before[0]) as $before | ($after[0]) as $after |
+      {phase: "abrupt-recovered", bothRecoveredProxyReplicasServed: true,
+       backendARequestDelta: ($after.backendARequests - $before.backendARequests),
+       backendBRequestDelta: ($after.backendBRequests - $before.backendBRequests),
+       pods: [$after.pods[] as $current
+         | ($before.pods[] | select(.pod == $current.pod)) as $prior
+         | {pod: $current.pod, requestDelta: ($current.requests - $prior.requests)}]}
+    ' > "$output_dir/abrupt-recovered-distribution-delta.json"
+jq -e '(.pods | length) == 2
+    and all(.pods[]; .requestDelta > 0)
+    and .backendARequestDelta > 0
+    and .backendBRequestDelta > 0' "$output_dir/abrupt-recovered-distribution-delta.json" >/dev/null || {
+    echo "Both recovered proxies and both backends must serve traffic after abrupt loss" >&2; exit 1;
+}
 
 kubectl version -o json > "$output_dir/kubernetes-version.json"
 kind version > "$output_dir/kind-version.txt"
 sha256sum "$profile" "$cluster_config" "$workload_manifest" > "$output_dir/input-sha256.txt"
 baseline_distribution_json="$(<"$output_dir/baseline-distribution.json")"
 post_rollout_distribution_delta_json="$(<"$output_dir/post-rollout-distribution-delta.json")"
+recovered_distribution_delta_json="$(<"$output_dir/recovered-distribution-delta.json")"
+abrupt_recovered_distribution_delta_json="$(<"$output_dir/abrupt-recovered-distribution-delta.json")"
 jq -n \
     --arg profileId "$profile_id" \
     --arg sourceRevision "$source_revision" \
@@ -558,6 +739,9 @@ jq -n \
     --arg fixtureImageId "$fixture_image_id" \
     --arg rolloutToken "$rollout_token" \
     --arg drainedWorker "$failed_node" \
+    --arg abruptWorker "$abrupt_node" \
+    --arg abruptFailedProxyUid "$abrupt_failed_proxy_uid" \
+    --argjson abruptForcedPodNames "$abrupt_forced_pod_names_json" \
     --argjson priorPodUids "$initial_proxy_uids_json" \
     --argjson replacementPodUids "$replacement_proxy_uids_json" \
     --argjson runtimeImageIds "$replacement_proxy_runtime_image_ids_json" \
@@ -566,23 +750,36 @@ jq -n \
     --argjson minimumReadyPods "$rollout_min_ready_pods" \
     --argjson minimumReadyEndpoints "$rollout_min_ready_endpoints" \
     --argjson recoverySeconds "$recovery_seconds" \
+    --argjson abruptEndpointWithdrawalSeconds "$abrupt_endpoint_withdrawal_seconds" \
+    --argjson abruptRecoverySeconds "$abrupt_recovery_seconds" \
     --argjson baselineDistribution "$baseline_distribution_json" \
     --argjson postRolloutDistribution "$post_rollout_distribution_delta_json" \
-    '{schemaVersion: 2, result: "pass", evidenceBoundary: "disposable loopback kind replacement mechanics using one local image content ID; not release compatibility, registry/source binding, deployment-ingress, abrupt-node-failure, or deployment-capacity proof",
+    --argjson recoveredDistribution "$recovered_distribution_delta_json" \
+    --argjson abruptRecoveredDistribution "$abrupt_recovered_distribution_delta_json" \
+    '{schemaVersion: 3, result: "pass", evidenceBoundary: "disposable loopback kind same-image replacement, planned worker loss, and operator-remediated abrupt worker-container loss; not automatic infrastructure-failure detection, release compatibility, registry/source binding, deployment-ingress, or deployment-capacity proof",
       profileId: $profileId, repositoryRevision: $sourceRevision,
       images: {proxyContentId: $proxyImageId, fixtureContentId: $fixtureImageId},
       topology: {workers: 2, zones: 2, initialProxyReplicas: 2, postRolloutProxyReplicas: 2,
-        degradedProxyReplicas: 1, recoveredProxyReplicas: 2},
+        degradedProxyReplicas: 1, recoveredProxyReplicas: 2,
+        abruptDegradedProxyReplicas: 1, abruptRecoveredProxyReplicas: 2},
       traffic: {bothProxyReplicasServed: true, baseline: $baselineDistribution,
         rollout: "pass", postRollout: $postRolloutDistribution,
-        drainTransition: "pass", degraded: "pass", recovered: "pass"},
+        drainTransition: "pass", degraded: "pass", recovered: $recoveredDistribution,
+        abruptTransition: "pass", abruptDegraded: "pass",
+        abruptRecovered: $abruptRecoveredDistribution},
       rolloutExercise: {triggerAnnotation: $rolloutToken, sameRuntimeImageId: true,
         runtimeImageIds: $runtimeImageIds, priorPodUids: $priorPodUids,
         replacementPodUids: $replacementPodUids, retainedPriorPodUids: 0,
         rolloutSeconds: $rolloutSeconds, continuitySamples: $rolloutSamples,
         minimumReadyProxyPods: $minimumReadyPods,
         minimumReadyServiceEndpoints: $minimumReadyEndpoints},
-      workerExercise: {drainedAndStopped: $drainedWorker, recoverySeconds: $recoverySeconds}}' \
+      workerExercise: {planned: {drainedAndStopped: $drainedWorker, recoverySeconds: $recoverySeconds},
+        abrupt: {stoppedWithoutDrain: $abruptWorker,
+          remediation: "node.kubernetes.io/out-of-service:NoExecute",
+          outOfServiceForcedPodNames: $abruptForcedPodNames,
+          failedProxyPodUid: $abruptFailedProxyUid, retainedFailedProxyPodUids: 0,
+          endpointWithdrawalSeconds: $abruptEndpointWithdrawalSeconds,
+          recoverySeconds: $abruptRecoverySeconds}}}' \
     > "$output_dir/summary.json"
 
-printf 'Kubernetes two-zone live rollout and worker-loss proof passed; evidence: %s\n' "$output_dir"
+printf 'Kubernetes two-zone live rollout, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"

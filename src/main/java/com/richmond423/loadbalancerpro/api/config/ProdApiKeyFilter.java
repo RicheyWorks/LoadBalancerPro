@@ -2,8 +2,6 @@ package com.richmond423.loadbalancerpro.api.config;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,18 +33,15 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
     private static final String API_KEY_HEADER = "X-API-Key";
 
     private final ObjectMapper objectMapper;
-    private final byte[] configuredApiKey;
-    private final boolean apiKeyConfigured;
+    private final ApiKeyVerifier apiKeyVerifier;
     private final boolean protectActuator;
     private final AtomicBoolean missingKeyWarningLogged = new AtomicBoolean(false);
 
     public ProdApiKeyFilter(ObjectMapper objectMapper,
-                            @Value("${loadbalancerpro.api.key:}") String configuredApiKey,
+                            ApiKeyVerifier apiKeyVerifier,
                             @Value("${loadbalancerpro.auth.protect-actuator:false}") boolean protectActuator) {
         this.objectMapper = objectMapper;
-        String normalizedKey = configuredApiKey == null ? "" : configuredApiKey.trim();
-        this.apiKeyConfigured = !normalizedKey.isEmpty();
-        this.configuredApiKey = normalizedKey.getBytes(StandardCharsets.UTF_8);
+        this.apiKeyVerifier = apiKeyVerifier;
         this.protectActuator = protectActuator;
     }
 
@@ -58,15 +53,14 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (!apiKeyConfigured) {
+        if (!apiKeyVerifier.isConfigured()) {
             logMissingKeyWarningOnce();
             writeUnauthorized(request, response);
             return;
         }
 
         String presentedApiKey = request.getHeader(API_KEY_HEADER);
-        if (presentedApiKey == null || presentedApiKey.isBlank()
-                || !constantTimeEquals(configuredApiKey, presentedApiKey.getBytes(StandardCharsets.UTF_8))) {
+        if (!apiKeyVerifier.matches(presentedApiKey)) {
             writeUnauthorized(request, response);
             return;
         }
@@ -109,18 +103,6 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
     private static boolean isActuatorRequest(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         return "/actuator".equals(requestUri) || requestUri.startsWith("/actuator/");
-    }
-
-    private static boolean constantTimeEquals(byte[] expected, byte[] actual) {
-        return MessageDigest.isEqual(sha256(expected), sha256(actual));
-    }
-
-    private static byte[] sha256(byte[] value) {
-        try {
-            return MessageDigest.getInstance("SHA-256").digest(value);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 digest algorithm is unavailable", exception);
-        }
     }
 
     private void logMissingKeyWarningOnce() {

@@ -41,6 +41,8 @@ class KubernetesLiveTopologyContractTest {
                 "drop: [\"ALL\"]",
                 "kind: PodDisruptionBudget",
                 "kind: NetworkPolicy",
+                "secretName: loadbalancerpro-api-key-a",
+                "path: loadbalancerpro.api.rotation-key",
                 "secretName: loadbalancerpro-server-tls-a")) {
             assertTrue(workload.contains(invariant), "missing restricted workload invariant: " + invariant);
         }
@@ -64,7 +66,7 @@ class KubernetesLiveTopologyContractTest {
                 "kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48"));
 
         JsonNode profile = new ObjectMapper().readTree(read(PROFILE));
-        assertEquals(5, profile.path("schemaVersion").asInt());
+        assertEquals(6, profile.path("schemaVersion").asInt());
         assertEquals("example", profile.path("review").path("status").asText());
         assertEquals("v1.34.3", profile.path("cluster").path("kubectlVersion").asText());
         assertEquals(2, profile.path("cluster").path("workers").asInt());
@@ -88,11 +90,21 @@ class KubernetesLiveTopologyContractTest {
         assertTrue(profile.path("objectives").path("minimumPostCertificateRotationSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("minimumCertificateRollbackSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("minimumPostCertificateRollbackSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("workload").path("apiKeyTransitionSeconds").asInt()
+                >= profile.path("objectives").path("maximumApiKeyTransitionSeconds").asInt() + 5);
+        assertTrue(profile.path("objectives").path("minimumApiKeyTransitionSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumPostApiKeyTransitionSuccessRatio").asDouble() >= 0.95);
         assertEquals("lbp-kubernetes.local", profile.path("tlsRotation").path("hostname").asText());
         assertEquals("loadbalancerpro-server-tls-a",
                 profile.path("tlsRotation").path("baselineSecret").asText());
         assertEquals("loadbalancerpro-server-tls-b",
                 profile.path("tlsRotation").path("candidateSecret").asText());
+        assertEquals("loadbalancerpro-api-key-a",
+                profile.path("apiKeyRotation").path("baselineSecret").asText());
+        assertEquals("loadbalancerpro-api-key-a-b",
+                profile.path("apiKeyRotation").path("overlapSecret").asText());
+        assertEquals("loadbalancerpro-api-key-b",
+                profile.path("apiKeyRotation").path("candidateSecret").asText());
         assertTrue(profile.path("workload").path("abruptTransitionSeconds").asInt()
                 >= profile.path("objectives").path("maximumAbruptEndpointWithdrawalSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumAbruptTransitionSuccessRatio").asDouble() >= 0.90);
@@ -160,6 +172,21 @@ class KubernetesLiveTopologyContractTest {
                 "baselineOnlyRejectedAfterRotation: true",
                 "candidateOnlyRejectedAfterRollback: true",
                 "not an ingress-controller",
+                "create_immutable_api_key_secret",
+                "api-key-secret-metadata.json",
+                "loadbalancerpro.io/qualification-api-key-overlap",
+                "loadbalancerpro.io/qualification-api-key-commit",
+                "loadbalancerpro.io/qualification-api-key-rollback-overlap",
+                "loadbalancerpro.io/qualification-api-key-rollback-commit",
+                "${phase}-continuity.csv",
+                "Candidate API key before overlap",
+                "Retired baseline API key after commit",
+                "Retired candidate API key after rollback",
+                "bothApiKeysAcceptedDuringOverlap",
+                "candidateApiKeyRetiredAfterRollback",
+                "required primary plus at most one operator-bounded rotation key",
+                "Kubernetes API-key value leaked into evidence",
+                "not dynamic Secret reload",
                 "priorPodUids: $priorPodUids",
                 "candidatePodUids: $candidatePodUids",
                 "restoredPodUids: $restoredPodUids",
@@ -186,7 +213,7 @@ class KubernetesLiveTopologyContractTest {
                 "bothProxyReplicasServed: true")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 52 unsafe profiles without creating a cluster"));
+        assertTrue(read(CONTRACT).contains("rejected 64 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
     }

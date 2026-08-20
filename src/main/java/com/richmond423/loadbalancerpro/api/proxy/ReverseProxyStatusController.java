@@ -2,9 +2,6 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +10,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.richmond423.loadbalancerpro.api.ApiErrorResponse;
+import com.richmond423.loadbalancerpro.api.config.ApiKeyVerifier;
 import com.richmond423.loadbalancerpro.api.explain.LiveRoutingDecisionExplanation;
 import com.richmond423.loadbalancerpro.api.explain.LiveRoutingExplanationService;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,27 +36,25 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/api/proxy")
 public class ReverseProxyStatusController {
-    private static final String API_KEY_HEADER = "X-API-Key";
-
     private final ReverseProxyProperties properties;
     private final ReverseProxyMetrics metrics;
     private final ObjectProvider<ReverseProxyService> reverseProxyService;
     private final LiveRoutingExplanationService routingExplanationService;
     private final Environment environment;
-    private final String configuredApiKey;
+    private final ApiKeyVerifier apiKeyVerifier;
 
     public ReverseProxyStatusController(ReverseProxyProperties properties,
                                         ReverseProxyMetrics metrics,
                                         ObjectProvider<ReverseProxyService> reverseProxyService,
                                         LiveRoutingExplanationService routingExplanationService,
                                         Environment environment,
-                                        @Value("${loadbalancerpro.api.key:}") String configuredApiKey) {
+                                        ApiKeyVerifier apiKeyVerifier) {
         this.properties = properties;
         this.metrics = metrics;
         this.reverseProxyService = reverseProxyService;
         this.routingExplanationService = routingExplanationService;
         this.environment = environment;
-        this.configuredApiKey = configuredApiKey;
+        this.apiKeyVerifier = apiKeyVerifier;
     }
 
     @GetMapping("/status")
@@ -264,7 +259,7 @@ public class ReverseProxyStatusController {
                 response.metrics(),
                 ReverseProxyStatusSummaries.observability(response.proxyEnabled(), response.routes(),
                         response.upstreams(), response.metrics()),
-                ReverseProxyStatusSummaries.securityBoundary(environment, configuredApiKey),
+                ReverseProxyStatusSummaries.securityBoundary(environment, apiKeyVerifier.isConfigured()),
                 response.privateNetworkLiveValidation(),
                 response.reload());
     }
@@ -473,14 +468,7 @@ public class ReverseProxyStatusController {
     }
 
     private boolean validApiKey(HttpServletRequest request) {
-        String expected = configuredApiKey == null ? "" : configuredApiKey.trim();
-        if (expected.isEmpty()) {
-            return false;
-        }
-        String presented = request.getHeader(API_KEY_HEADER);
-        return presented != null && !presented.isBlank()
-                && constantTimeEquals(expected.getBytes(StandardCharsets.UTF_8),
-                        presented.getBytes(StandardCharsets.UTF_8));
+        return apiKeyVerifier.matches(request.getHeader("X-API-Key"));
     }
 
     private ResponseEntity<ApiErrorResponse> rejectAdminAuthentication(HttpServletRequest request) {
@@ -499,18 +487,6 @@ public class ReverseProxyStatusController {
                 request.getRequestURI(),
                 Instant.now().toString(),
                 List.of()));
-    }
-
-    private static boolean constantTimeEquals(byte[] expected, byte[] actual) {
-        return MessageDigest.isEqual(sha256(expected), sha256(actual));
-    }
-
-    private static byte[] sha256(byte[] value) {
-        try {
-            return MessageDigest.getInstance("SHA-256").digest(value);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 digest algorithm is unavailable", exception);
-        }
     }
 
     private static ReverseProxyReloadResponse reloadRejected(String status, List<String> errors) {

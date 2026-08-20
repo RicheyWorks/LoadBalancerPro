@@ -129,7 +129,12 @@ Secrets, rotates the Deployment's TLS Secret reference under continuous close-pe
 rollover bundle, and restores the baseline Secret under a second load window. Positive and negative single-CA checks
 plus repeated served-leaf SHA-256 fingerprint checks prove the identity changed and returned; both directions also
 require complete pod turnover, an unchanged runtime image ID, two-zone endpoint continuity, and post-transition traffic
-through both replicas and backends. It then drains and stops one worker under load,
+through both replicas and backends. Before the worker-loss phases, it creates immutable A-only, A+B overlap, and B-only
+API-key Secrets. Four zero-unavailable rollouts prove baseline-key traffic through overlap, candidate-key traffic through
+commit, the reverse rollback overlap, and final restoration of A-only. Positive and negative authentication checks prove
+both overlap windows and both key-retirement boundaries; every phase also requires fresh pod UIDs, two ready endpoints,
+an unchanged runtime image, and traffic through both replicas and backends. The runtime accepts only the required primary
+plus one optional rotation key and does not dynamically reload Secret files. It then drains and stops one worker under load,
 tests the one-replica degraded service, requires both recovered replicas and backends to serve new traffic, then
 forcibly stops that recovered worker without a drain. After confirming the worker container is down, it applies
 Kubernetes' out-of-service `NoExecute` remediation and force-removes the three exact stateless workload pods from the
@@ -143,11 +148,12 @@ bash scripts/bench/kubernetes-topology-contract-test.sh
 bash scripts/bench/proxy-kubernetes-topology.sh --mode smoke
 ```
 
-Smoke mode requires Docker, kind 0.31.0, kubectl 1.34.3, Vegeta, jq, OpenSSL, and curl. TLS private keys and the API key
-live only in a temporary directory; evidence contains only redacted Secret metadata and generated leaf fingerprints
+Smoke mode requires Docker, kind 0.31.0, kubectl 1.34.3, Vegeta, jq, OpenSSL, and curl. TLS private keys and both API keys
+live only in a temporary directory; evidence contains only redacted Secret metadata, key-slot names, and generated leaf fingerprints
 and is written beneath `target/kubernetes/`. The result proves disposable Kubernetes content-addressed image,
-inbound-server TLS Secret transition/rollback, and worker-loss mechanics. It does not deploy or test an ingress
-controller, external certificate authority, or client trust-distribution system. Because the local candidate
+inbound-server TLS Secret transition/rollback, bounded API-key rotation/rollback, and worker-loss mechanics. It does not
+prove dynamic Secret reload or an external secret manager, and it does not deploy or test an ingress controller,
+external certificate authority, or client trust-distribution system. Because the local candidate
 changes immutable proof metadata but not application layers, it does not prove application-layer release compatibility,
 registry integrity,
 deployment capacity, external ingress behavior, automatic infrastructure-failure detection, or an authorized staging

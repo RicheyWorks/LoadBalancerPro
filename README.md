@@ -15,9 +15,10 @@ The default posture is conservative: API-key authentication is selected, proxyin
   loaded rollout/rollback, plus a deployment-equivalent capacity staircase bound to the exact candidate and
   per-replica telemetry; CI-gated Compose and live two-zone Kubernetes proofs cover distribution, candidate abort,
   content-distinct image rollout and baseline rollback under load, immutable inbound-TLS identity rotation and rollback,
-  pod-identity turnover, endpoint continuity, replica loss, planned worker
+  bounded API-key overlap/commit/rollback, pod-identity turnover, endpoint continuity, replica loss, planned worker
   removal, operator-remediated abrupt worker loss, degraded service, and worker recovery.
-- API-key and OAuth2 resource-server modes with deny-by-default API classification.
+- API-key mode with a required primary key and at most one optional rotation key, plus OAuth2 resource-server mode,
+  with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
 - Capacity-aware, predictive, and evaluation-only allocation APIs in the separate source/Lab Tools runtime.
 - Deterministic request-level comparison, Decision Explorer/browser cockpit surfaces, Enterprise Lab scenarios, durable
@@ -46,9 +47,10 @@ and restores the prior digest. The Kubernetes adapter compiler supplies rollout,
 certificate-rotation, deployment-inspection, and capacity-sampling executables. A disposable two-worker/two-zone kind
   lane now deploys the restricted production image and proves live Service distribution, a metadata-only content-distinct
   candidate rollout and baseline rollback, then rotates between independently rooted certificates through versioned
-  immutable Secrets and restores the original identity. Both transitions require complete pod-UID turnover, unchanged
-  runtime image identity, endpoint continuity, and traffic through both replicas and backends before the lane exercises
-  worker drain/stop, degraded traffic, and
+  immutable Secrets and restores the original identity. It then rolls through immutable A-only, A+B, and B-only API-key
+  Secrets and reverses that sequence for rollback. Every credential transition preserves two ready endpoints, turns over
+  both pod UIDs, keeps the runtime image fixed, and proves the retired key is rejected before the lane exercises worker
+  drain/stop, degraded traffic, and
 operator-remediated no-drain worker loss and recovery. The next action remains to compile the adapters from the reviewed
 staging
 cluster identity, freeze the observed configuration/ingress hashes into the profiles, then run staging qualification
@@ -135,6 +137,7 @@ Important defaults in `application.properties`:
 | Property | Default | Effect |
 | --- | --- | --- |
 | `loadbalancerpro.auth.mode` | `api-key` | Protected API mode |
+| `loadbalancerpro.api.rotation-key` | empty | Optional second key accepted only during an operator-bounded rotation overlap |
 | `loadbalancerpro.proxy.enabled` | `false` | No forwarding until explicitly enabled |
 | `loadbalancerpro.lase.shadow.enabled` | `false` | No shadow evaluation by default |
 | `loadbalancerpro.api.max-request-bytes` | `16384` | Bounded API request bodies |
@@ -168,6 +171,11 @@ In the source/Lab Tools API runtime, `GET /api/health` and unauthenticated `OPTI
 export LOADBALANCERPRO_API_KEY='supply-from-a-secret-manager'
 java -jar "$(bash scripts/resolve-executable-jar.sh)" --spring.profiles.active=prod
 ```
+
+API-key rotation is deliberately bounded to two credentials. Roll out a configuration containing primary A plus
+rotation key B, switch clients to B, then roll out B as the sole primary. Rollback reverses the sequence through the
+same A+B overlap. A rotation key cannot replace a missing primary, and the process does not dynamically reread mounted
+credential files.
 
 Do not commit API keys, OAuth tokens, AWS credentials, telemetry headers, private keys, or production targets. Terminate TLS at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh before shared-network exposure.
 

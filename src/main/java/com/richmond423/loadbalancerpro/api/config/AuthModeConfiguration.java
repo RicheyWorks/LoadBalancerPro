@@ -13,15 +13,22 @@ public class AuthModeConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(AuthModeConfiguration.class);
 
     @Bean
+    ApiKeyVerifier apiKeyVerifier(
+            @Value("${loadbalancerpro.api.key:}") String apiKey,
+            @Value("${loadbalancerpro.api.rotation-key:}") String rotationKey) {
+        return new ApiKeyVerifier(apiKey, rotationKey);
+    }
+
+    @Bean
     AuthModeValidator authModeValidator(
             AuthProperties authProperties,
-            @Value("${loadbalancerpro.api.key:}") String apiKey) {
-        return new AuthModeValidator(authProperties, apiKey);
+            ApiKeyVerifier apiKeyVerifier) {
+        return new AuthModeValidator(authProperties, apiKeyVerifier);
     }
 
     static final class AuthModeValidator {
-        AuthModeValidator(AuthProperties authProperties, String apiKey) {
-            authProperties.validateApiKeyMode(apiKey);
+        AuthModeValidator(AuthProperties authProperties, ApiKeyVerifier apiKeyVerifier) {
+            authProperties.validateApiKeyMode(apiKeyVerifier.isConfigured());
             authProperties.validateOAuth2Mode();
             if (authProperties.isNoneMode()) {
                 logger.warn("SECURITY WARNING: loadbalancerpro.auth.mode=none is active; authentication is disabled. "

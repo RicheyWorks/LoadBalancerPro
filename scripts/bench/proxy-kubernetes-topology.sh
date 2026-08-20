@@ -25,7 +25,7 @@ for required_file in "$cluster_config" "$workload_manifest" "$candidate_dockerfi
 done
 
 jq -e '
-  .schemaVersion == 5
+  .schemaVersion == 6
   and (.profileId | type == "string" and test("^[a-z0-9][a-z0-9._-]{0,62}$"))
   and .review.status == "example"
   and .cluster.kindVersion == "v0.31.0"
@@ -48,6 +48,8 @@ jq -e '
   and (.workload.postCertificateRotationSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.certificateRollbackSeconds | type == "number" and . >= 20 and . <= 180 and floor == .)
   and (.workload.postCertificateRollbackSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.apiKeyTransitionSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
+  and (.workload.postApiKeyTransitionSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.transitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
   and (.workload.degradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.recoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
@@ -63,6 +65,8 @@ jq -e '
   and (.objectives.minimumPostCertificateRotationSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumCertificateRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumPostCertificateRollbackSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumApiKeyTransitionSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumPostApiKeyTransitionSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
   and (.objectives.minimumDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
@@ -75,6 +79,7 @@ jq -e '
   and (.objectives.maximumRollbackSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumCertificateRotationSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumCertificateRollbackSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
+  and (.objectives.maximumApiKeyTransitionSeconds | type == "number" and . >= 20 and . <= 90 and floor == .)
   and (.objectives.maximumRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and (.objectives.maximumAbruptEndpointWithdrawalSeconds | type == "number" and . >= 5 and . <= 30 and floor == .)
   and (.objectives.maximumAbruptRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
@@ -82,11 +87,17 @@ jq -e '
   and .workload.rollbackSeconds >= (.objectives.maximumRollbackSeconds + 5)
   and .workload.certificateRotationSeconds >= (.objectives.maximumCertificateRotationSeconds + 5)
   and .workload.certificateRollbackSeconds >= (.objectives.maximumCertificateRollbackSeconds + 5)
+  and .workload.apiKeyTransitionSeconds >= (.objectives.maximumApiKeyTransitionSeconds + 5)
   and .workload.abruptTransitionSeconds >= (.objectives.maximumAbruptEndpointWithdrawalSeconds + 5)
   and .tlsRotation.hostname == "lbp-kubernetes.local"
   and .tlsRotation.baselineSecret == "loadbalancerpro-server-tls-a"
   and .tlsRotation.candidateSecret == "loadbalancerpro-server-tls-b"
   and .tlsRotation.baselineSecret != .tlsRotation.candidateSecret
+  and .apiKeyRotation.baselineSecret == "loadbalancerpro-api-key-a"
+  and .apiKeyRotation.overlapSecret == "loadbalancerpro-api-key-a-b"
+  and .apiKeyRotation.candidateSecret == "loadbalancerpro-api-key-b"
+  and ([.apiKeyRotation.baselineSecret, .apiKeyRotation.overlapSecret,
+        .apiKeyRotation.candidateSecret] | unique | length) == 3
 ' "$profile" >/dev/null || { echo "Kubernetes topology profile does not satisfy the executable contract" >&2; exit 2; }
 
 for invariant in \
@@ -111,7 +122,9 @@ for invariant in \
     'nodePort: 30443' \
     'kind: PodDisruptionBudget' \
     'kind: NetworkPolicy' \
-    'secretName: loadbalancerpro-server-tls-a'; do
+    'secretName: loadbalancerpro-server-tls-a' \
+    'secretName: loadbalancerpro-api-key-a' \
+    'path: loadbalancerpro.api.rotation-key'; do
     grep -Fq "$invariant" "$workload_manifest" || { echo "Kubernetes workload is missing: $invariant" >&2; exit 2; }
 done
 if grep -Eq '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|api-key:[[:space:]]+[^[:space:]]+)' "$workload_manifest"; then
@@ -121,7 +134,7 @@ fi
 
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated disposable two-worker/two-zone Kubernetes topology contract %s.\n' "$(jq -r '.profileId' "$profile")"
-    printf 'Validated proof cases: service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution immutable-certificate-secrets certificate-identity-transition certificate-rotation-continuity certificate-pod-identity-turnover post-certificate-rotation-distribution certificate-identity-rollback certificate-rollback-continuity certificate-rollback-pod-identity-turnover post-certificate-rollback-distribution planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
+    printf 'Validated proof cases: service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution immutable-certificate-secrets certificate-identity-transition certificate-rotation-continuity certificate-pod-identity-turnover post-certificate-rotation-distribution certificate-identity-rollback certificate-rollback-continuity certificate-rollback-pod-identity-turnover post-certificate-rollback-distribution bounded-api-key-overlap immutable-api-key-secrets api-key-rotation-continuity api-key-retirement api-key-rollback-continuity api-key-rollback-retirement planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
     exit 0
 fi
 
@@ -142,6 +155,9 @@ rate="$(jq -r '.workload.ratePerSecond' "$profile")"
 tls_hostname="$(jq -r '.tlsRotation.hostname' "$profile")"
 baseline_tls_secret="$(jq -r '.tlsRotation.baselineSecret' "$profile")"
 candidate_tls_secret="$(jq -r '.tlsRotation.candidateSecret' "$profile")"
+baseline_api_key_secret="$(jq -r '.apiKeyRotation.baselineSecret' "$profile")"
+overlap_api_key_secret="$(jq -r '.apiKeyRotation.overlapSecret' "$profile")"
+candidate_api_key_secret="$(jq -r '.apiKeyRotation.candidateSecret' "$profile")"
 default_run_id="${GITHUB_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-${BASHPID}}-${GITHUB_RUN_ATTEMPT:-1}"
 cluster_name="${LBP_KUBERNETES_CLUSTER:-lbp-k8s-${GITHUB_RUN_ID:-local-${BASHPID}}-${GITHUB_RUN_ATTEMPT:-1}}"
 [[ "$cluster_name" =~ ^lbp-k8s-[a-z0-9][a-z0-9-]{0,48}$ ]] || {
@@ -165,7 +181,9 @@ output_dir="$(cd "$output_dir" && pwd -P)"
 
 work_dir="$(mktemp -d "${TMPDIR:-/tmp}/lbp-kubernetes.XXXXXX")"
 kubeconfig="$work_dir/kubeconfig"
-api_key_file="$work_dir/loadbalancerpro-api-key"
+api_key_file="$work_dir/loadbalancerpro-api-key-a"
+candidate_api_key_file="$work_dir/loadbalancerpro-api-key-b"
+empty_rotation_key_file="$work_dir/loadbalancerpro-api-key-empty"
 tls_dir="$work_dir/tls"
 candidate_tls_dir="$work_dir/tls-candidate"
 tls_trust_bundle="$work_dir/tls-rollover-ca-bundle.pem"
@@ -276,6 +294,11 @@ kubectl label node "${workers[1]}" loadbalancerpro.io/qualification-worker=true 
 
 kind load docker-image "$proxy_image" "$candidate_image" "$fixture_image" --name "$cluster_name"
 openssl rand -hex 24 > "$api_key_file"
+openssl rand -hex 24 > "$candidate_api_key_file"
+: > "$empty_rotation_key_file"
+[[ "$(<"$api_key_file")" != "$(<"$candidate_api_key_file")" ]] || {
+    echo "Generated Kubernetes API keys were not distinct" >&2; exit 1;
+}
 generate_server_identity() {
     local directory="$1" authority_common_name="$2" serial="$3"
     local ca_key="$directory/ca-key.pem"
@@ -323,11 +346,33 @@ candidate_certificate_fingerprint="$(certificate_fingerprint "$candidate_tls_dir
    && "$baseline_certificate_fingerprint" != "$candidate_certificate_fingerprint" ]] || {
     echo "Generated Kubernetes TLS identities were not content-distinct" >&2; exit 1;
 }
-chmod 0600 "$api_key_file" "$tls_dir"/* "$candidate_tls_dir"/* "$tls_trust_bundle"
+chmod 0600 "$api_key_file" "$candidate_api_key_file" "$empty_rotation_key_file" \
+    "$tls_dir"/* "$candidate_tls_dir"/* "$tls_trust_bundle"
 
 kubectl apply --server-side --field-manager=loadbalancerpro-qualification -f "$workload_manifest"
-kubectl create secret generic loadbalancerpro-api-key --namespace "$namespace" \
-    --from-file=api-key="$api_key_file"
+create_immutable_api_key_secret() {
+    local secret_name="$1" primary_file="$2" rotation_file="$3"
+    kubectl create secret generic "$secret_name" --namespace "$namespace" \
+        --from-file=api-key="$primary_file" --from-file=rotation-key="$rotation_file" \
+        --dry-run=client -o json | jq '.immutable = true' | kubectl create -f -
+}
+create_immutable_api_key_secret "$baseline_api_key_secret" "$api_key_file" "$empty_rotation_key_file"
+create_immutable_api_key_secret "$overlap_api_key_secret" "$api_key_file" "$candidate_api_key_file"
+create_immutable_api_key_secret "$candidate_api_key_secret" "$candidate_api_key_file" "$empty_rotation_key_file"
+kubectl get "secret/$baseline_api_key_secret" "secret/$overlap_api_key_secret" \
+    "secret/$candidate_api_key_secret" --namespace "$namespace" -o json \
+    | jq '.items |= map(. + {dataKeys: (.data | keys)}
+        | del(.data) | del(.metadata.managedFields))' \
+    > "$output_dir/api-key-secret-metadata.json"
+jq -e --arg baseline "$baseline_api_key_secret" --arg overlap "$overlap_api_key_secret" \
+    --arg candidate "$candidate_api_key_secret" '
+      (.items | length) == 3
+      and ([.items[].metadata.name] | sort == ([$baseline, $overlap, $candidate] | sort))
+      and all(.items[]; .immutable == true and .type == "Opaque"
+        and .dataKeys == ["api-key", "rotation-key"])' \
+    "$output_dir/api-key-secret-metadata.json" >/dev/null || {
+    echo "Versioned Kubernetes API-key Secrets were not immutable bounded-overlap objects" >&2; exit 1;
+}
 create_immutable_tls_secret() {
     local secret_name="$1" directory="$2"
     kubectl create secret generic "$secret_name" --namespace "$namespace" \
@@ -503,8 +548,9 @@ assert_two_zone_proxy_pods() {
 
 prove_post_transition_distribution() {
     local phase="$1" seconds="$2" minimum_success="$3" proof_field="$4" failure_message="$5"
+    local attack_targets="${6:-$targets}"
     collect_distribution "${phase}-before"
-    run_attack "$phase" "$seconds" "$minimum_success"
+    run_attack "$phase" "$seconds" "$minimum_success" "$attack_targets"
     collect_distribution "$phase"
     jq -n --arg phase "$phase" --arg proofField "$proof_field" \
         --slurpfile before "$output_dir/${phase}-before-distribution.json" \
@@ -566,12 +612,37 @@ initial_proxy_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
     <<< "$initial_ready_proxy_pods_json")" == true ]] || {
     echo "Initial proxy pods do not reference the immutable baseline TLS Secret" >&2; exit 1;
 }
+[[ "$(jq --arg secret "$baseline_api_key_secret" '[.[] | any(.spec.volumes[]?;
+    .name == "api-key" and .secret.secretName == $secret)] | all' \
+    <<< "$initial_ready_proxy_pods_json")" == true ]] || {
+    echo "Initial proxy pods do not reference the immutable baseline API-key Secret" >&2; exit 1;
+}
 capture_state initial
 
 api_key="$(<"$api_key_file")"
 targets="$work_dir/targets.txt"
+candidate_targets="$work_dir/candidate-targets.txt"
 printf 'GET https://127.0.0.1:%s/proxy/kubernetes/topology\nX-API-Key: %s\n\n' \
     "$host_port" "$api_key" > "$targets"
+printf 'GET https://127.0.0.1:%s/proxy/kubernetes/topology\nX-API-Key: %s\n\n' \
+    "$host_port" "$(<"$candidate_api_key_file")" > "$candidate_targets"
+
+api_key_status() {
+    local key_file="$1"
+    curl --silent --show-error --cacert "$tls_dir/ca.pem" --connect-timeout 3 --max-time 10 \
+        --output /dev/null --write-out '%{http_code}' \
+        --header "X-API-Key: $(<"$key_file")" \
+        "https://127.0.0.1:${host_port}/api/proxy/status"
+}
+
+assert_api_key_status() {
+    local key_file="$1" expected="$2" description="$3" observed
+    observed="$(api_key_status "$key_file")"
+    [[ "$observed" == "$expected" ]] || {
+        echo "$description returned HTTP $observed instead of $expected" >&2
+        return 1
+    }
+}
 
 curl_with_ca() {
     local ca_file="$1"
@@ -619,6 +690,8 @@ assert_served_certificate() {
 assert_ca_trusts_endpoint "$tls_dir/ca.pem" "Baseline CA"
 assert_ca_rejected_by_endpoint "$candidate_tls_dir/ca.pem" "Candidate-only CA before rotation"
 assert_served_certificate "$baseline_certificate_fingerprint" "$tls_dir/ca.pem" "Baseline TLS identity"
+assert_api_key_status "$api_key_file" 200 "Baseline API key before rotation"
+assert_api_key_status "$candidate_api_key_file" 401 "Candidate API key before overlap"
 
 report_attack() {
     local name="$1" minimum_success="$2"
@@ -642,9 +715,106 @@ report_attack() {
 
 run_attack() {
     local name="$1" seconds="$2" minimum_success="$3"
+    local attack_targets="${4:-$targets}"
     vegeta attack -duration="${seconds}s" -rate="${rate}/s" -timeout=5s -keepalive=false -http2=false \
-        -root-certs="$tls_trust_bundle" -targets="$targets" > "$work_dir/${name}.bin"
+        -root-certs="$tls_trust_bundle" -targets="$attack_targets" > "$work_dir/${name}.bin"
     report_attack "$name" "$minimum_success"
+}
+
+run_api_key_secret_transition() {
+    local phase="$1" secret_name="$2" annotation_name="$3" attack_targets="$4"
+    local prior_pods_json="$5"
+    local duration_seconds maximum_seconds minimum_success token patch started_epoch elapsed_seconds
+    local sample_count minimum_ready_pods minimum_ready_endpoints pods_json ready_pods_json
+    local prior_uids_json current_uids_json retained_prior_uids runtime_image_ids_json pod
+    duration_seconds="$(jq -r '.workload.apiKeyTransitionSeconds' "$profile")"
+    maximum_seconds="$(jq -r '.objectives.maximumApiKeyTransitionSeconds' "$profile")"
+    minimum_success="$(jq -r '.objectives.minimumApiKeyTransitionSuccessRatio' "$profile")"
+    token="$(printf '%s\n' \
+        "$source_revision|$secret_name|$default_run_id|$phase" | sha256sum | awk '{print $1}')"
+
+    rm -f -- "$rollout_stop_file"
+    sample_transition_continuity "$phase" &
+    rollout_sampler_pid=$!
+    vegeta attack -duration="${duration_seconds}s" -rate="${rate}/s" -timeout=5s \
+        -keepalive=false -http2=false -root-certs="$tls_trust_bundle" -targets="$attack_targets" \
+        > "$work_dir/${phase}.bin" &
+    attack_pid=$!
+    sleep 3
+    started_epoch="$(date +%s)"
+    patch="$(jq -cn --arg secret "$secret_name" --arg token "$token" \
+        --arg annotation "$annotation_name" \
+        '{spec:{template:{metadata:{annotations:{($annotation):$token,
+          "loadbalancerpro.io/qualification-api-key-secret":$secret}},
+          spec:{volumes:[{name:"api-key",secret:{secretName:$secret,items:[
+            {key:"api-key",path:"loadbalancerpro.api.key"},
+            {key:"rotation-key",path:"loadbalancerpro.api.rotation-key"}]}}]}}}}')"
+    kubectl patch deployment loadbalancerpro --namespace "$namespace" --type strategic -p "$patch"
+    kubectl rollout status deployment/loadbalancerpro --namespace "$namespace" \
+        --timeout="${maximum_seconds}s"
+    elapsed_seconds=$(( $(date +%s) - started_epoch ))
+    (( elapsed_seconds <= maximum_seconds )) || {
+        echo "$phase exceeded the API-key transition objective" >&2; return 1;
+    }
+    if ! wait "$attack_pid"; then
+        attack_pid=""
+        echo "$phase traffic attack failed" >&2
+        return 1
+    fi
+    attack_pid=""
+    touch "$rollout_stop_file"
+    if ! wait "$rollout_sampler_pid"; then
+        rollout_sampler_pid=""
+        echo "$phase endpoint-continuity sampler failed" >&2
+        return 1
+    fi
+    rollout_sampler_pid=""
+    report_attack "$phase" "$minimum_success"
+    sample_count="$(awk -F, 'NR > 1 { count++ } END { print count + 0 }' \
+        "$output_dir/${phase}-continuity.csv")"
+    minimum_ready_pods="$(awk -F, 'NR > 1 && (minimum == "" || $2 < minimum) { minimum = $2 }
+        END { print minimum + 0 }' "$output_dir/${phase}-continuity.csv")"
+    minimum_ready_endpoints="$(awk -F, 'NR > 1 && (minimum == "" || $3 < minimum) { minimum = $3 }
+        END { print minimum + 0 }' "$output_dir/${phase}-continuity.csv")"
+    (( sample_count >= 5 && minimum_ready_pods >= 2 && minimum_ready_endpoints >= 2 )) || {
+        echo "$phase continuity evidence was incomplete" >&2; return 1;
+    }
+
+    pods_json="$(kubectl get pod --namespace "$namespace" \
+        -l app.kubernetes.io/name=loadbalancerpro -o json)"
+    ready_pods_json="$(jq --arg token "$token" --arg annotation "$annotation_name" \
+        --arg secret "$secret_name" '[.items[]
+          | select(.metadata.deletionTimestamp == null)
+          | select(.status.phase == "Running")
+          | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))
+          | select(.metadata.annotations[$annotation] == $token)
+          | select(any(.spec.volumes[]?; .name == "api-key" and .secret.secretName == $secret))]' \
+        <<< "$pods_json")"
+    assert_two_zone_proxy_pods "$ready_pods_json" "$phase"
+    prior_uids_json="$(jq '[.[].metadata.uid] | sort' <<< "$prior_pods_json")"
+    current_uids_json="$(jq '[.[].metadata.uid] | sort' <<< "$ready_pods_json")"
+    retained_prior_uids="$(jq -n --argjson prior "$prior_uids_json" \
+        --argjson current "$current_uids_json" '[ $current[] | select(. as $uid | $prior | index($uid)) ] | length')"
+    [[ "$retained_prior_uids" == 0 ]] || {
+        echo "$phase retained a prior API-key pod UID" >&2; return 1;
+    }
+    runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
+        | select(.name == "loadbalancerpro") | .imageID] | unique | sort' <<< "$ready_pods_json")"
+    [[ "$runtime_image_ids_json" == "$initial_proxy_runtime_image_ids_json" ]] || {
+        echo "$phase changed the immutable runtime image ID" >&2; return 1;
+    }
+    while read -r pod; do
+        kubectl wait --for=delete "pod/$pod" --namespace "$namespace" --timeout="${maximum_seconds}s"
+    done < <(jq -r '.[].metadata.name' <<< "$prior_pods_json" | sort)
+    capture_state "$phase"
+
+    api_key_transition_token="$token"
+    api_key_transition_elapsed_seconds="$elapsed_seconds"
+    api_key_transition_sample_count="$sample_count"
+    api_key_transition_minimum_ready_pods="$minimum_ready_pods"
+    api_key_transition_minimum_ready_endpoints="$minimum_ready_endpoints"
+    api_key_transition_ready_pods_json="$ready_pods_json"
+    api_key_transition_uids_json="$current_uids_json"
 }
 
 baseline_seconds="$(jq -r '.workload.baselineSeconds' "$profile")"
@@ -1100,7 +1270,144 @@ prove_post_transition_distribution post-certificate-rollback \
     bothRestoredCertificateProxyReplicasServed \
     "Both restored-certificate proxies and both backends must serve post-certificate-rollback traffic"
 
-failed_node="$(jq -r '.[0].spec.nodeName' <<< "$certificate_rollback_ready_proxy_pods_json")"
+post_api_key_transition_seconds="$(jq -r '.workload.postApiKeyTransitionSeconds' "$profile")"
+minimum_post_api_key_transition_success_ratio="$(jq -r \
+    '.objectives.minimumPostApiKeyTransitionSuccessRatio' "$profile")"
+
+run_api_key_secret_transition api-key-overlap "$overlap_api_key_secret" \
+    loadbalancerpro.io/qualification-api-key-overlap "$targets" \
+    "$certificate_rollback_ready_proxy_pods_json"
+api_key_overlap_token="$api_key_transition_token"
+api_key_overlap_elapsed_seconds="$api_key_transition_elapsed_seconds"
+api_key_overlap_sample_count="$api_key_transition_sample_count"
+api_key_overlap_minimum_ready_pods="$api_key_transition_minimum_ready_pods"
+api_key_overlap_minimum_ready_endpoints="$api_key_transition_minimum_ready_endpoints"
+api_key_overlap_pods_json="$api_key_transition_ready_pods_json"
+api_key_overlap_uids_json="$api_key_transition_uids_json"
+assert_api_key_status "$api_key_file" 200 "Baseline API key during overlap"
+assert_api_key_status "$candidate_api_key_file" 200 "Candidate API key during overlap"
+prove_post_transition_distribution post-api-key-overlap "$post_api_key_transition_seconds" \
+    "$minimum_post_api_key_transition_success_ratio" bothApiKeysAcceptedDuringOverlap \
+    "Both overlap proxies and both backends must serve baseline-key traffic" "$targets"
+
+run_api_key_secret_transition api-key-commit "$candidate_api_key_secret" \
+    loadbalancerpro.io/qualification-api-key-commit "$candidate_targets" \
+    "$api_key_overlap_pods_json"
+api_key_commit_token="$api_key_transition_token"
+api_key_commit_elapsed_seconds="$api_key_transition_elapsed_seconds"
+api_key_commit_sample_count="$api_key_transition_sample_count"
+api_key_commit_minimum_ready_pods="$api_key_transition_minimum_ready_pods"
+api_key_commit_minimum_ready_endpoints="$api_key_transition_minimum_ready_endpoints"
+api_key_commit_pods_json="$api_key_transition_ready_pods_json"
+api_key_commit_uids_json="$api_key_transition_uids_json"
+assert_api_key_status "$candidate_api_key_file" 200 "Candidate API key after commit"
+assert_api_key_status "$api_key_file" 401 "Retired baseline API key after commit"
+prove_post_transition_distribution post-api-key-commit "$post_api_key_transition_seconds" \
+    "$minimum_post_api_key_transition_success_ratio" baselineApiKeyRetired \
+    "Both committed-key proxies and both backends must serve candidate-key traffic" "$candidate_targets"
+
+run_api_key_secret_transition api-key-rollback-overlap "$overlap_api_key_secret" \
+    loadbalancerpro.io/qualification-api-key-rollback-overlap "$candidate_targets" \
+    "$api_key_commit_pods_json"
+api_key_rollback_overlap_token="$api_key_transition_token"
+api_key_rollback_overlap_elapsed_seconds="$api_key_transition_elapsed_seconds"
+api_key_rollback_overlap_sample_count="$api_key_transition_sample_count"
+api_key_rollback_overlap_minimum_ready_pods="$api_key_transition_minimum_ready_pods"
+api_key_rollback_overlap_minimum_ready_endpoints="$api_key_transition_minimum_ready_endpoints"
+api_key_rollback_overlap_pods_json="$api_key_transition_ready_pods_json"
+api_key_rollback_overlap_uids_json="$api_key_transition_uids_json"
+assert_api_key_status "$api_key_file" 200 "Baseline API key during rollback overlap"
+assert_api_key_status "$candidate_api_key_file" 200 "Candidate API key during rollback overlap"
+prove_post_transition_distribution post-api-key-rollback-overlap "$post_api_key_transition_seconds" \
+    "$minimum_post_api_key_transition_success_ratio" bothApiKeysAcceptedDuringRollbackOverlap \
+    "Both rollback-overlap proxies and both backends must serve candidate-key traffic" "$candidate_targets"
+
+run_api_key_secret_transition api-key-rollback-commit "$baseline_api_key_secret" \
+    loadbalancerpro.io/qualification-api-key-rollback-commit "$targets" \
+    "$api_key_rollback_overlap_pods_json"
+api_key_rollback_commit_token="$api_key_transition_token"
+api_key_rollback_commit_elapsed_seconds="$api_key_transition_elapsed_seconds"
+api_key_rollback_commit_sample_count="$api_key_transition_sample_count"
+api_key_rollback_commit_minimum_ready_pods="$api_key_transition_minimum_ready_pods"
+api_key_rollback_commit_minimum_ready_endpoints="$api_key_transition_minimum_ready_endpoints"
+api_key_rollback_commit_pods_json="$api_key_transition_ready_pods_json"
+api_key_rollback_commit_uids_json="$api_key_transition_uids_json"
+assert_api_key_status "$api_key_file" 200 "Restored baseline API key after rollback"
+assert_api_key_status "$candidate_api_key_file" 401 "Retired candidate API key after rollback"
+prove_post_transition_distribution post-api-key-rollback-commit "$post_api_key_transition_seconds" \
+    "$minimum_post_api_key_transition_success_ratio" candidateApiKeyRetiredAfterRollback \
+    "Both restored-key proxies and both backends must serve baseline-key traffic" "$targets"
+
+jq -n \
+    --arg baselineSecret "$baseline_api_key_secret" \
+    --arg overlapSecret "$overlap_api_key_secret" \
+    --arg candidateSecret "$candidate_api_key_secret" \
+    --arg overlapToken "$api_key_overlap_token" \
+    --arg commitToken "$api_key_commit_token" \
+    --arg rollbackOverlapToken "$api_key_rollback_overlap_token" \
+    --arg rollbackCommitToken "$api_key_rollback_commit_token" \
+    --argjson initialPodUids "$certificate_rollback_proxy_uids_json" \
+    --argjson overlapPodUids "$api_key_overlap_uids_json" \
+    --argjson commitPodUids "$api_key_commit_uids_json" \
+    --argjson rollbackOverlapPodUids "$api_key_rollback_overlap_uids_json" \
+    --argjson rollbackCommitPodUids "$api_key_rollback_commit_uids_json" \
+    --argjson overlapSeconds "$api_key_overlap_elapsed_seconds" \
+    --argjson overlapSamples "$api_key_overlap_sample_count" \
+    --argjson overlapMinimumReadyPods "$api_key_overlap_minimum_ready_pods" \
+    --argjson overlapMinimumReadyEndpoints "$api_key_overlap_minimum_ready_endpoints" \
+    --argjson commitSeconds "$api_key_commit_elapsed_seconds" \
+    --argjson commitSamples "$api_key_commit_sample_count" \
+    --argjson commitMinimumReadyPods "$api_key_commit_minimum_ready_pods" \
+    --argjson commitMinimumReadyEndpoints "$api_key_commit_minimum_ready_endpoints" \
+    --argjson rollbackOverlapSeconds "$api_key_rollback_overlap_elapsed_seconds" \
+    --argjson rollbackOverlapSamples "$api_key_rollback_overlap_sample_count" \
+    --argjson rollbackOverlapMinimumReadyPods "$api_key_rollback_overlap_minimum_ready_pods" \
+    --argjson rollbackOverlapMinimumReadyEndpoints "$api_key_rollback_overlap_minimum_ready_endpoints" \
+    --argjson rollbackCommitSeconds "$api_key_rollback_commit_elapsed_seconds" \
+    --argjson rollbackCommitSamples "$api_key_rollback_commit_sample_count" \
+    --argjson rollbackCommitMinimumReadyPods "$api_key_rollback_commit_minimum_ready_pods" \
+    --argjson rollbackCommitMinimumReadyEndpoints "$api_key_rollback_commit_minimum_ready_endpoints" \
+    --slurpfile overlapDistribution "$output_dir/post-api-key-overlap-distribution-delta.json" \
+    --slurpfile commitDistribution "$output_dir/post-api-key-commit-distribution-delta.json" \
+    --slurpfile rollbackOverlapDistribution \
+        "$output_dir/post-api-key-rollback-overlap-distribution-delta.json" \
+    --slurpfile rollbackCommitDistribution \
+        "$output_dir/post-api-key-rollback-commit-distribution-delta.json" '
+      {verificationModel: "required primary plus at most one operator-bounded rotation key",
+       dynamicSecretReload: false,
+       secrets: {immutable: true, baseline: $baselineSecret, overlap: $overlapSecret,
+         candidate: $candidateSecret},
+       assertions: {candidateRejectedBeforeOverlap: true, bothAcceptedDuringOverlap: true,
+         baselineRejectedAfterCommit: true, bothAcceptedDuringRollbackOverlap: true,
+         candidateRejectedAfterRollbackCommit: true, secretValuesAbsentFromEvidence: true},
+       overlap: {triggerAnnotation: $overlapToken, priorPodUids: $initialPodUids,
+         podUids: $overlapPodUids, retainedPriorPodUids: 0, runtimeImageUnchanged: true,
+         transitionSeconds: $overlapSeconds, continuitySamples: $overlapSamples,
+         minimumReadyProxyPods: $overlapMinimumReadyPods,
+         minimumReadyServiceEndpoints: $overlapMinimumReadyEndpoints,
+         traffic: $overlapDistribution[0]},
+       commit: {triggerAnnotation: $commitToken, priorPodUids: $overlapPodUids,
+         podUids: $commitPodUids, retainedPriorPodUids: 0, runtimeImageUnchanged: true,
+         transitionSeconds: $commitSeconds, continuitySamples: $commitSamples,
+         minimumReadyProxyPods: $commitMinimumReadyPods,
+         minimumReadyServiceEndpoints: $commitMinimumReadyEndpoints,
+         traffic: $commitDistribution[0]},
+       rollbackOverlap: {triggerAnnotation: $rollbackOverlapToken, priorPodUids: $commitPodUids,
+         podUids: $rollbackOverlapPodUids, retainedPriorPodUids: 0, runtimeImageUnchanged: true,
+         transitionSeconds: $rollbackOverlapSeconds, continuitySamples: $rollbackOverlapSamples,
+         minimumReadyProxyPods: $rollbackOverlapMinimumReadyPods,
+         minimumReadyServiceEndpoints: $rollbackOverlapMinimumReadyEndpoints,
+         traffic: $rollbackOverlapDistribution[0]},
+       rollbackCommit: {triggerAnnotation: $rollbackCommitToken,
+         priorPodUids: $rollbackOverlapPodUids, podUids: $rollbackCommitPodUids,
+         retainedPriorPodUids: 0, runtimeImageUnchanged: true,
+         transitionSeconds: $rollbackCommitSeconds, continuitySamples: $rollbackCommitSamples,
+         minimumReadyProxyPods: $rollbackCommitMinimumReadyPods,
+         minimumReadyServiceEndpoints: $rollbackCommitMinimumReadyEndpoints,
+         traffic: $rollbackCommitDistribution[0]}}' \
+    > "$output_dir/api-key-rotation.json"
+
+failed_node="$(jq -r '.[0].spec.nodeName' <<< "$api_key_rollback_commit_pods_json")"
 [[ "$failed_node" == "${cluster_name}-worker" || "$failed_node" == "${cluster_name}-worker2" ]] || {
     echo "Refusing to drain unexpected node $failed_node" >&2; exit 1;
 }
@@ -1292,6 +1599,7 @@ post_rollout_distribution_delta_json="$(<"$output_dir/post-rollout-distribution-
 post_rollback_distribution_delta_json="$(<"$output_dir/post-rollback-distribution-delta.json")"
 post_certificate_rotation_distribution_delta_json="$(<"$output_dir/post-certificate-rotation-distribution-delta.json")"
 post_certificate_rollback_distribution_delta_json="$(<"$output_dir/post-certificate-rollback-distribution-delta.json")"
+api_key_rotation_json="$(<"$output_dir/api-key-rotation.json")"
 recovered_distribution_delta_json="$(<"$output_dir/recovered-distribution-delta.json")"
 abrupt_recovered_distribution_delta_json="$(<"$output_dir/abrupt-recovered-distribution-delta.json")"
 jq -n \
@@ -1347,9 +1655,10 @@ jq -n \
     --argjson postRollbackDistribution "$post_rollback_distribution_delta_json" \
     --argjson postCertificateRotationDistribution "$post_certificate_rotation_distribution_delta_json" \
     --argjson postCertificateRollbackDistribution "$post_certificate_rollback_distribution_delta_json" \
+    --argjson apiKeyRotation "$api_key_rotation_json" \
     --argjson recoveredDistribution "$recovered_distribution_delta_json" \
     --argjson abruptRecoveredDistribution "$abrupt_recovered_distribution_delta_json" \
-    '{schemaVersion: 5, result: "pass", evidenceBoundary: "disposable loopback kind metadata-only content-distinct image rollout and baseline rollback, versioned immutable inbound-server TLS Secret rotation and identity rollback, planned worker loss, and operator-remediated abrupt worker-container loss; not an ingress-controller, automatic infrastructure-failure detection, application-layer release compatibility, registry/source binding, external certificate-authority, client trust-distribution, or deployment-capacity proof",
+    '{schemaVersion: 6, result: "pass", evidenceBoundary: "disposable loopback kind metadata-only content-distinct image rollout and baseline rollback, versioned immutable inbound-server TLS Secret rotation and identity rollback, bounded two-key API credential overlap/commit/rollback, planned worker loss, and operator-remediated abrupt worker-container loss; not dynamic Secret reload, not an ingress-controller, and not automatic infrastructure-failure detection, application-layer release compatibility, registry/source binding, external certificate-authority, client trust-distribution, external secret-manager, or deployment-capacity proof",
       profileId: $profileId, repositoryRevision: $sourceRevision,
       images: {identityType: "local Docker content-addressed image ID",
         baseline: {contentId: $proxyImageId},
@@ -1357,14 +1666,18 @@ jq -n \
         fixtureContentId: $fixtureImageId, applicationLayersIdentical: true},
       topology: {workers: 2, zones: 2, initialProxyReplicas: 2, postRolloutProxyReplicas: 2,
         postRollbackProxyReplicas: 2,
-        postCertificateRotationProxyReplicas: 2, postCertificateRollbackProxyReplicas: 2,
+         postCertificateRotationProxyReplicas: 2, postCertificateRollbackProxyReplicas: 2,
+         postApiKeyOverlapProxyReplicas: 2, postApiKeyCommitProxyReplicas: 2,
+         postApiKeyRollbackOverlapProxyReplicas: 2, postApiKeyRollbackCommitProxyReplicas: 2,
         degradedProxyReplicas: 1, recoveredProxyReplicas: 2,
         abruptDegradedProxyReplicas: 1, abruptRecoveredProxyReplicas: 2},
       traffic: {bothProxyReplicasServed: true, baseline: $baselineDistribution,
         rollout: "pass", postRollout: $postRolloutDistribution,
         rollback: "pass", postRollback: $postRollbackDistribution,
         certificateRotation: "pass", postCertificateRotation: $postCertificateRotationDistribution,
-        certificateRollback: "pass", postCertificateRollback: $postCertificateRollbackDistribution,
+         certificateRollback: "pass", postCertificateRollback: $postCertificateRollbackDistribution,
+         apiKeyOverlap: "pass", apiKeyCommit: "pass",
+         apiKeyRollbackOverlap: "pass", apiKeyRollbackCommit: "pass",
         drainTransition: "pass", degraded: "pass", recovered: $recoveredDistribution,
         abruptTransition: "pass", abruptDegraded: "pass",
         abruptRecovered: $abruptRecoveredDistribution},
@@ -1410,6 +1723,7 @@ jq -n \
           rollbackSeconds: $certificateRollbackSeconds, continuitySamples: $certificateRollbackSamples,
           minimumReadyProxyPods: $certificateRollbackMinimumReadyPods,
           minimumReadyServiceEndpoints: $certificateRollbackMinimumReadyEndpoints}},
+      apiKeyRotationExercise: $apiKeyRotation,
       workerExercise: {planned: {drainedAndStopped: $drainedWorker, recoverySeconds: $recoverySeconds},
         abrupt: {stoppedWithoutDrain: $abruptWorker,
           remediation: "verified-down out-of-service:NoExecute taint plus forced API deletion",
@@ -1419,4 +1733,11 @@ jq -n \
           recoverySeconds: $abruptRecoverySeconds}}}' \
     > "$output_dir/summary.json"
 
-printf 'Kubernetes two-zone image rollout/rollback, immutable TLS identity rotation/rollback, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"
+for secret_file in "$api_key_file" "$candidate_api_key_file"; do
+    if grep -R -F -q -- "$(<"$secret_file")" "$output_dir"; then
+        echo "Kubernetes API-key value leaked into evidence" >&2
+        exit 1
+    fi
+done
+
+printf 'Kubernetes two-zone image rollout/rollback, immutable TLS identity rotation/rollback, bounded API-key rotation/rollback, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"

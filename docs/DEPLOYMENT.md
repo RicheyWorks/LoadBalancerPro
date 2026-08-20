@@ -59,7 +59,16 @@ curl --cacert "$LBP_TLS_DIRECTORY/ca.pem" --resolve lbp.local:18443:127.0.0.1 \
 docker compose -f deploy/docker-compose.proxy-prod.yml down
 ```
 
-The API key is mounted read-only as `/run/secrets/loadbalancerpro.api.key` and imported through Spring config trees. The temporary example uses read-only files inside a private `mktemp` parent so the image's non-root user can read the mounts; for a durable host path, grant read access only to the runtime UID/GID through the host's ownership or ACL mechanism. TLS, trust, client identity, and additional configuration directories are separate read-only mounts. Define backend custom trust or mTLS bundles only in the external configuration directory, for example:
+The required primary API key is mounted read-only as `/run/secrets/loadbalancerpro.api.key` and imported through Spring
+config trees. During a bounded rotation overlap only, a second key may be supplied as
+`/run/secrets/loadbalancerpro.api.rotation-key`; both authenticate, but the rotation key cannot replace a missing primary.
+Roll from A-only to A+B, switch clients to B, then roll to B-only. Rollback reverses the sequence. The process snapshots
+both values at startup and does not dynamically reread mounted credentials, so use versioned immutable Secrets and a
+zero-unavailable pod rollout instead of mutating an in-use Secret. The temporary example uses read-only files inside a
+private `mktemp` parent so the image's non-root user can read the mounts; for a durable host path, grant read access only
+to the runtime UID/GID through the host's ownership or ACL mechanism. TLS, trust, client identity, and additional
+configuration directories are separate read-only mounts. Define backend custom trust or mTLS bundles only in the
+external configuration directory, for example:
 
 ```properties
 spring.ssl.bundle.pem.backendtrust.truststore.certificate=file:/run/trust/ca.pem
@@ -112,7 +121,11 @@ continuous traffic windows. The TLS exercise uses independently generated roots,
 fingerprints, and single-CA positive/negative checks; it also requires fresh pod UIDs, unchanged runtime image identity,
 ready-endpoint continuity, and traffic through both replicas and backends in both directions. It proves application
 server TLS termination behind the loopback NodePort, not an ingress controller, external issuer, or trust-distribution
-system. The lane then proves two-zone Service distribution, planned worker removal, and
+system. The lane next proves bounded API-key rotation through immutable A-only, A+B, and B-only Secrets and reverses the
+sequence for rollback. Both keys are accepted only in the overlap phases; the retired key must return 401 after each
+commit, while zero-unavailable endpoint continuity, fresh pod UIDs, fixed runtime image identity, and traffic through
+both replicas and backends remain required. This is startup configuration rollout proof, not dynamic Secret reload or
+external secret-manager proof. The lane then proves two-zone Service distribution, planned worker removal, and
 operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
 confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless
 qualification pods from the API. The disposable cluster also pins immediate EndpointSlice-triggered iptables updates

@@ -165,7 +165,11 @@ an independently rooted immutable candidate Secret and back under continuous tra
 served-leaf fingerprints prove both identity transitions; fresh pods, unchanged runtime image identity, two-zone
 continuity, and positive traffic deltas on both replicas and backends are required in both directions. This exercises
 application server TLS behind the loopback NodePort, not an ingress controller, external issuer, or client
-trust-distribution system. One worker is then
+trust-distribution system. The restored-certificate deployment then rotates credentials through immutable A-only, A+B,
+and B-only API-key Secrets and rolls back through the same bounded overlap. Each of the four zero-unavailable rollouts
+must preserve two ready endpoints and both-zone placement, replace both pod UIDs without changing the runtime image,
+serve traffic through both replicas/backends, and enforce the expected positive and negative key boundary. This proves
+startup credential rollout mechanics, not dynamic Secret reload or an external secret manager. One worker is then
 drained and stopped under load, degraded traffic must continue through the remaining replica, and the stopped worker
 and second replica must recover inside the bound, and both recovered replicas and backends must serve new traffic. It
 then forcibly stops that recovered worker without a drain, confirms the container is down, and applies the documented
@@ -200,7 +204,9 @@ turnover and a content-distinct runtime image transition, then proves another co
 the initial runtime image identity. It restores two-zone placement and requires positive post-transition traffic deltas
 on both candidate/restored replicas and both backends. It applies the same zero-unavailable and distribution checks to
 versioned immutable TLS Secret rotation and rollback while proving the served leaf fingerprint changes and returns and
-the runtime image identity remains fixed.
+the runtime image identity remains fixed. It applies those rollout, pod-turnover, endpoint-continuity, and distribution
+checks again to bounded API-key overlap, candidate commit, rollback overlap, and baseline commit, with 401 checks for the
+retired credential after each commit.
 
 Use an immutable image digest and begin with a small, explicitly approved traffic slice. During every step, compare
 client success/latency, upstream health, proxy p95/p99, in-flight work, retries, sheds, cooldown trips, CPU, memory, GC,

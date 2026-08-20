@@ -43,6 +43,7 @@ class KubernetesLiveTopologyContractTest {
                 "kind: NetworkPolicy",
                 "secretName: loadbalancerpro-api-key-a",
                 "path: loadbalancerpro.api.rotation-key",
+                "https://${LBP_TLS_HOSTNAME}:8080/proxy/kubernetes/topology",
                 "secretName: loadbalancerpro-server-tls-a")) {
             assertTrue(workload.contains(invariant), "missing restricted workload invariant: " + invariant);
         }

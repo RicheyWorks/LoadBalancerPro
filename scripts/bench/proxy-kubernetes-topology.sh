@@ -124,6 +124,7 @@ for invariant in \
     'kind: NetworkPolicy' \
     'secretName: loadbalancerpro-server-tls-a' \
     'secretName: loadbalancerpro-api-key-a' \
+    'https://${LBP_TLS_HOSTNAME}:8080/proxy/kubernetes/topology' \
     'path: loadbalancerpro.api.rotation-key'; do
     grep -Fq "$invariant" "$workload_manifest" || { echo "Kubernetes workload is missing: $invariant" >&2; exit 2; }
 done

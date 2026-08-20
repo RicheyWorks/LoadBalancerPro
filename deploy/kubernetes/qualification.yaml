@@ -277,7 +277,7 @@ spec:
                   curl --fail --silent --show-error --cacert /run/tls/ca.pem
                   --header "X-API-Key: $(cat /run/secrets/loadbalancerpro.api.key)"
                   --resolve "${LBP_TLS_HOSTNAME}:8080:127.0.0.1"
-                  "https://${LBP_TLS_HOSTNAME}:8080/actuator/health" > /dev/null
+                  "https://${LBP_TLS_HOSTNAME}:8080/proxy/kubernetes/topology" > /dev/null
             periodSeconds: 3
             timeoutSeconds: 2
             failureThreshold: 3

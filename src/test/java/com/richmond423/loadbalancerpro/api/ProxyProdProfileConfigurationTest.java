@@ -21,7 +21,15 @@ import io.micrometer.core.instrument.MeterRegistry;
         "spring.profiles.active=prod,proxy-prod",
         "loadbalancerpro.api.key=TEST_PROXY_PROD_API_KEY",
         "LBP_UPSTREAM_0_URL=http://127.0.0.1:18081",
-        "LBP_UPSTREAM_1_URL=http://127.0.0.1:18082"
+        "LBP_UPSTREAM_1_URL=http://127.0.0.1:18082",
+        "LBP_RETRY_ENABLED=true",
+        "LBP_RETRY_MAX_ATTEMPTS=2",
+        "LBP_RETRY_BUDGET_PERCENT=100",
+        "LBP_RETRY_BACKOFF_BASE=10ms",
+        "LBP_RETRY_BACKOFF_MAX=50ms",
+        "LBP_RETRY_NON_IDEMPOTENT=false",
+        "LBP_RETRY_METHODS=GET,HEAD",
+        "LBP_RETRY_STATUSES=502,503,504"
 })
 @AutoConfigureMockMvc
 class ProxyProdProfileConfigurationTest {
@@ -63,7 +71,11 @@ class ProxyProdProfileConfigurationTest {
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/proxy/status").header("X-API-Key", API_KEY))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.proxyEnabled", is(true)));
+                .andExpect(jsonPath("$.proxyEnabled", is(true)))
+                .andExpect(jsonPath("$.retry.enabled", is(true)))
+                .andExpect(jsonPath("$.retry.maxAttempts", is(2)))
+                .andExpect(jsonPath("$.retry.budgetPercent", is(100)))
+                .andExpect(jsonPath("$.retry.retryNonIdempotent", is(false)));
 
         double proxyRequestsBefore = meterRegistry.find("lbp.proxy.requests").counters().stream()
                 .mapToDouble(io.micrometer.core.instrument.Counter::count)

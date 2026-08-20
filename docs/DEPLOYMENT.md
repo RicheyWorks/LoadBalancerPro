@@ -105,6 +105,14 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 | `LBP_COOLDOWN_DURATION` | `loadbalancerpro.proxy.cooldown.duration` | `30s` |
 | `LBP_DRAIN_TIMEOUT` | `loadbalancerpro.proxy.reload.drain-timeout` | `30s` |
 | `LBP_SLOW_START_DURATION` | `loadbalancerpro.proxy.slow-start.duration` | `5s` |
+| `LBP_RETRY_ENABLED` | `loadbalancerpro.proxy.retry.enabled` | `false` |
+| `LBP_RETRY_MAX_ATTEMPTS` | `loadbalancerpro.proxy.retry.max-attempts` | `2` |
+| `LBP_RETRY_BUDGET_PERCENT` | `loadbalancerpro.proxy.retry.budget-percent` | `20` |
+| `LBP_RETRY_BACKOFF_BASE` | `loadbalancerpro.proxy.retry.backoff.base` | `50ms` |
+| `LBP_RETRY_BACKOFF_MAX` | `loadbalancerpro.proxy.retry.backoff.max` | `1s` |
+| `LBP_RETRY_NON_IDEMPOTENT` | `loadbalancerpro.proxy.retry.retry-non-idempotent` | `false` |
+| `LBP_RETRY_METHODS` | `loadbalancerpro.proxy.retry.methods` | `GET,HEAD` |
+| `LBP_RETRY_STATUSES` | `loadbalancerpro.proxy.retry.retry-statuses` | `502,503,504` |
 | `LBP_BACKEND_TRUST_BUNDLE` | `loadbalancerpro.proxy.backend-tls.truststore` | blank |
 | `LBP_UPSTREAM_0_CLIENT_CERT_BUNDLE` | `loadbalancerpro.proxy.upstreams[0].tls.client-cert` | blank |
 

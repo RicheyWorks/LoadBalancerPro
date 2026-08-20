@@ -20,9 +20,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
@@ -63,6 +68,48 @@ class ReverseProxyRetryBudgetSlowStartTest {
         assertEquals(100, decisions.decisions().stream()
                 .filter(decision -> decision.responseStatus() == 503)
                 .count());
+    }
+
+    @Test
+    void boundedRetriesCycleOnlyAfterEveryEligibleUpstreamWasAttempted() throws Exception {
+        AtomicInteger brownoutCalls = new AtomicInteger();
+        List<Integer> attemptedPorts = new ArrayList<>();
+        CountDownLatch secondAttemptStarted = new CountDownLatch(1);
+        CountDownLatch releaseSecondAttempt = new CountDownLatch(1);
+        HttpClient client = mock(HttpClient.class);
+        when(client.send(any(HttpRequest.class),
+                org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<byte[]>>any()))
+                .thenAnswer(invocation -> {
+                    HttpRequest outbound = invocation.getArgument(0);
+                    if (outbound.uri().getPath().endsWith("/funding")) {
+                        return response(200);
+                    }
+                    int call = brownoutCalls.incrementAndGet();
+                    attemptedPorts.add(outbound.uri().getPort());
+                    if (call == 2) {
+                        secondAttemptStarted.countDown();
+                        assertTrue(releaseSecondAttempt.await(5, TimeUnit.SECONDS));
+                    }
+                    return response(call == 3 ? 200 : 503);
+                });
+        ReverseProxyProperties properties = properties("ROUND_ROBIN", List.of(alpha(), beta()));
+        configureRetry(properties, 100);
+        properties.getRetry().setMaxAttempts(3);
+        ReverseProxyService service = service(properties, client, new MutableClock(START));
+
+        CompletableFuture<ReverseProxyResponse> brownout = CompletableFuture.supplyAsync(
+                () -> service.forward(request("brownout"), new byte[0]));
+        assertTrue(secondAttemptStarted.await(5, TimeUnit.SECONDS));
+        assertEquals(200, service.forward(request("funding"), new byte[0]).statusCode());
+        releaseSecondAttempt.countDown();
+
+        assertEquals(200, brownout.get(5, TimeUnit.SECONDS).statusCode());
+        assertEquals(3, brownoutCalls.get());
+        assertEquals(2, Set.copyOf(attemptedPorts.subList(0, 2)).size());
+        assertTrue(attemptedPorts.subList(0, 2).contains(attemptedPorts.get(2)));
+        assertEquals(2, service.statusSnapshot().metrics().totalRetryAttempts());
+        assertEquals(2, service.statusSnapshot().retry().budgetGrantedRetries());
+        assertEquals(0, service.statusSnapshot().retry().budgetRejectedRetries());
     }
 
     @Test
@@ -217,13 +264,17 @@ class ReverseProxyRetryBudgetSlowStartTest {
                 org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<byte[]>>any()))
                 .thenAnswer(invocation -> {
                     calls.incrementAndGet();
-                    HttpResponse<InputStream> response = mock(HttpResponse.class);
-                    when(response.statusCode()).thenReturn(statusCode);
-                    when(response.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
-                    when(response.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
-                    return response;
+                    return response(statusCode);
                 });
         return client;
+    }
+
+    private static HttpResponse<InputStream> response(int statusCode) {
+        HttpResponse<InputStream> response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(statusCode);
+        when(response.headers()).thenReturn(HttpHeaders.of(Map.of(), (name, value) -> true));
+        when(response.body()).thenAnswer(ignored -> new ByteArrayInputStream(new byte[0]));
+        return response;
     }
 
     private static ReverseProxyProperties properties(
@@ -275,9 +326,13 @@ class ReverseProxyRetryBudgetSlowStartTest {
     }
 
     private static HttpServletRequest request() {
+        return request("brownout");
+    }
+
+    private static HttpServletRequest request(String path) {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getContextPath()).thenReturn("");
-        when(request.getRequestURI()).thenReturn("/proxy/api/brownout");
+        when(request.getRequestURI()).thenReturn("/proxy/api/" + path);
         when(request.getMethod()).thenReturn("GET");
         when(request.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
         when(request.getRemoteAddr()).thenReturn("198.51.100.10");

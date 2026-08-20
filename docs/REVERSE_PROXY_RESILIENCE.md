@@ -19,6 +19,10 @@ loadbalancerpro.proxy.retry.retry-statuses=502,503,504
 
 When enabled, the first attempt is the original forward and the maximum attempt count remains a hard ceiling. Each admitted primary request adds `budget-percent` process-local credits, at most 100 credits are stored, and an additional attempt requires 100 credits. At the default `20`, sustained failures can therefore trigger at most one retry per five primary requests without banking a large healthy-period burst. `0` suppresses retries; `100` allows at most one retry per primary request. A granted retry waits for full jitter between zero and an exponential ceiling: `backoff.base` for the first retry, doubling for later retries, capped at `backoff.max`. The base and maximum may be `0ms` for a no-delay local test and may not exceed 60 seconds. By default, only `GET` and `HEAD` are retried. Enabling retries for `POST`, `PUT`, `PATCH`, or `DELETE` can duplicate upstream side effects and should only be used with upstream-specific idempotency controls.
 
+Within one request, retries exhaust the currently eligible upstreams before cycling through them again. Cycling still
+requires another retry-budget grant and never exceeds `max-attempts`; it lets a later attempt use an upstream again after
+a failed pooled connection has been discarded.
+
 ## Cooldown Configuration
 
 Cooldown is disabled by default.

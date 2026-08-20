@@ -139,7 +139,8 @@ commit, while zero-unavailable endpoint continuity, fresh pod UIDs, fixed runtim
 both replicas and backends remain required. This is startup configuration rollout proof, not dynamic Secret reload or
 external secret-manager proof. Because each configured upstream is a Kubernetes Service rather than a pod, the local
 qualification lane uses EndpointSlice readiness as the pod-health authority and disables process-local active health
-checks and cooldown; bounded idempotent retry across the two Services remains enabled. The lane then proves two-zone
+checks and cooldown; up to three bounded attempts remain enabled for `GET`/`HEAD`, trying both Services before cycling
+after stale pooled connections have been discarded. The lane then proves two-zone
 Service distribution, planned worker removal, and
 operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
 confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless

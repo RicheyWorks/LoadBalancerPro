@@ -134,7 +134,9 @@ API-key Secrets. Four zero-unavailable rollouts prove baseline-key traffic throu
 commit, the reverse rollback overlap, and final restoration of A-only. Positive and negative authentication checks prove
 both overlap windows and both key-retirement boundaries; every phase also requires fresh pod UIDs, two ready endpoints,
 an unchanged runtime image, and traffic through both replicas and backends. The runtime accepts only the required primary
-plus one optional rotation key and does not dynamically reload Secret files. It then drains and stops one worker under load,
+plus one optional rotation key and does not dynamically reload Secret files. Qualification permits up to three bounded
+`GET`/`HEAD` attempts, exhausting both Service upstreams before cycling after a stale pooled connection. It then drains
+and stops one worker under load,
 tests the one-replica degraded service, requires both recovered replicas and backends to serve new traffic, then
 forcibly stops that recovered worker without a drain. After confirming the worker container is down, it applies
 Kubernetes' out-of-service `NoExecute` remediation and force-removes the three exact stateless workload pods from the

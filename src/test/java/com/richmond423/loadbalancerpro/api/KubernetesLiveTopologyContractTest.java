@@ -49,7 +49,7 @@ class KubernetesLiveTopologyContractTest {
                 "LBP_HEALTH_CHECK_ENABLED: \"false\"",
                 "LBP_COOLDOWN_ENABLED: \"false\"",
                 "LBP_RETRY_ENABLED: \"true\"",
-                "LBP_RETRY_MAX_ATTEMPTS: \"2\"",
+                "LBP_RETRY_MAX_ATTEMPTS: \"3\"",
                 "LBP_RETRY_BUDGET_PERCENT: \"100\"",
                 "LBP_RETRY_NON_IDEMPOTENT: \"false\"",
                 "secretName: loadbalancerpro-server-tls-a")) {

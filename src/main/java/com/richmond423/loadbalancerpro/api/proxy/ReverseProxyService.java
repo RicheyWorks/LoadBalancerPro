@@ -617,6 +617,10 @@ public class ReverseProxyService implements SmartLifecycle {
                     List<UpstreamCandidate> upstreams = configuredUpstreams(
                             config, route, splitTargetIds, excludedIds);
                     if (upstreams.isEmpty()) {
+                        if (pendingAttempt != null && !attemptedUpstreamIds.isEmpty()) {
+                            attemptedUpstreamIds.clear();
+                            continue;
+                        }
                         if (pendingAttempt != null) {
                             ForwardAttemptResult finalAttempt = pendingAttempt;
                             pendingAttempt = null;

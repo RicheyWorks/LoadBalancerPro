@@ -59,7 +59,16 @@ curl --cacert "$LBP_TLS_DIRECTORY/ca.pem" --resolve lbp.local:18443:127.0.0.1 \
 docker compose -f deploy/docker-compose.proxy-prod.yml down
 ```
 
-The API key is mounted read-only as `/run/secrets/loadbalancerpro.api.key` and imported through Spring config trees. The temporary example uses read-only files inside a private `mktemp` parent so the image's non-root user can read the mounts; for a durable host path, grant read access only to the runtime UID/GID through the host's ownership or ACL mechanism. TLS, trust, client identity, and additional configuration directories are separate read-only mounts. Define backend custom trust or mTLS bundles only in the external configuration directory, for example:
+The required primary API key is mounted read-only as `/run/secrets/loadbalancerpro.api.key` and imported through Spring
+config trees. During a bounded rotation overlap only, a second key may be supplied as
+`/run/secrets/loadbalancerpro.api.rotation-key`; both authenticate, but the rotation key cannot replace a missing primary.
+Roll from A-only to A+B, switch clients to B, then roll to B-only. Rollback reverses the sequence. The process snapshots
+both values at startup and does not dynamically reread mounted credentials, so use versioned immutable Secrets and a
+zero-unavailable pod rollout instead of mutating an in-use Secret. The temporary example uses read-only files inside a
+private `mktemp` parent so the image's non-root user can read the mounts; for a durable host path, grant read access only
+to the runtime UID/GID through the host's ownership or ACL mechanism. TLS, trust, client identity, and additional
+configuration directories are separate read-only mounts. Define backend custom trust or mTLS bundles only in the
+external configuration directory, for example:
 
 ```properties
 spring.ssl.bundle.pem.backendtrust.truststore.certificate=file:/run/trust/ca.pem
@@ -91,19 +100,31 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 | `LBP_MAX_REQUEST_BYTES` | `loadbalancerpro.proxy.max-request-bytes` | `65536` |
 | `LBP_MAX_RESPONSE_BYTES` | `loadbalancerpro.proxy.max-response-bytes` | `0` (streaming/unbounded) |
 | `LBP_MAX_IN_FLIGHT` | `loadbalancerpro.proxy.limits.max-in-flight` | `100` |
+| `LBP_HEALTH_CHECK_ENABLED` | `loadbalancerpro.proxy.health-check.enabled` | `true` |
 | `LBP_HEALTH_CHECK_PATH` | `loadbalancerpro.proxy.health-check.path` | `/health` |
 | `LBP_HEALTH_CHECK_INTERVAL` | `loadbalancerpro.proxy.health-check.interval` | `5s` |
+| `LBP_COOLDOWN_ENABLED` | `loadbalancerpro.proxy.cooldown.enabled` | `true` |
 | `LBP_COOLDOWN_DURATION` | `loadbalancerpro.proxy.cooldown.duration` | `30s` |
 | `LBP_DRAIN_TIMEOUT` | `loadbalancerpro.proxy.reload.drain-timeout` | `30s` |
 | `LBP_SLOW_START_DURATION` | `loadbalancerpro.proxy.slow-start.duration` | `5s` |
+| `LBP_RETRY_ENABLED` | `loadbalancerpro.proxy.retry.enabled` | `false` |
+| `LBP_RETRY_MAX_ATTEMPTS` | `loadbalancerpro.proxy.retry.max-attempts` | `2` |
+| `LBP_RETRY_BUDGET_PERCENT` | `loadbalancerpro.proxy.retry.budget-percent` | `20` |
+| `LBP_RETRY_BACKOFF_BASE` | `loadbalancerpro.proxy.retry.backoff.base` | `50ms` |
+| `LBP_RETRY_BACKOFF_MAX` | `loadbalancerpro.proxy.retry.backoff.max` | `1s` |
+| `LBP_RETRY_NON_IDEMPOTENT` | `loadbalancerpro.proxy.retry.retry-non-idempotent` | `false` |
+| `LBP_RETRY_METHODS` | `loadbalancerpro.proxy.retry.methods` | `GET,HEAD` |
+| `LBP_RETRY_STATUSES` | `loadbalancerpro.proxy.retry.retry-statuses` | `502,503,504` |
 | `LBP_BACKEND_TRUST_BUNDLE` | `loadbalancerpro.proxy.backend-tls.truststore` | blank |
 | `LBP_UPSTREAM_0_CLIENT_CERT_BUNDLE` | `loadbalancerpro.proxy.upstreams[0].tls.client-cert` | blank |
 
 [`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical deployment base. It
 encodes two replicas, zero-unavailable rolling replacement, a two-domain zone-spread rule that permits a temporary
-surge pod, preferred host spreading, a one-replica disruption budget, startup/readiness/liveness probes, a five-second
-preStop delay, a 40-second termination window, a token-free service account, numeric non-root execution, and external
-Secret/ConfigMap mounts. Its image remains a deliberately non-resolving digest placeholder. The disposable
+surge pod, preferred host spreading, a one-replica disruption budget, startup/readiness/liveness probes, a ten-second
+preStop delay, a 45-second termination window, a token-free service account, numeric non-root execution, and external
+Secret/ConfigMap mounts. The drain delay exceeds the five-second qualification client timeout, while the termination
+window contains the application's 30-second graceful-shutdown bound. Its image remains a deliberately non-resolving
+digest placeholder. The disposable
 [`../scripts/bench/proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) lane applies the
 separate loopback qualification workload and proves a metadata-only content-distinct candidate rollout and baseline
 rollback under continuous traffic, complete pod-UID turnover in both directions, runtime-image identity transition and
@@ -112,7 +133,15 @@ continuous traffic windows. The TLS exercise uses independently generated roots,
 fingerprints, and single-CA positive/negative checks; it also requires fresh pod UIDs, unchanged runtime image identity,
 ready-endpoint continuity, and traffic through both replicas and backends in both directions. It proves application
 server TLS termination behind the loopback NodePort, not an ingress controller, external issuer, or trust-distribution
-system. The lane then proves two-zone Service distribution, planned worker removal, and
+system. The lane next proves bounded API-key rotation through immutable A-only, A+B, and B-only Secrets and reverses the
+sequence for rollback. Both keys are accepted only in the overlap phases; the retired key must return 401 after each
+commit, while zero-unavailable endpoint continuity, fresh pod UIDs, fixed runtime image identity, and traffic through
+both replicas and backends remain required. This is startup configuration rollout proof, not dynamic Secret reload or
+external secret-manager proof. Because each configured upstream is a Kubernetes Service rather than a pod, the local
+qualification lane uses EndpointSlice readiness as the pod-health authority and disables process-local active health
+checks and cooldown; up to three bounded attempts remain enabled for `GET`/`HEAD`, trying both Services before cycling
+after stale pooled connections have been discarded. The lane then proves two-zone
+Service distribution, planned worker removal, and
 operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
 confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless
 qualification pods from the API. The disposable cluster also pins immediate EndpointSlice-triggered iptables updates

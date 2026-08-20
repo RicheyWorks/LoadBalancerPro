@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class KubernetesLiveTopologyContractTest {
     private static final Path DOCKERFILE = Path.of("Dockerfile");
+    private static final Path FIXTURE_DOCKERFILE = Path.of("deploy/fixture/Dockerfile");
+    private static final Path FIXTURE_SOURCE = Path.of("deploy/fixture/FixtureBackend.java");
     private static final Path CLUSTER = Path.of("deploy/kubernetes/kind-cluster.yaml");
     private static final Path WORKLOAD = Path.of("deploy/kubernetes/qualification.yaml");
     private static final Path CANDIDATE = Path.of("deploy/topology/RolloutCandidate.Dockerfile");
@@ -32,6 +34,8 @@ class KubernetesLiveTopologyContractTest {
                 "automountServiceAccountToken: false",
                 "maxUnavailable: 0",
                 "maxSurge: 1",
+                "terminationGracePeriodSeconds: 45",
+                "command: [\"sh\", \"-c\", \"sleep 10\"]",
                 "minDomains: 2",
                 "runAsNonRoot: true",
                 "runAsUser: 10001",
@@ -41,11 +45,36 @@ class KubernetesLiveTopologyContractTest {
                 "drop: [\"ALL\"]",
                 "kind: PodDisruptionBudget",
                 "kind: NetworkPolicy",
+                "secretName: loadbalancerpro-api-key-a",
+                "path: loadbalancerpro.api.rotation-key",
+                "https://${LBP_TLS_HOSTNAME}:8080/proxy/kubernetes/topology",
+                "LBP_HEALTH_CHECK_ENABLED: \"false\"",
+                "LBP_COOLDOWN_ENABLED: \"false\"",
+                "LBP_RETRY_ENABLED: \"true\"",
+                "LBP_RETRY_MAX_ATTEMPTS: \"3\"",
+                "LBP_RETRY_BUDGET_PERCENT: \"100\"",
+                "LBP_RETRY_NON_IDEMPOTENT: \"false\"",
                 "secretName: loadbalancerpro-server-tls-a")) {
             assertTrue(workload.contains(invariant), "missing restricted workload invariant: " + invariant);
         }
         assertFalse(workload.contains("BEGIN PRIVATE KEY"));
         assertFalse(workload.contains("stringData:"));
+    }
+
+    @Test
+    void qualificationFixtureBoundsNativeThreadAndHeapMemory() throws IOException {
+        String fixtureSource = read(FIXTURE_SOURCE);
+        assertFalse(fixtureSource.contains("newCachedThreadPool"));
+        assertTrue(fixtureSource.contains("MAX_REQUEST_THREADS = 32"));
+        assertTrue(fixtureSource.contains("MAX_PENDING_REQUESTS = 256"));
+        assertTrue(fixtureSource.contains("new ArrayBlockingQueue<>(MAX_PENDING_REQUESTS)"));
+        assertTrue(fixtureSource.contains("new ThreadPoolExecutor.CallerRunsPolicy()"));
+        assertTrue(fixtureSource.contains("executor.allowCoreThreadTimeOut(true)"));
+
+        String fixtureDockerfile = read(FIXTURE_DOCKERFILE);
+        assertTrue(fixtureDockerfile.contains("\"-Xmx32m\""));
+        assertTrue(fixtureDockerfile.contains("\"-Xss256k\""));
+        assertEquals(2, count(read(WORKLOAD), "memory: 128Mi"));
     }
 
     @Test
@@ -64,7 +93,7 @@ class KubernetesLiveTopologyContractTest {
                 "kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48"));
 
         JsonNode profile = new ObjectMapper().readTree(read(PROFILE));
-        assertEquals(5, profile.path("schemaVersion").asInt());
+        assertEquals(6, profile.path("schemaVersion").asInt());
         assertEquals("example", profile.path("review").path("status").asText());
         assertEquals("v1.34.3", profile.path("cluster").path("kubectlVersion").asText());
         assertEquals(2, profile.path("cluster").path("workers").asInt());
@@ -72,6 +101,7 @@ class KubernetesLiveTopologyContractTest {
         assertEquals("lbp-kubernetes-smoke", profile.path("cluster").path("namespace").asText());
         assertEquals(30443, profile.path("cluster").path("nodePort").asInt());
         assertEquals("close-per-request", profile.path("workload").path("connectionMode").asText());
+        assertTrue(profile.path("workload").path("transitionSeconds").asInt() >= 40);
         assertTrue(profile.path("workload").path("rolloutSeconds").asInt()
                 >= profile.path("objectives").path("maximumRolloutSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumRolloutSuccessRatio").asDouble() >= 0.95);
@@ -88,17 +118,28 @@ class KubernetesLiveTopologyContractTest {
         assertTrue(profile.path("objectives").path("minimumPostCertificateRotationSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("minimumCertificateRollbackSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("minimumPostCertificateRollbackSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("workload").path("apiKeyTransitionSeconds").asInt()
+                >= profile.path("objectives").path("maximumApiKeyTransitionSeconds").asInt() + 5);
+        assertTrue(profile.path("objectives").path("minimumApiKeyTransitionSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("minimumPostApiKeyTransitionSuccessRatio").asDouble() >= 0.95);
         assertEquals("lbp-kubernetes.local", profile.path("tlsRotation").path("hostname").asText());
         assertEquals("loadbalancerpro-server-tls-a",
                 profile.path("tlsRotation").path("baselineSecret").asText());
         assertEquals("loadbalancerpro-server-tls-b",
                 profile.path("tlsRotation").path("candidateSecret").asText());
+        assertEquals("loadbalancerpro-api-key-a",
+                profile.path("apiKeyRotation").path("baselineSecret").asText());
+        assertEquals("loadbalancerpro-api-key-a-b",
+                profile.path("apiKeyRotation").path("overlapSecret").asText());
+        assertEquals("loadbalancerpro-api-key-b",
+                profile.path("apiKeyRotation").path("candidateSecret").asText());
         assertTrue(profile.path("workload").path("abruptTransitionSeconds").asInt()
                 >= profile.path("objectives").path("maximumAbruptEndpointWithdrawalSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumAbruptTransitionSuccessRatio").asDouble() >= 0.90);
-        assertTrue(profile.path("objectives").path("minimumAbruptDegradedSuccessRatio").asDouble() >= 0.95);
+        assertEquals(0.95, profile.path("objectives").path("minimumAbruptDegradedSuccessRatio").asDouble());
         assertTrue(profile.path("objectives").path("minimumAbruptRecoveredSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("maximumAbruptTransitionP99Millis").asInt() <= 6000);
+        assertTrue(profile.path("objectives").path("maximumAbruptDegradedP99Millis").asInt() <= 6000);
     }
 
     @Test
@@ -160,12 +201,38 @@ class KubernetesLiveTopologyContractTest {
                 "baselineOnlyRejectedAfterRotation: true",
                 "candidateOnlyRejectedAfterRollback: true",
                 "not an ingress-controller",
+                "create_immutable_api_key_secret",
+                "api-key-secret-metadata.json",
+                "loadbalancerpro.io/qualification-api-key-overlap",
+                "loadbalancerpro.io/qualification-api-key-commit",
+                "loadbalancerpro.io/qualification-api-key-rollback-overlap",
+                "loadbalancerpro.io/qualification-api-key-rollback-commit",
+                "${phase}-continuity.csv",
+                "Candidate API key before overlap",
+                "Retired baseline API key after commit",
+                "Retired candidate API key after rollback",
+                "bothApiKeysAcceptedDuringOverlap",
+                "candidateApiKeyRetiredAfterRollback",
+                "required primary plus at most one operator-bounded rotation key",
+                "Kubernetes API-key value leaked into evidence",
+                "not dynamic Secret reload",
+                "assert_no_container_restarts pre-planned-drain",
+                "assert_no_container_restarts degraded",
+                "assert_no_container_restarts recovered",
+                "lastTerminationReason",
                 "priorPodUids: $priorPodUids",
                 "candidatePodUids: $candidatePodUids",
                 "restoredPodUids: $restoredPodUids",
                 "contentDistinctRuntimeImageId: true",
                 "restoredInitialRuntimeImageId: true",
+                "kubectl cordon",
                 "kubectl drain",
+                "--pod-selector='loadbalancerpro.io/backend=backend-a'",
+                "wait_for_backend_endpoint_count backend-a 1 30",
+                "--pod-selector='loadbalancerpro.io/backend=backend-b'",
+                "wait_for_backend_endpoint_count backend-b 1 30",
+                "--pod-selector='app.kubernetes.io/name=loadbalancerpro'",
+                "ready Service endpoints during planned drain",
                 "docker stop",
                 "ready Service endpoints while one worker is stopped",
                 "docker start",
@@ -186,7 +253,7 @@ class KubernetesLiveTopologyContractTest {
                 "bothProxyReplicasServed: true")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 52 unsafe profiles without creating a cluster"));
+        assertTrue(read(CONTRACT).contains("rejected 65 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
     }
@@ -194,6 +261,7 @@ class KubernetesLiveTopologyContractTest {
     @Test
     void ciPinsKindAndRunsAndUploadsTheLiveProof() throws IOException {
         String ci = read(CI);
+        assertTrue(ci.contains("timeout-minutes: 45"));
         assertTrue(ci.contains("eb244cbafcc157dff60cf68693c14c9a75c4e6e6fedaf9cd71c58117cb93e3fa"));
         assertTrue(ci.contains("ab60ca5f0fd60c1eb81b52909e67060e3ba0bd27e55a8ac147cbc2172ff14212"));
         assertTrue(ci.contains("bash scripts/bench/kubernetes-topology-contract-test.sh"));

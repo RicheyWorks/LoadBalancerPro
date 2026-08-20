@@ -259,6 +259,7 @@
                         <include>com/richmond423/loadbalancerpro/api/ApiErrorResponse*.class</include>
                         <include>com/richmond423/loadbalancerpro/api/RestExceptionHandler*.class</include>
                         <include>com/richmond423/loadbalancerpro/api/config/ApiRateLimit*.class</include>
+                        <include>com/richmond423/loadbalancerpro/api/config/ApiKeyVerifier*.class</include>
                         <include>com/richmond423/loadbalancerpro/api/config/ApiSecurityConfiguration*.class</include>
                         <include>com/richmond423/loadbalancerpro/api/config/AuthModeConfiguration*.class</include>
                         <include>com/richmond423/loadbalancerpro/api/config/AuthProperties*.class</include>

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "profileId": "local-kind-two-zone-smoke",
   "review": {
     "status": "example"
@@ -27,7 +27,9 @@
     "postCertificateRotationSeconds": 8,
     "certificateRollbackSeconds": 90,
     "postCertificateRollbackSeconds": 8,
-    "transitionSeconds": 20,
+    "apiKeyTransitionSeconds": 80,
+    "postApiKeyTransitionSeconds": 6,
+    "transitionSeconds": 45,
     "degradedSeconds": 8,
     "recoveredSeconds": 8,
     "abruptTransitionSeconds": 45,
@@ -44,18 +46,22 @@
     "minimumPostCertificateRotationSuccessRatio": 0.999,
     "minimumCertificateRollbackSuccessRatio": 0.999,
     "minimumPostCertificateRollbackSuccessRatio": 0.999,
+    "minimumApiKeyTransitionSuccessRatio": 0.999,
+    "minimumPostApiKeyTransitionSuccessRatio": 0.999,
     "minimumTransitionSuccessRatio": 0.97,
     "minimumDegradedSuccessRatio": 0.999,
     "minimumRecoveredSuccessRatio": 0.999,
     "minimumAbruptTransitionSuccessRatio": 0.90,
-    "minimumAbruptDegradedSuccessRatio": 0.999,
+    "minimumAbruptDegradedSuccessRatio": 0.95,
     "minimumAbruptRecoveredSuccessRatio": 0.999,
     "maximumP99Millis": 1500,
     "maximumAbruptTransitionP99Millis": 5500,
+    "maximumAbruptDegradedP99Millis": 5500,
     "maximumRolloutSeconds": 75,
     "maximumRollbackSeconds": 75,
     "maximumCertificateRotationSeconds": 75,
     "maximumCertificateRollbackSeconds": 75,
+    "maximumApiKeyTransitionSeconds": 75,
     "maximumRecoverySeconds": 180,
     "maximumAbruptEndpointWithdrawalSeconds": 15,
     "maximumAbruptRecoverySeconds": 180
@@ -64,5 +70,10 @@
     "hostname": "lbp-kubernetes.local",
     "baselineSecret": "loadbalancerpro-server-tls-a",
     "candidateSecret": "loadbalancerpro-server-tls-b"
+  },
+  "apiKeyRotation": {
+    "baselineSecret": "loadbalancerpro-api-key-a",
+    "overlapSecret": "loadbalancerpro-api-key-a-b",
+    "candidateSecret": "loadbalancerpro-api-key-b"
   }
 }

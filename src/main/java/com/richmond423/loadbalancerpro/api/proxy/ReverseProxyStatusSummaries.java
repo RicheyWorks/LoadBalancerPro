@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
 
 final class ReverseProxyStatusSummaries {
     private ReverseProxyStatusSummaries() {
@@ -50,7 +49,7 @@ final class ReverseProxyStatusSummaries {
 
     static ReverseProxyStatusResponse.SecurityBoundaryStatus securityBoundary(
             Environment environment,
-            String configuredApiKey) {
+            boolean apiKeyConfigured) {
         String authMode = normalizeAuthMode(environment == null
                 ? "api-key"
                 : environment.getProperty("loadbalancerpro.auth.mode", "api-key"));
@@ -60,8 +59,6 @@ final class ReverseProxyStatusSummaries {
         boolean oauth2Mode = "oauth2".equals(authMode);
         boolean apiKeyBoundary = "api-key".equals(authMode) && prodLikeProfile;
         boolean protectedBoundary = oauth2Mode || apiKeyBoundary;
-        boolean apiKeyConfigured = StringUtils.hasText(configuredApiKey);
-
         return new ReverseProxyStatusResponse.SecurityBoundaryStatus(
                 authMode,
                 activeProfiles,

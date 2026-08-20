@@ -26,6 +26,22 @@ class ProdApiKeyMissingConfigurationTest {
                 });
     }
 
+    @Test
+    void rotationKeyCannotReplaceTheRequiredPrimaryKey() {
+        contextRunner.withPropertyValues(
+                        "spring.profiles.active=prod",
+                        "loadbalancerpro.auth.mode=api-key",
+                        "loadbalancerpro.api.key=",
+                        "loadbalancerpro.api.rotation-key=TEST_ROTATION_ONLY_KEY")
+                .run(context -> {
+                    assertThat(context).hasFailed();
+                    assertThat(rootCause(context.getStartupFailure()))
+                            .isInstanceOf(IllegalStateException.class)
+                            .hasMessageContaining("loadbalancerpro.api.key")
+                            .hasMessageContaining("refuses to start");
+                });
+    }
+
     private static Throwable rootCause(Throwable throwable) {
         Throwable cause = throwable;
         while (cause.getCause() != null) {

@@ -54,8 +54,8 @@ public class AuthProperties {
         return mode == Mode.NONE;
     }
 
-    public void validateApiKeyMode(String apiKey) {
-        if (isApiKeyMode() && !StringUtils.hasText(apiKey)) {
+    public void validateApiKeyMode(boolean apiKeyConfigured) {
+        if (isApiKeyMode() && !apiKeyConfigured) {
             throw new IllegalStateException("Application refuses to start with loadbalancerpro.auth.mode=api-key "
                     + "because loadbalancerpro.api.key is missing or blank; configure a key, select OAuth2, "
                     + "or explicitly set loadbalancerpro.auth.mode=none for bounded local development");

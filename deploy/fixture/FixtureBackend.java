@@ -6,15 +6,18 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public final class FixtureBackend {
     private static final int PORT = 8080;
     private static final int MAX_REQUEST_BYTES = 1_048_576;
     private static final int MAX_RESPONSE_BYTES = 1_048_576;
     private static final long MAX_DELAY_MILLIS = 10_000;
+    private static final int MAX_REQUEST_THREADS = 32;
+    private static final int MAX_PENDING_REQUESTS = 256;
 
     private FixtureBackend() {
     }
@@ -22,7 +25,14 @@ public final class FixtureBackend {
     public static void main(String[] args) throws Exception {
         String backendId = requiredEnvironment("FIXTURE_ID");
         HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", PORT), 0);
-        ExecutorService executor = Executors.newCachedThreadPool();
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                MAX_REQUEST_THREADS,
+                MAX_REQUEST_THREADS,
+                30,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(MAX_PENDING_REQUESTS),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.allowCoreThreadTimeOut(true);
         CountDownLatch stopped = new CountDownLatch(1);
         server.createContext("/", exchange -> handle(exchange, backendId));
         server.setExecutor(executor);

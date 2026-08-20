@@ -11,4 +11,4 @@ RUN groupadd --gid 10001 fixture \
 COPY --from=build --chown=fixture:fixture /output/FixtureBackend.class /app/FixtureBackend.class
 USER fixture:fixture
 EXPOSE 8080
-ENTRYPOINT ["java", "--add-modules", "jdk.httpserver", "-cp", "/app", "FixtureBackend"]
+ENTRYPOINT ["java", "-Xmx32m", "-Xss256k", "--add-modules", "jdk.httpserver", "-cp", "/app", "FixtureBackend"]

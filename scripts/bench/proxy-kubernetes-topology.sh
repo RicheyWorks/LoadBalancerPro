@@ -426,6 +426,14 @@ ready_endpoint_count() {
             | select(.conditions.ready == true and .conditions.terminating != true)] | length'
 }
 
+ready_backend_endpoint_count() {
+    local service_name="$1"
+    kubectl get endpointslice --namespace "$namespace" \
+        -l kubernetes.io/service-name="$service_name" -o json \
+        | jq '[.items[].endpoints[]
+            | select(.conditions.ready == true and .conditions.terminating != true)] | length'
+}
+
 abrupt_source_pod_count() {
     kubectl get pod --namespace "$namespace" -o json \
         | jq --argjson names "$abrupt_forced_pod_names_json" \
@@ -441,6 +449,18 @@ wait_for_count() {
         sleep 2
     done
     echo "Timed out waiting for $description=$expected; observed $actual" >&2
+    return 1
+}
+
+wait_for_backend_endpoint_count() {
+    local service_name="$1" expected="$2" timeout_seconds="$3"
+    local deadline=$((SECONDS + timeout_seconds)) actual=unknown
+    while (( SECONDS < deadline )); do
+        actual="$(ready_backend_endpoint_count "$service_name")"
+        [[ "$actual" == "$expected" ]] && return 0
+        sleep 1
+    done
+    echo "$service_name ready endpoint count did not become $expected; last observed $actual" >&2
     return 1
 }
 
@@ -1421,6 +1441,16 @@ vegeta attack -duration="${transition_seconds}s" -rate="${rate}/s" -timeout=5s -
     -root-certs="$tls_trust_bundle" -targets="$targets" > "$work_dir/transition.bin" &
 attack_pid=$!
 sleep 3
+kubectl cordon "$failed_node"
+kubectl drain "$failed_node" --ignore-daemonsets --delete-emptydir-data --timeout=120s \
+    --pod-selector='loadbalancerpro.io/backend=backend-a'
+wait_for_backend_endpoint_count backend-a 1 30
+kubectl drain "$failed_node" --ignore-daemonsets --delete-emptydir-data --timeout=120s \
+    --pod-selector='loadbalancerpro.io/backend=backend-b'
+wait_for_backend_endpoint_count backend-b 1 30
+kubectl drain "$failed_node" --ignore-daemonsets --delete-emptydir-data --timeout=120s \
+    --pod-selector='app.kubernetes.io/name=loadbalancerpro'
+wait_for_count 'ready Service endpoints during planned drain' 1 ready_endpoint_count 30
 kubectl drain "$failed_node" --ignore-daemonsets --delete-emptydir-data --timeout=120s
 docker stop "$failed_node" >/dev/null
 stopped_node="$failed_node"

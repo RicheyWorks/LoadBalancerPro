@@ -75,6 +75,7 @@ jq -e '
   and (.objectives.minimumAbruptRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.maximumP99Millis | type == "number" and . >= 100 and . <= 5000 and floor == .)
   and (.objectives.maximumAbruptTransitionP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
+  and (.objectives.maximumAbruptDegradedP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
   and (.objectives.maximumRolloutSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumRollbackSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumCertificateRotationSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
@@ -743,9 +744,10 @@ report_attack() {
 run_attack() {
     local name="$1" seconds="$2" minimum_success="$3"
     local attack_targets="${4:-$targets}"
+    local maximum_p99_millis="${5:-$(jq -r '.objectives.maximumP99Millis' "$profile")}"
     vegeta attack -duration="${seconds}s" -rate="${rate}/s" -timeout=5s -keepalive=false -http2=false \
         -root-certs="$tls_trust_bundle" -targets="$attack_targets" > "$work_dir/${name}.bin"
-    report_attack "$name" "$minimum_success"
+    report_attack "$name" "$minimum_success" "$maximum_p99_millis"
 }
 
 run_api_key_secret_transition() {
@@ -1568,7 +1570,8 @@ report_attack abrupt-transition \
     "$(jq -r '.objectives.maximumAbruptTransitionP99Millis' "$profile")"
 capture_state abrupt-degraded
 run_attack abrupt-degraded "$(jq -r '.workload.abruptDegradedSeconds' "$profile")" \
-    "$(jq -r '.objectives.minimumAbruptDegradedSuccessRatio' "$profile")"
+    "$(jq -r '.objectives.minimumAbruptDegradedSuccessRatio' "$profile")" "$targets" \
+    "$(jq -r '.objectives.maximumAbruptDegradedP99Millis' "$profile")"
 
 abrupt_recovery_started_epoch="$(date +%s)"
 docker start "$stopped_node" >/dev/null

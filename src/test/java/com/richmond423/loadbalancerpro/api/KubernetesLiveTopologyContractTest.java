@@ -116,9 +116,10 @@ class KubernetesLiveTopologyContractTest {
         assertTrue(profile.path("workload").path("abruptTransitionSeconds").asInt()
                 >= profile.path("objectives").path("maximumAbruptEndpointWithdrawalSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumAbruptTransitionSuccessRatio").asDouble() >= 0.90);
-        assertTrue(profile.path("objectives").path("minimumAbruptDegradedSuccessRatio").asDouble() >= 0.95);
+        assertEquals(0.95, profile.path("objectives").path("minimumAbruptDegradedSuccessRatio").asDouble());
         assertTrue(profile.path("objectives").path("minimumAbruptRecoveredSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("maximumAbruptTransitionP99Millis").asInt() <= 6000);
+        assertTrue(profile.path("objectives").path("maximumAbruptDegradedP99Millis").asInt() <= 6000);
     }
 
     @Test
@@ -228,7 +229,7 @@ class KubernetesLiveTopologyContractTest {
                 "bothProxyReplicasServed: true")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 64 unsafe profiles without creating a cluster"));
+        assertTrue(read(CONTRACT).contains("rejected 65 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
     }

@@ -177,7 +177,9 @@ out-of-service `NoExecute` remediation. It force-removes the three exact statele
 endpoint withdrawal, proves degraded traffic, rejects the failed pod identity after recovery, and requires both
 recovered replicas and backends to serve new traffic. The disposable cluster pins iptables-mode kube-proxy
 to immediate EndpointSlice-triggered updates and a one-second cleanup sync; deployment environments must review the
-equivalent Service/ingress failure-detection and reconciliation behavior. The candidate has a distinct local image
+equivalent Service/ingress failure-detection and reconciliation behavior. Its abrupt transition and degraded phases
+bound stale conntrack impact at 90% and 95% success with 5.5-second p99 ceilings; recovered traffic must return to the
+normal 99.9% success and 1.5-second p99 objectives. The candidate has a distinct local image
 content ID but preserves the baseline application layers, so it proves Kubernetes transition and rollback mechanics
 rather than compatibility between application releases. The reviewed deployment ingress, deployment-equivalent
 resources, registry

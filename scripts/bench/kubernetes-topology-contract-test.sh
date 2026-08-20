@@ -81,6 +81,7 @@ assert_rejected weak-abrupt-transition-objective '.objectives.minimumAbruptTrans
 assert_rejected weak-abrupt-degraded-objective '.objectives.minimumAbruptDegradedSuccessRatio = 0.5'
 assert_rejected weak-abrupt-recovered-objective '.objectives.minimumAbruptRecoveredSuccessRatio = 0.5'
 assert_rejected long-abrupt-transition-p99 '.objectives.maximumAbruptTransitionP99Millis = 10000'
+assert_rejected long-abrupt-degraded-p99 '.objectives.maximumAbruptDegradedP99Millis = 10000'
 assert_rejected long-abrupt-endpoint-withdrawal '.objectives.maximumAbruptEndpointWithdrawalSeconds = 60'
 assert_rejected long-recovery '.objectives.maximumRecoverySeconds = 600'
 assert_rejected long-abrupt-recovery '.objectives.maximumAbruptRecoverySeconds = 600'
@@ -93,4 +94,4 @@ assert_rejected wrong-candidate-api-key-secret '.apiKeyRotation.candidateSecret 
 assert_rejected unchanged-overlap-api-key-secret '.apiKeyRotation.overlapSecret = .apiKeyRotation.baselineSecret'
 assert_rejected unchanged-candidate-api-key-secret '.apiKeyRotation.candidateSecret = .apiKeyRotation.baselineSecret'
 
-printf 'Kubernetes topology contract rejected 64 unsafe profiles without creating a cluster.\n'
+printf 'Kubernetes topology contract rejected 65 unsafe profiles without creating a cluster.\n'

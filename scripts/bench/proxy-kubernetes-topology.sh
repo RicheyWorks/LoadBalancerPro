@@ -642,6 +642,26 @@ initial_proxy_runtime_image_ids_json="$(jq '[.[].status.containerStatuses[]?
     <<< "$initial_ready_proxy_pods_json")" == true ]] || {
     echo "Initial proxy pods do not reference the immutable baseline TLS Secret" >&2; exit 1;
 }
+
+assert_no_container_restarts() {
+    local phase="$1" restart_evidence
+    restart_evidence="$(kubectl get pod --namespace "$namespace" -o json | jq '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | .metadata.name as $pod
+      | .status.containerStatuses[]?
+      | select(.restartCount > 0)
+      | {pod: $pod, container: .name, restartCount: .restartCount,
+         lastTerminationReason: (.lastState.terminated.reason // "unknown"),
+         lastExitCode: (.lastState.terminated.exitCode // null)}]')"
+    if [[ "$(jq 'length' <<< "$restart_evidence")" != 0 ]]; then
+        jq -n --arg phase "$phase" --argjson containers "$restart_evidence" \
+            '{phase: $phase, containers: $containers}' \
+            > "$output_dir/${phase}-container-restarts.json"
+        echo "Kubernetes workload containers restarted before completing $phase" >&2
+        jq -c '.[]' <<< "$restart_evidence" >&2
+        return 1
+    fi
+}
 [[ "$(jq --arg secret "$baseline_api_key_secret" '[.[] | any(.spec.volumes[]?;
     .name == "api-key" and .secret.secretName == $secret)] | all' \
     <<< "$initial_ready_proxy_pods_json")" == true ]] || {
@@ -1438,6 +1458,8 @@ jq -n \
          traffic: $rollbackCommitDistribution[0]}}' \
     > "$output_dir/api-key-rotation.json"
 
+assert_no_container_restarts pre-planned-drain
+
 failed_node="$(jq -r '.[0].spec.nodeName' <<< "$api_key_rollback_commit_pods_json")"
 [[ "$failed_node" == "${cluster_name}-worker" || "$failed_node" == "${cluster_name}-worker2" ]] || {
     echo "Refusing to drain unexpected node $failed_node" >&2; exit 1;
@@ -1466,6 +1488,7 @@ report_attack transition "$(jq -r '.objectives.minimumTransitionSuccessRatio' "$
 wait_for_count 'ready proxy replicas while one worker is stopped' 1 ready_proxy_count 90
 wait_for_count 'ready Service endpoints while one worker is stopped' 1 ready_endpoint_count 90
 capture_state degraded
+assert_no_container_restarts degraded
 run_attack degraded "$(jq -r '.workload.degradedSeconds' "$profile")" \
     "$(jq -r '.objectives.minimumDegradedSuccessRatio' "$profile")"
 
@@ -1483,6 +1506,7 @@ wait_for_count 'recovered Service endpoints' 2 ready_endpoint_count "$maximum_re
 recovery_seconds=$(( $(date +%s) - recovery_started_epoch ))
 (( recovery_seconds <= maximum_recovery_seconds )) || { echo "Worker recovery exceeded the objective" >&2; exit 1; }
 capture_state recovered
+assert_no_container_restarts recovered
 collect_distribution recovered-before false
 run_attack recovered "$(jq -r '.workload.recoveredSeconds' "$profile")" \
     "$(jq -r '.objectives.minimumRecoveredSuccessRatio' "$profile")"

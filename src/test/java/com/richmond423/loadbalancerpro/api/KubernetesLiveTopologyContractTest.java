@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class KubernetesLiveTopologyContractTest {
     private static final Path DOCKERFILE = Path.of("Dockerfile");
+    private static final Path FIXTURE_DOCKERFILE = Path.of("deploy/fixture/Dockerfile");
+    private static final Path FIXTURE_SOURCE = Path.of("deploy/fixture/FixtureBackend.java");
     private static final Path CLUSTER = Path.of("deploy/kubernetes/kind-cluster.yaml");
     private static final Path WORKLOAD = Path.of("deploy/kubernetes/qualification.yaml");
     private static final Path CANDIDATE = Path.of("deploy/topology/RolloutCandidate.Dockerfile");
@@ -57,6 +59,22 @@ class KubernetesLiveTopologyContractTest {
         }
         assertFalse(workload.contains("BEGIN PRIVATE KEY"));
         assertFalse(workload.contains("stringData:"));
+    }
+
+    @Test
+    void qualificationFixtureBoundsNativeThreadAndHeapMemory() throws IOException {
+        String fixtureSource = read(FIXTURE_SOURCE);
+        assertFalse(fixtureSource.contains("newCachedThreadPool"));
+        assertTrue(fixtureSource.contains("MAX_REQUEST_THREADS = 32"));
+        assertTrue(fixtureSource.contains("MAX_PENDING_REQUESTS = 256"));
+        assertTrue(fixtureSource.contains("new ArrayBlockingQueue<>(MAX_PENDING_REQUESTS)"));
+        assertTrue(fixtureSource.contains("new ThreadPoolExecutor.CallerRunsPolicy()"));
+        assertTrue(fixtureSource.contains("executor.allowCoreThreadTimeOut(true)"));
+
+        String fixtureDockerfile = read(FIXTURE_DOCKERFILE);
+        assertTrue(fixtureDockerfile.contains("\"-Xmx32m\""));
+        assertTrue(fixtureDockerfile.contains("\"-Xss256k\""));
+        assertEquals(2, count(read(WORKLOAD), "memory: 128Mi"));
     }
 
     @Test
@@ -198,6 +216,10 @@ class KubernetesLiveTopologyContractTest {
                 "required primary plus at most one operator-bounded rotation key",
                 "Kubernetes API-key value leaked into evidence",
                 "not dynamic Secret reload",
+                "assert_no_container_restarts pre-planned-drain",
+                "assert_no_container_restarts degraded",
+                "assert_no_container_restarts recovered",
+                "lastTerminationReason",
                 "priorPodUids: $priorPodUids",
                 "candidatePodUids: $candidatePodUids",
                 "restoredPodUids: $restoredPodUids",

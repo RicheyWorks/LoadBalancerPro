@@ -236,6 +236,7 @@ class KubernetesLiveTopologyContractTest {
     @Test
     void ciPinsKindAndRunsAndUploadsTheLiveProof() throws IOException {
         String ci = read(CI);
+        assertTrue(ci.contains("timeout-minutes: 45"));
         assertTrue(ci.contains("eb244cbafcc157dff60cf68693c14c9a75c4e6e6fedaf9cd71c58117cb93e3fa"));
         assertTrue(ci.contains("ab60ca5f0fd60c1eb81b52909e67060e3ba0bd27e55a8ac147cbc2172ff14212"));
         assertTrue(ci.contains("bash scripts/bench/kubernetes-topology-contract-test.sh"));

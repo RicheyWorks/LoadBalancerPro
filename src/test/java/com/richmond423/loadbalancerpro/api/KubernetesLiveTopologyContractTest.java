@@ -44,6 +44,8 @@ class KubernetesLiveTopologyContractTest {
                 "secretName: loadbalancerpro-api-key-a",
                 "path: loadbalancerpro.api.rotation-key",
                 "https://${LBP_TLS_HOSTNAME}:8080/proxy/kubernetes/topology",
+                "LBP_HEALTH_CHECK_ENABLED: \"false\"",
+                "LBP_COOLDOWN_ENABLED: \"false\"",
                 "LBP_RETRY_ENABLED: \"true\"",
                 "LBP_RETRY_MAX_ATTEMPTS: \"2\"",
                 "LBP_RETRY_BUDGET_PERCENT: \"100\"",
@@ -79,6 +81,7 @@ class KubernetesLiveTopologyContractTest {
         assertEquals("lbp-kubernetes-smoke", profile.path("cluster").path("namespace").asText());
         assertEquals(30443, profile.path("cluster").path("nodePort").asInt());
         assertEquals("close-per-request", profile.path("workload").path("connectionMode").asText());
+        assertTrue(profile.path("workload").path("transitionSeconds").asInt() >= 40);
         assertTrue(profile.path("workload").path("rolloutSeconds").asInt()
                 >= profile.path("objectives").path("maximumRolloutSeconds").asInt() + 5);
         assertTrue(profile.path("objectives").path("minimumRolloutSuccessRatio").asDouble() >= 0.95);

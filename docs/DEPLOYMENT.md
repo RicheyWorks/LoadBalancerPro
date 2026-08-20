@@ -100,8 +100,10 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 | `LBP_MAX_REQUEST_BYTES` | `loadbalancerpro.proxy.max-request-bytes` | `65536` |
 | `LBP_MAX_RESPONSE_BYTES` | `loadbalancerpro.proxy.max-response-bytes` | `0` (streaming/unbounded) |
 | `LBP_MAX_IN_FLIGHT` | `loadbalancerpro.proxy.limits.max-in-flight` | `100` |
+| `LBP_HEALTH_CHECK_ENABLED` | `loadbalancerpro.proxy.health-check.enabled` | `true` |
 | `LBP_HEALTH_CHECK_PATH` | `loadbalancerpro.proxy.health-check.path` | `/health` |
 | `LBP_HEALTH_CHECK_INTERVAL` | `loadbalancerpro.proxy.health-check.interval` | `5s` |
+| `LBP_COOLDOWN_ENABLED` | `loadbalancerpro.proxy.cooldown.enabled` | `true` |
 | `LBP_COOLDOWN_DURATION` | `loadbalancerpro.proxy.cooldown.duration` | `30s` |
 | `LBP_DRAIN_TIMEOUT` | `loadbalancerpro.proxy.reload.drain-timeout` | `30s` |
 | `LBP_SLOW_START_DURATION` | `loadbalancerpro.proxy.slow-start.duration` | `5s` |
@@ -133,7 +135,10 @@ system. The lane next proves bounded API-key rotation through immutable A-only, 
 sequence for rollback. Both keys are accepted only in the overlap phases; the retired key must return 401 after each
 commit, while zero-unavailable endpoint continuity, fresh pod UIDs, fixed runtime image identity, and traffic through
 both replicas and backends remain required. This is startup configuration rollout proof, not dynamic Secret reload or
-external secret-manager proof. The lane then proves two-zone Service distribution, planned worker removal, and
+external secret-manager proof. Because each configured upstream is a Kubernetes Service rather than a pod, the local
+qualification lane uses EndpointSlice readiness as the pod-health authority and disables process-local active health
+checks and cooldown; bounded idempotent retry across the two Services remains enabled. The lane then proves two-zone
+Service distribution, planned worker removal, and
 operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
 confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless
 qualification pods from the API. The disposable cluster also pins immediate EndpointSlice-triggered iptables updates

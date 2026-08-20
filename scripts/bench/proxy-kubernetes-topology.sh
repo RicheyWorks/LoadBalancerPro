@@ -50,7 +50,7 @@ jq -e '
   and (.workload.postCertificateRollbackSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.apiKeyTransitionSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.workload.postApiKeyTransitionSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
-  and (.workload.transitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
+  and (.workload.transitionSeconds | type == "number" and . >= 40 and . <= 120 and floor == .)
   and (.workload.degradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.recoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.abruptTransitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
@@ -125,6 +125,8 @@ for invariant in \
     'secretName: loadbalancerpro-server-tls-a' \
     'secretName: loadbalancerpro-api-key-a' \
     'https://${LBP_TLS_HOSTNAME}:8080/proxy/kubernetes/topology' \
+    'LBP_HEALTH_CHECK_ENABLED: "false"' \
+    'LBP_COOLDOWN_ENABLED: "false"' \
     'LBP_RETRY_ENABLED: "true"' \
     'LBP_RETRY_MAX_ATTEMPTS: "2"' \
     'LBP_RETRY_BUDGET_PERCENT: "100"' \

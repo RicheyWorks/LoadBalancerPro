@@ -29,7 +29,7 @@
     "postCertificateRollbackSeconds": 8,
     "apiKeyTransitionSeconds": 65,
     "postApiKeyTransitionSeconds": 6,
-    "transitionSeconds": 20,
+    "transitionSeconds": 45,
     "degradedSeconds": 8,
     "recoveredSeconds": 8,
     "abruptTransitionSeconds": 45,

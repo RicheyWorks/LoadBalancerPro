@@ -63,7 +63,7 @@ def deployment(state: dict[str, Any], name: str) -> dict[str, Any]:
                         },
                     },
                     "spec": {
-                        "terminationGracePeriodSeconds": 40,
+                        "terminationGracePeriodSeconds": 45,
                         "containers": [{
                             "name": CONTAINER,
                             "image": state["imageReference"],
@@ -72,7 +72,7 @@ def deployment(state: dict[str, Any], name: str) -> dict[str, Any]:
                                 "requests": {"cpu": "100m", "memory": "256Mi"},
                                 "limits": {"cpu": "1", "memory": "512Mi"},
                             },
-                            "lifecycle": {"preStop": {"exec": {"command": ["sh", "-c", "sleep 5"]}}},
+                            "lifecycle": {"preStop": {"exec": {"command": ["sh", "-c", "sleep 10"]}}},
                             "volumeMounts": [{"name": "server-tls", "mountPath": "/run/tls", "readOnly": True}],
                         }],
                         "volumes": [{"name": "server-tls", "secret": {"secretName": state["tlsSecret"]}}],

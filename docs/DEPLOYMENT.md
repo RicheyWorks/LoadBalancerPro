@@ -120,9 +120,11 @@ Hostname verification remains mandatory; `tls.verify=false` is rejected. Server 
 
 [`../deploy/kubernetes-proxy-prod.yaml`](../deploy/kubernetes-proxy-prod.yaml) is the canonical deployment base. It
 encodes two replicas, zero-unavailable rolling replacement, a two-domain zone-spread rule that permits a temporary
-surge pod, preferred host spreading, a one-replica disruption budget, startup/readiness/liveness probes, a five-second
-preStop delay, a 40-second termination window, a token-free service account, numeric non-root execution, and external
-Secret/ConfigMap mounts. Its image remains a deliberately non-resolving digest placeholder. The disposable
+surge pod, preferred host spreading, a one-replica disruption budget, startup/readiness/liveness probes, a ten-second
+preStop delay, a 45-second termination window, a token-free service account, numeric non-root execution, and external
+Secret/ConfigMap mounts. The drain delay exceeds the five-second qualification client timeout, while the termination
+window contains the application's 30-second graceful-shutdown bound. Its image remains a deliberately non-resolving
+digest placeholder. The disposable
 [`../scripts/bench/proxy-kubernetes-topology.sh`](../scripts/bench/proxy-kubernetes-topology.sh) lane applies the
 separate loopback qualification workload and proves a metadata-only content-distinct candidate rollout and baseline
 rollback under continuous traffic, complete pod-UID turnover in both directions, runtime-image identity transition and

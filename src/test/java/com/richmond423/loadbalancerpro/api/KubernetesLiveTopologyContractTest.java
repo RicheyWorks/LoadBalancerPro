@@ -32,6 +32,8 @@ class KubernetesLiveTopologyContractTest {
                 "automountServiceAccountToken: false",
                 "maxUnavailable: 0",
                 "maxSurge: 1",
+                "terminationGracePeriodSeconds: 45",
+                "command: [\"sh\", \"-c\", \"sleep 10\"]",
                 "minDomains: 2",
                 "runAsNonRoot: true",
                 "runAsUser: 10001",

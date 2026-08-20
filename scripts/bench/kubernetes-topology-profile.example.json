@@ -27,7 +27,7 @@
     "postCertificateRotationSeconds": 8,
     "certificateRollbackSeconds": 90,
     "postCertificateRollbackSeconds": 8,
-    "apiKeyTransitionSeconds": 65,
+    "apiKeyTransitionSeconds": 80,
     "postApiKeyTransitionSeconds": 6,
     "transitionSeconds": 45,
     "degradedSeconds": 8,
@@ -61,7 +61,7 @@
     "maximumRollbackSeconds": 75,
     "maximumCertificateRotationSeconds": 75,
     "maximumCertificateRollbackSeconds": 75,
-    "maximumApiKeyTransitionSeconds": 60,
+    "maximumApiKeyTransitionSeconds": 75,
     "maximumRecoverySeconds": 180,
     "maximumAbruptEndpointWithdrawalSeconds": 15,
     "maximumAbruptRecoverySeconds": 180

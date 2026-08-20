@@ -117,6 +117,8 @@ for invariant in \
     'automountServiceAccountToken: false' \
     'maxUnavailable: 0' \
     'maxSurge: 1' \
+    'terminationGracePeriodSeconds: 45' \
+    'command: ["sh", "-c", "sleep 10"]' \
     'minDomains: 2' \
     'runAsUser: 10001' \
     'readOnlyRootFilesystem: true' \

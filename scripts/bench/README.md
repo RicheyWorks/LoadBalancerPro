@@ -142,7 +142,9 @@ API, bounds endpoint withdrawal, proves degraded traffic, and requires fresh pod
 distribution after recovery. The lab cluster pins iptables kube-proxy to immediate EndpointSlice-triggered updates and a
 one-second cleanup sync so the Service failover objective is executable and recorded. The abrupt transition and degraded
 windows retain bounded 90% and 95% success floors with 5.5-second p99 ceilings for stale conntrack paths; recovered
-traffic returns to the normal 99.9% success and 1.5-second p99 objectives:
+traffic returns to the normal 99.9% success and 1.5-second p99 objectives. Rollouts drain endpoints for ten seconds,
+longer than the five-second qualification client timeout, while the 45-second grace period contains the application's
+30-second graceful-shutdown bound:
 
 ```bash
 bash scripts/bench/proxy-kubernetes-topology.sh --mode validate

@@ -54,6 +54,9 @@ class KubernetesLiveTopologyContractTest {
                 "LBP_RETRY_MAX_ATTEMPTS: \"3\"",
                 "LBP_RETRY_BUDGET_PERCENT: \"100\"",
                 "LBP_RETRY_NON_IDEMPOTENT: \"false\"",
+                "key: node.kubernetes.io/not-ready",
+                "key: node.kubernetes.io/unreachable",
+                "tolerationSeconds: 10",
                 "secretName: loadbalancerpro-server-tls-a")) {
             assertTrue(workload.contains(invariant), "missing restricted workload invariant: " + invariant);
         }
@@ -84,6 +87,10 @@ class KubernetesLiveTopologyContractTest {
         assertEquals(2, count(cluster, "  - role: worker"));
         assertTrue(cluster.contains("listenAddress: 127.0.0.1"));
         assertTrue(cluster.contains("hostPort: 18460"));
+        assertTrue(cluster.contains("apiVersion: kubeadm.k8s.io/v1beta3"));
+        assertTrue(cluster.contains("kind: ClusterConfiguration"));
+        assertTrue(cluster.contains("node-monitor-period: 2s"));
+        assertTrue(cluster.contains("node-monitor-grace-period: 20s"));
         assertTrue(cluster.contains("kind: KubeProxyConfiguration"));
         assertTrue(cluster.contains("mode: iptables"));
         assertTrue(cluster.contains("minSyncPeriod: 0s"));
@@ -93,13 +100,15 @@ class KubernetesLiveTopologyContractTest {
                 "kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48"));
 
         JsonNode profile = new ObjectMapper().readTree(read(PROFILE));
-        assertEquals(6, profile.path("schemaVersion").asInt());
+        assertEquals(7, profile.path("schemaVersion").asInt());
         assertEquals("example", profile.path("review").path("status").asText());
         assertEquals("v1.34.3", profile.path("cluster").path("kubectlVersion").asText());
         assertEquals(2, profile.path("cluster").path("workers").asInt());
         assertEquals(2, profile.path("cluster").path("zones").asInt());
         assertEquals("lbp-kubernetes-smoke", profile.path("cluster").path("namespace").asText());
         assertEquals(30443, profile.path("cluster").path("nodePort").asInt());
+        assertEquals(20, profile.path("cluster").path("nodeMonitorGracePeriodSeconds").asInt());
+        assertEquals(10, profile.path("cluster").path("unreachableTolerationSeconds").asInt());
         assertEquals("close-per-request", profile.path("workload").path("connectionMode").asText());
         assertTrue(profile.path("workload").path("transitionSeconds").asInt() >= 40);
         assertTrue(profile.path("workload").path("rolloutSeconds").asInt()
@@ -140,10 +149,21 @@ class KubernetesLiveTopologyContractTest {
         assertTrue(profile.path("objectives").path("minimumAbruptRecoveredSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("maximumAbruptTransitionP99Millis").asInt() <= 6000);
         assertTrue(profile.path("objectives").path("maximumAbruptDegradedP99Millis").asInt() <= 6000);
+        assertTrue(profile.path("workload").path("automaticTransitionSeconds").asInt()
+                >= profile.path("objectives").path("maximumAutomaticEndpointWithdrawalSeconds").asInt() + 5);
+        assertTrue(profile.path("objectives").path("minimumAutomaticTransitionSuccessRatio").asDouble() >= 0.80);
+        assertEquals(0.95, profile.path("objectives").path("minimumAutomaticDegradedSuccessRatio").asDouble());
+        assertTrue(profile.path("objectives").path("minimumAutomaticRecoveredSuccessRatio").asDouble() >= 0.95);
+        assertTrue(profile.path("objectives").path("maximumAutomaticTransitionP99Millis").asInt() <= 6000);
+        assertTrue(profile.path("objectives").path("maximumAutomaticDegradedP99Millis").asInt() <= 6000);
+        assertTrue(profile.path("objectives").path("maximumAutomaticNodeDetectionSeconds").asInt()
+                < profile.path("objectives").path("maximumAutomaticEndpointWithdrawalSeconds").asInt());
+        assertTrue(profile.path("objectives").path("maximumAutomaticEndpointWithdrawalSeconds").asInt()
+                < profile.path("objectives").path("maximumAutomaticPodEvictionSeconds").asInt());
     }
 
     @Test
-    void runnerExecutesLiveImageTransitionRollbackPlannedAndAbruptWorkerLossChecks() throws IOException {
+    void runnerExecutesLiveTransitionsAndManualAndAutomaticWorkerLossChecks() throws IOException {
         String runner = read(RUNNER);
         assertTrue(read(CANDIDATE).contains("metadata-only-local-candidate"));
         for (String behavior : List.of(
@@ -154,6 +174,11 @@ class KubernetesLiveTopologyContractTest {
                 "Refusing to reuse or delete an existing kind cluster",
                 "Live kube-proxy config is missing",
                 "kube-proxy-config.yaml",
+                "--node-monitor-period=2s",
+                "--node-monitor-grace-period=20s",
+                "kube-controller-manager-command.txt",
+                "node-failure-policy.json",
+                "Qualification Deployments do not share the bounded unreachable-node eviction policy",
                 "Proxy replicas were not placed in distinct zones",
                 "minDomains: 2",
                 "-keepalive=false",
@@ -250,10 +275,31 @@ class KubernetesLiveTopologyContractTest {
                 "bothRecoveredProxyReplicasServed: true",
                 "stoppedWithoutDrain: $abruptWorker",
                 "retainedFailedProxyPodUids: 0",
-                "bothProxyReplicasServed: true")) {
+                "bothProxyReplicasServed: true",
+                "automatic-node-detection",
+                "docker kill \"$automatic_node\"",
+                "wait_for_node_unavailable",
+                "automatic-loss source pods still active in the API",
+                "automatic-source-pod-evictions.json",
+                "automatic-failure-timings.json",
+                "evictionObserved",
+                "Automatic worker-loss recovery retained the failed worker pod UID",
+                "automatic-recovered-distribution-delta.json",
+                "postFailureRemediationMutations: 0",
+                "controllerNodeMonitorGracePeriodSeconds: 20",
+                "deployment-equivalent infrastructure-failure timing")) {
             assertTrue(runner.contains(behavior), "missing live Kubernetes proof behavior: " + behavior);
         }
-        assertTrue(read(CONTRACT).contains("rejected 65 unsafe profiles without creating a cluster"));
+        String automaticFailureWindow = runner.substring(
+                runner.indexOf("automatic_failure_started_epoch="),
+                runner.indexOf("automatic_recovery_started_epoch="));
+        for (String mutatingCommand : List.of(
+                "kubectl apply", "kubectl cordon", "kubectl delete", "kubectl drain", "kubectl patch", "kubectl taint")) {
+            assertFalse(
+                    automaticFailureWindow.contains(mutatingCommand),
+                    "automatic worker-loss remediation must not mutate Kubernetes state with " + mutatingCommand);
+        }
+        assertTrue(read(CONTRACT).contains("rejected 83 unsafe profiles without creating a cluster"));
         assertFalse(runner.contains("--insecure"));
         assertFalse(runner.contains("--validate=false"));
     }

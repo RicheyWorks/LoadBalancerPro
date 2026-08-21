@@ -141,10 +141,17 @@ tests the one-replica degraded service, requires both recovered replicas and bac
 forcibly stops that recovered worker without a drain. After confirming the worker container is down, it applies
 Kubernetes' out-of-service `NoExecute` remediation and force-removes the three exact stateless workload pods from the
 API, bounds endpoint withdrawal, proves degraded traffic, and requires fresh pod identity, two-zone placement, and traffic
-distribution after recovery. The lab cluster pins iptables kube-proxy to immediate EndpointSlice-triggered updates and a
-one-second cleanup sync so the Service failover objective is executable and recorded. The abrupt transition and degraded
-windows retain bounded 90% and 95% success floors with 5.5-second p99 ceilings for stale conntrack paths; recovered
-traffic returns to the normal 99.9% success and 1.5-second p99 objectives. Rollouts drain endpoints for ten seconds,
+distribution after recovery. It then repeats a no-drain worker kill without any post-failure Kubernetes mutation. The
+controller-manager must detect the lost node, EndpointSlices must withdraw its endpoints, bounded `NoExecute` tolerations
+must initiate eviction for the three dead-node pods, and recovery must use fresh pod identities across both zones. The
+evidence accepts either API removal or a deletion timestamp because an unavailable kubelet can leave evicted pod objects
+terminating until the node returns. The lab cluster pins a
+twenty-second node-monitor grace period, ten-second unreachable tolerations, iptables kube-proxy with immediate
+EndpointSlice-triggered updates, and a one-second cleanup sync so the automatic Service failover objective is executable
+and recorded. Both abrupt transition and degraded windows retain bounded 90% and 95% success floors with 5.5-second p99
+ceilings for stale conntrack paths. The controller-detected transition has a separate 80% floor to include the configured
+node-monitor grace interval, while its degraded phase retains 95%; recovered traffic returns to the normal 99.9% success
+and 1.5-second p99 objectives. Rollouts drain endpoints for ten seconds,
 longer than the five-second qualification client timeout, while the 45-second grace period contains the application's
 30-second graceful-shutdown bound:
 
@@ -162,8 +169,8 @@ prove dynamic Secret reload or an external secret manager, and it does not deplo
 external certificate authority, or client trust-distribution system. Because the local candidate
 changes immutable proof metadata but not application layers, it does not prove application-layer release compatibility,
 registry integrity,
-deployment capacity, external ingress behavior, automatic infrastructure-failure detection, or an authorized staging
-environment.
+deployment capacity, external ingress behavior, deployment-equivalent infrastructure-failure timing, or an authorized
+staging environment.
 
 ## Local capacity staircase
 

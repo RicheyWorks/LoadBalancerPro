@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "profileId": "local-kind-two-zone-smoke",
   "review": {
     "status": "example"
@@ -13,7 +13,9 @@
     "zones": 2,
     "namespace": "lbp-kubernetes-smoke",
     "hostPort": 18460,
-    "nodePort": 30443
+    "nodePort": 30443,
+    "nodeMonitorGracePeriodSeconds": 20,
+    "unreachableTolerationSeconds": 10
   },
   "workload": {
     "connectionMode": "close-per-request",
@@ -34,7 +36,10 @@
     "recoveredSeconds": 8,
     "abruptTransitionSeconds": 45,
     "abruptDegradedSeconds": 8,
-    "abruptRecoveredSeconds": 8
+    "abruptRecoveredSeconds": 8,
+    "automaticTransitionSeconds": 60,
+    "automaticDegradedSeconds": 8,
+    "automaticRecoveredSeconds": 8
   },
   "objectives": {
     "minimumBaselineSuccessRatio": 0.999,
@@ -54,9 +59,14 @@
     "minimumAbruptTransitionSuccessRatio": 0.90,
     "minimumAbruptDegradedSuccessRatio": 0.95,
     "minimumAbruptRecoveredSuccessRatio": 0.999,
+    "minimumAutomaticTransitionSuccessRatio": 0.80,
+    "minimumAutomaticDegradedSuccessRatio": 0.95,
+    "minimumAutomaticRecoveredSuccessRatio": 0.999,
     "maximumP99Millis": 1500,
     "maximumAbruptTransitionP99Millis": 5500,
     "maximumAbruptDegradedP99Millis": 5500,
+    "maximumAutomaticTransitionP99Millis": 5500,
+    "maximumAutomaticDegradedP99Millis": 5500,
     "maximumRolloutSeconds": 75,
     "maximumRollbackSeconds": 75,
     "maximumCertificateRotationSeconds": 75,
@@ -64,7 +74,11 @@
     "maximumApiKeyTransitionSeconds": 75,
     "maximumRecoverySeconds": 180,
     "maximumAbruptEndpointWithdrawalSeconds": 15,
-    "maximumAbruptRecoverySeconds": 180
+    "maximumAbruptRecoverySeconds": 180,
+    "maximumAutomaticNodeDetectionSeconds": 30,
+    "maximumAutomaticEndpointWithdrawalSeconds": 40,
+    "maximumAutomaticPodEvictionSeconds": 90,
+    "maximumAutomaticRecoverySeconds": 180
   },
   "tlsRotation": {
     "hostname": "lbp-kubernetes.local",

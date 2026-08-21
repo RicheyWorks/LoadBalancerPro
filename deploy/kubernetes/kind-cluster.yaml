@@ -7,6 +7,14 @@ nodes:
     image: kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48
     kubeadmConfigPatches:
       - |
+        # kind 0.31.0 uses kubeadm v1beta3 for Kubernetes 1.34.x.
+        apiVersion: kubeadm.k8s.io/v1beta3
+        kind: ClusterConfiguration
+        controllerManager:
+          extraArgs:
+            node-monitor-period: 2s
+            node-monitor-grace-period: 20s
+      - |
         apiVersion: kubeproxy.config.k8s.io/v1alpha1
         kind: KubeProxyConfiguration
         mode: iptables

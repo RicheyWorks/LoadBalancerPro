@@ -175,17 +175,23 @@ and second replica must recover inside the bound, and both recovered replicas an
 then forcibly stops that recovered worker without a drain, confirms the container is down, and applies the documented
 out-of-service `NoExecute` remediation. It force-removes the three exact stateless workload pods from the API, bounds
 endpoint withdrawal, proves degraded traffic, rejects the failed pod identity after recovery, and requires both
-recovered replicas and backends to serve new traffic. The disposable cluster pins iptables-mode kube-proxy
-to immediate EndpointSlice-triggered updates and a one-second cleanup sync; deployment environments must review the
-equivalent Service/ingress failure-detection and reconciliation behavior. Its abrupt transition and degraded phases
-bound stale conntrack impact at 90% and 95% success with 5.5-second p99 ceilings; recovered traffic must return to the
-normal 99.9% success and 1.5-second p99 objectives. The ten-second endpoint drain exceeds the five-second qualification
+recovered replicas and backends to serve new traffic. A second forced stop permits no post-failure Kubernetes mutation:
+the test-configured controller-manager must detect the lost node, EndpointSlices must withdraw its endpoints, the bounded
+`NoExecute` tolerations must initiate eviction for its three pods, and fresh pod identities must recover across both zones.
+Eviction evidence accepts API removal or a deletion timestamp because an unavailable kubelet can leave the old objects
+terminating until the node returns. The disposable
+cluster pins a twenty-second node-monitor grace period, ten-second unreachable tolerations, iptables-mode kube-proxy with
+immediate EndpointSlice-triggered updates, and a one-second cleanup sync; deployment environments must review equivalent
+managed-control-plane and Service/ingress reconciliation behavior. Its abrupt transition and degraded phases
+bound stale conntrack impact at 90% and 95% success with 5.5-second p99 ceilings. The controller-detected transition has
+an 80% floor that includes the configured node-monitor grace interval, followed by a 95% degraded floor; recovered
+traffic must return to the normal 99.9% success and 1.5-second p99 objectives. The ten-second endpoint drain exceeds the five-second qualification
 client timeout, and the 45-second termination grace contains the 30-second application shutdown bound. The candidate
 has a distinct local image
 content ID but preserves the baseline application layers, so it proves Kubernetes transition and rollback mechanics
 rather than compatibility between application releases. The reviewed deployment ingress, deployment-equivalent
 resources, registry
-digest transition, and automatic infrastructure-failure detection remain staging gates.
+digest transition, and deployment-equivalent infrastructure-failure timing remain staging gates.
 
 ### 4. Stage The Rollout And Rollback
 

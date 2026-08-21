@@ -87,12 +87,10 @@ class KubernetesLiveTopologyContractTest {
         assertEquals(2, count(cluster, "  - role: worker"));
         assertTrue(cluster.contains("listenAddress: 127.0.0.1"));
         assertTrue(cluster.contains("hostPort: 18460"));
-        assertTrue(cluster.contains("apiVersion: kubeadm.k8s.io/v1beta4"));
+        assertTrue(cluster.contains("apiVersion: kubeadm.k8s.io/v1beta3"));
         assertTrue(cluster.contains("kind: ClusterConfiguration"));
-        assertTrue(cluster.contains("name: node-monitor-period"));
-        assertTrue(cluster.contains("value: 2s"));
-        assertTrue(cluster.contains("name: node-monitor-grace-period"));
-        assertTrue(cluster.contains("value: 20s"));
+        assertTrue(cluster.contains("node-monitor-period: 2s"));
+        assertTrue(cluster.contains("node-monitor-grace-period: 20s"));
         assertTrue(cluster.contains("kind: KubeProxyConfiguration"));
         assertTrue(cluster.contains("mode: iptables"));
         assertTrue(cluster.contains("minSyncPeriod: 0s"));

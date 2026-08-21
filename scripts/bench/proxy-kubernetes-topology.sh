@@ -124,12 +124,10 @@ for invariant in \
     'containerPort: 30443' \
     'hostPort: 18460' \
     'kind: KubeProxyConfiguration' \
-    'apiVersion: kubeadm.k8s.io/v1beta4' \
+    'apiVersion: kubeadm.k8s.io/v1beta3' \
     'kind: ClusterConfiguration' \
-    'name: node-monitor-period' \
-    'value: 2s' \
-    'name: node-monitor-grace-period' \
-    'value: 20s' \
+    'node-monitor-period: 2s' \
+    'node-monitor-grace-period: 20s' \
     'mode: iptables' \
     'minSyncPeriod: 0s' \
     'syncPeriod: 1s'; do

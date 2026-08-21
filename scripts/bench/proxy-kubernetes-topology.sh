@@ -488,10 +488,12 @@ abrupt_source_pod_count() {
             '[.items[] | select(.metadata.name as $name | $names | index($name))] | length'
 }
 
-automatic_source_pod_count() {
+automatic_active_source_pod_count() {
     kubectl get pod --namespace "$namespace" -o json \
         | jq --argjson names "$automatic_source_pod_names_json" \
-            '[.items[] | select(.metadata.name as $name | $names | index($name))] | length'
+            '[.items[]
+              | select(.metadata.name as $name | $names | index($name))
+              | select(.metadata.deletionTimestamp == null)] | length'
 }
 
 wait_for_count() {
@@ -1775,12 +1777,27 @@ automatic_endpoint_withdrawal_seconds=$(( $(date +%s) - automatic_failure_starte
 (( automatic_endpoint_withdrawal_seconds <= maximum_automatic_endpoint_withdrawal_seconds )) || {
     echo "Automatic worker-loss endpoint withdrawal exceeded the objective" >&2; exit 1;
 }
-wait_for_count 'automatic-loss source pods remaining in the API' 0 automatic_source_pod_count \
+wait_for_count 'automatic-loss source pods still active in the API' 0 automatic_active_source_pod_count \
     "$maximum_automatic_pod_eviction_seconds"
 automatic_pod_eviction_seconds=$(( $(date +%s) - automatic_failure_started_epoch ))
 (( automatic_pod_eviction_seconds <= maximum_automatic_pod_eviction_seconds )) || {
     echo "Automatic worker-loss pod eviction exceeded the objective" >&2; exit 1;
 }
+automatic_source_pod_evictions_json="$(kubectl get pod --namespace "$namespace" -o json \
+    | jq --argjson names "$automatic_source_pod_names_json" '
+      .items as $items
+      | [$names[] as $name
+         | ($items | map(select(.metadata.name == $name)) | .[0] // null) as $pod
+         | {name: $name,
+            observedInApi: ($pod != null),
+            deletionTimestamp: ($pod.metadata.deletionTimestamp // null),
+            evictionObserved: (($pod == null) or ($pod.metadata.deletionTimestamp != null))}]')"
+jq -e 'length == 3 and all(.[]; .evictionObserved)' \
+    <<< "$automatic_source_pod_evictions_json" >/dev/null || {
+    echo "Automatic worker-loss source pod eviction evidence was incomplete" >&2; exit 1;
+}
+printf '%s\n' "$automatic_source_pod_evictions_json" \
+    > "$output_dir/automatic-source-pod-evictions.json"
 wait_for_count 'ready proxy replicas after automatic worker loss' 1 ready_proxy_count 10
 if ! wait "$attack_pid"; then
     attack_pid=""
@@ -1890,6 +1907,7 @@ jq -n \
     --arg automaticNodeReadyStatus "$automatic_node_ready_status" \
     --arg automaticFailedProxyUid "$automatic_failed_proxy_uid" \
     --argjson automaticSourcePodNames "$automatic_source_pod_names_json" \
+    --argjson automaticSourcePodEvictions "$automatic_source_pod_evictions_json" \
     --argjson priorPodUids "$initial_proxy_uids_json" \
     --argjson candidatePodUids "$replacement_proxy_uids_json" \
     --argjson restoredPodUids "$rollback_proxy_uids_json" \
@@ -2013,6 +2031,7 @@ jq -n \
           controllerNodeMonitorPeriodSeconds: 2, controllerNodeMonitorGracePeriodSeconds: 20,
           unreachableTolerationSeconds: 10, detectedReadyStatus: $automaticNodeReadyStatus,
           sourcePodNames: $automaticSourcePodNames,
+          sourcePodEvictions: $automaticSourcePodEvictions,
           failedProxyPodUid: $automaticFailedProxyUid, retainedFailedProxyPodUids: 0,
           nodeDetectionSeconds: $automaticNodeDetectionSeconds,
           endpointWithdrawalSeconds: $automaticEndpointWithdrawalSeconds,

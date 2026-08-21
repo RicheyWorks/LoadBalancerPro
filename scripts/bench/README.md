@@ -143,7 +143,9 @@ Kubernetes' out-of-service `NoExecute` remediation and force-removes the three e
 API, bounds endpoint withdrawal, proves degraded traffic, and requires fresh pod identity, two-zone placement, and traffic
 distribution after recovery. It then repeats a no-drain worker kill without any post-failure Kubernetes mutation. The
 controller-manager must detect the lost node, EndpointSlices must withdraw its endpoints, bounded `NoExecute` tolerations
-must evict the three dead-node pods, and recovery must use fresh pod identities across both zones. The lab cluster pins a
+must initiate eviction for the three dead-node pods, and recovery must use fresh pod identities across both zones. The
+evidence accepts either API removal or a deletion timestamp because an unavailable kubelet can leave evicted pod objects
+terminating until the node returns. The lab cluster pins a
 twenty-second node-monitor grace period, ten-second unreachable tolerations, iptables kube-proxy with immediate
 EndpointSlice-triggered updates, and a one-second cleanup sync so the automatic Service failover objective is executable
 and recorded. Both abrupt transition and degraded windows retain bounded 90% and 95% success floors with 5.5-second p99

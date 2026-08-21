@@ -177,7 +177,9 @@ out-of-service `NoExecute` remediation. It force-removes the three exact statele
 endpoint withdrawal, proves degraded traffic, rejects the failed pod identity after recovery, and requires both
 recovered replicas and backends to serve new traffic. A second forced stop permits no post-failure Kubernetes mutation:
 the test-configured controller-manager must detect the lost node, EndpointSlices must withdraw its endpoints, the bounded
-`NoExecute` tolerations must evict its three pods, and fresh pod identities must recover across both zones. The disposable
+`NoExecute` tolerations must initiate eviction for its three pods, and fresh pod identities must recover across both zones.
+Eviction evidence accepts API removal or a deletion timestamp because an unavailable kubelet can leave the old objects
+terminating until the node returns. The disposable
 cluster pins a twenty-second node-monitor grace period, ten-second unreachable tolerations, iptables-mode kube-proxy with
 immediate EndpointSlice-triggered updates, and a one-second cleanup sync; deployment environments must review equivalent
 managed-control-plane and Service/ingress reconciliation behavior. Its abrupt transition and degraded phases

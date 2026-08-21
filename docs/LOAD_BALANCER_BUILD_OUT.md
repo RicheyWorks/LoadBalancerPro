@@ -183,8 +183,9 @@ terminating until the node returns. The disposable
 cluster pins a twenty-second node-monitor grace period, ten-second unreachable tolerations, iptables-mode kube-proxy with
 immediate EndpointSlice-triggered updates, and a one-second cleanup sync; deployment environments must review equivalent
 managed-control-plane and Service/ingress reconciliation behavior. Its abrupt transition and degraded phases
-bound stale conntrack impact at 90% and 95% success with 5.5-second p99 ceilings; recovered traffic must return to the
-normal 99.9% success and 1.5-second p99 objectives. The ten-second endpoint drain exceeds the five-second qualification
+bound stale conntrack impact at 90% and 95% success with 5.5-second p99 ceilings. The controller-detected transition has
+an 80% floor that includes the configured node-monitor grace interval, followed by a 95% degraded floor; recovered
+traffic must return to the normal 99.9% success and 1.5-second p99 objectives. The ten-second endpoint drain exceeds the five-second qualification
 client timeout, and the 45-second termination grace contains the 30-second application shutdown bound. The candidate
 has a distinct local image
 content ID but preserves the baseline application layers, so it proves Kubernetes transition and rollback mechanics

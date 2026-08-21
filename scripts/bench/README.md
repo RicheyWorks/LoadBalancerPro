@@ -149,7 +149,9 @@ terminating until the node returns. The lab cluster pins a
 twenty-second node-monitor grace period, ten-second unreachable tolerations, iptables kube-proxy with immediate
 EndpointSlice-triggered updates, and a one-second cleanup sync so the automatic Service failover objective is executable
 and recorded. Both abrupt transition and degraded windows retain bounded 90% and 95% success floors with 5.5-second p99
-ceilings for stale conntrack paths; recovered traffic returns to the normal 99.9% success and 1.5-second p99 objectives. Rollouts drain endpoints for ten seconds,
+ceilings for stale conntrack paths. The controller-detected transition has a separate 80% floor to include the configured
+node-monitor grace interval, while its degraded phase retains 95%; recovered traffic returns to the normal 99.9% success
+and 1.5-second p99 objectives. Rollouts drain endpoints for ten seconds,
 longer than the five-second qualification client timeout, while the 45-second grace period contains the application's
 30-second graceful-shutdown bound:
 

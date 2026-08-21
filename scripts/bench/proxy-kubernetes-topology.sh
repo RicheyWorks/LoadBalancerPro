@@ -78,7 +78,7 @@ jq -e '
   and (.objectives.minimumAbruptTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
   and (.objectives.minimumAbruptDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumAbruptRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
-  and (.objectives.minimumAutomaticTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
+  and (.objectives.minimumAutomaticTransitionSuccessRatio | type == "number" and . >= 0.80 and . <= 1)
   and (.objectives.minimumAutomaticDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumAutomaticRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.maximumP99Millis | type == "number" and . >= 100 and . <= 5000 and floor == .)
@@ -1798,6 +1798,14 @@ jq -e 'length == 3 and all(.[]; .evictionObserved)' \
 }
 printf '%s\n' "$automatic_source_pod_evictions_json" \
     > "$output_dir/automatic-source-pod-evictions.json"
+jq -n \
+    --argjson nodeDetectionSeconds "$automatic_node_detection_seconds" \
+    --argjson endpointWithdrawalSeconds "$automatic_endpoint_withdrawal_seconds" \
+    --argjson podEvictionSeconds "$automatic_pod_eviction_seconds" \
+    '{nodeDetectionSeconds: $nodeDetectionSeconds,
+      endpointWithdrawalSeconds: $endpointWithdrawalSeconds,
+      podEvictionSeconds: $podEvictionSeconds}' \
+    > "$output_dir/automatic-failure-timings.json"
 wait_for_count 'ready proxy replicas after automatic worker loss' 1 ready_proxy_count 10
 if ! wait "$attack_pid"; then
     attack_pid=""

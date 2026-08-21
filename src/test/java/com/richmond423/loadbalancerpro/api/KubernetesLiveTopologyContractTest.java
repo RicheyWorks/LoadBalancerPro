@@ -151,7 +151,7 @@ class KubernetesLiveTopologyContractTest {
         assertTrue(profile.path("objectives").path("maximumAbruptDegradedP99Millis").asInt() <= 6000);
         assertTrue(profile.path("workload").path("automaticTransitionSeconds").asInt()
                 >= profile.path("objectives").path("maximumAutomaticEndpointWithdrawalSeconds").asInt() + 5);
-        assertTrue(profile.path("objectives").path("minimumAutomaticTransitionSuccessRatio").asDouble() >= 0.90);
+        assertTrue(profile.path("objectives").path("minimumAutomaticTransitionSuccessRatio").asDouble() >= 0.80);
         assertEquals(0.95, profile.path("objectives").path("minimumAutomaticDegradedSuccessRatio").asDouble());
         assertTrue(profile.path("objectives").path("minimumAutomaticRecoveredSuccessRatio").asDouble() >= 0.95);
         assertTrue(profile.path("objectives").path("maximumAutomaticTransitionP99Millis").asInt() <= 6000);
@@ -281,6 +281,7 @@ class KubernetesLiveTopologyContractTest {
                 "wait_for_node_unavailable",
                 "automatic-loss source pods still active in the API",
                 "automatic-source-pod-evictions.json",
+                "automatic-failure-timings.json",
                 "evictionObserved",
                 "Automatic worker-loss recovery retained the failed worker pod UID",
                 "automatic-recovered-distribution-delta.json",

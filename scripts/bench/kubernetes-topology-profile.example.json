@@ -59,7 +59,7 @@
     "minimumAbruptTransitionSuccessRatio": 0.90,
     "minimumAbruptDegradedSuccessRatio": 0.95,
     "minimumAbruptRecoveredSuccessRatio": 0.999,
-    "minimumAutomaticTransitionSuccessRatio": 0.90,
+    "minimumAutomaticTransitionSuccessRatio": 0.80,
     "minimumAutomaticDegradedSuccessRatio": 0.95,
     "minimumAutomaticRecoveredSuccessRatio": 0.999,
     "maximumP99Millis": 1500,

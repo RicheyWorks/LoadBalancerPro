@@ -7,6 +7,15 @@ nodes:
     image: kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48
     kubeadmConfigPatches:
       - |
+        apiVersion: kubeadm.k8s.io/v1beta4
+        kind: ClusterConfiguration
+        controllerManager:
+          extraArgs:
+            - name: node-monitor-period
+              value: 2s
+            - name: node-monitor-grace-period
+              value: 20s
+      - |
         apiVersion: kubeproxy.config.k8s.io/v1alpha1
         kind: KubeProxyConfiguration
         mode: iptables

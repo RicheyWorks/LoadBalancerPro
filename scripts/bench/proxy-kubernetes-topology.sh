@@ -25,7 +25,7 @@ for required_file in "$cluster_config" "$workload_manifest" "$candidate_dockerfi
 done
 
 jq -e '
-  .schemaVersion == 6
+  .schemaVersion == 7
   and (.profileId | type == "string" and test("^[a-z0-9][a-z0-9._-]{0,62}$"))
   and .review.status == "example"
   and .cluster.kindVersion == "v0.31.0"
@@ -37,6 +37,8 @@ jq -e '
   and .cluster.namespace == "lbp-kubernetes-smoke"
   and .cluster.hostPort == 18460
   and .cluster.nodePort == 30443
+  and .cluster.nodeMonitorGracePeriodSeconds == 20
+  and .cluster.unreachableTolerationSeconds == 10
   and .workload.connectionMode == "close-per-request"
   and (.workload.ratePerSecond | type == "number" and . >= 10 and . <= 500 and floor == .)
   and (.workload.baselineSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
@@ -56,6 +58,9 @@ jq -e '
   and (.workload.abruptTransitionSeconds | type == "number" and . >= 15 and . <= 120 and floor == .)
   and (.workload.abruptDegradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.workload.abruptRecoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.automaticTransitionSeconds | type == "number" and . >= 30 and . <= 120 and floor == .)
+  and (.workload.automaticDegradedSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
+  and (.workload.automaticRecoveredSeconds | type == "number" and . >= 5 and . <= 60 and floor == .)
   and (.objectives.minimumBaselineSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumPostRolloutSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
@@ -73,9 +78,14 @@ jq -e '
   and (.objectives.minimumAbruptTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
   and (.objectives.minimumAbruptDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.minimumAbruptRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumAutomaticTransitionSuccessRatio | type == "number" and . >= 0.90 and . <= 1)
+  and (.objectives.minimumAutomaticDegradedSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
+  and (.objectives.minimumAutomaticRecoveredSuccessRatio | type == "number" and . >= 0.95 and . <= 1)
   and (.objectives.maximumP99Millis | type == "number" and . >= 100 and . <= 5000 and floor == .)
   and (.objectives.maximumAbruptTransitionP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
   and (.objectives.maximumAbruptDegradedP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
+  and (.objectives.maximumAutomaticTransitionP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
+  and (.objectives.maximumAutomaticDegradedP99Millis | type == "number" and . >= 1000 and . <= 6000 and floor == .)
   and (.objectives.maximumRolloutSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumRollbackSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
   and (.objectives.maximumCertificateRotationSeconds | type == "number" and . >= 20 and . <= 120 and floor == .)
@@ -84,12 +94,19 @@ jq -e '
   and (.objectives.maximumRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and (.objectives.maximumAbruptEndpointWithdrawalSeconds | type == "number" and . >= 5 and . <= 30 and floor == .)
   and (.objectives.maximumAbruptRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
+  and (.objectives.maximumAutomaticNodeDetectionSeconds | type == "number" and . >= 10 and . <= 30 and floor == .)
+  and (.objectives.maximumAutomaticEndpointWithdrawalSeconds | type == "number" and . >= 10 and . <= 45 and floor == .)
+  and (.objectives.maximumAutomaticPodEvictionSeconds | type == "number" and . >= 30 and . <= 120 and floor == .)
+  and (.objectives.maximumAutomaticRecoverySeconds | type == "number" and . >= 30 and . <= 300 and floor == .)
   and .workload.rolloutSeconds >= (.objectives.maximumRolloutSeconds + 5)
   and .workload.rollbackSeconds >= (.objectives.maximumRollbackSeconds + 5)
   and .workload.certificateRotationSeconds >= (.objectives.maximumCertificateRotationSeconds + 5)
   and .workload.certificateRollbackSeconds >= (.objectives.maximumCertificateRollbackSeconds + 5)
   and .workload.apiKeyTransitionSeconds >= (.objectives.maximumApiKeyTransitionSeconds + 5)
   and .workload.abruptTransitionSeconds >= (.objectives.maximumAbruptEndpointWithdrawalSeconds + 5)
+  and .workload.automaticTransitionSeconds >= (.objectives.maximumAutomaticEndpointWithdrawalSeconds + 5)
+  and .objectives.maximumAutomaticNodeDetectionSeconds < .objectives.maximumAutomaticEndpointWithdrawalSeconds
+  and .objectives.maximumAutomaticEndpointWithdrawalSeconds < .objectives.maximumAutomaticPodEvictionSeconds
   and .tlsRotation.hostname == "lbp-kubernetes.local"
   and .tlsRotation.baselineSecret == "loadbalancerpro-server-tls-a"
   and .tlsRotation.candidateSecret == "loadbalancerpro-server-tls-b"
@@ -107,6 +124,12 @@ for invariant in \
     'containerPort: 30443' \
     'hostPort: 18460' \
     'kind: KubeProxyConfiguration' \
+    'apiVersion: kubeadm.k8s.io/v1beta4' \
+    'kind: ClusterConfiguration' \
+    'name: node-monitor-period' \
+    'value: 2s' \
+    'name: node-monitor-grace-period' \
+    'value: 20s' \
     'mode: iptables' \
     'minSyncPeriod: 0s' \
     'syncPeriod: 1s'; do
@@ -134,6 +157,9 @@ for invariant in \
     'LBP_RETRY_MAX_ATTEMPTS: "3"' \
     'LBP_RETRY_BUDGET_PERCENT: "100"' \
     'LBP_RETRY_NON_IDEMPOTENT: "false"' \
+    'key: node.kubernetes.io/not-ready' \
+    'key: node.kubernetes.io/unreachable' \
+    'tolerationSeconds: 10' \
     'path: loadbalancerpro.api.rotation-key'; do
     grep -Fq "$invariant" "$workload_manifest" || { echo "Kubernetes workload is missing: $invariant" >&2; exit 2; }
 done
@@ -144,7 +170,7 @@ fi
 
 if [[ "$mode" == "validate" ]]; then
     printf 'Validated disposable two-worker/two-zone Kubernetes topology contract %s.\n' "$(jq -r '.profileId' "$profile")"
-    printf 'Validated proof cases: service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution immutable-certificate-secrets certificate-identity-transition certificate-rotation-continuity certificate-pod-identity-turnover post-certificate-rotation-distribution certificate-identity-rollback certificate-rollback-continuity certificate-rollback-pod-identity-turnover post-certificate-rollback-distribution bounded-api-key-overlap immutable-api-key-secrets api-key-rotation-continuity api-key-retirement api-key-rollback-continuity api-key-rollback-retirement planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery\n'
+    printf 'Validated proof cases: service-distribution per-replica-metrics content-distinct-rollout endpoint-continuity candidate-pod-identity-turnover post-rollout-distribution baseline-rollback rollback-endpoint-continuity rollback-pod-identity-turnover post-rollback-distribution immutable-certificate-secrets certificate-identity-transition certificate-rotation-continuity certificate-pod-identity-turnover post-certificate-rotation-distribution certificate-identity-rollback certificate-rollback-continuity certificate-rollback-pod-identity-turnover post-certificate-rollback-distribution bounded-api-key-overlap immutable-api-key-secrets api-key-rotation-continuity api-key-retirement api-key-rollback-continuity api-key-rollback-retirement planned-worker-drain stopped-worker degraded-service worker-recovery abrupt-worker-stop out-of-service-remediation abrupt-endpoint-withdrawal abrupt-recovery automatic-node-detection automatic-endpoint-withdrawal automatic-pod-eviction automatic-recovery\n'
     exit 0
 fi
 
@@ -289,6 +315,14 @@ else
 fi
 [[ "$(kubectl config current-context)" == "kind-$cluster_name" ]] || { echo "Unexpected Kubernetes context" >&2; exit 1; }
 kubectl wait --for=condition=Ready nodes --all --timeout=120s
+controller_manager_command="$(kubectl get pod --namespace kube-system \
+    -l component=kube-controller-manager -o json | jq -r '.items[0].spec.containers[0].command[]')"
+for invariant in '--node-monitor-period=2s' '--node-monitor-grace-period=20s'; do
+    grep -Fxq -- "$invariant" <<< "$controller_manager_command" || {
+        echo "Live kube-controller-manager command is missing: $invariant" >&2; exit 1;
+    }
+done
+printf '%s\n' "$controller_manager_command" > "$output_dir/kube-controller-manager-command.txt"
 kube_proxy_config="$(kubectl get configmap kube-proxy --namespace kube-system -o json \
     | jq -r '.data["config.conf"]')"
 for invariant in 'mode: iptables' 'minSyncPeriod: 0s' 'syncPeriod: 1s'; do
@@ -360,6 +394,17 @@ chmod 0600 "$api_key_file" "$candidate_api_key_file" "$empty_rotation_key_file" 
     "$tls_dir"/* "$candidate_tls_dir"/* "$tls_trust_bundle"
 
 kubectl apply --server-side --field-manager=loadbalancerpro-qualification -f "$workload_manifest"
+kubectl get deployment backend-a backend-b loadbalancerpro --namespace "$namespace" -o json \
+    | jq '{items: [.items[] | {deployment: .metadata.name,
+        tolerations: .spec.template.spec.tolerations}]}' > "$output_dir/node-failure-policy.json"
+jq -e '(.items | length) == 3 and all(.items[];
+      ([.tolerations[] | select(.key == "node.kubernetes.io/not-ready"
+        and .operator == "Exists" and .effect == "NoExecute" and .tolerationSeconds == 10)] | length) == 1
+      and ([.tolerations[] | select(.key == "node.kubernetes.io/unreachable"
+        and .operator == "Exists" and .effect == "NoExecute" and .tolerationSeconds == 10)] | length) == 1)' \
+    "$output_dir/node-failure-policy.json" >/dev/null || {
+    echo "Qualification Deployments do not share the bounded unreachable-node eviction policy" >&2; exit 1;
+}
 create_immutable_api_key_secret() {
     local secret_name="$1" primary_file="$2" rotation_file="$3"
     kubectl create secret generic "$secret_name" --namespace "$namespace" \
@@ -445,6 +490,12 @@ abrupt_source_pod_count() {
             '[.items[] | select(.metadata.name as $name | $names | index($name))] | length'
 }
 
+automatic_source_pod_count() {
+    kubectl get pod --namespace "$namespace" -o json \
+        | jq --argjson names "$automatic_source_pod_names_json" \
+            '[.items[] | select(.metadata.name as $name | $names | index($name))] | length'
+}
+
 wait_for_count() {
     local description="$1" expected="$2" command_name="$3" timeout_seconds="$4"
     local deadline=$((SECONDS + timeout_seconds)) actual=unknown
@@ -454,6 +505,19 @@ wait_for_count() {
         sleep 2
     done
     echo "Timed out waiting for $description=$expected; observed $actual" >&2
+    return 1
+}
+
+wait_for_node_unavailable() {
+    local node="$1" timeout_seconds="$2"
+    local deadline=$((SECONDS + timeout_seconds)) actual=unknown
+    while (( SECONDS < deadline )); do
+        actual="$(kubectl get node "$node" -o json \
+            | jq -r '[.status.conditions[] | select(.type == "Ready")][0].status // "Missing"')"
+        case "$actual" in False|Unknown) automatic_node_ready_status="$actual"; return 0 ;; esac
+        sleep 2
+    done
+    echo "Timed out waiting for Kubernetes to detect $node as unavailable; observed Ready=$actual" >&2
     return 1
 }
 
@@ -1654,6 +1718,142 @@ jq -e '(.pods | length) == 2
     echo "Both recovered proxies and both backends must serve traffic after abrupt loss" >&2; exit 1;
 }
 
+assert_no_container_restarts pre-automatic-worker-loss
+automatic_ready_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json | jq '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.status.phase == "Running")
+      | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))]')"
+[[ "$(jq 'length' <<< "$automatic_ready_proxy_pods_json")" == 2 ]] || {
+    echo "Expected two ready proxies before automatic worker-loss detection" >&2; exit 1;
+}
+automatic_node="$(jq -r 'sort_by(.spec.nodeName)[-1].spec.nodeName' \
+    <<< "$automatic_ready_proxy_pods_json")"
+[[ "$automatic_node" == "${cluster_name}-worker" || "$automatic_node" == "${cluster_name}-worker2" ]] || {
+    echo "Refusing to stop unexpected automatic-loss node $automatic_node" >&2; exit 1;
+}
+automatic_failed_proxy_uid="$(jq -r --arg node "$automatic_node" \
+    '.[] | select(.spec.nodeName == $node) | .metadata.uid' <<< "$automatic_ready_proxy_pods_json")"
+[[ "$automatic_failed_proxy_uid" =~ ^[0-9a-f-]{36}$ ]] || {
+    echo "Unable to bind the proxy pod identity for automatic worker-loss detection" >&2; exit 1;
+}
+automatic_node_pods_json="$(kubectl get pod --namespace "$namespace" -o json \
+    | jq --arg node "$automatic_node" '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.spec.nodeName == $node)
+      | select(.metadata.labels["app.kubernetes.io/name"] == "loadbalancerpro"
+          or .metadata.labels["app.kubernetes.io/name"] == "fixture-backend")]')"
+[[ "$(jq 'length' <<< "$automatic_node_pods_json")" == 3 ]] || {
+    echo "Expected exactly one proxy and two backend pods on the automatic-loss worker" >&2; exit 1;
+}
+automatic_source_pod_names_json="$(jq '[.[].metadata.name] | sort' <<< "$automatic_node_pods_json")"
+
+automatic_transition_seconds="$(jq -r '.workload.automaticTransitionSeconds' "$profile")"
+maximum_automatic_node_detection_seconds="$(jq -r \
+    '.objectives.maximumAutomaticNodeDetectionSeconds' "$profile")"
+maximum_automatic_endpoint_withdrawal_seconds="$(jq -r \
+    '.objectives.maximumAutomaticEndpointWithdrawalSeconds' "$profile")"
+maximum_automatic_pod_eviction_seconds="$(jq -r \
+    '.objectives.maximumAutomaticPodEvictionSeconds' "$profile")"
+vegeta attack -duration="${automatic_transition_seconds}s" -rate="${rate}/s" -timeout=5s \
+    -keepalive=false -http2=false -root-certs="$tls_trust_bundle" -targets="$targets" \
+    > "$work_dir/automatic-transition.bin" &
+attack_pid=$!
+sleep 3
+automatic_failure_started_epoch="$(date +%s)"
+docker kill "$automatic_node" >/dev/null
+stopped_node="$automatic_node"
+[[ "$(docker inspect --format '{{.State.Running}}' "$automatic_node")" == false ]] || {
+    echo "Automatic-loss worker container is still running" >&2; exit 1;
+}
+wait_for_node_unavailable "$automatic_node" "$maximum_automatic_node_detection_seconds"
+automatic_node_detection_seconds=$(( $(date +%s) - automatic_failure_started_epoch ))
+(( automatic_node_detection_seconds <= maximum_automatic_node_detection_seconds )) || {
+    echo "Automatic worker-loss node detection exceeded the objective" >&2; exit 1;
+}
+wait_for_count 'ready Service endpoints after automatic worker loss' 1 ready_endpoint_count \
+    "$maximum_automatic_endpoint_withdrawal_seconds"
+automatic_endpoint_withdrawal_seconds=$(( $(date +%s) - automatic_failure_started_epoch ))
+(( automatic_endpoint_withdrawal_seconds <= maximum_automatic_endpoint_withdrawal_seconds )) || {
+    echo "Automatic worker-loss endpoint withdrawal exceeded the objective" >&2; exit 1;
+}
+wait_for_count 'automatic-loss source pods remaining in the API' 0 automatic_source_pod_count \
+    "$maximum_automatic_pod_eviction_seconds"
+automatic_pod_eviction_seconds=$(( $(date +%s) - automatic_failure_started_epoch ))
+(( automatic_pod_eviction_seconds <= maximum_automatic_pod_eviction_seconds )) || {
+    echo "Automatic worker-loss pod eviction exceeded the objective" >&2; exit 1;
+}
+wait_for_count 'ready proxy replicas after automatic worker loss' 1 ready_proxy_count 10
+if ! wait "$attack_pid"; then
+    attack_pid=""
+    echo "Automatic worker-loss transition traffic attack failed" >&2
+    exit 1
+fi
+attack_pid=""
+report_attack automatic-transition \
+    "$(jq -r '.objectives.minimumAutomaticTransitionSuccessRatio' "$profile")" \
+    "$(jq -r '.objectives.maximumAutomaticTransitionP99Millis' "$profile")"
+capture_state automatic-degraded
+assert_no_container_restarts automatic-degraded
+run_attack automatic-degraded "$(jq -r '.workload.automaticDegradedSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumAutomaticDegradedSuccessRatio' "$profile")" "$targets" \
+    "$(jq -r '.objectives.maximumAutomaticDegradedP99Millis' "$profile")"
+
+automatic_recovery_started_epoch="$(date +%s)"
+docker start "$stopped_node" >/dev/null
+stopped_node=""
+maximum_automatic_recovery_seconds="$(jq -r '.objectives.maximumAutomaticRecoverySeconds' "$profile")"
+kubectl wait --for=condition=Ready node/"$automatic_node" \
+    --timeout="${maximum_automatic_recovery_seconds}s"
+for deployment in backend-a backend-b loadbalancerpro; do
+    kubectl rollout status deployment/"$deployment" --namespace "$namespace" \
+        --timeout="${maximum_automatic_recovery_seconds}s"
+done
+wait_for_count 'automatic-loss recovered proxy replicas' 2 ready_proxy_count \
+    "$maximum_automatic_recovery_seconds"
+wait_for_count 'automatic-loss recovered Service endpoints' 2 ready_endpoint_count \
+    "$maximum_automatic_recovery_seconds"
+automatic_recovery_seconds=$(( $(date +%s) - automatic_recovery_started_epoch ))
+(( automatic_recovery_seconds <= maximum_automatic_recovery_seconds )) || {
+    echo "Automatic worker-loss recovery exceeded the objective" >&2; exit 1;
+}
+automatic_recovered_proxy_pods_json="$(kubectl get pod --namespace "$namespace" \
+    -l app.kubernetes.io/name=loadbalancerpro -o json | jq '[.items[]
+      | select(.metadata.deletionTimestamp == null)
+      | select(.status.phase == "Running")
+      | select(any(.status.conditions[]?; .type == "Ready" and .status == "True"))]')"
+[[ "$(jq '[.[].spec.nodeName] | unique | length' <<< "$automatic_recovered_proxy_pods_json")" == 2 ]] || {
+    echo "Automatic worker-loss recovery did not restore distinct workers" >&2; exit 1;
+}
+automatic_failed_uid_overlap="$(jq -n --arg prior "$automatic_failed_proxy_uid" \
+    --argjson recovered "$automatic_recovered_proxy_pods_json" \
+    '[ $recovered[].metadata.uid | select(. == $prior) ] | length')"
+[[ "$automatic_failed_uid_overlap" == 0 ]] || {
+    echo "Automatic worker-loss recovery retained the failed worker pod UID" >&2; exit 1;
+}
+capture_state automatic-recovered
+assert_no_container_restarts automatic-recovered
+collect_distribution automatic-recovered-before false
+run_attack automatic-recovered "$(jq -r '.workload.automaticRecoveredSeconds' "$profile")" \
+    "$(jq -r '.objectives.minimumAutomaticRecoveredSuccessRatio' "$profile")"
+collect_distribution automatic-recovered
+jq -n --slurpfile before "$output_dir/automatic-recovered-before-distribution.json" \
+    --slurpfile after "$output_dir/automatic-recovered-distribution.json" '
+      ($before[0]) as $before | ($after[0]) as $after |
+      {phase: "automatic-recovered", bothRecoveredProxyReplicasServed: true,
+       backendARequestDelta: ($after.backendARequests - $before.backendARequests),
+       backendBRequestDelta: ($after.backendBRequests - $before.backendBRequests),
+       pods: [$after.pods[] as $current
+         | ($before.pods[] | select(.pod == $current.pod)) as $prior
+         | {pod: $current.pod, requestDelta: ($current.requests - $prior.requests)}]}
+    ' > "$output_dir/automatic-recovered-distribution-delta.json"
+jq -e '(.pods | length) == 2
+    and all(.pods[]; .requestDelta > 0)
+    and .backendARequestDelta > 0
+    and .backendBRequestDelta > 0' "$output_dir/automatic-recovered-distribution-delta.json" >/dev/null || {
+    echo "Both recovered proxies and both backends must serve traffic after automatic loss" >&2; exit 1;
+}
+
 kubectl version -o json > "$output_dir/kubernetes-version.json"
 kind version > "$output_dir/kind-version.txt"
 docker image inspect "$proxy_image_id" > "$output_dir/proxy-baseline-image.json"
@@ -1668,6 +1868,7 @@ post_certificate_rollback_distribution_delta_json="$(<"$output_dir/post-certific
 api_key_rotation_json="$(<"$output_dir/api-key-rotation.json")"
 recovered_distribution_delta_json="$(<"$output_dir/recovered-distribution-delta.json")"
 abrupt_recovered_distribution_delta_json="$(<"$output_dir/abrupt-recovered-distribution-delta.json")"
+automatic_recovered_distribution_delta_json="$(<"$output_dir/automatic-recovered-distribution-delta.json")"
 jq -n \
     --arg profileId "$profile_id" \
     --arg sourceRevision "$source_revision" \
@@ -1687,6 +1888,10 @@ jq -n \
     --arg abruptWorker "$abrupt_node" \
     --arg abruptFailedProxyUid "$abrupt_failed_proxy_uid" \
     --argjson abruptForcedPodNames "$abrupt_forced_pod_names_json" \
+    --arg automaticWorker "$automatic_node" \
+    --arg automaticNodeReadyStatus "$automatic_node_ready_status" \
+    --arg automaticFailedProxyUid "$automatic_failed_proxy_uid" \
+    --argjson automaticSourcePodNames "$automatic_source_pod_names_json" \
     --argjson priorPodUids "$initial_proxy_uids_json" \
     --argjson candidatePodUids "$replacement_proxy_uids_json" \
     --argjson restoredPodUids "$rollback_proxy_uids_json" \
@@ -1716,6 +1921,10 @@ jq -n \
     --argjson recoverySeconds "$recovery_seconds" \
     --argjson abruptEndpointWithdrawalSeconds "$abrupt_endpoint_withdrawal_seconds" \
     --argjson abruptRecoverySeconds "$abrupt_recovery_seconds" \
+    --argjson automaticNodeDetectionSeconds "$automatic_node_detection_seconds" \
+    --argjson automaticEndpointWithdrawalSeconds "$automatic_endpoint_withdrawal_seconds" \
+    --argjson automaticPodEvictionSeconds "$automatic_pod_eviction_seconds" \
+    --argjson automaticRecoverySeconds "$automatic_recovery_seconds" \
     --argjson baselineDistribution "$baseline_distribution_json" \
     --argjson postRolloutDistribution "$post_rollout_distribution_delta_json" \
     --argjson postRollbackDistribution "$post_rollback_distribution_delta_json" \
@@ -1724,7 +1933,8 @@ jq -n \
     --argjson apiKeyRotation "$api_key_rotation_json" \
     --argjson recoveredDistribution "$recovered_distribution_delta_json" \
     --argjson abruptRecoveredDistribution "$abrupt_recovered_distribution_delta_json" \
-    '{schemaVersion: 6, result: "pass", evidenceBoundary: "disposable loopback kind metadata-only content-distinct image rollout and baseline rollback, versioned immutable inbound-server TLS Secret rotation and identity rollback, bounded two-key API credential overlap/commit/rollback, planned worker loss, and operator-remediated abrupt worker-container loss; not dynamic Secret reload, not an ingress-controller, and not automatic infrastructure-failure detection, application-layer release compatibility, registry/source binding, external certificate-authority, client trust-distribution, external secret-manager, or deployment-capacity proof",
+    --argjson automaticRecoveredDistribution "$automatic_recovered_distribution_delta_json" \
+    '{schemaVersion: 7, result: "pass", evidenceBoundary: "disposable loopback kind metadata-only content-distinct image rollout and baseline rollback, versioned immutable inbound-server TLS Secret rotation and identity rollback, bounded two-key API credential overlap/commit/rollback, planned worker loss, operator-remediated abrupt worker-container loss, and test-configured automatic node-loss detection/endpoint withdrawal/pod eviction/recovery; not dynamic Secret reload, not an ingress-controller, and not application-layer release compatibility, registry/source binding, external certificate-authority, client trust-distribution, external secret-manager, deployment-equivalent infrastructure-failure timing, or deployment-capacity proof",
       profileId: $profileId, repositoryRevision: $sourceRevision,
       images: {identityType: "local Docker content-addressed image ID",
         baseline: {contentId: $proxyImageId},
@@ -1736,7 +1946,8 @@ jq -n \
          postApiKeyOverlapProxyReplicas: 2, postApiKeyCommitProxyReplicas: 2,
          postApiKeyRollbackOverlapProxyReplicas: 2, postApiKeyRollbackCommitProxyReplicas: 2,
         degradedProxyReplicas: 1, recoveredProxyReplicas: 2,
-        abruptDegradedProxyReplicas: 1, abruptRecoveredProxyReplicas: 2},
+        abruptDegradedProxyReplicas: 1, abruptRecoveredProxyReplicas: 2,
+        automaticDegradedProxyReplicas: 1, automaticRecoveredProxyReplicas: 2},
       traffic: {bothProxyReplicasServed: true, baseline: $baselineDistribution,
         rollout: "pass", postRollout: $postRolloutDistribution,
         rollback: "pass", postRollback: $postRollbackDistribution,
@@ -1746,7 +1957,9 @@ jq -n \
          apiKeyRollbackOverlap: "pass", apiKeyRollbackCommit: "pass",
         drainTransition: "pass", degraded: "pass", recovered: $recoveredDistribution,
         abruptTransition: "pass", abruptDegraded: "pass",
-        abruptRecovered: $abruptRecoveredDistribution},
+        abruptRecovered: $abruptRecoveredDistribution,
+        automaticTransition: "pass", automaticDegraded: "pass",
+        automaticRecovered: $automaticRecoveredDistribution},
       rolloutExercise: {triggerAnnotation: $rolloutToken, contentDistinctRuntimeImageId: true,
         fromRuntimeImageIds: $baselineRuntimeImageIds,
         toRuntimeImageIds: $candidateRuntimeImageIds,
@@ -1796,7 +2009,17 @@ jq -n \
           apiForcedPodNames: $abruptForcedPodNames,
           failedProxyPodUid: $abruptFailedProxyUid, retainedFailedProxyPodUids: 0,
           endpointWithdrawalSeconds: $abruptEndpointWithdrawalSeconds,
-          recoverySeconds: $abruptRecoverySeconds}}}' \
+          recoverySeconds: $abruptRecoverySeconds},
+        automatic: {stoppedWithoutDrain: $automaticWorker,
+          postFailureRemediationMutations: 0,
+          controllerNodeMonitorPeriodSeconds: 2, controllerNodeMonitorGracePeriodSeconds: 20,
+          unreachableTolerationSeconds: 10, detectedReadyStatus: $automaticNodeReadyStatus,
+          sourcePodNames: $automaticSourcePodNames,
+          failedProxyPodUid: $automaticFailedProxyUid, retainedFailedProxyPodUids: 0,
+          nodeDetectionSeconds: $automaticNodeDetectionSeconds,
+          endpointWithdrawalSeconds: $automaticEndpointWithdrawalSeconds,
+          podEvictionSeconds: $automaticPodEvictionSeconds,
+          recoverySeconds: $automaticRecoverySeconds}}}' \
     > "$output_dir/summary.json"
 
 for secret_file in "$api_key_file" "$candidate_api_key_file"; do
@@ -1806,4 +2029,4 @@ for secret_file in "$api_key_file" "$candidate_api_key_file"; do
     fi
 done
 
-printf 'Kubernetes two-zone image rollout/rollback, immutable TLS identity rotation/rollback, bounded API-key rotation/rollback, planned-loss, and abrupt-loss proof passed; evidence: %s\n' "$output_dir"
+printf 'Kubernetes two-zone image rollout/rollback, immutable TLS identity rotation/rollback, bounded API-key rotation/rollback, planned-loss, operator-remediated abrupt-loss, and automatic worker-loss proof passed; evidence: %s\n' "$output_dir"

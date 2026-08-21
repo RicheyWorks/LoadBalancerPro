@@ -61,6 +61,15 @@ spec:
       enableServiceLinks: false
       nodeSelector:
         loadbalancerpro.io/qualification-worker: "true"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 10
+        - key: node.kubernetes.io/unreachable
+          operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 10
       topologySpreadConstraints:
         - maxSkew: 1
           minDomains: 2
@@ -140,6 +149,15 @@ spec:
       enableServiceLinks: false
       nodeSelector:
         loadbalancerpro.io/qualification-worker: "true"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 10
+        - key: node.kubernetes.io/unreachable
+          operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 10
       topologySpreadConstraints:
         - maxSkew: 1
           minDomains: 2
@@ -230,6 +248,15 @@ spec:
       terminationGracePeriodSeconds: 45
       nodeSelector:
         loadbalancerpro.io/qualification-worker: "true"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 10
+        - key: node.kubernetes.io/unreachable
+          operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 10
       topologySpreadConstraints:
         - maxSkew: 1
           minDomains: 2

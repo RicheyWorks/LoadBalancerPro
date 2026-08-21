@@ -144,10 +144,13 @@ after stale pooled connections have been discarded. The lane then proves two-zon
 Service distribution, planned worker removal, and
 operator-remediated no-drain worker loss and recovery. The abrupt-loss exercise forcibly stops the kind worker,
 confirms its container is down, applies the out-of-service `NoExecute` taint, and force-removes the three exact stateless
-qualification pods from the API. The disposable cluster also pins immediate EndpointSlice-triggered iptables updates
-and a one-second kube-proxy cleanup sync; operators must review the equivalent setting or managed-ingress
-behavior for their environment. The candidate preserves the baseline application layers, so this does not prove
-application-layer release compatibility or automatic deployment failure detection. The reviewed staging runner
+qualification pods from the API. A separate no-drain kill then permits no post-failure Kubernetes mutation: the pinned
+controller-manager must detect the lost node, EndpointSlices must withdraw its endpoints, the bounded `NoExecute`
+tolerations must evict its three pods, and fresh identities must recover across both zones. The disposable cluster pins a
+twenty-second node-monitor grace period, ten-second unreachable tolerations, immediate EndpointSlice-triggered iptables
+updates, and a one-second kube-proxy cleanup sync; operators must review equivalent managed-control-plane and ingress
+behavior instead of copying those lab timings. The candidate preserves the baseline application layers, so this does not
+prove application-layer release compatibility or deployment-equivalent infrastructure failure timing. The reviewed staging runner
 separately validates the external target's digest, replicas, zones, resources,
 configuration, ingress, metrics, drain, and transitions; local proof does not establish registry integrity, deployment
 capacity, external ingress behavior, or production readiness.

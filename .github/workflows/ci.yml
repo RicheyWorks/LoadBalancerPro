@@ -608,6 +608,7 @@ jobs:
             echo "- Local dry-run image tag: \`${DRY_RUN_TAG}\`"
             echo "- Docker runtime and proxy-prod Compose smokes: passed before this evidence was captured."
             echo "- Trivy scans: see \`trivy-summary.txt\`, \`fixture-trivy-summary.txt\`, \`topology-ingress-trivy-summary.txt\`, and \`immutable-candidate-trivy-summary.txt\` when the scan steps complete."
+            echo "- Image SBOM: see \`image-sbom.cdx.json\`, \`image-sbom.cdx.sha256\`, and \`image-sbom-binding.json\` when image SBOM generation completes."
             echo "- Evidence directory: \`${EVIDENCE_DIR}\`"
             echo "- Artifact name: \`container-dry-run-evidence-no-publish-no-sign\`"
             echo ""
@@ -632,6 +633,32 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: false
           exit-code: '1'
+
+      - name: Generate image CycloneDX SBOM
+        # aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: loadbalancerpro:ci-dry-run-${{ github.event.pull_request.head.sha || github.sha }}
+          format: cyclonedx
+          output: target/container-dry-run-evidence/image-sbom.cdx.json
+          scanners: vuln
+          vuln-type: os,library
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '0'
+
+      - name: Validate image CycloneDX SBOM evidence
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          bash -n scripts/smoke/validate-container-image-sbom.sh
+          bash scripts/smoke/validate-container-image-sbom.sh \
+            target/container-dry-run-evidence \
+            "$SOURCE_SHA" \
+            "$GITHUB_SHA" \
+            "loadbalancerpro:ci-dry-run-${SOURCE_SHA}"
 
       - name: Scan proxy-prod fixture image
         # aquasecurity/trivy-action@0.36.0

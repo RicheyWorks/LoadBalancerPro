@@ -23,6 +23,7 @@ class DeploymentPackagingContractTest {
     private static final Path FIXTURE_DOCKERFILE = Path.of("deploy/fixture/Dockerfile");
     private static final Path MANIFEST = Path.of("deploy/kubernetes-proxy-prod.yaml");
     private static final Path SMOKE = Path.of("scripts/smoke/proxy-prod-compose-smoke.sh");
+    private static final Path IMAGE_SBOM_VALIDATOR = Path.of("scripts/smoke/validate-container-image-sbom.sh");
     private static final Path CI = Path.of(".github/workflows/ci.yml");
 
     @Test
@@ -135,6 +136,7 @@ class DeploymentPackagingContractTest {
     @Test
     void ciExecutesTheRuntimeSmokeAndUnsuppressedImageScans() throws Exception {
         String smoke = read(SMOKE);
+        String imageSbomValidator = read(IMAGE_SBOM_VALIDATOR);
         String ci = read(CI);
         assertEquals(1, yamlDocumentCount(ci));
 
@@ -155,10 +157,38 @@ class DeploymentPackagingContractTest {
         assertTrue(ci.contains("bash scripts/bench/topology-validator-contract-test.sh"));
         assertTrue(ci.contains("Scan active-active ingress fixture image"));
         assertTrue(ci.contains("Scan immutable rollout candidate image"));
+        for (String expected : List.of(
+                "Generate image CycloneDX SBOM",
+                "Validate image CycloneDX SBOM evidence",
+                "format: cyclonedx",
+                "image-ref: loadbalancerpro:ci-dry-run-${{ github.event.pull_request.head.sha || github.sha }}",
+                "output: target/container-dry-run-evidence/image-sbom.cdx.json",
+                "bash -n scripts/smoke/validate-container-image-sbom.sh",
+                "bash scripts/smoke/validate-container-image-sbom.sh",
+                "image-sbom.cdx.sha256",
+                "image-sbom-binding.json")) {
+            assertTrue(ci.contains(expected), "missing image SBOM evidence boundary: " + expected);
+        }
+        for (String expected : List.of(
+                ".bomFormat == \"CycloneDX\"",
+                "sha256sum --check --strict",
+                "Dry-run image identity changed before SBOM binding",
+                ".dryRunImageTag == $dryRunImageTag",
+                "published:false",
+                "signed:false")) {
+            assertTrue(imageSbomValidator.contains(expected),
+                    "missing image SBOM validator boundary: " + expected);
+        }
+        assertFalse(imageSbomValidator.contains("docker push"));
+        assertFalse(imageSbomValidator.contains("docker login"));
+        assertFalse(imageSbomValidator.contains("cosign"));
         assertTrue(count(ci, "ignore-unfixed: false") >= 4);
         assertFalse(smoke.contains("cp \"$tls_dir/certificate.pem\" \"$tls_dir/ca.pem\""));
         assertFalse(ci.contains("ignore-unfixed: true"));
         assertFalse(ci.contains("trivyignores:"));
+        assertFalse(ci.contains("\n          docker push "));
+        assertFalse(ci.contains("\n          docker login "));
+        assertFalse(ci.contains("\n          cosign "));
     }
 
     private static long count(String content, String token) {

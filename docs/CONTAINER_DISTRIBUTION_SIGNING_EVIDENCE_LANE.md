@@ -34,6 +34,8 @@ The current repository supports only bounded local and CI container evidence:
 - [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) documents local-only Docker build/run recipes, loopback binding, API-key boundary checks, and no-registry-publish boundaries.
 - CI builds the Docker image, runs loopback-bound container health smoke, and runs Trivy for fixed high/critical findings.
 - CI generates CycloneDX SBOM artifacts for the Maven/JAR dependency graph.
+- CI generates a CycloneDX SBOM for the exact locally built proxy image and retains a checksum plus a binding to the
+  local Docker content ID, source commit SHA, and workflow SHA in the no-publish/no-sign evidence artifact.
 - The tag-triggered Release Artifacts workflow builds deterministic JAR/SBOM/checksum assets and GitHub artifact attestations for approved semantic tags.
 - [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) and [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md) keep registry publication and signing deferred.
 

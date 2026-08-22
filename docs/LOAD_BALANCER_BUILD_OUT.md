@@ -20,7 +20,8 @@ The repository already has these executable production surfaces:
 - TLS termination, verified backend TLS and optional mTLS bundles, API-key protection, and protected Actuator metrics;
 - hardened production Compose and Kubernetes deployment bases, a disposable live two-zone Kubernetes topology lane,
   and fail-closed Kubernetes staging adapter generation for deployment actions and per-replica telemetry;
-- production artifact, Compose, graceful-shutdown, benchmark-smoke, SBOM, CodeQL, and image-scan CI gates; and
+- production artifact, Compose, graceful-shutdown, benchmark-smoke, dependency/JAR and image-level CycloneDX SBOM,
+  CodeQL, and image-scan CI gates; and
 - a one-hour loopback soak covering steady traffic, spikes, slow upstreams, upstream loss, reload, drain, in-flight
   quiescence, p99 budgets, and heap-floor growth.
 

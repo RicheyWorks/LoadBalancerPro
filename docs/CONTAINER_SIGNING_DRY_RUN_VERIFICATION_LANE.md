@@ -99,6 +99,9 @@ Expected evidence files:
 - `image-entrypoint.json`
 - `image-cmd.json`
 - `image-exposed-ports.json`
+- `image-sbom.cdx.json`
+- `image-sbom.cdx.sha256`
+- `image-sbom-binding.json`
 - `trivy-summary.txt`
 
 What the artifact proves:
@@ -108,6 +111,8 @@ What the artifact proves:
 - CI captured local image identity, configuration, history, and Docker environment details.
 - CI recorded both the source commit SHA and the workflow SHA so pull-request merge refs are reviewable without ambiguity.
 - CI ran the configured Trivy image scan and stored its table output when the scan step completed.
+- CI generated a CycloneDX SBOM from the exact local image, verified its structure and checksum, and bound its SHA-256
+  to the local Docker content ID, source commit SHA, and workflow SHA.
 
 What the artifact does not prove:
 
@@ -139,8 +144,10 @@ Current supported SBOM evidence:
 
 - Maven/CycloneDX SBOM generation for the JAR and dependency graph.
 - CI-uploaded `loadbalancerpro-sbom` workflow artifacts.
+- Trivy/CycloneDX SBOM generation for the locally built proxy image, retained with a validated checksum and
+  image/source/workflow binding inside `container-dry-run-evidence-no-publish-no-sign`.
 
-Optional local image evidence, pending reviewer tooling availability:
+Equivalent local image evidence, when Trivy or Syft is available:
 
 ```bash
 trivy image --severity HIGH,CRITICAL --ignore-unfixed loadbalancerpro:dry-run
